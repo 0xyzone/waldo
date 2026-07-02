@@ -21,7 +21,8 @@ class CandidatesTable
                     ->searchable(),
                 TextColumn::make('phone_number')
                     ->searchable(),
-                ImageColumn::make('cv_image'),
+                ImageColumn::make('cv_image')
+                    ->imageGallery(),
                 SelectColumn::make('status')
                     ->label('Status')
                     ->options([
