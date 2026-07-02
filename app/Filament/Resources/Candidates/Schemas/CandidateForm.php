@@ -17,7 +17,7 @@ class CandidateForm
                 TextInput::make('name')
                     ->required(),
                 TextInput::make('phone_number')
-                    ->tel()
+                    ->number()
                     ->required(),
                 FileUpload::make('cv_image')
                     ->image()
