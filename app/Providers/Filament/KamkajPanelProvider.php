@@ -28,6 +28,7 @@ class KamkajPanelProvider extends PanelProvider
             ->id('kamkaj')
             ->path('kamkaj')
             ->login()
+            ->passwordReset()
             ->colors([
                 'primary' => Color::Amber,
             ])
