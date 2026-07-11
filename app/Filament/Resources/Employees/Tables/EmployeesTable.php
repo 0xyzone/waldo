@@ -2,9 +2,14 @@
 
 namespace App\Filament\Resources\Employees\Tables;
 
+use App\Models\Employee;
+use App\Services\GoogleSheetsService;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Notifications\Notification;
+use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -18,7 +23,7 @@ class EmployeesTable
                     ->label('Employee Code')
                     ->searchable()
                     ->sortable(query: function ($query, $direction) {
-                        return $query->orderByRaw('CAST(SUBSTRING(employee_code, 4) AS UNSIGNED) '.$direction);
+                        return $query->orderByRaw('CAST(SUBSTRING(employee_code, 4) AS UNSIGNED) ' . $direction);
                     }),
                 TextColumn::make('name')
                     ->searchable()
@@ -50,7 +55,21 @@ class EmployeesTable
             ])
             ->defaultSort('employee_code', 'asc')
             ->recordActions([
+                ViewAction::make(),
                 EditAction::make(),
+                Action::make('syncToGoogleSheet')
+                    ->label('Sync to Google Sheet')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('success')
+                    ->action(function (Employee $record, GoogleSheetsService $service) {
+                        $service->syncEmployee($record);
+
+                        Notification::make()
+                            ->title('Synced successfully')
+                            ->body("Employee {$record->employee_code} was successfully synced to Google Sheets.")
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

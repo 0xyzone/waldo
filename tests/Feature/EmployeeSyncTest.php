@@ -6,6 +6,7 @@ use App\Models\Department;
 use App\Models\Designation;
 use App\Models\Employee;
 use App\Services\EmployeeSyncService;
+use App\Services\GoogleSheetsService;
 use Database\Seeders\DepartmentAndDesignationSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -158,5 +159,37 @@ class EmployeeSyncTest extends TestCase
             'name' => 'Pit Manager 2',
             'rank' => 3,
         ]);
+    }
+
+    /**
+     * Test that Employee model modifications trigger the Google Sheets sync via Observer.
+     */
+    public function test_observer_syncs_to_google_sheet_on_save_and_delete(): void
+    {
+        // Mock GoogleSheetsService
+        $sheetsServiceMock = $this->createMock(GoogleSheetsService::class);
+
+        // Expect syncEmployee to be called when creating/saving employee
+        $sheetsServiceMock->expects($this->once())
+            ->method('syncEmployee')
+            ->with($this->callback(function (Employee $employee) {
+                return $employee->employee_code === 'CWD999';
+            }));
+
+        // Expect deleteEmployee to be called when deleting employee
+        $sheetsServiceMock->expects($this->once())
+            ->method('deleteEmployee')
+            ->with('CWD999');
+
+        $this->app->instance(GoogleSheetsService::class, $sheetsServiceMock);
+
+        // Create an employee (should trigger save event and call syncEmployee)
+        $employee = new Employee;
+        $employee->employee_code = 'CWD999';
+        $employee->name = 'Test Observer Employee';
+        $employee->save();
+
+        // Delete the employee (should trigger delete event and call deleteEmployee)
+        $employee->delete();
     }
 }
