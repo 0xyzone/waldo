@@ -34,6 +34,8 @@ class CandidatesTable
                         'rejected' => 'Rejected',
                     ])
                     ->searchable(),
+                TextColumn::make('reference')
+                    ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

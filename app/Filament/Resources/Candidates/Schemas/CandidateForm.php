@@ -23,6 +23,10 @@ class CandidateForm
                     ->image()
                     ->directory('cvs')
                     ->required(),
+                TextInput::make('reference')
+                    ->hint('If there are no reference then you can type NA or NO REFERENCE')
+                    ->placeholder('Prabal Pradhan')
+                    ->required(),
                 Select::make('status')
                     ->options([
                         'pending' => 'Pending',
