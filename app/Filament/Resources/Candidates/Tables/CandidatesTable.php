@@ -19,8 +19,7 @@ class CandidatesTable
             ->columns([
                 TextColumn::make('name')
                     ->searchable(),
-                TextColumn::make('phone_number')
-                    ->searchable(),
+                TextColumn::make('phone_number'),
                 ImageColumn::make('cv_image')
                     ->imageGallery(),
                 SelectColumn::make('status')
@@ -32,10 +31,8 @@ class CandidatesTable
                         'not_coming' => 'Not Coming',
                         'approved' => 'Approved',
                         'rejected' => 'Rejected',
-                    ])
-                    ->searchable(),
-                TextColumn::make('reference')
-                    ->searchable(),
+                    ]),
+                TextColumn::make('reference'),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
