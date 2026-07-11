@@ -19,7 +19,12 @@ class EmployeeObserver
      */
     public function saved(Employee $employee): void
     {
-        $this->sheetsService->syncEmployee($employee);
+        // On fresh insert sync everything; on update only sync the changed columns
+        $changedFields = $employee->wasRecentlyCreated
+            ? null
+            : array_keys($employee->getChanges());
+
+        $this->sheetsService->syncEmployee($employee, $changedFields);
     }
 
     /**

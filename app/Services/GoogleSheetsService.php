@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Employee;
 use Google\Client;
 use Google\Service\Sheets;
+use Google\Service\Sheets\BatchUpdateValuesRequest;
 use Google\Service\Sheets\ClearValuesRequest;
 use Google\Service\Sheets\ValueRange;
 use Illuminate\Support\Carbon;
@@ -18,103 +19,111 @@ class GoogleSheetsService
 
     protected string $spreadsheetId;
 
+    /**
+     * Map of Employee model attribute -> sheet column index (0-based).
+     * Columns NOT listed here (S. No. = 2, duplicate DOB BS = 18) are never touched.
+     *
+     * @var array<string, int>
+     */
+    protected array $columnMap = [
+        'dp_rank' => 0,
+        'rank' => 1,
+        // 2 = S. No. (never written)
+        'employee_code' => 3,
+        'name' => 4,
+        'gender' => 5,
+        'join_date_formatted' => 6,
+        'join_date' => 7,  // formatted as Y.m.d
+        'department_id' => 8,  // resolved to department name
+        'designation_id' => 9,  // resolved to designation name
+        'contact_number' => 10,
+        'email' => 11,
+        'citizenship_number' => 12,
+        'citizenship_issue_date' => 13,
+        'citizenship_issue_place' => 14,
+        'ssid' => 15,
+        'dob_ad' => 16, // formatted as d F, Y
+        'dob_bs' => 17,
+        // 18 = duplicate DOB BS (never written)
+        'marital_status' => 19,
+        'employee_status' => 20,
+        'tips_amount' => 21,
+        'tips_status' => 22,
+        'point_value' => 23,
+        'tips_blank' => 24,
+        'publish_tips' => 25,
+        'tips_fixed' => 26,
+        'hrms_password' => 27,
+        'first_name' => 28,
+        'middle_name' => 29,
+        'last_name' => 30,
+    ];
+
     public function __construct()
     {
         $this->client = new Client;
         $this->client->setAuthConfig(storage_path('app/google/credentials.json'));
         $this->client->addScope(Sheets::SPREADSHEETS);
-
-        // Disable SSL verification for local WAMP environment (no CA bundle)
-        $guzzle = new \GuzzleHttp\Client(['verify' => false]);
-        $this->client->setHttpClient($guzzle);
-
         $this->service = new Sheets($this->client);
         $this->spreadsheetId = env('GOOGLE_SPREADSHEET_ID', '1i8M_P8KejphnCEFpiUWIhaTvkDZtGqt1_AuWt-vNJGE');
     }
 
     /**
-     * Sync employee record to Google Sheet.
+     * Sync specific changed fields of an employee record to Google Sheet.
+     *
+     * @param  array<string>|null  $changedFields  Model attribute names that changed.
+     *                                             Pass null to sync all managed columns (e.g. new record or manual full sync).
      */
-    public function syncEmployee(Employee $employee): void
+    public function syncEmployee(Employee $employee, ?array $changedFields = null): void
     {
         try {
-            $range = 'Database!A:AE';
-            $response = $this->service->spreadsheets_values->get($this->spreadsheetId, $range);
-            $rows = $response->getValues() ?: [];
+            // Find the sheet row for this employee
+            $sheetRowNumber = $this->findSheetRow($employee->employee_code);
 
-            $rowIndex = -1;
-            $existingRow = [];
+            if ($sheetRowNumber === null) {
+                // Employee not found in sheet — append a full new row
+                $this->appendEmployee($employee);
 
-            // Find the employee in the Sheet by employee_code (index 3)
-            foreach ($rows as $idx => $row) {
-                if (isset($row[3]) && trim($row[3]) === $employee->employee_code) {
-                    $rowIndex = $idx;
-                    $existingRow = $row;
-                    break;
-                }
+                return;
             }
 
-            // Build new row content, merging with existing row to preserve columns like S. No. or duplicate DOB BS
-            $newRow = array_pad($existingRow, 31, '');
-
-            $newRow[0] = (string) ($employee->dp_rank ?? '');
-            $newRow[1] = (string) ($employee->rank ?? '');
-            // $newRow[2] is S. No., preserved from existingRow or empty if new
-            $newRow[3] = (string) $employee->employee_code;
-            $newRow[4] = (string) ($employee->name ?? '');
-            $newRow[5] = (string) ($employee->gender ?? '');
-            $newRow[6] = (string) ($employee->join_date_formatted ?? '');
-            $newRow[7] = $employee->join_date ? Carbon::parse($employee->join_date)->format('Y.m.d') : '';
-            $newRow[8] = (string) ($employee->department?->name ?? '');
-            $newRow[9] = (string) ($employee->designation?->name ?? '');
-            $newRow[10] = (string) ($employee->contact_number ?? '');
-            $newRow[11] = (string) ($employee->email ?? '');
-            $newRow[12] = (string) ($employee->citizenship_number ?? '');
-            $newRow[13] = (string) ($employee->citizenship_issue_date ?? '');
-            $newRow[14] = (string) ($employee->citizenship_issue_place ?? '');
-            $newRow[15] = (string) ($employee->ssid ?? '');
-            $newRow[16] = $employee->dob_ad ? Carbon::parse($employee->dob_ad)->format('d F, Y') : '';
-            $newRow[17] = (string) ($employee->dob_bs ?? '');
-            // $newRow[18] is duplicate DOB BS, preserved from existingRow
-            $newRow[19] = (string) ($employee->marital_status ?? '');
-            $newRow[20] = (string) ($employee->employee_status ?? '');
-            $newRow[21] = $employee->tips_amount !== null ? (string) $employee->tips_amount : '';
-            $newRow[22] = (string) ($employee->tips_status ?? '');
-            $newRow[23] = $employee->point_value !== null ? (string) $employee->point_value : '';
-            $newRow[24] = $employee->tips_blank ? 'TRUE' : 'FALSE';
-            $newRow[25] = $employee->publish_tips ? 'TRUE' : 'FALSE';
-            $newRow[26] = $employee->tips_fixed ? 'TRUE' : 'FALSE';
-            $newRow[27] = (string) ($employee->hrms_password ?? '');
-            $newRow[28] = (string) ($employee->first_name ?? '');
-            $newRow[29] = (string) ($employee->middle_name ?? '');
-            $newRow[30] = (string) ($employee->last_name ?? '');
-
-            // Convert all elements to strings to match Sheets API requirements
-            $newRow = array_map('strval', $newRow);
-
-            if ($rowIndex !== -1) {
-                // Update existing row
-                // Google Sheets ranges are 1-based, so row index 0 is A1
-                $sheetRowNumber = $rowIndex + 1;
-                $updateRange = "Database!A{$sheetRowNumber}:AE{$sheetRowNumber}";
-                $body = new ValueRange(['values' => [$newRow]]);
-                $this->service->spreadsheets_values->update(
-                    $this->spreadsheetId,
-                    $updateRange,
-                    $body,
-                    ['valueInputOption' => 'USER_ENTERED']
-                );
+            // Determine which columns to update
+            if ($changedFields === null) {
+                // Full sync: all managed columns
+                $fieldsToSync = array_keys($this->columnMap);
             } else {
-                // Append new row
-                $appendRange = 'Database!A:AE';
-                $body = new ValueRange(['values' => [$newRow]]);
-                $this->service->spreadsheets_values->append(
-                    $this->spreadsheetId,
-                    $appendRange,
-                    $body,
-                    ['valueInputOption' => 'USER_ENTERED']
+                // Partial sync: only the changed fields that have a column mapping
+                $fieldsToSync = array_filter(
+                    $changedFields,
+                    fn (string $f) => isset($this->columnMap[$f])
                 );
             }
+
+            if (empty($fieldsToSync)) {
+                return;
+            }
+
+            // Build individual ValueRange objects for each changed column
+            $data = [];
+            foreach ($fieldsToSync as $field) {
+                $colIndex = $this->columnMap[$field];
+                $colLetter = $this->columnLetter($colIndex);
+                $cellRange = "Database!{$colLetter}{$sheetRowNumber}";
+                $data[] = new ValueRange([
+                    'range' => $cellRange,
+                    'values' => [[$this->resolveFieldValue($employee, $field)]],
+                ]);
+            }
+
+            $body = new BatchUpdateValuesRequest([
+                'valueInputOption' => 'USER_ENTERED',
+                'data' => $data,
+            ]);
+
+            $this->service->spreadsheets_values->batchUpdate(
+                $this->spreadsheetId,
+                $body
+            );
         } catch (\Exception $e) {
             Log::error('Google Sheets Sync Failed: '.$e->getMessage());
         }
@@ -126,30 +135,104 @@ class GoogleSheetsService
     public function deleteEmployee(string $employeeCode): void
     {
         try {
-            $range = 'Database!A:AE';
-            $response = $this->service->spreadsheets_values->get($this->spreadsheetId, $range);
-            $rows = $response->getValues() ?: [];
+            $sheetRowNumber = $this->findSheetRow($employeeCode);
 
-            $rowIndex = -1;
-            foreach ($rows as $idx => $row) {
-                if (isset($row[3]) && trim($row[3]) === $employeeCode) {
-                    $rowIndex = $idx;
-                    break;
-                }
+            if ($sheetRowNumber === null) {
+                return;
             }
 
-            if ($rowIndex !== -1) {
-                $sheetRowNumber = $rowIndex + 1;
-                $clearRange = "Database!A{$sheetRowNumber}:AE{$sheetRowNumber}";
-                $clearRequest = new ClearValuesRequest;
-                $this->service->spreadsheets_values->clear(
-                    $this->spreadsheetId,
-                    $clearRange,
-                    $clearRequest
-                );
-            }
+            $clearRange = "Database!A{$sheetRowNumber}:AE{$sheetRowNumber}";
+            $clearRequest = new ClearValuesRequest;
+            $this->service->spreadsheets_values->clear(
+                $this->spreadsheetId,
+                $clearRange,
+                $clearRequest
+            );
         } catch (\Exception $e) {
             Log::error('Google Sheets Delete Failed: '.$e->getMessage());
         }
+    }
+
+    /**
+     * Find the 1-based row number of an employee in the Database sheet.
+     * Returns null if not found.
+     */
+    protected function findSheetRow(string $employeeCode): ?int
+    {
+        // Only fetch column D (employee_code) for efficiency
+        $response = $this->service->spreadsheets_values->get(
+            $this->spreadsheetId,
+            'Database!D:D'
+        );
+        $rows = $response->getValues() ?: [];
+
+        foreach ($rows as $idx => $row) {
+            if (isset($row[0]) && trim($row[0]) === $employeeCode) {
+                return $idx + 1; // 1-based
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Append a brand-new employee row to the sheet.
+     */
+    protected function appendEmployee(Employee $employee): void
+    {
+        $newRow = array_fill(0, 31, '');
+
+        foreach ($this->columnMap as $field => $colIndex) {
+            $newRow[$colIndex] = $this->resolveFieldValue($employee, $field);
+        }
+
+        $newRow = array_map('strval', $newRow);
+
+        $body = new ValueRange(['values' => [$newRow]]);
+        $this->service->spreadsheets_values->append(
+            $this->spreadsheetId,
+            'Database!A:AE',
+            $body,
+            ['valueInputOption' => 'USER_ENTERED']
+        );
+    }
+
+    /**
+     * Resolve the sheet cell value for a given model field.
+     */
+    protected function resolveFieldValue(Employee $employee, string $field): string
+    {
+        return match ($field) {
+            'join_date' => $employee->join_date
+                                    ? Carbon::parse($employee->join_date)->format('Y.m.d')
+                                    : '',
+            'dob_ad' => $employee->dob_ad
+                                    ? Carbon::parse($employee->dob_ad)->format('d F, Y')
+                                    : '',
+            'department_id' => (string) ($employee->department?->name ?? ''),
+            'designation_id' => (string) ($employee->designation?->name ?? ''),
+            'tips_blank' => $employee->tips_blank ? 'TRUE' : 'FALSE',
+            'publish_tips' => $employee->publish_tips ? 'TRUE' : 'FALSE',
+            'tips_fixed' => $employee->tips_fixed ? 'TRUE' : 'FALSE',
+            'tips_amount' => $employee->tips_amount !== null ? (string) $employee->tips_amount : '',
+            'point_value' => $employee->point_value !== null ? (string) $employee->point_value : '',
+            default => (string) ($employee->$field ?? ''),
+        };
+    }
+
+    /**
+     * Convert a 0-based column index to a spreadsheet column letter (A, B, ..., Z, AA, ...).
+     */
+    protected function columnLetter(int $index): string
+    {
+        $letter = '';
+        $index++;  // make 1-based for the algorithm
+        while ($index > 0) {
+            $index--;
+            $letter = chr(65 + ($index % 26)).$letter;
+            $index = intdiv($index, 26);
+        }
+
+        return $letter;
     }
 }
