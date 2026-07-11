@@ -24,9 +24,9 @@ class CandidateForm
                     ->directory('cvs')
                     ->required(),
                 TextInput::make('reference')
-                    ->hint('If there are no reference then you can type NA or NO REFERENCE')
-                    ->placeholder('Prabal Pradhan')
-                    ->required(),
+                    ->hintIcon('heroicon-o-information-circle')
+                    ->hintIconTooltip('If there are no reference then you can leave it blank')
+                    ->placeholder('Prabal Pradhan'),
                 Select::make('status')
                     ->options([
                         'pending' => 'Pending',

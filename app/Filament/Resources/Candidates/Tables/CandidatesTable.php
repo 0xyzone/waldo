@@ -33,6 +33,10 @@ class CandidatesTable
                         'rejected' => 'Rejected',
                     ]),
                 TextColumn::make('reference'),
+                TextColumn::make('notes')
+                    ->label('Notes')
+                    ->limit(20)
+                    ->tooltip(fn ($state) => $state),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
