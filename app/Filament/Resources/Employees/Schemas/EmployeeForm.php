@@ -30,7 +30,7 @@ class EmployeeForm
                                     ->required()
                                     ->columnSpanFull(),
 
-                                Grid::make(3)
+                                Grid::make(['default' => 1, 'sm' => 3])
                                     ->schema([
                                         TextInput::make('first_name')
                                             ->label('First Name'),
@@ -41,7 +41,7 @@ class EmployeeForm
                                     ])
                                     ->disabled(),
 
-                                Grid::make(2)
+                                Grid::make(['default' => 1, 'sm' => 2])
                                     ->schema([
                                         Select::make('gender')
                                             ->options([
@@ -64,7 +64,7 @@ class EmployeeForm
                                             ->native(false),
                                     ]),
 
-                                Grid::make(2)
+                                Grid::make(['default' => 1, 'sm' => 2])
                                     ->schema([
                                         DatePicker::make('dob_ad')
                                             ->label('Date of Birth (AD)')
@@ -94,7 +94,7 @@ class EmployeeForm
                                             ->dehydrated(),
                                     ]),
 
-                                Grid::make(2)
+                                Grid::make(['default' => 1, 'sm' => 2])
                                     ->schema([
                                         TextInput::make('email')
                                             ->email(),
@@ -106,7 +106,7 @@ class EmployeeForm
                         Tab::make('Employment & HR')
                             ->icon('heroicon-m-briefcase')
                             ->schema([
-                                Grid::make(2)
+                                Grid::make(['default' => 1, 'sm' => 2])
                                     ->schema([
                                         TextInput::make('employee_code')
                                             ->label('Employee Code')
@@ -127,7 +127,7 @@ class EmployeeForm
                                             ->default('Active'),
                                     ]),
 
-                                Grid::make(2)
+                                Grid::make(['default' => 1, 'sm' => 2])
                                     ->schema([
                                         Select::make('department_id')
                                             ->relationship(
@@ -150,7 +150,7 @@ class EmployeeForm
                                             ->preload(),
                                     ]),
 
-                                Grid::make(2)
+                                Grid::make(['default' => 1, 'sm' => 2])
                                     ->schema([
                                         DatePicker::make('join_date')
                                             ->label('Join Date')
@@ -169,7 +169,7 @@ class EmployeeForm
                             ->schema([
                                 Section::make('Legal Identification')
                                     ->schema([
-                                        Grid::make(3)
+                                        Grid::make(['default' => 1, 'sm' => 3])
                                             ->schema([
                                                 TextInput::make('citizenship_number')
                                                     ->label('Citizenship Number'),
@@ -185,7 +185,7 @@ class EmployeeForm
 
                                 Section::make('Tips & Points Settings')
                                     ->schema([
-                                        Grid::make(3)
+                                        Grid::make(['default' => 1, 'sm' => 3])
                                             ->schema([
                                                 TextInput::make('tips_amount')
                                                     ->label('Tips Amount')
@@ -206,7 +206,7 @@ class EmployeeForm
                                                     ->default(1),
                                             ]),
 
-                                        Grid::make(3)
+                                        Grid::make(['default' => 1, 'sm' => 3])
                                             ->schema([
                                                 Toggle::make('tips_blank')
                                                     ->label('Tips Blank'),

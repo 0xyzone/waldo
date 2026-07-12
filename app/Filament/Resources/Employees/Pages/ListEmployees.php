@@ -8,10 +8,29 @@ use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Schemas\Components\Tabs\Tab;
+use Illuminate\Database\Eloquent\Builder;
 
 class ListEmployees extends ListRecords
 {
     protected static string $resource = EmployeeResource::class;
+
+    public function getTabs(): array
+    {
+        return [
+            'all' => Tab::make('All Employees'),
+            'active' => Tab::make('Active')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('employee_status', 'Active')),
+            'inactive' => Tab::make('Inactive')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('employee_status', 'Inactive')),
+            'resigning_this_month' => Tab::make('Resigning This Month')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('employee_status', 'Resigning this month')),
+            'resigned' => Tab::make('Resigned')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('employee_status', 'Resigned')),
+            'terminated' => Tab::make('Terminated')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('employee_status', 'Terminated')),
+        ];
+    }
 
     protected function getHeaderActions(): array
     {
