@@ -26,6 +26,7 @@ class EmployeesTable
                         TextColumn::make('employee_code')
                             ->fontFamily('mono')
                             ->searchable()
+                            ->sortable()
                             ->color('gray')
                             ->grow(false),
                         TextColumn::make('employee_status')
