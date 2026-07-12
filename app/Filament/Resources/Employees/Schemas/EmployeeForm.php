@@ -159,7 +159,6 @@ class EmployeeForm
 
                                 TextInput::make('hrms_password')
                                     ->label('HRMS Password')
-                                    ->password()
                                     ->dehydrateStateUsing(fn ($state) => filled($state) ? $state : null)
                                     ->dehydrated(fn ($state) => filled($state))
                                     ->visibleOn('view'),
