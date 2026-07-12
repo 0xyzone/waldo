@@ -203,7 +203,7 @@ class EmployeeForm
                                                 TextInput::make('point_value')
                                                     ->label('Point Value')
                                                     ->numeric()
-                                                    ->visibleOn('view'),
+                                                    ->default(1),
                                             ]),
 
                                         Grid::make(3)
