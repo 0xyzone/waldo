@@ -49,6 +49,8 @@ class EmployeeForm
                                                 'Female' => 'Female',
                                                 'Other' => 'Other',
                                             ])
+                                            ->searchable()
+                                            ->preload()
                                             ->native(false),
                                         Select::make('marital_status')
                                             ->label('Marital Status')
@@ -57,6 +59,8 @@ class EmployeeForm
                                                 'Single' => 'Single',
                                                 'Others' => 'Others',
                                             ])
+                                            ->searchable()
+                                            ->preload()
                                             ->native(false),
                                     ]),
 
@@ -195,6 +199,7 @@ class EmployeeForm
                                                         'Release' => 'Release',
                                                         'Hold' => 'Hold',
                                                     ])
+                                                    ->default('Release')
                                                     ->native(false),
                                                 TextInput::make('point_value')
                                                     ->label('Point Value')
