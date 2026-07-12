@@ -21,11 +21,11 @@ class EmployeeSyncTest extends TestCase
      */
     public function test_can_sync_employees_from_google_sheet(): void
     {
-        $csvHeader = 'Dp. Rank,Rank,S. No.,Employee Code, Name  ,Gender,Join Date (dd mmmm, yyyy),Join Date (yyyy.mm.dd),Department,Designation,Contact number, Email ,Citizenship Number,Citizenship Issue Date,Citizenship issue place, SSID ,DOB AD,DOB BS,DOB BS,Maritial Status,Employee Status,Tips Amount,Tips Status,Point Value,Tips Blank?,Publish Tips?,Tips Fixed?,hrms password,first name,middle name,last name';
-        $csvRow1 = '14,4,3,CWD015,Sarmila Bhandari,Female,"01 January, 2024",2024.01.01,HouseKeeping,Attendant,9865914116,sarmila@test.com,713018/53,2020-01-01,Place,SSID123,"19 September, 1995",2052.06.03,"3 Asoj, 2052",Married,Active,100.50,Release,1.0000,FALSE,TRUE,TRUE,password123,Sarmila,,Bhandari';
+        $csvHeader = 'Dp. Rank,Rank,S. No.,Employee Code, Name  ,Gender,Department,Designation,"Join Date (dd mmmm, yyyy)",Join Date (yyyy.mm.dd),Contact number, Email ,Citizenship Number,Citizenship Issue Date,Citizenship issue place, SSID ,DOB AD,DOB BS,Maritial Status,Employee Status,Tips Amount,Tips Status,Point Value,Tips Blank?,Publish Tips?,Tips Fixed?,hrms password,first name,middle name,last name';
+        $csvRow1 = '14,4,3,CWD015,Sarmila Bhandari,Female,HouseKeeping,Attendant,"01 January, 2024",2024.01.01,9865914116,sarmila@test.com,713018/53,2020-01-01,Place,SSID123,"19 September, 1995",2052.06.03,Married,Active,100.50,Release,1.0000,FALSE,TRUE,TRUE,password123,Sarmila,,Bhandari';
         $csvData1 = $csvHeader."\n".$csvRow1;
 
-        $csvRow1Updated = '14,4,3,CWD015,Sarmila Bhandari Updated,Female,"01 January, 2024",2024.01.01,HouseKeeping,Attendant,9865914116,sarmila_updated@test.com,713018/53,2020-01-01,Place,SSID123,"19 September, 1995",2052.06.03,"3 Asoj, 2052",Married,Resigned,200.00,Hold,1.5000,TRUE,FALSE,FALSE,password321,Sarmila,,Bhandari';
+        $csvRow1Updated = '14,4,3,CWD015,Sarmila Bhandari Updated,Female,HouseKeeping,Attendant,"01 January, 2024",2024.01.01,9865914116,sarmila_updated@test.com,713018/53,2020-01-01,Place,SSID123,"19 September, 1995",2052.06.03,Married,Resigned,200.00,Hold,1.5000,TRUE,FALSE,FALSE,password321,Sarmila,,Bhandari';
         $csvData2 = $csvHeader."\n".$csvRow1Updated;
 
         // Mock HTTP response sequence

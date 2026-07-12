@@ -32,10 +32,9 @@ class GoogleSheetsService
         'employee_code' => 3,
         'name' => 4,
         'gender' => 5,
-        'join_date_formatted' => 6,
-        'join_date' => 7,  // formatted as Y.m.d
-        'department_id' => 8,  // resolved to department name
-        'designation_id' => 9,  // resolved to designation name
+        'department_id' => 6,  // resolved to department name
+        'designation_id' => 7,  // resolved to designation name
+        'join_date_formatted' => 8,
         'contact_number' => 10,
         'email' => 11,
         'citizenship_number' => 12,
@@ -44,19 +43,18 @@ class GoogleSheetsService
         'ssid' => 15,
         'dob_ad' => 16, // formatted as d F, Y
         'dob_bs' => 17,
-        // 18 = duplicate DOB BS (never written)
-        'marital_status' => 19,
-        'employee_status' => 20,
-        'tips_amount' => 21,
-        'tips_status' => 22,
-        'point_value' => 23,
-        'tips_blank' => 24,
-        'publish_tips' => 25,
-        'tips_fixed' => 26,
-        'hrms_password' => 27,
-        'first_name' => 28,
-        'middle_name' => 29,
-        'last_name' => 30,
+        'marital_status' => 18,
+        'employee_status' => 19,
+        'tips_amount' => 20,
+        'tips_status' => 21,
+        'point_value' => 22,
+        'tips_blank' => 23,
+        'publish_tips' => 24,
+        'tips_fixed' => 25,
+        'hrms_password' => 26,
+        'first_name' => 27,
+        'middle_name' => 28,
+        'last_name' => 29,
     ];
 
     public function __construct()
@@ -156,7 +154,7 @@ class GoogleSheetsService
                 return;
             }
 
-            $clearRange = "Database!A{$sheetRowNumber}:AE{$sheetRowNumber}";
+            $clearRange = "Database!A{$sheetRowNumber}:AD{$sheetRowNumber}";
             $clearRequest = new ClearValuesRequest;
             $this->service->spreadsheets_values->clear(
                 $this->spreadsheetId,
@@ -219,7 +217,7 @@ class GoogleSheetsService
     {
         $targetRow = $this->findFirstEmptyRow();
 
-        $newRow = array_fill(0, 31, '');
+        $newRow = array_fill(0, 30, '');
 
         foreach ($this->columnMap as $field => $colIndex) {
             if ($field === 'join_date') {
@@ -233,7 +231,7 @@ class GoogleSheetsService
         $body = new ValueRange(['values' => [$newRow]]);
         $this->service->spreadsheets_values->update(
             $this->spreadsheetId,
-            "Database!A{$targetRow}:AE{$targetRow}",
+            "Database!A{$targetRow}:AD{$targetRow}",
             $body,
             ['valueInputOption' => 'USER_ENTERED']
         );

@@ -39,9 +39,9 @@ class EmployeeSyncService
 
         Employee::withoutEvents(function () use ($stream, &$syncedCount) {
             while (($row = fgetcsv($stream)) !== false) {
-                // Ensure the row has enough columns (we expect 31 columns)
-                if (count($row) < 31) {
-                    continue;
+                // Pad the row to 30 elements to avoid undefined index offsets
+                if (count($row) < 30) {
+                    $row = array_pad($row, 30, '');
                 }
 
                 $employeeCode = trim($row[3] ?? '');
@@ -50,7 +50,7 @@ class EmployeeSyncService
                 }
 
                 // Find/Create Department
-                $departmentName = trim($row[8] ?? '');
+                $departmentName = trim($row[6] ?? '');
                 $department = null;
                 if (! empty($departmentName)) {
                     $dpRank = is_numeric($row[0] ?? null) ? (int) $row[0] : null;
@@ -61,7 +61,7 @@ class EmployeeSyncService
                 }
 
                 // Find/Create Designation
-                $designationName = trim($row[9] ?? '');
+                $designationName = trim($row[7] ?? '');
                 $designation = null;
                 if ($department !== null && ! empty($designationName)) {
                     $designation = Designation::firstOrCreate([
@@ -71,19 +71,19 @@ class EmployeeSyncService
                 }
 
                 // Parse dates
-                $joinDate = $this->parseDate($row[7] ?? null, 'Y.m.d');
+                $joinDate = $this->parseDate($row[9] ?? null, 'Y.m.d');
                 $dobAd = $this->parseDate($row[16] ?? null, 'long');
 
                 // Parse numbers
                 $dpRank = is_numeric($row[0] ?? null) ? (int) $row[0] : null;
                 $rank = is_numeric($row[1] ?? null) ? (int) $row[1] : null;
-                $tipsAmount = is_numeric($row[21] ?? null) ? (float) $row[21] : null;
-                $pointValue = is_numeric($row[23] ?? null) ? (float) $row[23] : null;
+                $tipsAmount = is_numeric($row[20] ?? null) ? (float) $row[20] : null;
+                $pointValue = is_numeric($row[22] ?? null) ? (float) $row[22] : null;
 
                 // Parse booleans
-                $tipsBlank = $this->parseBoolean($row[24] ?? null);
-                $publishTips = $this->parseBoolean($row[25] ?? null);
-                $tipsFixed = $this->parseBoolean($row[26] ?? null);
+                $tipsBlank = $this->parseBoolean($row[23] ?? null);
+                $publishTips = $this->parseBoolean($row[24] ?? null);
+                $tipsFixed = $this->parseBoolean($row[25] ?? null);
 
                 Employee::updateOrCreate(
                     ['employee_code' => $employeeCode],
@@ -94,7 +94,7 @@ class EmployeeSyncService
                         'rank' => $rank,
                         'name' => trim($row[4] ?? '') ?: null,
                         'gender' => trim($row[5] ?? '') ?: null,
-                        'join_date_formatted' => trim($row[6] ?? '') ?: null,
+                        'join_date_formatted' => trim($row[8] ?? '') ?: null,
                         'join_date' => $joinDate,
                         'contact_number' => trim($row[10] ?? '') ?: null,
                         'email' => trim($row[11] ?? '') ?: null,
@@ -104,18 +104,18 @@ class EmployeeSyncService
                         'ssid' => trim($row[15] ?? '') ?: null,
                         'dob_ad' => $dobAd,
                         'dob_bs' => trim($row[17] ?? '') ?: null,
-                        'marital_status' => trim($row[19] ?? '') ?: null,
-                        'employee_status' => trim($row[20] ?? '') ?: null,
+                        'marital_status' => trim($row[18] ?? '') ?: null,
+                        'employee_status' => trim($row[19] ?? '') ?: null,
                         'tips_amount' => $tipsAmount,
-                        'tips_status' => trim($row[22] ?? '') ?: null,
+                        'tips_status' => trim($row[21] ?? '') ?: null,
                         'point_value' => $pointValue,
                         'tips_blank' => $tipsBlank,
                         'publish_tips' => $publishTips,
                         'tips_fixed' => $tipsFixed,
-                        'hrms_password' => trim($row[27] ?? '') ?: null,
-                        'first_name' => trim($row[28] ?? '') ?: null,
-                        'middle_name' => trim($row[29] ?? '') ?: null,
-                        'last_name' => trim($row[30] ?? '') ?: null,
+                        'hrms_password' => trim($row[26] ?? '') ?: null,
+                        'first_name' => trim($row[27] ?? '') ?: null,
+                        'middle_name' => trim($row[28] ?? '') ?: null,
+                        'last_name' => trim($row[29] ?? '') ?: null,
                     ]
                 );
 
