@@ -14,6 +14,7 @@ use Filament\Tables\Columns\Layout\Split;
 use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class EmployeesTable
 {
@@ -26,7 +27,14 @@ class EmployeesTable
                         TextColumn::make('employee_code')
                             ->fontFamily('mono')
                             ->searchable()
-                            ->sortable()
+                            ->sortable(query: function (Builder $query, string $direction): Builder {
+                                $driver = $query->getConnection()->getDriverName();
+                                if ($driver === 'sqlite') {
+                                    return $query->orderByRaw('CAST(SUBSTR(employee_code, 4) AS INTEGER) '.$direction);
+                                }
+
+                                return $query->orderByRaw('CAST(SUBSTR(employee_code, 4) AS UNSIGNED) '.$direction);
+                            })
                             ->color('gray')
                             ->grow(false),
                         TextColumn::make('employee_status')
@@ -83,6 +91,7 @@ class EmployeesTable
                 'Terminated' => 'bg-red-row border-red-200 dark:border-red-900',
                 default => null,
             })
+            ->paginationPageOptions([4 * 2, 4 * 4, 4 * 8, 4 * 10, 4 * 20])
             ->filters([
                 //
             ])

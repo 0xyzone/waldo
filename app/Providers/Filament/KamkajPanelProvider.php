@@ -27,6 +27,7 @@ class KamkajPanelProvider extends PanelProvider
             ->default()
             ->id('kamkaj')
             ->path('kamkaj')
+            ->viteTheme('resources/css/filament/kamkaj/theme.css')
             ->login()
             ->passwordReset()
             ->colors([

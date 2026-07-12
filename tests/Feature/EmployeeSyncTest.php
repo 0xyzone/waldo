@@ -192,4 +192,48 @@ class EmployeeSyncTest extends TestCase
         // Delete the employee (should trigger delete event and call deleteEmployee)
         $employee->delete();
     }
+
+    /**
+     * Test sorting of employee codes numerically.
+     */
+    public function test_employee_code_sorting_is_numeric(): void
+    {
+        Employee::withoutEvents(function () {
+            $employee1 = new Employee;
+            $employee1->employee_code = 'CWD015';
+            $employee1->name = 'A';
+            $employee1->save();
+
+            $employee2 = new Employee;
+            $employee2->employee_code = 'CWD001';
+            $employee2->name = 'B';
+            $employee2->save();
+
+            $employee3 = new Employee;
+            $employee3->employee_code = 'CWD003';
+            $employee3->name = 'C';
+            $employee3->save();
+        });
+
+        // Check ascending sort
+        $ascQuery = Employee::query();
+        $driver = $ascQuery->getConnection()->getDriverName();
+        if ($driver === 'sqlite') {
+            $ascQuery->orderByRaw('CAST(SUBSTR(employee_code, 4) AS INTEGER) asc');
+        } else {
+            $ascQuery->orderByRaw('CAST(SUBSTR(employee_code, 4) AS UNSIGNED) asc');
+        }
+        $ascCodes = $ascQuery->pluck('employee_code')->toArray();
+        $this->assertEquals(['CWD001', 'CWD003', 'CWD015'], $ascCodes);
+
+        // Check descending sort
+        $descQuery = Employee::query();
+        if ($driver === 'sqlite') {
+            $descQuery->orderByRaw('CAST(SUBSTR(employee_code, 4) AS INTEGER) desc');
+        } else {
+            $descQuery->orderByRaw('CAST(SUBSTR(employee_code, 4) AS UNSIGNED) desc');
+        }
+        $descCodes = $descQuery->pluck('employee_code')->toArray();
+        $this->assertEquals(['CWD015', 'CWD003', 'CWD001'], $descCodes);
+    }
 }
