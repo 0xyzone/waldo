@@ -57,19 +57,19 @@ class EmployeesTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
-                Action::make('syncToGoogleSheet')
-                    ->label('Sync to Google Sheet')
-                    ->icon('heroicon-o-arrow-path')
-                    ->color('success')
-                    ->action(function (Employee $record, GoogleSheetsService $service) {
-                        $service->syncEmployee($record);
+                // Action::make('syncToGoogleSheet')
+                //     ->label('Sync to Google Sheet')
+                //     ->icon('heroicon-o-arrow-path')
+                //     ->color('success')
+                //     ->action(function (Employee $record, GoogleSheetsService $service) {
+                //         $service->syncEmployee($record);
 
-                        Notification::make()
-                            ->title('Synced successfully')
-                            ->body("Employee {$record->employee_code} was successfully synced to Google Sheets.")
-                            ->success()
-                            ->send();
-                    }),
+                //         Notification::make()
+                //             ->title('Synced successfully')
+                //             ->body("Employee {$record->employee_code} was successfully synced to Google Sheets.")
+                //             ->success()
+                //             ->send();
+                //     }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
