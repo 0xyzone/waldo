@@ -33,7 +33,6 @@ class GoogleSheetsService
         'name' => 4,
         'gender' => 5,
         'join_date_formatted' => 6,
-        'join_date' => 7,  // formatted as Y.m.d
         'department_id' => 8,  // resolved to department name
         'designation_id' => 9,  // resolved to designation name
         'contact_number' => 10,
@@ -45,23 +44,26 @@ class GoogleSheetsService
         'dob_ad' => 16, // formatted as d F, Y
         'dob_bs' => 17,
         // 18 = duplicate DOB BS (never written)
-        'marital_status' => 19,
-        'employee_status' => 20,
-        'tips_amount' => 21,
-        'tips_status' => 22,
-        'point_value' => 23,
-        'tips_blank' => 24,
-        'publish_tips' => 25,
-        'tips_fixed' => 26,
-        'hrms_password' => 27,
-        'first_name' => 28,
-        'middle_name' => 29,
-        'last_name' => 30,
+        'marital_status' => 18,
+        'employee_status' => 19,
+        'tips_amount' => 20,
+        'tips_status' => 21,
+        'point_value' => 22,
+        'tips_blank' => 23,
+        'publish_tips' => 24,
+        'tips_fixed' => 25,
+        'hrms_password' => 26,
+        'first_name' => 27,
+        'middle_name' => 28,
+        'last_name' => 29,
     ];
 
     public function __construct()
     {
         $this->client = new Client;
+        if (config('app.env') === 'local') {
+            $this->client->setHttpClient(new \GuzzleHttp\Client(['verify' => false]));
+        }
         $this->client->setAuthConfig(storage_path('app/google/credentials.json'));
         $this->client->addScope(Sheets::SPREADSHEETS);
         $this->service = new Sheets($this->client);
@@ -76,9 +78,18 @@ class GoogleSheetsService
      */
     public function syncEmployee(Employee $employee, ?array $changedFields = null): void
     {
+        Log::info('GoogleSheetsService syncEmployee triggered', [
+            'employee_code' => $employee->employee_code,
+            'changedFields' => $changedFields,
+        ]);
+
         try {
             // Find the sheet row for this employee
             $sheetRowNumber = $this->findSheetRow($employee->employee_code);
+
+            Log::info('GoogleSheetsService findSheetRow result', [
+                'row' => $sheetRowNumber,
+            ]);
 
             if ($sheetRowNumber === null) {
                 // Employee not found in sheet — append a full new row
@@ -176,10 +187,34 @@ class GoogleSheetsService
     }
 
     /**
-     * Append a brand-new employee row to the sheet.
+     * Find the first row number where Column D (employee_code) is empty.
+     */
+    protected function findFirstEmptyRow(): int
+    {
+        $response = $this->service->spreadsheets_values->get(
+            $this->spreadsheetId,
+            'Database!D:D'
+        );
+        $rows = $response->getValues() ?: [];
+
+        // Scan starting from row 2 (index 1)
+        for ($i = 1; $i < count($rows); $i++) {
+            $val = isset($rows[$i][0]) ? trim($rows[$i][0]) : '';
+            if ($val === '') {
+                return $i + 1; // 1-based row number
+            }
+        }
+
+        return count($rows) + 1;
+    }
+
+    /**
+     * Append a brand-new employee row to the sheet (uses the first empty row).
      */
     protected function appendEmployee(Employee $employee): void
     {
+        $targetRow = $this->findFirstEmptyRow();
+
         $newRow = array_fill(0, 31, '');
 
         foreach ($this->columnMap as $field => $colIndex) {
@@ -189,9 +224,9 @@ class GoogleSheetsService
         $newRow = array_map('strval', $newRow);
 
         $body = new ValueRange(['values' => [$newRow]]);
-        $this->service->spreadsheets_values->append(
+        $this->service->spreadsheets_values->update(
             $this->spreadsheetId,
-            'Database!A:AE',
+            "Database!A{$targetRow}:AE{$targetRow}",
             $body,
             ['valueInputOption' => 'USER_ENTERED']
         );
@@ -203,8 +238,8 @@ class GoogleSheetsService
     protected function resolveFieldValue(Employee $employee, string $field): string
     {
         return match ($field) {
-            'join_date' => $employee->join_date
-                                    ? Carbon::parse($employee->join_date)->format('Y.m.d')
+            'join_date_formatted' => $employee->join_date
+                                    ? Carbon::parse($employee->join_date)->format('d F, Y')
                                     : '',
             'dob_ad' => $employee->dob_ad
                                     ? Carbon::parse($employee->dob_ad)->format('d F, Y')

@@ -167,18 +167,18 @@ class EmployeeSyncTest extends TestCase
     public function test_observer_syncs_to_google_sheet_on_save_and_delete(): void
     {
         // Mock GoogleSheetsService
-        $sheetsServiceMock = $this->createMock(GoogleSheetsService::class);
+        $sheetsServiceMock = \Mockery::mock(GoogleSheetsService::class);
 
         // Expect syncEmployee to be called when creating/saving employee
-        $sheetsServiceMock->expects($this->once())
-            ->method('syncEmployee')
-            ->with($this->callback(function (Employee $employee) {
+        $sheetsServiceMock->shouldReceive('syncEmployee')
+            ->once()
+            ->with(\Mockery::on(function (Employee $employee) {
                 return $employee->employee_code === 'CWD999';
-            }));
+            }), \Mockery::any());
 
         // Expect deleteEmployee to be called when deleting employee
-        $sheetsServiceMock->expects($this->once())
-            ->method('deleteEmployee')
+        $sheetsServiceMock->shouldReceive('deleteEmployee')
+            ->once()
             ->with('CWD999');
 
         $this->app->instance(GoogleSheetsService::class, $sheetsServiceMock);
