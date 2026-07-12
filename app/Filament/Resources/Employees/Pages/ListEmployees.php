@@ -71,6 +71,11 @@ class ListEmployees extends ListRecords
                     }
                 }),
             CreateAction::make(),
+            Action::make('Visit Sheet')
+                ->icon('heroicon-o-arrow-top-right-on-square')
+                ->color('info')
+                ->url('https://docs.google.com/spreadsheets/d/1i8M_P8KejphnCEFpiUWIhaTvkDZtGqt1_AuWt-vNJGE/edit?gid=0#gid=0', true)
+                ->openUrlInNewTab(),
         ];
     }
 }
