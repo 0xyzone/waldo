@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\FontController;
 use App\Http\Controllers\LetterController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -22,3 +23,8 @@ Route::post('/letters', [LetterController::class, 'store'])->name('letters.store
 Route::get('/letters/{id}/edit', [LetterController::class, 'edit'])->name('letters.edit');
 Route::put('/letters/{id}', [LetterController::class, 'update'])->name('letters.update');
 Route::delete('/letters/{id}', [LetterController::class, 'destroy'])->name('letters.destroy');
+
+// Reports
+Route::get('/reports/birthdays', [ReportController::class, 'birthdays'])->name('reports.birthdays');
+Route::get('/reports/departments', [ReportController::class, 'departments'])->name('reports.departments');
+Route::get('/reports/departments/view', [ReportController::class, 'viewDepartments'])->name('reports.departments.view');

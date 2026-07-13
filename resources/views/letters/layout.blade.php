@@ -231,7 +231,7 @@ $watch('darkMode', val => {
             </button>
 
             <!-- Back to panel -->
-            <a href="/waldo/public/kamkaj"
+            <a href="{{ route('filament.kamkaj.pages.dashboard') }}"
                 class="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 text-sm font-medium transition-all shadow-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
