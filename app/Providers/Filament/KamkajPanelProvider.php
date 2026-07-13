@@ -32,6 +32,9 @@ class KamkajPanelProvider extends PanelProvider
             ->viteTheme('resources/css/filament/kamkaj/theme.css')
             ->login()
             ->passwordReset()
+            ->emailVerification()
+            ->emailChangeVerification()
+            ->profile()
             ->colors([
                 'primary' => Color::Amber,
             ])
