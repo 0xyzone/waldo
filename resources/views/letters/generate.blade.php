@@ -142,8 +142,8 @@
                                 <template x-if="(v.type || 'text') === 'dropdown'">
                                     <select x-model="customValues[v.key || v]"
                                         class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-xs text-slate-900 dark:text-zinc-100 focus:border-amber-500 outline-none">
-                                        <option value="">Select option…</option>
-                                        <template x-for="option in (v.options ? v.options.split(',').map(s => s.trim()) : [])" :key="option">
+                                        <option value="">— Select option —</option>
+                                        <template x-for="option in (v.options && v.options.trim() ? v.options.split(',').map(s => s.trim()).filter(s => s) : [])" :key="option">
                                             <option :value="option" x-text="option"></option>
                                         </template>
                                     </select>
@@ -371,7 +371,14 @@
                         // Initialise custom value slots
                         (this.selectedTemplate.variables ?? []).forEach(v => {
                             const key = typeof v === 'object' ? v.key : v;
-                            this.customValues[key] = '';
+                            const type = typeof v === 'object' ? (v.type || 'text') : 'text';
+                            // For dropdown, default to first option if available
+                            if (type === 'dropdown' && typeof v === 'object' && v.options && v.options.trim()) {
+                                const first = v.options.split(',').map(s => s.trim()).filter(s => s)[0] || '';
+                                this.customValues[key] = first;
+                            } else {
+                                this.customValues[key] = '';
+                            }
                         });
                     }
                     this.updatePaginatedLetters();

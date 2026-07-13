@@ -190,8 +190,7 @@ class EmployeeForm
                                                 TextInput::make('tips_amount')
                                                     ->label('Tips Amount')
                                                     ->numeric()
-                                                    ->prefix('₹')
-                                                    ->visibleOn('view'),
+                                                    ->prefix('₹'),
                                                 Select::make('tips_status')
                                                     ->label('Tips Status')
                                                     ->options([

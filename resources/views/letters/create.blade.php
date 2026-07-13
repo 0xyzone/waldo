@@ -168,6 +168,7 @@
                     <input type="hidden" :name="'variables['+idx+'][key]'" :value="v.key">
                     <input type="hidden" :name="'variables['+idx+'][type]'" :value="v.type">
                     <input type="hidden" :name="'variables['+idx+'][dummy]'" :value="v.dummy">
+                    <input type="hidden" :name="'variables['+idx+'][options]'" :value="v.options">
                 </div>
             </template>
             {{-- Content synced from editor on submit --}}
@@ -387,31 +388,24 @@
                 <option value="Montserrat">Montserrat</option>
             </select>
 
-            <!-- Font size -->
-            <button type="button" class="tb-btn" onclick="adjustFontSize(-1)" title="Decrease font size">
-                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15" />
-                </svg>
-            </button>
-            <div class="relative flex items-center bg-white dark:bg-[#232327] border border-[#e2e8f0] dark:border-[#2d2d32] rounded-[5px] h-[30px] overflow-hidden" title="Font size">
-                <input type="text" id="tb-size" class="w-[32px] text-center border-none outline-none font-semibold text-xs text-[#374151] dark:text-[#d4d4d8] bg-transparent" value="11" onchange="execFontSize(this.value); this.blur();" onkeydown="if(event.key === 'Enter') { execFontSize(this.value); this.blur(); }">
-                <div class="relative w-[18px] h-full border-l border-[#e2e8f0] dark:border-[#2d2d32] flex items-center justify-center cursor-pointer hover:bg-slate-50 dark:hover:bg-zinc-800">
-                    <select class="absolute inset-0 opacity-0 cursor-pointer" onchange="document.getElementById('tb-size').value = this.value; execFontSize(this.value);" id="tb-size-select" title="Font size preset">
-                        @foreach([8,9,10,11,12,14,16,18,20,24,28,32,36,48] as $s)
-                        <option value="{{ $s }}" {{ $s === 11 ? 'selected' : '' }}>{{ $s }}</option>
-                        @endforeach
-                    </select>
-                    <!-- Small chevron icon -->
-                    <svg class="w-2.5 h-2.5 text-slate-400 dark:text-zinc-500 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                    </svg>
+            <!-- Font size stepper -->
+            <div class="flex items-center h-[30px] rounded-[5px] border border-[#e2e8f0] dark:border-[#2d2d32] overflow-hidden bg-white dark:bg-[#232327]" title="Font size">
+                <button type="button" class="tb-btn rounded-none border-none h-full px-2 text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-700 hover:text-slate-800 dark:hover:text-zinc-100 transition-colors"
+                    onmousedown="event.preventDefault(); adjustFontSize(-1);" title="Decrease font size">
+                    <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15"/></svg>
+                </button>
+                <div class="relative border-l border-r border-[#e2e8f0] dark:border-[#2d2d32]">
+                    <input type="number" id="tb-size" min="1" max="200"
+                        class="w-[38px] text-center border-none outline-none font-semibold text-xs text-[#374151] dark:text-[#d4d4d8] bg-transparent py-0 h-[30px] appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        value="11"
+                        onchange="execFontSizeFromInput(this.value)"
+                        onkeydown="if(event.key==='Enter'){execFontSizeFromInput(this.value);this.blur();}">
                 </div>
+                <button type="button" class="tb-btn rounded-none border-none h-full px-2 text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-700 hover:text-slate-800 dark:hover:text-zinc-100 transition-colors"
+                    onmousedown="event.preventDefault(); adjustFontSize(1);" title="Increase font size">
+                    <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                </button>
             </div>
-            <button type="button" class="tb-btn" onclick="adjustFontSize(1)" title="Increase font size">
-                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-            </button>
 
             <div class="tb-sep"></div>
 
@@ -579,12 +573,34 @@ function execFont(name) {
     document.execCommand('fontName', false, name);
 }
 
+// Saved selection so ± clicks don't lose editor focus
+let _savedRange = null;
+function saveSelection() {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+        _savedRange = sel.getRangeAt(0).cloneRange();
+    }
+}
+function restoreSelection() {
+    if (!_savedRange) return;
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(_savedRange);
+}
+
 function execFontSize(pt) {
+    restoreSelection();
     document.execCommand('fontSize', false, '7');
     document.querySelectorAll('#pages-container [size="7"]').forEach(el => {
         el.removeAttribute('size');
         el.style.fontSize = pt + 'pt';
     });
+}
+
+function execFontSizeFromInput(pt) {
+    const size = Math.max(1, Math.min(200, parseFloat(pt) || 11));
+    document.getElementById('tb-size').value = size;
+    execFontSize(size);
 }
 
 function adjustFontSize(delta) {
@@ -658,7 +674,7 @@ function updateToolbarState() {
     }
 }
 
-document.addEventListener('selectionchange', updateToolbarState);
+document.addEventListener('selectionchange', () => { saveSelection(); updateToolbarState(); });
 
 /* ================================================================
    ALPINE STATE — no DOM pagination, just tracking page count
