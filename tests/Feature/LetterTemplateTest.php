@@ -18,9 +18,10 @@ class LetterTemplateTest extends TestCase
     {
         $template = LetterTemplate::create([
             'title' => 'Promotion Letter',
-            'content' => 'Dear {{ employee_name }}, you have been promoted to {{ custom_new_role }}.',
+            'content' => 'Dear {{ employee_name }}, you have been promoted to {{ custom_new_role }} ({{ custom_employment_type }}).',
             'variables' => [
                 ['key' => 'new_role', 'type' => 'text', 'dummy' => 'Manager'],
+                ['key' => 'employment_type', 'type' => 'dropdown', 'dummy' => 'Permanent', 'options' => 'Permanent, Contract, Intern'],
             ],
             'margin_top' => 25,
             'margin_bottom' => 25,
@@ -38,6 +39,9 @@ class LetterTemplateTest extends TestCase
         $variables = $template->fresh()->variables;
         $this->assertEquals('new_role', $variables[0]['key']);
         $this->assertEquals('Manager', $variables[0]['dummy']);
+        $this->assertEquals('employment_type', $variables[1]['key']);
+        $this->assertEquals('dropdown', $variables[1]['type']);
+        $this->assertEquals('Permanent, Contract, Intern', $variables[1]['options']);
     }
 
     /**

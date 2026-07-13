@@ -20,7 +20,7 @@ class FontController extends Controller
     {
         $validated = $request->validate([
             'family_name' => 'required|string|max:100',
-            'font_file' => 'required|file|mimes:ttf,otf,woff,woff2|max:5120',
+            'font_file' => 'required|file|extensions:ttf,otf,woff,woff2|max:5120',
             'style' => 'required|in:normal,italic',
             'weight' => 'required|in:100,200,300,400,500,600,700,800,900',
         ]);

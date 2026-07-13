@@ -99,14 +99,18 @@ class LetterTemplateForm
                                                         'date' => 'Date',
                                                         'number' => 'Number',
                                                         'boolean' => 'Boolean (Yes/No)',
+                                                        'dropdown' => 'Dropdown',
                                                     ])
+                                                    ->live()
                                                     ->required()
                                                     ->default('text'),
-                                                TextInput::make('dummy')
-                                                    ->label('Dummy Value')
-                                                    ->required()
-                                                    ->placeholder('e.g., July 15, 2026')
-                                                    ->helperText('Preview value'),
+                                                TextInput::make('options')
+                                                    ->label('Dropdown Options')
+                                                    ->placeholder('Option A, Option B, Option C')
+                                                    ->helperText('Comma-separated list')
+                                                    ->visible(fn ($get) => $get('type') === 'dropdown')
+                                                    ->required(fn ($get) => $get('type') === 'dropdown'),
+
                                             ])
                                             ->columns(3)
                                             ->default([])
@@ -134,22 +138,42 @@ class LetterTemplateForm
                                                                 <code class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-semibold text-amber-600 dark:text-amber-400 cursor-pointer select-all" onclick="navigator.clipboard.writeText(this.innerText)">&#123;&#123; employee_name &#125;&#125;</code>
                                                                 <code class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-semibold text-amber-600 dark:text-amber-400 cursor-pointer select-all" onclick="navigator.clipboard.writeText(this.innerText)">&#123;&#123; employee_employee_code &#125;&#125;</code>
                                                                 <code class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-semibold text-amber-600 dark:text-amber-400 cursor-pointer select-all" onclick="navigator.clipboard.writeText(this.innerText)">&#123;&#123; employee_gender &#125;&#125;</code>
+                                                                <code class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-semibold text-amber-600 dark:text-amber-400 cursor-pointer select-all" onclick="navigator.clipboard.writeText(this.innerText)">&#123;&#123; employee_marital_status &#125;&#125;</code>
                                                             </div>
                                                         </div>
                                                         <div class="flex flex-col gap-1 mt-2">
-                                                            <span class="text-gray-500 font-sans font-semibold">Position details:</span>
+                                                            <span class="text-gray-500 font-sans font-semibold">Employment Details:</span>
                                                             <div class="flex flex-wrap gap-1.5">
                                                                 <code class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-semibold text-amber-600 dark:text-amber-400 cursor-pointer select-all" onclick="navigator.clipboard.writeText(this.innerText)">&#123;&#123; employee_department &#125;&#125;</code>
                                                                 <code class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-semibold text-amber-600 dark:text-amber-400 cursor-pointer select-all" onclick="navigator.clipboard.writeText(this.innerText)">&#123;&#123; employee_designation &#125;&#125;</code>
                                                                 <code class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-semibold text-amber-600 dark:text-amber-400 cursor-pointer select-all" onclick="navigator.clipboard.writeText(this.innerText)">&#123;&#123; employee_join_date &#125;&#125;</code>
+                                                                <code class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-semibold text-amber-600 dark:text-amber-400 cursor-pointer select-all" onclick="navigator.clipboard.writeText(this.innerText)">&#123;&#123; employee_employee_status &#125;&#125;</code>
                                                             </div>
                                                         </div>
                                                         <div class="flex flex-col gap-1 mt-2">
-                                                            <span class="text-gray-500 font-sans font-semibold">Contact & Dates:</span>
+                                                            <span class="text-gray-500 font-sans font-semibold">Identity & Documents:</span>
                                                             <div class="flex flex-wrap gap-1.5">
+                                                                <code class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-semibold text-amber-600 dark:text-amber-400 cursor-pointer select-all" onclick="navigator.clipboard.writeText(this.innerText)">&#123;&#123; employee_citizenship_number &#125;&#125;</code>
+                                                                <code class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-semibold text-amber-600 dark:text-amber-400 cursor-pointer select-all" onclick="navigator.clipboard.writeText(this.innerText)">&#123;&#123; employee_citizenship_issue_date &#125;&#125;</code>
+                                                                <code class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-semibold text-amber-600 dark:text-amber-400 cursor-pointer select-all" onclick="navigator.clipboard.writeText(this.innerText)">&#123;&#123; employee_citizenship_issue_place &#125;&#125;</code>
+                                                                <code class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-semibold text-amber-600 dark:text-amber-400 cursor-pointer select-all" onclick="navigator.clipboard.writeText(this.innerText)">&#123;&#123; employee_ssid &#125;&#125;</code>
+                                                            </div>
+                                                        </div>
+                                                        <div class="flex flex-col gap-1 mt-2">
+                                                            <span class="text-gray-500 font-sans font-semibold">Dates & Contact:</span>
+                                                            <div class="flex flex-wrap gap-1.5">
+                                                                <code class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-semibold text-amber-600 dark:text-amber-400 cursor-pointer select-all" onclick="navigator.clipboard.writeText(this.innerText)">&#123;&#123; employee_dob_ad &#125;&#125;</code>
+                                                                <code class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-semibold text-amber-600 dark:text-amber-400 cursor-pointer select-all" onclick="navigator.clipboard.writeText(this.innerText)">&#123;&#123; employee_dob_bs &#125;&#125;</code>
                                                                 <code class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-semibold text-amber-600 dark:text-amber-400 cursor-pointer select-all" onclick="navigator.clipboard.writeText(this.innerText)">&#123;&#123; employee_email &#125;&#125;</code>
                                                                 <code class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-semibold text-amber-600 dark:text-amber-400 cursor-pointer select-all" onclick="navigator.clipboard.writeText(this.innerText)">&#123;&#123; employee_contact_number &#125;&#125;</code>
-                                                                <code class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-semibold text-amber-600 dark:text-amber-400 cursor-pointer select-all" onclick="navigator.clipboard.writeText(this.innerText)">&#123;&#123; employee_dob_ad &#125;&#125;</code>
+                                                            </div>
+                                                        </div>
+                                                        <div class="flex flex-col gap-1 mt-2">
+                                                            <span class="text-gray-500 font-sans font-semibold">Tips & Points:</span>
+                                                            <div class="flex flex-wrap gap-1.5">
+                                                                <code class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-semibold text-amber-600 dark:text-amber-400 cursor-pointer select-all" onclick="navigator.clipboard.writeText(this.innerText)">&#123;&#123; employee_tips_amount &#125;&#125;</code>
+                                                                <code class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-semibold text-amber-600 dark:text-amber-400 cursor-pointer select-all" onclick="navigator.clipboard.writeText(this.innerText)">&#123;&#123; employee_tips_status &#125;&#125;</code>
+                                                                <code class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-semibold text-amber-600 dark:text-amber-400 cursor-pointer select-all" onclick="navigator.clipboard.writeText(this.innerText)">&#123;&#123; employee_point_value &#125;&#125;</code>
                                                             </div>
                                                         </div>
                                                     </div>

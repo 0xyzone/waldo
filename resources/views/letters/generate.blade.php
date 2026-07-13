@@ -139,6 +139,16 @@
                                     </select>
                                 </template>
 
+                                <template x-if="(v.type || 'text') === 'dropdown'">
+                                    <select x-model="customValues[v.key || v]"
+                                        class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-xs text-slate-900 dark:text-zinc-100 focus:border-amber-500 outline-none">
+                                        <option value="">Select option…</option>
+                                        <template x-for="option in (v.options ? v.options.split(',').map(s => s.trim()) : [])" :key="option">
+                                            <option :value="option" x-text="option"></option>
+                                        </template>
+                                    </select>
+                                </template>
+
                                 <template x-if="!v.type || v.type === 'text'">
                                     <input type="text" x-model="customValues[v.key || v]"
                                         :placeholder="'Enter ' + formatLabel(v.key || v)"

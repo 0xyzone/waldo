@@ -216,26 +216,36 @@
 
                 <!-- ---- Employee Variable Pills ---- -->
                 <div class="space-y-1.5">
-                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Employee Placeholders</label>
-                    <p class="text-[10px] text-slate-400">Click a placeholder to copy it, then paste it into the editor.</p>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400">Employee Placeholders</label>
+                    <p class="text-xs text-slate-400">Click a placeholder to copy it, then paste it into the editor.</p>
                     <div class="flex flex-wrap gap-1">
                         @foreach([
-                            'employee_name'         => 'Name',
-                            'employee_employee_code'=> 'Code',
-                            'employee_gender'       => 'Gender',
-                            'employee_department'   => 'Department',
-                            'employee_designation'  => 'Designation',
-                            'employee_join_date'    => 'Join Date',
-                            'employee_email'        => 'Email',
-                            'employee_contact_number' => 'Phone',
-                            'employee_dob_ad'       => 'DOB',
+                            'employee_name'                  => 'Name',
+                            'employee_employee_code'         => 'Code',
+                            'employee_department'            => 'Department',
+                            'employee_designation'           => 'Designation',
+                            'employee_gender'                => 'Gender',
+                            'employee_join_date'             => 'Join Date',
+                            'employee_contact_number'        => 'Phone',
+                            'employee_email'                 => 'Email',
+                            'employee_citizenship_number'    => 'Citizenship No',
+                            'employee_citizenship_issue_date'=> 'Cit Issue Date',
+                            'employee_citizenship_issue_place'=> 'Cit Issue Place',
+                            'employee_ssid'                  => 'SSID',
+                            'employee_dob_ad'                => 'DOB (AD)',
+                            'employee_dob_bs'                => 'DOB (BS)',
+                            'employee_marital_status'        => 'Marital Status',
+                            'employee_employee_status'       => 'Status',
+                            'employee_tips_amount'           => 'Tips Amount',
+                            'employee_tips_status'           => 'Tips Status',
+                            'employee_point_value'           => 'Point Value',
                         ] as $key => $label)
                         @php $token = '{{ ' . $key . ' }}'; @endphp
                         <button
                             type="button"
                             data-copy="{{ $token }}"
                             onclick="copyToken(this)"
-                            class="group flex items-center gap-1 px-2 py-0.5 bg-amber-50 dark:bg-amber-950/30 rounded-md text-[10px] font-semibold font-mono text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors cursor-pointer border border-amber-200/60 dark:border-amber-800/30"
+                            class="group flex items-center gap-1 px-2.5 py-1 bg-amber-50 dark:bg-amber-950/30 rounded-md text-xs font-semibold font-mono text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors cursor-pointer border border-amber-200/60 dark:border-amber-800/30"
                             title="{{ $token }}"
                         >
                             <svg class="w-2.5 h-2.5 opacity-50 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -280,8 +290,15 @@
                                             <option value="date">Date</option>
                                             <option value="number">Number</option>
                                             <option value="boolean">Yes/No</option>
+                                            <option value="dropdown">Dropdown</option>
                                         </select>
                                     </div>
+                                </div>
+
+                                <div x-show="v.type === 'dropdown'" class="mt-1">
+                                    <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Dropdown Options (comma-separated)</label>
+                                    <input type="text" x-model="v.options" placeholder="Option 1, Option 2, Option 3"
+                                        class="w-full p-1 border border-slate-200 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-[10px] focus:border-amber-500 outline-none">
                                 </div>
 
                                 <div>
@@ -298,19 +315,19 @@
                                             <option value="No">No</option>
                                         </select>
                                     </template>
-                                    <template x-if="!v.type || v.type === 'text'">
+                                    <template x-if="!v.type || v.type === 'text' || v.type === 'dropdown'">
                                         <input type="text" x-model="v.dummy" placeholder="Sample text" class="w-full p-1 border border-slate-200 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-[10px] focus:border-amber-500 outline-none">
                                     </template>
                                 </div>
 
                                 {{-- Copy hint for this variable --}}
                                 <div x-show="v.key" class="flex items-center gap-1">
-                                    <span class="text-[9px] text-slate-400">Placeholder:</span>
+                                    <span class="text-xs text-slate-400">Placeholder:</span>
                                     <button
                                         type="button"
-                                        :data-copy="'{{ ' + v.key + ' }}'"
+                                        :data-copy="'@{{ ' + v.key + ' }}'"
                                         onclick="copyToken(this)"
-                                        class="text-[9px] font-mono text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 underline cursor-pointer transition-colors"
+                                        class="text-xs font-mono text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 underline cursor-pointer transition-colors"
                                         x-text="'@{{ ' + v.key + ' }}'">
                                     </button>
                                 </div>
@@ -357,7 +374,7 @@
             </select>
 
             <!-- Font -->
-            <select class="tb-select ml-1" style="width:110px;" onchange="execFont(this.value); this.blur();" id="tb-font" title="Font">
+            <select class="tb-select ml-1" style="width:155px;" onchange="execFont(this.value); this.blur();" id="tb-font" title="Font">
                 <option value="Times New Roman" selected>Times New Roman</option>
                 <option value="Arial">Arial</option>
                 <option value="Georgia">Georgia</option>
@@ -371,11 +388,30 @@
             </select>
 
             <!-- Font size -->
-            <select class="tb-select ml-1" style="width:52px;" onchange="execFontSize(this.value); this.blur();" id="tb-size" title="Font size">
-                @foreach([8,9,10,11,12,14,16,18,20,24,28,32,36,48] as $s)
-                <option value="{{ $s }}" {{ $s === 11 ? 'selected' : '' }}>{{ $s }}</option>
-                @endforeach
-            </select>
+            <button type="button" class="tb-btn" onclick="adjustFontSize(-1)" title="Decrease font size">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15" />
+                </svg>
+            </button>
+            <div class="relative flex items-center bg-white dark:bg-[#232327] border border-[#e2e8f0] dark:border-[#2d2d32] rounded-[5px] h-[30px] overflow-hidden" title="Font size">
+                <input type="text" id="tb-size" class="w-[32px] text-center border-none outline-none font-semibold text-xs text-[#374151] dark:text-[#d4d4d8] bg-transparent" value="11" onchange="execFontSize(this.value); this.blur();" onkeydown="if(event.key === 'Enter') { execFontSize(this.value); this.blur(); }">
+                <div class="relative w-[18px] h-full border-l border-[#e2e8f0] dark:border-[#2d2d32] flex items-center justify-center cursor-pointer hover:bg-slate-50 dark:hover:bg-zinc-800">
+                    <select class="absolute inset-0 opacity-0 cursor-pointer" onchange="document.getElementById('tb-size').value = this.value; execFontSize(this.value);" id="tb-size-select" title="Font size preset">
+                        @foreach([8,9,10,11,12,14,16,18,20,24,28,32,36,48] as $s)
+                        <option value="{{ $s }}" {{ $s === 11 ? 'selected' : '' }}>{{ $s }}</option>
+                        @endforeach
+                    </select>
+                    <!-- Small chevron icon -->
+                    <svg class="w-2.5 h-2.5 text-slate-400 dark:text-zinc-500 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                </div>
+            </div>
+            <button type="button" class="tb-btn" onclick="adjustFontSize(1)" title="Increase font size">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+            </button>
 
             <div class="tb-sep"></div>
 
@@ -534,7 +570,8 @@ function exec(cmd, val) {
 }
 
 function execBlock(tag) {
-    document.execCommand('formatBlock', false, tag);
+    const formatTag = tag.startsWith('<') ? tag : '<' + tag + '>';
+    document.execCommand('formatBlock', false, formatTag);
     updateToolbarState();
 }
 
@@ -544,10 +581,20 @@ function execFont(name) {
 
 function execFontSize(pt) {
     document.execCommand('fontSize', false, '7');
-    document.querySelectorAll('#doc-editor [size="7"]').forEach(el => {
+    document.querySelectorAll('#pages-container [size="7"]').forEach(el => {
         el.removeAttribute('size');
         el.style.fontSize = pt + 'pt';
     });
+}
+
+function adjustFontSize(delta) {
+    const input = document.getElementById('tb-size');
+    if (!input) return;
+    let size = parseFloat(input.value);
+    if (isNaN(size)) size = 11;
+    size = Math.max(1, Math.min(200, size + delta));
+    input.value = size;
+    execFontSize(size);
 }
 
 function execColor(color) {
@@ -572,6 +619,43 @@ function updateToolbarState() {
     const block = document.queryCommandValue('formatBlock').toLowerCase();
     const sel = document.getElementById('tb-block');
     if (sel) sel.value = ['h1','h2','h3'].includes(block) ? block : 'p';
+
+    // Sync font family & size from the active node styling
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+        let node = selection.getRangeAt(0).startContainer;
+        if (node.nodeType === Node.TEXT_NODE) {
+            node = node.parentNode;
+        }
+        if (node && node.closest('#pages-container')) {
+            const style = window.getComputedStyle(node);
+            
+            // Sync Font Family
+            const fontSelect = document.getElementById('tb-font');
+            if (fontSelect) {
+                let activeFont = style.fontFamily.replace(/['"]/g, '');
+                for (let option of fontSelect.options) {
+                    if (activeFont.toLowerCase().includes(option.value.toLowerCase()) || option.value.toLowerCase().includes(activeFont.toLowerCase())) {
+                        fontSelect.value = option.value;
+                        break;
+                    }
+                }
+            }
+            
+            // Sync Font Size
+            const sizeInput = document.getElementById('tb-size');
+            if (sizeInput) {
+                const px = parseFloat(style.fontSize);
+                const pt = Math.round(px * 0.75); // 1px = 0.75pt
+                sizeInput.value = pt;
+                
+                const sizeSelect = document.getElementById('tb-size-select');
+                if (sizeSelect) {
+                    sizeSelect.value = sizeSelect.querySelector(`option[value="${pt}"]`) ? pt : '';
+                }
+            }
+        }
+    }
 }
 
 document.addEventListener('selectionchange', updateToolbarState);
@@ -586,11 +670,14 @@ function createTemplateState() {
         variables: [],
         pageCount: 1,
 
-        addVariable()      { this.variables.push({ key: '', type: 'text', dummy: '' }); },
+        addVariable()      { this.variables.push({ key: '', type: 'text', dummy: '', options: '' }); },
         removeVariable(i)  { this.variables.splice(i, 1); },
         typeChanged(v) {
-            const d = { boolean: 'Yes', date: new Date().toISOString().slice(0, 10), number: '1000', text: '' };
+            const d = { boolean: 'Yes', date: new Date().toISOString().slice(0, 10), number: '1000', text: '', dropdown: '' };
             v.dummy = d[v.type] ?? '';
+            if (v.type === 'dropdown') {
+                v.options = v.options || '';
+            }
         },
 
         /* Called by the Tab keydown handler on the editor */

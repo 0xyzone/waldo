@@ -103,6 +103,48 @@
             color: #e8e8e8;
             box-shadow: 0 2px 12px rgba(0,0,0,.5);
         }
+
+        .a4-doc-page ul, .a4-page ul {
+            list-style-type: disc !important;
+            margin-top: 0.5em !important;
+            margin-bottom: 0.5em !important;
+            padding-left: 2em !important;
+        }
+        .a4-doc-page ol, .a4-page ol {
+            list-style-type: decimal !important;
+            margin-top: 0.5em !important;
+            margin-bottom: 0.5em !important;
+            padding-left: 2em !important;
+        }
+        .a4-doc-page li, .a4-page li {
+            margin-bottom: 0.2em !important;
+            display: list-item !important;
+        }
+        .a4-doc-page h1, .a4-page h1 {
+            font-size: 20pt !important;
+            font-weight: bold !important;
+            margin-top: 12pt !important;
+            margin-bottom: 4pt !important;
+            line-height: 1.2 !important;
+        }
+        .a4-doc-page h2, .a4-page h2 {
+            font-size: 16pt !important;
+            font-weight: bold !important;
+            margin-top: 10pt !important;
+            margin-bottom: 3pt !important;
+            line-height: 1.2 !important;
+        }
+        .a4-doc-page h3, .a4-page h3 {
+            font-size: 14pt !important;
+            font-weight: bold !important;
+            margin-top: 8pt !important;
+            margin-bottom: 3pt !important;
+            line-height: 1.2 !important;
+        }
+        .a4-doc-page p, .a4-page p {
+            margin-top: 0 !important;
+            margin-bottom: 8pt !important;
+        }
         
         .a4-doc-page:empty::before {
             content: attr(data-placeholder);

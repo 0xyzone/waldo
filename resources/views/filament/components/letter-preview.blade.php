@@ -10,6 +10,17 @@ if (!$employee) {
         'contact_number' => '9865914116',
         'department' => (object)['name' => 'HouseKeeping'],
         'designation' => (object)['name' => 'Attendant'],
+        'citizenship_number' => '12-34-56-7890',
+        'citizenship_issue_date' => '2020-05-12',
+        'citizenship_issue_place' => 'Kathmandu',
+        'ssid' => 'SSID123456',
+        'dob_ad' => '1995-09-19',
+        'dob_bs' => '2052-06-03',
+        'marital_status' => 'Single',
+        'employee_status' => 'Active',
+        'tips_amount' => 150.00,
+        'tips_status' => 'Paid',
+        'point_value' => 1.25,
     ];
 }
 ?>
@@ -107,10 +118,14 @@ if (!$employee) {
                 return employee.designation ? (employee.designation.name || 'Attendant') : 'Attendant';
             }
             if (key === 'join_date') {
-                return '01 January, 2024';
+                const val = employee.join_date || '2024-01-01';
+                const d = new Date(val);
+                return isNaN(d) ? val : d.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
             }
             if (key === 'dob_ad') {
-                return '19 September, 1995';
+                const val = employee.dob_ad || '1995-09-19';
+                const d = new Date(val);
+                return isNaN(d) ? val : d.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
             }
             return employee[key] !== undefined && employee[key] !== null ? employee[key] : `[${key}]`;
         });
@@ -152,6 +167,49 @@ if (!$employee) {
 }" class="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-zinc-900 transition-colors">
     <!-- Dynamic Margins Styling -->
     <style x-html="marginStyles"></style>
+    <style>
+        .a4-page-content ul {
+            list-style-type: disc !important;
+            margin-top: 0.5em !important;
+            margin-bottom: 0.5em !important;
+            padding-left: 2em !important;
+        }
+        .a4-page-content ol {
+            list-style-type: decimal !important;
+            margin-top: 0.5em !important;
+            margin-bottom: 0.5em !important;
+            padding-left: 2em !important;
+        }
+        .a4-page-content li {
+            margin-bottom: 0.2em !important;
+            display: list-item !important;
+        }
+        .a4-page-content h1 {
+            font-size: 20pt !important;
+            font-weight: bold !important;
+            margin-top: 12pt !important;
+            margin-bottom: 4pt !important;
+            line-height: 1.2 !important;
+        }
+        .a4-page-content h2 {
+            font-size: 16pt !important;
+            font-weight: bold !important;
+            margin-top: 10pt !important;
+            margin-bottom: 3pt !important;
+            line-height: 1.2 !important;
+        }
+        .a4-page-content h3 {
+            font-size: 14pt !important;
+            font-weight: bold !important;
+            margin-top: 8pt !important;
+            margin-bottom: 3pt !important;
+            line-height: 1.2 !important;
+        }
+        .a4-page-content p {
+            margin-top: 0 !important;
+            margin-bottom: 8pt !important;
+        }
+    </style>
 
     <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Live Template Preview (A4 Page Guide)</h4>
     <h3 class="text-md font-bold text-gray-800 dark:text-gray-200 mb-4" x-text="title"></h3>
