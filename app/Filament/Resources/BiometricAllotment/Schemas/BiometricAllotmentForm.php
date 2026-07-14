@@ -5,6 +5,7 @@ namespace App\Filament\Resources\BiometricAllotment\Schemas;
 use App\Filament\Resources\BiometricAllotmentResource;
 use App\Models\BiometricAllotment;
 use App\Models\MapUser;
+use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -22,6 +23,13 @@ class BiometricAllotmentForm
 {
     public static function configure(Schema $schema): Schema
     {
+        $isIt = function (): bool {
+            /** @var User|null $user */
+            $user = Auth::user();
+
+            return $user instanceof User && $user->hasRole('IT');
+        };
+
         return $schema
             ->components([
                 Section::make('Biometric Allotment Details')
@@ -81,7 +89,7 @@ class BiometricAllotmentForm
                                     ->preload()
                                     ->required(),
                             ])
-                            ->disabledOn('edit'),
+                            ->disabled($isIt),
                         Grid::make(['default' => 1, 'sm' => 3])
                             ->schema([
                                 Select::make('status')
@@ -94,11 +102,11 @@ class BiometricAllotmentForm
                                     ])
                                     ->native(false)
                                     ->default('Not Done Yet')
-                                    ->disabledOn('edit'),
+                                    ->disabled($isIt),
                                 DatePicker::make('enrolled_date')
                                     ->label('Enrolled Date')
                                     ->native(false)
-                                    ->disabledOn('edit'),
+                                    ->disabled($isIt),
                                 Select::make('set_by')
                                     ->label('Set By')
                                     ->options([
@@ -109,19 +117,19 @@ class BiometricAllotmentForm
                                     ->native(false)
                                     ->searchable()
                                     ->preload()
-                                    ->disabledOn('edit'),
+                                    ->disabled($isIt),
                             ]),
                         Grid::make(['default' => 1, 'sm' => 3])
                             ->schema([
                                 Toggle::make('old_checkout_device')
                                     ->label('Olde Check out Device')
-                                    ->disabledOn('edit'),
+                                    ->disabled($isIt),
                                 Toggle::make('new_checkin')
                                     ->label('New Checkin')
-                                    ->disabledOn('edit'),
+                                    ->disabled($isIt),
                                 Toggle::make('new_checkout')
                                     ->label('New CheckOut')
-                                    ->disabledOn('edit'),
+                                    ->disabled($isIt),
                             ]),
                         Grid::make(['default' => 1, 'sm' => 2])
                             ->schema([
