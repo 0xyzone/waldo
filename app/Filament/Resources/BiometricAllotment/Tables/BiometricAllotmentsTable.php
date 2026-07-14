@@ -2,13 +2,12 @@
 
 namespace App\Filament\Resources\BiometricAllotment\Tables;
 
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\TextInputColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -34,10 +33,10 @@ class BiometricAllotmentsTable
                     ->sortable(query: function (Builder $query, string $direction): Builder {
                         $driver = $query->getConnection()->getDriverName();
                         if ($driver === 'sqlite') {
-                            return $query->orderByRaw('CAST(SUBSTR(code, 4) AS INTEGER) ' . $direction);
+                            return $query->orderByRaw('CAST(SUBSTR(code, 4) AS INTEGER) '.$direction);
                         }
 
-                        return $query->orderByRaw('CAST(SUBSTR(code, 4) AS UNSIGNED) ' . $direction);
+                        return $query->orderByRaw('CAST(SUBSTR(code, 4) AS UNSIGNED) '.$direction);
                     }),
                 TextColumn::make('name')
                     ->label('Name')
@@ -73,13 +72,29 @@ class BiometricAllotmentsTable
                 TextColumn::make('remarks')
                     ->label('Remarks')
                     ->limit(20)
-                    ->tooltip(fn($state) => $state),
+                    ->tooltip(fn ($state) => $state),
+                TextColumn::make('phone')
+                    ->label('Phone')
+                    ->icon('heroicon-o-phone')
+                    ->iconColor('info')
+                    ->copyable()
+                    ->copyMessage('Phone number copied!')
+                    ->placeholder('—')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('code', 'desc')
             ->filters([
                 //
             ])
             ->recordActions([
+                Action::make('call')
+                    ->label('Call')
+                    ->icon('heroicon-o-phone')
+                    ->color('info')
+                    ->iconButton()
+                    ->url(fn ($record) => $record->phone ? 'tel:'.$record->phone : null)
+                    ->openUrlInNewTab(false)
+                    ->visible(fn ($record) => filled($record->phone)),
                 EditAction::make(),
             ])
             ->toolbarActions([

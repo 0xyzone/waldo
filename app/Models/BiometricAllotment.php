@@ -36,6 +36,7 @@ class BiometricAllotment extends Model
     protected $fillable = [
         'code',
         'name',
+        'phone',
         'department_id',
         'status',
         'enrolled_date',

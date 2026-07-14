@@ -39,6 +39,7 @@ class BiometricSheetsService
         'new_checkout' => 8,
         'shift' => 9,
         'remarks' => 10,
+        'phone' => 11,
     ];
 
     public function __construct()
@@ -58,7 +59,7 @@ class BiometricSheetsService
      */
     public function sync(): int
     {
-        $range = "'{$this->sheetName}'!A2:K";
+        $range = "'{$this->sheetName}'!A2:L";
         $response = $this->service->spreadsheets_values->get($this->spreadsheetId, $range);
         $rows = $response->getValues() ?: [];
 
@@ -67,8 +68,8 @@ class BiometricSheetsService
         // Run without triggering model events during pull sync to prevent infinite loops
         BiometricAllotment::withoutEvents(function () use ($rows, &$syncedCount) {
             foreach ($rows as $row) {
-                if (count($row) < 11) {
-                    $row = array_pad($row, 11, '');
+                if (count($row) < 12) {
+                    $row = array_pad($row, 12, '');
                 }
 
                 $code = trim($row[0] ?? '');
@@ -107,6 +108,7 @@ class BiometricSheetsService
                         'new_checkout' => filter_var($row[8] ?? false, FILTER_VALIDATE_BOOLEAN),
                         'shift' => trim($row[9] ?? '') ?: null,
                         'remarks' => trim($row[10] ?? '') ?: null,
+                        'phone' => trim($row[11] ?? '') ?: null,
                     ]
                 );
 
@@ -189,7 +191,7 @@ class BiometricSheetsService
                 return;
             }
 
-            $clearRange = "'{$this->sheetName}'!A{$sheetRowNumber}:K{$sheetRowNumber}";
+            $clearRange = "'{$this->sheetName}'!A{$sheetRowNumber}:L{$sheetRowNumber}";
             $clearRequest = new ClearValuesRequest;
             $this->service->spreadsheets_values->clear(
                 $this->spreadsheetId,
@@ -248,7 +250,7 @@ class BiometricSheetsService
     protected function appendAllotment(BiometricAllotment $allotment): void
     {
         $targetRow = $this->findFirstEmptyRow();
-        $newRow = array_fill(0, 11, '');
+        $newRow = array_fill(0, 12, '');
 
         foreach ($this->columnMap as $field => $colIndex) {
             $newRow[$colIndex] = $this->resolveFieldValue($allotment, $field);
@@ -259,7 +261,7 @@ class BiometricSheetsService
         $body = new ValueRange(['values' => [$newRow]]);
         $this->service->spreadsheets_values->update(
             $this->spreadsheetId,
-            "'{$this->sheetName}'!A{$targetRow}:K{$targetRow}",
+            "'{$this->sheetName}'!A{$targetRow}:L{$targetRow}",
             $body,
             ['valueInputOption' => 'USER_ENTERED']
         );

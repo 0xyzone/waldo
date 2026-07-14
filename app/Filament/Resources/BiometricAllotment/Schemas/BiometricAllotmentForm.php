@@ -73,6 +73,13 @@ class BiometricAllotmentForm
                             ->visible(function ($record) {
                                 return MapUser::where('user_id', Auth::id())->exists() && $record->status != 'Done';
                             }),
+                        Action::make('call')
+                            ->label('Call')
+                            ->icon('heroicon-o-phone')
+                            ->color('info')
+                            ->url(fn ($record) => $record?->phone ? 'tel:'.$record->phone : null)
+                            ->openUrlInNewTab(false)
+                            ->visible(fn ($record) => filled($record?->phone)),
                     ])
                     ->schema([
                         Grid::make(['default' => 1, 'sm' => 2])
@@ -90,6 +97,12 @@ class BiometricAllotmentForm
                                     ->required(),
                             ])
                             ->disabled($isIt),
+                        TextInput::make('phone')
+                            ->label('Phone Number')
+                            ->tel()
+                            ->maxLength(20)
+                            ->placeholder('+977 9800000000')
+                            ->columnSpanFull(),
                         Grid::make(['default' => 1, 'sm' => 3])
                             ->schema([
                                 Select::make('status')
