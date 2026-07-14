@@ -1,9 +1,9 @@
 <x-filament-panels::page>
     <div class="max-w-md mx-auto">
         {{-- Header card with premium gradient and friendly vibe --}}
-        <div class="rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 p-6 text-white text-center shadow-xl mb-6 relative overflow-hidden">
+        <div class="rounded-2xl bg-linear-to-br from-amber-500 via-orange-500 to-rose-500 p-6 text-white text-center shadow-xl mb-6 relative overflow-hidden">
             {{-- Decorative pattern overlay --}}
-            <div class="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
+            <div class="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
             
             <div class="relative z-10">
                 <div class="text-5xl mb-3 animate-bounce">🔒✨</div>

@@ -13,13 +13,12 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class KamkajPanelProvider extends PanelProvider
@@ -46,7 +45,8 @@ class KamkajPanelProvider extends PanelProvider
                     ->icon('heroicon-o-arrow-top-right-on-square')
                     ->activeIcon('heroicon-s-document-text')
                     ->sort(5)
-                    ->group('HR & Admin'),
+                    ->group('HR & Admin')
+                    ->visible(fn () => auth()->user()->hasRole(['HR'])),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
@@ -55,8 +55,6 @@ class KamkajPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                // AccountWidget::class,
-                // FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

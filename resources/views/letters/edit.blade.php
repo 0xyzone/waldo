@@ -112,7 +112,7 @@
     <!-- ============================================================
          LEFT SIDEBAR
          ============================================================ -->
-    <aside class="w-full md:w-[320px] xl:w-[360px] bg-white dark:bg-zinc-900 border-r border-slate-200 dark:border-zinc-800 flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-200">
+    <aside class="w-full md:w-[320px] xl:w-90 bg-white dark:bg-zinc-900 border-r border-slate-200 dark:border-zinc-800 flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-200">
         <form id="template-form" action="{{ route('letters.update', $template->id) }}" method="POST" class="flex flex-col h-full overflow-hidden" @submit="syncContent()">
             @csrf
             @method('PUT')
@@ -286,7 +286,7 @@
             <!-- Footer -->
             <div class="shrink-0 p-3 border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex gap-2 transition-colors duration-200">
                 <button type="submit" @click="syncContent()"
-                    class="flex-1 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-amber-500/10 active:scale-[0.98] transition-all cursor-pointer">
+                    class="flex-1 py-2.5 bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-amber-500/10 active:scale-[0.98] transition-all cursor-pointer">
                     Save Changes
                 </button>
                 <a href="{{ route('letters.index') }}" class="px-3 py-2.5 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-300 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-zinc-750 transition-all">
@@ -322,14 +322,14 @@
                 <option value="Montserrat">Montserrat</option>
             </select>
             <!-- Font size stepper -->
-            <div class="flex items-center h-[30px] rounded-[5px] border border-[#e2e8f0] dark:border-[#2d2d32] overflow-hidden bg-white dark:bg-[#232327]" title="Font size">
+            <div class="flex items-center h-7.5 rounded-[5px] border border-[#e2e8f0] dark:border-[#2d2d32] overflow-hidden bg-white dark:bg-[#232327]" title="Font size">
                 <button type="button" class="tb-btn rounded-none border-none h-full px-2 text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-700 hover:text-slate-800 dark:hover:text-zinc-100 transition-colors"
                     onmousedown="event.preventDefault(); adjustFontSize(-1);" title="Decrease font size">
                     <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15"/></svg>
                 </button>
                 <div class="relative border-l border-r border-[#e2e8f0] dark:border-[#2d2d32]">
                     <input type="number" id="tb-size" min="1" max="200"
-                        class="w-[38px] text-center border-none outline-none font-semibold text-xs text-[#374151] dark:text-[#d4d4d8] bg-transparent py-0 h-[30px] appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        class="w-9.5 text-center border-none outline-none font-semibold text-xs text-[#374151] dark:text-[#d4d4d8] bg-transparent py-0 h-7.5 appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         value="11"
                         onchange="execFontSizeFromInput(this.value)"
                         onkeydown="if(event.key==='Enter'){execFontSizeFromInput(this.value);this.blur();}">
