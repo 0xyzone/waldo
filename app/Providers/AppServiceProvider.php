@@ -10,6 +10,7 @@ use Filament\Auth\Notifications\VerifyEmail;
 use Filament\Facades\Filament;
 use Filament\Support\Facades\FilamentView;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\ServiceProvider;
 
@@ -69,6 +70,13 @@ class AppServiceProvider extends ServiceProvider
         // Force Filament's VerifyEmail notification to generate the correct panel URL
         VerifyEmail::createUrlUsing(function ($notifiable) {
             return Filament::getVerifyEmailUrl($notifiable);
+        });
+
+        // Use a custom, branded verification email template
+        VerifyEmail::toMailUsing(function ($notifiable, string $url) {
+            return (new MailMessage)
+                ->subject('🔐 One tiny step left – Verify your '.config('app.name').' email')
+                ->view('emails.verify-email', ['url' => $url, 'user' => $notifiable]);
         });
     }
 }

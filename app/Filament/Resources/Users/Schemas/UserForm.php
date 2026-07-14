@@ -22,6 +22,7 @@ class UserForm
                     ->relationship('roles', 'name')
                     ->multiple()
                     ->preload()
+                    ->required()
                     ->searchable(),
                 TextInput::make('password')
                     ->password()
