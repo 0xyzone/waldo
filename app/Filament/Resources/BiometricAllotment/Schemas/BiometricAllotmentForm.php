@@ -93,7 +93,8 @@ class BiometricAllotmentForm
                                         'Bio Not Required' => 'Bio Not Required',
                                     ])
                                     ->native(false)
-                                    ->default('Not Done Yet'),
+                                    ->default('Not Done Yet')
+                                    ->disabledOn('edit'),
                                 DatePicker::make('enrolled_date')
                                     ->label('Enrolled Date')
                                     ->native(false)
@@ -107,7 +108,8 @@ class BiometricAllotmentForm
                                     ])
                                     ->native(false)
                                     ->searchable()
-                                    ->preload(),
+                                    ->preload()
+                                    ->disabledOn('edit'),
                             ]),
                         Grid::make(['default' => 1, 'sm' => 3])
                             ->schema([
