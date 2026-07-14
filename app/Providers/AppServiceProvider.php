@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\BiometricAllotment;
 use App\Models\Employee;
+use App\Observers\BiometricAllotmentObserver;
 use App\Observers\EmployeeObserver;
 use Filament\Support\Facades\FilamentView;
 use Illuminate\Database\Eloquent\Model;
@@ -28,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
 
         Model::unguard();
         Employee::observe(EmployeeObserver::class);
+        BiometricAllotment::observe(BiometricAllotmentObserver::class);
 
         // Inject custom CSS to style employees table rows based on status
         FilamentView::registerRenderHook(
