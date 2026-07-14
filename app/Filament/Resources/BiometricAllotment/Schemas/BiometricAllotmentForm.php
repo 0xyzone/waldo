@@ -70,16 +70,17 @@ class BiometricAllotmentForm
 
                                 $livewire->redirect(BiometricAllotmentResource::getUrl('index'));
                             })
-                            ->visible(function ($record) {
-                                return MapUser::where('user_id', Auth::id())->exists() && $record->status != 'Done';
+                            ->hidden(fn(string $operation): bool => $operation === 'create')
+                            ->visible(function ($record, $operations) {
+                                return MapUser::where('user_id', Auth::id())->exists() && $record?->status != 'Done';
                             }),
                         Action::make('call')
                             ->label('Call')
                             ->icon('heroicon-o-phone')
                             ->color('info')
-                            ->url(fn ($record) => $record?->phone ? 'tel:'.$record->phone : null)
+                            ->url(fn($record) => $record?->phone ? 'tel:' . $record->phone : null)
                             ->openUrlInNewTab(false)
-                            ->visible(fn ($record) => filled($record?->phone)),
+                            ->visible(fn($record) => filled($record?->phone)),
                     ])
                     ->schema([
                         Grid::make(['default' => 1, 'sm' => 2])
@@ -97,13 +98,6 @@ class BiometricAllotmentForm
                                     ->required(),
                             ])
                             ->disabled($isIt),
-                        TextInput::make('phone')
-                            ->label('Phone Number')
-                            ->tel()
-                            ->maxLength(20)
-                            ->placeholder('+977 9800000000')
-                            ->columnSpanFull()
-                            ->disabled($isIt),
                         Grid::make(['default' => 1, 'sm' => 3])
                             ->schema([
                                 Select::make('status')
@@ -116,11 +110,13 @@ class BiometricAllotmentForm
                                     ])
                                     ->native(false)
                                     ->default('Not Done Yet')
-                                    ->disabled($isIt),
+                                    ->disabled($isIt)
+                                    ->hidden(fn(string $operation): bool => $operation === 'create'),
                                 DatePicker::make('enrolled_date')
                                     ->label('Enrolled Date')
                                     ->native(false)
-                                    ->disabled($isIt),
+                                    ->disabled($isIt)
+                                    ->hidden(fn(string $operation): bool => $operation === 'create'),
                                 Select::make('set_by')
                                     ->label('Set By')
                                     ->options([
@@ -131,7 +127,8 @@ class BiometricAllotmentForm
                                     ->native(false)
                                     ->searchable()
                                     ->preload()
-                                    ->disabled($isIt),
+                                    ->disabled($isIt)
+                                    ->hidden(fn(string $operation): bool => $operation === 'create'),
                             ]),
                         Grid::make(['default' => 1, 'sm' => 3])
                             ->schema([
@@ -144,7 +141,8 @@ class BiometricAllotmentForm
                                 Toggle::make('new_checkout')
                                     ->label('New CheckOut')
                                     ->disabled($isIt),
-                            ]),
+                            ])
+                                    ->hidden(fn(string $operation): bool => $operation === 'create'),
                         Grid::make(['default' => 1, 'sm' => 2])
                             ->schema([
                                 Select::make('shift')
@@ -155,6 +153,12 @@ class BiometricAllotmentForm
                                         'Night' => 'Night',
                                     ])
                                     ->native(false),
+                                TextInput::make('phone')
+                                    ->label('Phone Number')
+                                    ->tel()
+                                    ->maxLength(20)
+                                    ->placeholder('+977 9800000000')
+                                    ->disabled($isIt),
                             ]),
                         Textarea::make('remarks')
                             ->label('Remarks')

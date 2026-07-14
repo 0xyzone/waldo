@@ -29,15 +29,7 @@ class BiometricAllotmentsTable
                 TextColumn::make('code')
                     ->label('Code')
                     ->fontFamily('mono')
-                    ->searchable()
-                    ->sortable(query: function (Builder $query, string $direction): Builder {
-                        $driver = $query->getConnection()->getDriverName();
-                        if ($driver === 'sqlite') {
-                            return $query->orderByRaw('CAST(SUBSTR(code, 4) AS INTEGER) '.$direction);
-                        }
-
-                        return $query->orderByRaw('CAST(SUBSTR(code, 4) AS UNSIGNED) '.$direction);
-                    }),
+                    ->searchable(),
                 TextColumn::make('name')
                     ->label('Name')
                     ->searchable()
@@ -82,7 +74,7 @@ class BiometricAllotmentsTable
                     ->placeholder('—')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->defaultSort('code', 'desc')
+            ->modifyQueryUsing(fn (Builder $query) => $query->orderByRaw('CAST(REGEXP_REPLACE(code, "[^0-9]", "") AS UNSIGNED) DESC'))
             ->filters([
                 //
             ])
@@ -101,7 +93,6 @@ class BiometricAllotmentsTable
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
-            ])
-            ->defaultSort('code', 'asc');
+            ]);
     }
 }
