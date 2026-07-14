@@ -114,11 +114,14 @@ class BiometricAllotmentForm
                         Grid::make(['default' => 1, 'sm' => 3])
                             ->schema([
                                 Toggle::make('old_checkout_device')
-                                    ->label('Olde Check out Device'),
+                                    ->label('Olde Check out Device')
+                                    ->disabledOn('edit'),
                                 Toggle::make('new_checkin')
-                                    ->label('New Checkin'),
+                                    ->label('New Checkin')
+                                    ->disabledOn('edit'),
                                 Toggle::make('new_checkout')
-                                    ->label('New CheckOut'),
+                                    ->label('New CheckOut')
+                                    ->disabledOn('edit'),
                             ]),
                         Grid::make(['default' => 1, 'sm' => 2])
                             ->schema([
