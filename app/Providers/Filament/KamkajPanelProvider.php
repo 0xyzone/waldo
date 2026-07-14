@@ -42,9 +42,10 @@ class KamkajPanelProvider extends PanelProvider
             ->navigationItems([
                 NavigationItem::make('Letters & Templates')
                     ->url('/letters')
-                    ->icon('heroicon-o-document-text')
+                    ->icon('heroicon-o-arrow-top-right-on-square')
                     ->activeIcon('heroicon-s-document-text')
-                    ->sort(5),
+                    ->sort(5)
+                    ->group('HR & Admin'),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
