@@ -24,11 +24,6 @@ class UserForm
                     ->preload()
                     ->required()
                     ->searchable(),
-                TextInput::make('password')
-                    ->password()
-                    ->revealable()
-                    ->required()
-                    ->visibleOn('create'),
             ]);
     }
 }

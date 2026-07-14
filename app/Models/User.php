@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\MapUser;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -15,12 +14,12 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'must_change_password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, HasRoles, Notifiable;
 
     /**
      * Determine if the user can access the Filament panel.
@@ -40,17 +39,15 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'must_change_password' => 'boolean',
         ];
     }
 
     /**
      * Get all of the mapUsers for the User
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function mapUsers(): HasMany
     {
         return $this->hasMany(MapUser::class);
     }
-    
 }

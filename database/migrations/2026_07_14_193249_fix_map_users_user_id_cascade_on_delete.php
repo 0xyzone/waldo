@@ -1,0 +1,40 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('map_users', function (Blueprint $table) {
+            // Drop the existing constraint that has NO ACTION
+            $table->dropForeign('map_users_user_id_foreign');
+
+            // Recreate it with ON DELETE CASCADE
+            $table->foreign('user_id')
+                ->references('id')
+                ->on('users')
+                ->cascadeOnDelete();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('map_users', function (Blueprint $table) {
+            $table->dropForeign('map_users_user_id_foreign');
+
+            $table->foreign('user_id')
+                ->references('id')
+                ->on('users')
+                ->noActionOnDelete();
+        });
+    }
+};
