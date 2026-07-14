@@ -6,6 +6,8 @@ use App\Models\BiometricAllotment;
 use App\Models\Employee;
 use App\Observers\BiometricAllotmentObserver;
 use App\Observers\EmployeeObserver;
+use Filament\Auth\Notifications\VerifyEmail;
+use Filament\Facades\Filament;
 use Filament\Support\Facades\FilamentView;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\HtmlString;
@@ -63,5 +65,10 @@ class AppServiceProvider extends ServiceProvider
                 </style>
             ')
         );
+
+        // Force Filament's VerifyEmail notification to generate the correct panel URL
+        VerifyEmail::createUrlUsing(function ($notifiable) {
+            return Filament::getVerifyEmailUrl($notifiable);
+        });
     }
 }
