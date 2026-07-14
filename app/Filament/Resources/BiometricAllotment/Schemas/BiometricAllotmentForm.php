@@ -102,7 +102,8 @@ class BiometricAllotmentForm
                             ->tel()
                             ->maxLength(20)
                             ->placeholder('+977 9800000000')
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->disabled($isIt),
                         Grid::make(['default' => 1, 'sm' => 3])
                             ->schema([
                                 Select::make('status')
