@@ -31,6 +31,7 @@ class CandidateForm
                     ->label('Department')
                     ->relationship('department', 'name')
                     ->required()
+                    ->preload()
                     ->native(false)
                     ->searchable()
                     ->disablePlaceholderSelection(),
