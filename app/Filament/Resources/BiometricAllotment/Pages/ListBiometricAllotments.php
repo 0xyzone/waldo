@@ -20,7 +20,7 @@ class ListBiometricAllotments extends ListRecords
     {
         return [
             'all' => Tab::make('All')
-            ->badge(BiometricAllotment::count()),
+                ->badge(BiometricAllotment::count()),
             'done' => Tab::make('Done')
                 ->modifyQueryUsing(fn(Builder $query) => $query->where('status', 'Done'))
                 ->badge(BiometricAllotment::where('status', 'Done')->count()),
@@ -63,7 +63,11 @@ class ListBiometricAllotments extends ListRecords
                             ->send();
                     }
                 }),
-            CreateAction::make(),
+            CreateAction::make()
+                ->after(function ($record) {
+                    $record->status = 'Not Done Yet';
+                    $record->save();
+                }),
             Action::make('Visit Sheet')
                 ->icon('heroicon-o-arrow-top-right-on-square')
                 ->color('info')
