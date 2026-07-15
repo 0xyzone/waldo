@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\BiometricAllotment\Schemas;
 
-use App\Filament\Resources\BiometricAllotmentResource;
+use App\Filament\Resources\BiometricAllotment\BiometricAllotmentResource;
 use App\Models\BiometricAllotment;
 use App\Models\MapUser;
 use App\Models\User;

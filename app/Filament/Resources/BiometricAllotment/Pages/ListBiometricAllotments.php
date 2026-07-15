@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\BiometricAllotment\Pages;
 
-use App\Filament\Resources\BiometricAllotmentResource;
+use App\Filament\Resources\BiometricAllotment\BiometricAllotmentResource;
 use App\Models\BiometricAllotment;
 use App\Services\BiometricSheetsService;
 use Filament\Actions\Action;
