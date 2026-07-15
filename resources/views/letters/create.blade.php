@@ -302,24 +302,7 @@
                                         class="w-full p-1 border border-slate-200 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-[10px] focus:border-amber-500 outline-none">
                                 </div>
 
-                                <div>
-                                    <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Preview Value</label>
-                                    <template x-if="v.type === 'date'">
-                                        <input type="date" x-model="v.dummy" class="w-full p-1 border border-slate-200 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-[10px] focus:border-amber-500 outline-none">
-                                    </template>
-                                    <template x-if="v.type === 'number'">
-                                        <input type="number" x-model="v.dummy" placeholder="1000" class="w-full p-1 border border-slate-200 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-[10px] focus:border-amber-500 outline-none">
-                                    </template>
-                                    <template x-if="v.type === 'boolean'">
-                                        <select x-model="v.dummy" class="w-full p-1 border border-slate-200 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-[10px] focus:border-amber-500 outline-none">
-                                            <option value="Yes">Yes</option>
-                                            <option value="No">No</option>
-                                        </select>
-                                    </template>
-                                    <template x-if="!v.type || v.type === 'text' || v.type === 'dropdown'">
-                                        <input type="text" x-model="v.dummy" placeholder="Sample text" class="w-full p-1 border border-slate-200 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-[10px] focus:border-amber-500 outline-none">
-                                    </template>
-                                </div>
+
 
                                 {{-- Copy hint for this variable --}}
                                 <div x-show="v.key" class="flex items-center gap-1">
@@ -823,6 +806,8 @@ function createTemplateState() {
             page.addEventListener('paste', (e) => {
                 // Strip rich formatting — paste as plain text only to avoid layout thrash
                 e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
                 const text = (e.clipboardData || window.clipboardData).getData('text/plain');
                 document.execCommand('insertText', false, text);
                 // Reflow after browser has painted the inserted content

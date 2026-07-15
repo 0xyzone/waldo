@@ -501,7 +501,17 @@
                     // Replace employee_ placeholders
                     html = html.replace(/\{\{\s*employee_([a-zA-Z0-9_]+)\s*\}\}/gi, (match, k) => {
                         k = k.toLowerCase();
-                        if (k === 'name') return emp.name ?? '';
+                        if (k === 'name') {
+                            const name = emp.name ?? '';
+                            const gender = emp.gender ?? '';
+                            let prefix = '';
+                            if (gender === 'Male') {
+                                prefix = 'Mr. ';
+                            } else if (gender === 'Female') {
+                                prefix = 'Miss. ';
+                            }
+                            return prefix + name;
+                        }
                         if (k === 'employee_code') return emp.employee_code ?? '';
                         if (k === 'gender') return emp.gender ?? '';
                         if (k === 'department') return emp.department?.name ?? '';
