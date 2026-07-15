@@ -33,8 +33,7 @@ class CandidateForm
                     ->required()
                     ->native(false)
                     ->searchable()
-                    ->disablePlaceholderSelection()
-                    ->default('pending'),
+                    ->disablePlaceholderSelection(),
                 Select::make('status')
                     ->options([
                         'pending' => 'Pending',
