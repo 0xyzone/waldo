@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
-Route::prefix('/letters')->middleware('role:super_admin|hr')->group(function () {
+Route::prefix('/letters')->middleware('role:super_admin|HR')->group(function () {
     Route::get('/', [LetterController::class, 'index'])->name('letters.index');
     Route::get('/create', [LetterController::class, 'create'])->name('letters.create');
     Route::get('/generate', [LetterController::class, 'generate'])->name('letters.generate');
