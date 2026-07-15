@@ -91,6 +91,7 @@ class BiometricAllotmentsTable
                     ->iconButton()
                     ->url(fn($record) => $record->phone ? 'tel:' . $record->phone : null)
                     ->openUrlInNewTab(false)
+                    ->requiresConfirmation()
                     ->visible(fn($record) => filled($record->phone)),
                 Action::make('add to employee')
                     ->label('Convert')
