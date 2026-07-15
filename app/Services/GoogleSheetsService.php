@@ -35,6 +35,7 @@ class GoogleSheetsService
         'department_id' => 6,  // resolved to department name
         'designation_id' => 7,  // resolved to designation name
         'join_date_formatted' => 8,
+        'join_date' => 9,          // written as Y.m.d; read back by EmployeeSyncService
         'contact_number' => 10,
         'email' => 11,
         'citizenship_number' => 12,
@@ -109,8 +110,9 @@ class GoogleSheetsService
                 );
             }
 
-            // Never overwrite the auto-generated join_date (column 7) formula
-            $fieldsToSync = array_diff($fieldsToSync, ['join_date']);
+            // join_date is now written to column J (index 9) in Y.m.d format so the
+            // backward sync can read it back without losing the value.
+            // No fields need to be excluded here any more.
 
             if (empty($fieldsToSync)) {
                 return;
@@ -220,9 +222,6 @@ class GoogleSheetsService
         $newRow = array_fill(0, 30, '');
 
         foreach ($this->columnMap as $field => $colIndex) {
-            if ($field === 'join_date') {
-                continue; // Let the Google Sheet formula calculate this
-            }
             $newRow[$colIndex] = $this->resolveFieldValue($employee, $field);
         }
 
@@ -245,6 +244,9 @@ class GoogleSheetsService
         return match ($field) {
             'join_date_formatted' => $employee->join_date
                                     ? Carbon::parse($employee->join_date)->format('d F, Y')
+                                    : '',
+            'join_date' => $employee->join_date
+                                    ? Carbon::parse($employee->join_date)->format('Y.m.d')
                                     : '',
             'dob_ad' => $employee->dob_ad
                                     ? Carbon::parse($employee->dob_ad)->format('d F, Y')
