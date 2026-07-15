@@ -107,12 +107,12 @@
 @section('content')
 <div id="copy-tip" class="copy-tip">✓ Copied!</div>
 
-<div x-data="editTemplateState()" x-init="init()" class="h-full flex flex-col md:flex-row overflow-hidden">
+<div x-data="editTemplateState()" x-init="init()" class="h-full flex flex-col md:flex-row-reverse overflow-hidden">
 
     <!-- ============================================================
-         LEFT SIDEBAR
+         RIGHT SIDEBAR
          ============================================================ -->
-    <aside class="w-full md:w-[320px] xl:w-90 bg-white dark:bg-zinc-900 border-r border-slate-200 dark:border-zinc-800 flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-200">
+    <aside class="w-full md:w-[320px] xl:w-90 bg-white dark:bg-zinc-900 border-l border-slate-200 dark:border-zinc-800 flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-200">
         <form id="template-form" action="{{ route('letters.update', $template->id) }}" method="POST" class="flex flex-col h-full overflow-hidden" @submit="syncContent()">
             @csrf
             @method('PUT')

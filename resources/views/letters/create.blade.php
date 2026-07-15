@@ -153,12 +153,12 @@
 <!-- ===== Copy Tooltip (global) ===== -->
 <div id="copy-tip" class="copy-tip">✓ Copied!</div>
 
-<div x-data="createTemplateState()" class="h-full flex flex-col md:flex-row overflow-hidden">
+<div x-data="createTemplateState()" class="h-full flex flex-col md:flex-row-reverse overflow-hidden">
 
     <!-- ============================================================
-         LEFT SIDEBAR — Configuration
+         RIGHT SIDEBAR — Configuration
          ============================================================ -->
-    <aside class="w-full md:w-[320px] xl:w-90 bg-white dark:bg-zinc-900 border-r border-slate-200 dark:border-zinc-800 flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-200">
+    <aside class="w-full md:w-[320px] xl:w-90 bg-white dark:bg-zinc-900 border-l border-slate-200 dark:border-zinc-800 flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-200">
         <form id="template-form" action="{{ route('letters.store') }}" method="POST" class="flex flex-col h-full overflow-hidden" @submit="syncContent()">
             @csrf
 

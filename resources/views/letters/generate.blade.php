@@ -4,6 +4,28 @@
 
 @section('styles')
     <style>
+        /* Sleek custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.25);
+            border-radius: 99px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(156, 163, 175, 0.45);
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: rgba(75, 85, 99, 0.4);
+        }
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: rgba(75, 85, 99, 0.6);
+        }
+
         /* Sidebar scrollable region */
         .sidebar-scroll {
             overflow-y: auto;
@@ -18,11 +40,10 @@
         <!-- ======== LEFT SIDEBAR – Controls ======== -->
         <aside
             class="no-print w-full md:w-[380px] xl:w-[420px] bg-white dark:bg-zinc-900 border-r border-slate-200 dark:border-zinc-800 flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-200">
-
-            <div class="sidebar-scroll p-5 flex flex-col gap-5">
-
+            
+            <div class="flex flex-col h-full overflow-hidden p-5 gap-4">
                 <!-- 1. Template -->
-                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-4">
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-4 shrink-0">
                     <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-3">1 — Letter Template</p>
                     <select x-model="selectedTemplateId" @change="onTemplateChange()"
                         class="w-full px-3 py-2.5 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-sm text-slate-900 dark:text-zinc-100 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all">
@@ -34,7 +55,7 @@
                 </div>
 
                 <!-- 2. Page Margins -->
-                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-4">
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-4 shrink-0">
                     <div class="flex items-center justify-between mb-3">
                         <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">2 — Page Margins (mm)</p>
                         <label class="flex items-center gap-1.5 cursor-pointer select-none">
@@ -54,9 +75,9 @@
                     </div>
                 </div>
 
-                <!-- 3. Employees -->
-                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-4">
-                    <div class="flex items-center justify-between mb-3">
+                <!-- 3. Employees (Covers remaining height fully) -->
+                <div class="flex-1 flex flex-col min-h-0 bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-4">
+                    <div class="flex items-center justify-between mb-3 shrink-0">
                         <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">3 — Target Employees</p>
                         <span x-text="selectedCodes.length + ' selected'"
                             class="text-[10px] font-semibold px-2 py-0.5 rounded-full"
@@ -65,7 +86,7 @@
                                 'bg-slate-100 dark:bg-zinc-800 text-slate-400'"></span>
                     </div>
 
-                    <div class="relative mb-2.5">
+                    <div class="relative mb-2.5 shrink-0">
                         <input type="text" x-model="search" placeholder="Search by name or code…"
                             class="w-full pl-8 pr-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-xs text-slate-900 dark:text-zinc-100 focus:border-amber-500 outline-none transition-all">
                         <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" fill="none"
@@ -75,7 +96,7 @@
                         </svg>
                     </div>
 
-                    <div class="flex gap-1.5 mb-2.5">
+                    <div class="flex gap-1.5 mb-2.5 shrink-0">
                         <button @click="selectAll()" type="button"
                             class="px-2.5 py-1 text-[10px] font-semibold border border-slate-200 dark:border-zinc-700 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-400 transition-colors cursor-pointer">Select
                             All</button>
@@ -83,7 +104,7 @@
                             class="px-2.5 py-1 text-[10px] font-semibold border border-slate-200 dark:border-zinc-700 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-400 transition-colors cursor-pointer">Clear</button>
                     </div>
 
-                    <div class="border border-slate-100 dark:border-zinc-800 rounded-lg max-h-44 overflow-y-auto">
+                    <div class="flex-1 min-h-0 border border-slate-100 dark:border-zinc-800 rounded-lg overflow-y-auto">
                         <template x-for="emp in filteredEmployees" :key="emp.employee_code">
                             <div @click="toggleEmployee(emp.employee_code)"
                                 class="flex items-center gap-2.5 px-3 py-2 cursor-pointer border-b border-slate-50 dark:border-zinc-900 last:border-b-0 hover:bg-amber-50 dark:hover:bg-amber-950/20 transition-colors"
@@ -109,83 +130,21 @@
                     </div>
                 </div>
 
-                <!-- 4. Custom Variables -->
-                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-4"
-                    x-show="selectedTemplate && selectedTemplate.variables && selectedTemplate.variables.length > 0">
-                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-3">4 — Template Variables</p>
-                    <div class="space-y-3">
-                        <template x-for="v in (selectedTemplate ? selectedTemplate.variables : [])" :key="v.key || v">
-                            <div>
-                                <label class="block text-[9px] font-bold uppercase text-slate-500 dark:text-zinc-400 mb-0.5"
-                                    x-text="formatLabel(v.key || v)"></label>
-
-                                <template x-if="(v.type || 'text') === 'date'">
-                                    <input type="date" x-model="customValues[v.key || v]"
-                                        class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-xs text-slate-900 dark:text-zinc-100 focus:border-amber-500 outline-none">
-                                </template>
-
-                                <template x-if="(v.type || 'text') === 'number'">
-                                    <input type="number" x-model="customValues[v.key || v]"
-                                        :placeholder="'Enter ' + formatLabel(v.key || v)"
-                                        class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-xs text-slate-900 dark:text-zinc-100 focus:border-amber-500 outline-none">
-                                </template>
-
-                                <template x-if="(v.type || 'text') === 'boolean'">
-                                    <select x-model="customValues[v.key || v]"
-                                        class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-xs text-slate-900 dark:text-zinc-100 focus:border-amber-500 outline-none">
-                                        <option value="">Select…</option>
-                                        <option value="Yes">Yes</option>
-                                        <option value="No">No</option>
-                                    </select>
-                                </template>
-
-                                <template x-if="(v.type || 'text') === 'dropdown'">
-                                    <select x-model="customValues[v.key || v]"
-                                        class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-xs text-slate-900 dark:text-zinc-100 focus:border-amber-500 outline-none">
-                                        <option value="">— Select option —</option>
-                                        <template x-for="option in (v.options && v.options.trim() ? v.options.split(',').map(s => s.trim()).filter(s => s) : [])" :key="option">
-                                            <option :value="option" x-text="option"></option>
-                                        </template>
-                                    </select>
-                                </template>
-
-                                <template x-if="!v.type || v.type === 'text'">
-                                    <input type="text" x-model="customValues[v.key || v]"
-                                        :placeholder="'Enter ' + formatLabel(v.key || v)"
-                                        class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-xs text-slate-900 dark:text-zinc-100 focus:border-amber-500 outline-none">
-                                </template>
-                            </div>
-                        </template>
-                    </div>
+                <!-- Footer Actions -->
+                <div class="shrink-0 pt-2 border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col gap-2.5">
+                    <button @click="window.print()" :disabled="selectedCodes.length === 0 || !selectedTemplateId"
+                        class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-amber-500/10 transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" />
+                        </svg>
+                        Print / Save as PDF
+                    </button>
                 </div>
-
-            </div>
-
-            <!-- Footer Actions -->
-            <div
-                class="shrink-0 p-4 border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col gap-2.5">
-                <button @click="window.print()" :disabled="selectedCodes.length === 0 || !selectedTemplateId"
-                    class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-amber-500/10 transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z" />
-                    </svg>
-                    Print / Save as PDF
-                </button>
-                {{-- <button
-                @click="downloadPdf()"
-                :disabled="selectedCodes.length === 0 || !selectedTemplateId"
-                class="w-full py-2.5 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-300 hover:bg-slate-50 text-sm font-semibold rounded-xl transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 disabled:opacity-40 disabled:pointer-events-none"
-            >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
-                </svg>
-                Download as PDF
-            </button> --}}
             </div>
         </aside>
 
-        <!-- ======== PREVIEW PANE ======== -->
+        <!-- ======== MIDDLE PANE – Preview ======== -->
         <section class="flex-1 overflow-y-auto bg-[#e8eaed] dark:bg-[#121215] transition-colors duration-200">
 
             <!-- Empty State -->
@@ -313,6 +272,62 @@
                 </template>
             </div>
         </section>
+
+        <!-- ======== RIGHT SIDEBAR – Template Variables ======== -->
+        <aside
+            x-show="selectedTemplate && selectedTemplate.variables && selectedTemplate.variables.length > 0"
+            class="no-print w-full md:w-[320px] xl:w-[350px] bg-white dark:bg-zinc-900 border-l border-slate-200 dark:border-zinc-800 flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-200"
+            style="display: none;">
+            <div class="sidebar-scroll p-5 flex flex-col gap-4">
+                <div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-4">
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-3">Template Variables</p>
+                    <div class="space-y-3">
+                        <template x-for="v in (selectedTemplate ? selectedTemplate.variables : [])" :key="v.key || v">
+                            <div>
+                                <label class="block text-[9px] font-bold uppercase text-slate-500 dark:text-zinc-400 mb-0.5"
+                                    x-text="formatLabel(v.key || v)"></label>
+
+                                <template x-if="(v.type || 'text') === 'date'">
+                                    <input type="date" x-model="customValues[v.key || v]"
+                                        class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-xs text-slate-900 dark:text-zinc-100 focus:border-amber-500 outline-none">
+                                </template>
+
+                                <template x-if="(v.type || 'text') === 'number'">
+                                    <input type="number" x-model="customValues[v.key || v]"
+                                        :placeholder="'Enter ' + formatLabel(v.key || v)"
+                                        class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-xs text-slate-900 dark:text-zinc-100 focus:border-amber-500 outline-none">
+                                </template>
+
+                                <template x-if="(v.type || 'text') === 'boolean'">
+                                    <select x-model="customValues[v.key || v]"
+                                        class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-xs text-slate-900 dark:text-zinc-100 focus:border-amber-500 outline-none">
+                                        <option value="">Select…</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No">No</option>
+                                    </select>
+                                </template>
+
+                                <template x-if="(v.type || 'text') === 'dropdown'">
+                                    <select x-model="customValues[v.key || v]"
+                                        class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-xs text-slate-900 dark:text-zinc-100 focus:border-amber-500 outline-none">
+                                        <option value="">— Select option —</option>
+                                        <template x-for="option in (v.options && v.options.trim() ? v.options.split(',').map(s => s.trim()).filter(s => s) : [])" :key="option">
+                                            <option :value="option" x-text="option"></option>
+                                        </template>
+                                    </select>
+                                </template>
+
+                                <template x-if="!v.type || v.type === 'text'">
+                                    <input type="text" x-model="customValues[v.key || v]"
+                                        :placeholder="'Enter ' + formatLabel(v.key || v)"
+                                        class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-xs text-slate-900 dark:text-zinc-100 focus:border-amber-500 outline-none">
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </aside>
 
     </div>
 @endsection
