@@ -6,6 +6,7 @@ use App\Models\Employee;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
@@ -25,32 +26,24 @@ class AdjustmentForm
                     ->schema([
                         Grid::make(['default' => 1, 'sm' => 2, 'lg' => 4])
                             ->schema([
-                                TextInput::make('employee_code')
+                                TextEntry::make('employee_code')
                                     ->label('Employee Code')
                                     ->placeholder('—')
-                                    ->disabled()
-                                    ->dehydrated(false)
                                     ->default(fn (Get $get) => Employee::find($get('employee_id'))?->employee_code),
 
-                                TextInput::make('employee_name')
+                                TextEntry::make('employee_name')
                                     ->label('Full Name')
                                     ->placeholder('—')
-                                    ->disabled()
-                                    ->dehydrated(false)
                                     ->default(fn (Get $get) => Employee::find($get('employee_id'))?->name),
 
-                                TextInput::make('employee_department')
+                                TextEntry::make('employee_department')
                                     ->label('Department')
                                     ->placeholder('—')
-                                    ->disabled()
-                                    ->dehydrated(false)
                                     ->default(fn (Get $get) => Employee::find($get('employee_id'))?->department?->name),
 
-                                TextInput::make('employee_designation')
+                                TextEntry::make('employee_designation')
                                     ->label('Designation')
                                     ->placeholder('—')
-                                    ->disabled()
-                                    ->dehydrated(false)
                                     ->default(fn (Get $get) => Employee::find($get('employee_id'))?->designation?->name),
                             ]),
                     ])
