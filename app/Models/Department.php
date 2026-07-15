@@ -2,6 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\Adjustment;
+use App\Models\BiometricAllotment;
+use App\Models\Candidate;
+use App\Models\Designation;
+use App\Models\Employee;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -13,5 +18,25 @@ class Department extends Model
     public function designations(): HasMany
     {
         return $this->hasMany(Designation::class);
+    }
+
+    public function candidates(): HasMany
+    {
+        return $this->hasMany(Candidate::class);
+    }
+
+    public function employees(): HasMany
+    {
+        return $this->hasMany(Employee::class);
+    }
+
+    public function biometricAllotments(): HasMany
+    {
+        return $this->hasMany(BiometricAllotment::class);
+    }
+
+    public function adjustment(): HasMany
+    {
+        return $this->hasMany(Adjustment::class);
     }
 }

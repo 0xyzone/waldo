@@ -4,8 +4,8 @@ namespace App\Filament\Resources\Candidates\Schemas;
 
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
 class CandidateForm
@@ -27,6 +27,14 @@ class CandidateForm
                     ->hintIcon('heroicon-o-information-circle')
                     ->hintIconTooltip('If there are no reference then you can leave it blank')
                     ->placeholder('Prabal Pradhan'),
+                Select::make('department_id')
+                    ->label('Department')
+                    ->relationship('department', 'name')
+                    ->required()
+                    ->native(false)
+                    ->searchable()
+                    ->disablePlaceholderSelection()
+                    ->default('pending'),
                 Select::make('status')
                     ->options([
                         'pending' => 'Pending',
