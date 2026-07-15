@@ -62,7 +62,7 @@ class AdjustmentForm
                                 Select::make('employee_id')
                                     ->label('Employee')
                                     ->relationship('employee', 'name')
-                                    ->searchable()
+                                    ->searchable(['name', 'employee_code'])
                                     ->required()
                                     ->live()
                                     ->preload()
