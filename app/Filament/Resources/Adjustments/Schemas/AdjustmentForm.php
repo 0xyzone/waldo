@@ -134,12 +134,14 @@ class AdjustmentForm
                                     ->label('Notes by HR')
                                     ->columnSpanFull()
                                     ->rows(3)
-                                    ->autosize(),
+                                    ->autosize()
+                                    ->disabled(fn () => !auth()->user()->hasRole('HR')),
                                 Textarea::make('notes_by_finance')
                                     ->label('Notes by Finance')
                                     ->columnSpanFull()
                                     ->rows(3)
-                                    ->autosize(),
+                                    ->autosize()
+                                    ->disabled(fn () => !auth()->user()->hasRole('Finance')),
                             ]),
                     ]),
             ]);
