@@ -36,6 +36,9 @@ class KamkajPanelProvider extends PanelProvider
             ->emailChangeVerification()
             ->profile()
             ->favicon(asset('img/logo.ico'))
+            ->globalSearch(false)
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('30s')
             ->colors([
                 'primary' => Color::Amber,
             ])
