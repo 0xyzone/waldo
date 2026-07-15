@@ -22,6 +22,8 @@ class CandidatesTable
                 TextColumn::make('phone_number'),
                 ImageColumn::make('cv_image')
                     ->imageGallery(),
+                TextColumn::make('departmanet.name')
+                    ->badge(),
                 SelectColumn::make('status')
                     ->label('Status')
                     ->options([
@@ -36,7 +38,7 @@ class CandidatesTable
                 TextColumn::make('notes')
                     ->label('Notes')
                     ->limit(20)
-                    ->tooltip(fn ($state) => $state),
+                    ->tooltip(fn($state) => $state),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
