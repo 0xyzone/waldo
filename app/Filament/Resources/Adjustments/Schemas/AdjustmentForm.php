@@ -74,7 +74,7 @@ class AdjustmentForm
                                         $set('employee_designation', $employee?->designation?->name);
                                         $set('employee_code', $employee?->employee_code);
                                     })
-                                    ->disable(fn () => auth()->user()->hasRole('finance')),
+                                    ->disabled(fn () => auth()->user()->hasRole('Finance')),
 
                                 Select::make('type')
                                     ->label('Adjustment Type')
@@ -85,7 +85,7 @@ class AdjustmentForm
                                     ->native(false)
                                     ->required()
                                     ->default('add')
-                                    ->disable(fn () => auth()->user()->hasRole('finance')),
+                                    ->disabled(fn () => auth()->user()->hasRole('Finance')),
 
                                 Select::make('for_month')
                                     ->label('Target Month')
@@ -106,7 +106,7 @@ class AdjustmentForm
                                     ->default(strtolower(now()->format('F')))
                                     ->native(false)
                                     ->required()
-                                    ->disable(fn () => auth()->user()->hasRole('finance')),
+                                    ->disabled(fn () => auth()->user()->hasRole('Finance')),
 
                                 Select::make('status')
                                     ->label('Status')
