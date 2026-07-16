@@ -33,7 +33,7 @@ class DiscordSettingForm
                             ]),
                         Select::make('target_channel_id')
                             ->label('Target Notification Channel')
-                            ->options(fn() => DiscordService::getChannelsGroupedByCategory())
+                            ->options(fn () => DiscordService::getChannelsGroupedByCategory())
                             ->searchable()
                             ->placeholder('Select a channel')
                             ->helperText('This is the channel where biometric allotment notification messages will be sent.')
@@ -44,7 +44,7 @@ class DiscordSettingForm
                     ->schema([
                         Placeholder::make('server_details')
                             ->label('')
-                            ->content(fn() => view('filament.pages.discord-info')),
+                            ->content(fn () => view('filament.pages.discord-info')),
                     ]),
             ]);
     }

@@ -29,7 +29,8 @@ class DiscordService
         }
 
         try {
-            $response = Http::withToken($setting->bot_token, 'Bot')
+            $response = Http::withoutVerifying()
+                ->withToken($setting->bot_token, 'Bot')
                 ->get("https://discord.com/api/v10/guilds/{$setting->guild_id}");
 
             if ($response->successful()) {
@@ -57,7 +58,8 @@ class DiscordService
         }
 
         try {
-            $response = Http::withToken($setting->bot_token, 'Bot')
+            $response = Http::withoutVerifying()
+                ->withToken($setting->bot_token, 'Bot')
                 ->get("https://discord.com/api/v10/guilds/{$setting->guild_id}/channels");
 
             if ($response->successful()) {
@@ -131,7 +133,8 @@ class DiscordService
         }
 
         try {
-            $response = Http::withToken($setting->bot_token, 'Bot')
+            $response = Http::withoutVerifying()
+                ->withToken($setting->bot_token, 'Bot')
                 ->get("https://discord.com/api/v10/guilds/{$setting->guild_id}/roles");
 
             if ($response->successful()) {
@@ -181,7 +184,8 @@ class DiscordService
                 $payload['content'] = $content;
             }
 
-            $response = Http::withToken($setting->bot_token, 'Bot')
+            $response = Http::withoutVerifying()
+                ->withToken($setting->bot_token, 'Bot')
                 ->post("https://discord.com/api/v10/channels/{$channelId}/messages", $payload);
 
             if ($response->successful()) {
