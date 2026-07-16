@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Employee extends Model
 {
@@ -106,5 +107,13 @@ class Employee extends Model
     public function adjustments(): HasMany
     {
         return $this->hasMany(Adjustment::class);
+    }
+
+    /**
+     * Get the leaver record associated with the Employee.
+     */
+    public function leaver(): HasOne
+    {
+        return $this->hasOne(Leaver::class, 'employee_id', 'employee_code');
     }
 }
