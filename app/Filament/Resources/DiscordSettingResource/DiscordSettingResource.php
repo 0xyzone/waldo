@@ -52,8 +52,8 @@ class DiscordSettingResource extends Resource
     {
         return [
             'index' => ListDiscordSettings::route('/'),
-            // 'create' => CreateDiscordSetting::route('/create'),
-            // 'edit' => EditDiscordSetting::route('/{record}/edit'),
+            'create' => CreateDiscordSetting::route('/create'),
+            'edit' => EditDiscordSetting::route('/{record}/edit'),
         ];
     }
 }
