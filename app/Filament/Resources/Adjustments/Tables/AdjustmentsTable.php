@@ -18,12 +18,12 @@ class AdjustmentsTable
                 TextColumn::make('employee.name')
                     ->searchable(),
                 TextColumn::make('type')
-                    ->formatStateUsing(fn($state) => match ($state) {
+                    ->formatStateUsing(fn ($state) => match ($state) {
                         'add' => 'Addition (+)',
                         'subtract' => 'Deduction (-)',
                     })
                     ->badge()
-                    ->color(fn($state) => match ($state) {
+                    ->color(fn ($state) => match ($state) {
                         'add' => 'success',
                         'subtract' => 'danger',
                     })
@@ -41,11 +41,11 @@ class AdjustmentsTable
                 TextColumn::make('notes_by_hr')
                     ->label('Notes by HR')
                     ->limit(15)
-                    ->tooltip(fn($state) => $state),
+                    ->tooltip(fn ($state) => $state),
                 TextColumn::make('notes_by_finance')
                     ->label('Notes by Finance')
                     ->limit(15)
-                    ->tooltip(fn($state) => $state),
+                    ->tooltip(fn ($state) => $state),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

@@ -23,7 +23,9 @@ class EmployeeResource extends Resource
     protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::User;
 
     protected static ?int $navigationSort = 2;
+
     protected static string|UnitEnum|null $navigationGroup = 'HR & Admin';
+
     protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Schema $schema): Schema

@@ -17,12 +17,12 @@ class ListAdjustments extends ListRecords
     {
         return [
             'all' => Tab::make('All')
-            ->badge(Adjustment::count()),
+                ->badge(Adjustment::count()),
             'add' => Tab::make('Additions')
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('type', 'add'))
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('type', 'add'))
                 ->badge(Adjustment::where('type', 'add')->count()),
             'subtract' => Tab::make('Deductions')
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('type', 'subtract'))
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('type', 'subtract'))
                 ->badge(Adjustment::where('type', 'subtract')->count()),
         ];
     }

@@ -12,8 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('map_users', function (Blueprint $table) {
-            // Drop the existing constraint that has NO ACTION
-            $table->dropForeign('map_users_user_id_foreign');
+            if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+                // Drop the existing constraint that has NO ACTION
+                $table->dropForeign('map_users_user_id_foreign');
+            }
 
             // Recreate it with ON DELETE CASCADE
             $table->foreign('user_id')
@@ -29,7 +31,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('map_users', function (Blueprint $table) {
-            $table->dropForeign('map_users_user_id_foreign');
+            if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+                $table->dropForeign('map_users_user_id_foreign');
+            }
 
             $table->foreign('user_id')
                 ->references('id')

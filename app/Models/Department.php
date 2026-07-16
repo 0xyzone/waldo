@@ -2,11 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Adjustment;
-use App\Models\BiometricAllotment;
-use App\Models\Candidate;
-use App\Models\Designation;
-use App\Models\Employee;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 

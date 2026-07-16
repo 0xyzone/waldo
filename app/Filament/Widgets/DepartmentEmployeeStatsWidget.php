@@ -10,6 +10,7 @@ use Filament\Widgets\Widget;
 class DepartmentEmployeeStatsWidget extends Widget
 {
     use HasWidgetShield;
+
     protected string $view = 'filament.widgets.department-employee-stats-widget';
 
     // Full column span to let us constraint layout max-width in blade

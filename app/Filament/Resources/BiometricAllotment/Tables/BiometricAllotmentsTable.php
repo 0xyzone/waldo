@@ -2,12 +2,13 @@
 
 namespace App\Filament\Resources\BiometricAllotment\Tables;
 
+use App\Models\BiometricAllotment;
 use App\Models\Employee;
+use App\Services\DiscordService;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -25,7 +26,7 @@ class BiometricAllotmentsTable
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn($state) => match ($state) {
+                    ->color(fn ($state) => match ($state) {
                         'Done' => 'success',
                         'Left Job' => 'danger',
                         'Not Done Yet' => 'warning',
@@ -47,7 +48,7 @@ class BiometricAllotmentsTable
                     ->label('Set By')
                     ->limit(10)
                     ->badge()
-                    ->color(fn($state) => match ($state) {
+                    ->color(fn ($state) => match ($state) {
                         'Shuraz' => 'info',
                         'Saugat' => 'danger',
                         'Suraj Raj Karmacharya' => 'warning'
@@ -69,7 +70,7 @@ class BiometricAllotmentsTable
                 TextColumn::make('remarks')
                     ->label('Remarks')
                     ->limit(20)
-                    ->tooltip(fn($state) => $state),
+                    ->tooltip(fn ($state) => $state),
                 TextColumn::make('phone')
                     ->label('Phone')
                     ->icon('heroicon-o-phone')
@@ -79,7 +80,7 @@ class BiometricAllotmentsTable
                     ->placeholder('—')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->modifyQueryUsing(fn(Builder $query) => $query->orderByRaw('CAST(REGEXP_REPLACE(code, "[^0-9]", "") AS UNSIGNED) DESC'))
+            ->modifyQueryUsing(fn (Builder $query) => $query->orderByRaw('CAST(REGEXP_REPLACE(code, "[^0-9]", "") AS UNSIGNED) DESC'))
             ->filters([
                 //
             ])
@@ -89,10 +90,10 @@ class BiometricAllotmentsTable
                     ->icon('heroicon-o-phone')
                     ->color('info')
                     ->iconButton()
-                    ->url(fn($record) => $record->phone ? 'tel:' . $record->phone : null)
+                    ->url(fn ($record) => $record->phone ? 'tel:'.$record->phone : null)
                     ->openUrlInNewTab(false)
                     ->requiresConfirmation()
-                    ->visible(fn($record) => filled($record->phone)),
+                    ->visible(fn ($record) => filled($record->phone)),
                 Action::make('add to employee')
                     ->label('Convert')
                     ->button()
@@ -100,8 +101,10 @@ class BiometricAllotmentsTable
                         $auth = auth()->user();
                         if ($auth->hasRole('HR')) {
                             $employee = Employee::where('employee_code', $record->code)->first();
-                            return !$employee;
+
+                            return ! $employee;
                         }
+
                         return false;
                     })
                     ->form([
@@ -109,18 +112,18 @@ class BiometricAllotmentsTable
                             ->label('Employee Code')
                             ->required()
                             ->unique(ignoreRecord: true)
-                            ->default(fn($record) => $record->code),
+                            ->default(fn ($record) => $record->code),
                         TextInput::make('name')
                             ->label('Employee Name')
                             ->required()
-                            ->default(fn($record) => $record->name),
+                            ->default(fn ($record) => $record->name),
                         TextInput::make('phone_number')
-                            ->default(fn($record) => $record?->phone),
+                            ->default(fn ($record) => $record?->phone),
                         Select::make('department_id')
                             ->relationship('department', 'name')
                             ->label('Department')
                             ->required()
-                            ->default(fn($record) => $record->department_id),
+                            ->default(fn ($record) => $record->department_id),
                     ])
                     ->action(function (array $data) {
                         $employee = Employee::create([
@@ -132,7 +135,7 @@ class BiometricAllotmentsTable
                             'tips_status' => 'Release',
                             'point_value' => 1,
                             'publish_tips' => true,
-                            'tips_fixed' => true
+                            'tips_fixed' => true,
                         ]);
                         Notification::make()
                             ->title('Employee Created')
@@ -141,6 +144,78 @@ class BiometricAllotmentsTable
                             ->send();
                     }),
                 EditAction::make(),
+            ])
+            ->headerActions([
+                Action::make('sendDiscordNotification')
+                    ->label('Send to Discord')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->color('primary')
+                    ->requiresConfirmation()
+                    ->modalHeading('Send Biometric Requests to Discord?')
+                    ->modalDescription('This will notify the IT role in your configured Discord channel about the new biometric allotment requests.')
+                    ->action(function () {
+                        $pendingAllotments = BiometricAllotment::where('status', 'Not Done Yet')->get();
+
+                        if ($pendingAllotments->isEmpty()) {
+                            Notification::make()
+                                ->title('No Pending Allotments')
+                                ->body('There are no biometric allotments with "Not Done Yet" status.')
+                                ->warning()
+                                ->send();
+
+                            return;
+                        }
+
+                        $setting = DiscordService::getSetting();
+                        if (! $setting || ! $setting->bot_token || ! $setting->guild_id || ! $setting->target_channel_id) {
+                            Notification::make()
+                                ->title('Discord Setup Incomplete')
+                                ->body('Please configure the Discord bot settings first in the Discord Setup page.')
+                                ->danger()
+                                ->send();
+
+                            return;
+                        }
+
+                        $itRoleMention = DiscordService::getItRoleMention();
+
+                        $description = "The following employees have been added and need their biometric enrollment completed:\n\n";
+                        foreach ($pendingAllotments as $allotment) {
+                            $description .= "• **{$allotment->name}** (Code: `{$allotment->code}`)\n";
+                        }
+
+                        $embed = [
+                            'title' => '🚨 Pending Biometric Allotments',
+                            'description' => $description,
+                            'color' => 0xFFCC00,
+                            'timestamp' => now()->toISOString(),
+                            'footer' => [
+                                'text' => 'Waldo Biometric Allotments',
+                            ],
+                        ];
+
+                        $content = "{$itRoleMention} - New biometric allotment(s) require action:";
+
+                        $success = DiscordService::sendEmbedMessage(
+                            $setting->target_channel_id,
+                            $embed,
+                            $content
+                        );
+
+                        if ($success) {
+                            Notification::make()
+                                ->title('Discord Notification Sent')
+                                ->body('Successfully notified the IT role on Discord.')
+                                ->success()
+                                ->send();
+                        } else {
+                            Notification::make()
+                                ->title('Failed to Send Notification')
+                                ->body('An error occurred while trying to send the message to Discord. Please check your token and channel setup.')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

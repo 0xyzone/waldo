@@ -11,8 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('candidates', function (Blueprint $table) {
-            $table->foreignId('department_id')->nullable();
+        Schema::create('discord_settings', function (Blueprint $table) {
+            $table->id();
+            $table->string('bot_token')->nullable();
+            $table->string('guild_id')->nullable();
+            $table->string('target_channel_id')->nullable();
+            $table->timestamps();
         });
     }
 
@@ -21,9 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('candidates', function (Blueprint $table) {
-            $table->dropForeign(['department_id']);
-            $table->dropColumn('department_id');
-        });
+        Schema::dropIfExists('discord_settings');
     }
 };

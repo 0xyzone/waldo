@@ -26,7 +26,7 @@ class GoogleSheetsServiceJoinDateTest extends TestCase
     }
 
     /** @test */
-    public function testJoinDateFormattedReturnsHumanReadableDate(): void
+    public function test_join_date_formatted_returns_human_readable_date(): void
     {
         $employee = Mockery::mock(Employee::class)->makePartial();
         $employee->join_date = Carbon::parse('2024-01-15');
@@ -37,7 +37,7 @@ class GoogleSheetsServiceJoinDateTest extends TestCase
     }
 
     /** @test */
-    public function testJoinDateReturnsYyyyMmDdFormat(): void
+    public function test_join_date_returns_yyyy_mm_dd_format(): void
     {
         $employee = Mockery::mock(Employee::class)->makePartial();
         $employee->join_date = Carbon::parse('2024-01-15');
@@ -48,7 +48,7 @@ class GoogleSheetsServiceJoinDateTest extends TestCase
     }
 
     /** @test */
-    public function testJoinDateReturnsEmptyStringWhenNull(): void
+    public function test_join_date_returns_empty_string_when_null(): void
     {
         $employee = Mockery::mock(Employee::class)->makePartial();
         $employee->join_date = null;
@@ -58,7 +58,7 @@ class GoogleSheetsServiceJoinDateTest extends TestCase
     }
 
     /** @test */
-    public function testColumnMapContainsJoinDateAtIndexNine(): void
+    public function test_column_map_contains_join_date_at_index_nine(): void
     {
         $service = Mockery::mock(GoogleSheetsService::class)->makePartial();
         $prop = new ReflectionProperty(GoogleSheetsService::class, 'columnMap');

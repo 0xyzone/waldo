@@ -5,7 +5,6 @@ namespace App\Filament\Resources\Adjustments\Schemas;
 use App\Models\Employee;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -131,13 +130,13 @@ class AdjustmentForm
                                     ->columnSpanFull()
                                     ->rows(3)
                                     ->autosize()
-                                    ->disabled(fn () => !auth()->user()->hasRole('HR')),
+                                    ->disabled(fn () => ! auth()->user()->hasRole('HR')),
                                 Textarea::make('notes_by_finance')
                                     ->label('Notes by Finance')
                                     ->columnSpanFull()
                                     ->rows(3)
                                     ->autosize()
-                                    ->disabled(fn () => !auth()->user()->hasRole('Finance')),
+                                    ->disabled(fn () => ! auth()->user()->hasRole('Finance')),
                             ]),
                     ]),
             ]);

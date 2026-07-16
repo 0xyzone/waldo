@@ -8,6 +8,7 @@ use Filament\Widgets\Widget;
 class BirthdayListWidget extends Widget
 {
     use HasWidgetShield;
+
     protected string $view = 'filament.widgets.birthday-list-widget';
 
     // Full column span so container extends, but width is capped in blade for elegant look

@@ -20,6 +20,7 @@ class AdjustmentResource extends Resource
     protected static ?string $model = Adjustment::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalculator;
+
     protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::Calculator;
 
     protected static string|UnitEnum|null $navigationGroup = 'Finance';

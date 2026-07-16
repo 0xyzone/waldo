@@ -1,6 +1,9 @@
 <?php
 
+use App\Providers\AppServiceProvider;
+use App\Providers\Filament\KamkajPanelProvider;
+
 return [
-    App\Providers\AppServiceProvider::class,
-    App\Providers\Filament\KamkajPanelProvider::class,
+    AppServiceProvider::class,
+    KamkajPanelProvider::class,
 ];

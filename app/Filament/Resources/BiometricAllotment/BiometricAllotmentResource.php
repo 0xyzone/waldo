@@ -6,11 +6,11 @@ use App\Filament\Resources\BiometricAllotment\Pages\ListBiometricAllotments;
 use App\Filament\Resources\BiometricAllotment\Schemas\BiometricAllotmentForm;
 use App\Filament\Resources\BiometricAllotment\Tables\BiometricAllotmentsTable;
 use App\Models\BiometricAllotment;
+use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use BackedEnum;
 use UnitEnum;
 
 class BiometricAllotmentResource extends Resource

@@ -3,9 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\CustomFont;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class FontUploadTest extends TestCase
@@ -18,6 +20,11 @@ class FontUploadTest extends TestCase
     public function test_can_upload_custom_font(): void
     {
         Storage::fake('public');
+
+        $role = Role::create(['name' => 'HR']);
+        $user = User::factory()->create();
+        $user->assignRole($role);
+        $this->actingAs($user);
 
         $response = $this->get(route('letters.fonts'));
         $response->assertStatus(200);

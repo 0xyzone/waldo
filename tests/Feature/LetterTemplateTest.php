@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\Employee;
 use App\Models\LetterTemplate;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class LetterTemplateTest extends TestCase
@@ -49,6 +51,11 @@ class LetterTemplateTest extends TestCase
      */
     public function test_can_access_letter_generator_page(): void
     {
+        $role = Role::create(['name' => 'HR']);
+        $user = User::factory()->create();
+        $user->assignRole($role);
+        $this->actingAs($user);
+
         // Create template
         $template = LetterTemplate::create([
             'title' => 'Promotion Letter',
@@ -83,6 +90,11 @@ class LetterTemplateTest extends TestCase
      */
     public function test_can_access_letters_index_page(): void
     {
+        $role = Role::create(['name' => 'HR']);
+        $user = User::factory()->create();
+        $user->assignRole($role);
+        $this->actingAs($user);
+
         $template = LetterTemplate::create([
             'title' => 'Offer Letter',
             'content' => 'Offer content',
