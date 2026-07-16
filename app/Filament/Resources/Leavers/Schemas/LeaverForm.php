@@ -43,13 +43,16 @@ class LeaverForm
 
                 Section::make('Payroll & Financial Holds')
                     ->schema([
-                        Grid::make(['default' => 1, 'sm' => 2])
+                        Grid::make(['default' => 1, 'sm' => 3])
                             ->schema([
                                 Toggle::make('hold_salary')
                                     ->label('Hold Salary')
                                     ->required(),
                                 Toggle::make('hold_tips')
                                     ->label('Hold Tips')
+                                    ->required(),
+                                Toggle::make('publish_cl')
+                                    ->label('Publish CL Balance')
                                     ->required(),
                             ]),
                     ]),
