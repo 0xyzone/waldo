@@ -114,7 +114,7 @@ class BiometricAllotmentsTable
                             ->label('Employee Name')
                             ->required()
                             ->default(fn($record) => $record->name),
-                            TextInput::make('phone_number')
+                        TextInput::make('phone_number')
                             ->default(fn($record) => $record?->phone),
                         Select::make('department_id')
                             ->relationship('department', 'name')
@@ -127,7 +127,7 @@ class BiometricAllotmentsTable
                             'employee_code' => $data['code'],
                             'name' => $data['name'],
                             'department_id' => $data['department_id'],
-                            'phone' => $data['phone'],
+                            'contact_number' => $data['phone_number'],
                             'employee_status' => 'Active',
                             'tips_status' => 'Release',
                             'point_value' => 1,
