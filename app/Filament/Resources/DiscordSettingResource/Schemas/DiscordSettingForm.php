@@ -38,7 +38,7 @@ class DiscordSettingForm
                             ->placeholder('Select a channel')
                             ->helperText('This is the channel where biometric allotment notification messages will be sent.')
                             ->required()
-                            ->visible('edit'),
+                            ->visibleOn('edit'),
                     ]),
                 Section::make('Discord Server Dashboard')
                     ->schema([
