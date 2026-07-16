@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Resources\DiscordSettingResource;
 
 use App\Filament\Resources\DiscordSettingResource\Pages\CreateDiscordSetting;
 use App\Filament\Resources\DiscordSettingResource\Pages\EditDiscordSetting;
@@ -8,11 +8,11 @@ use App\Filament\Resources\DiscordSettingResource\Pages\ListDiscordSettings;
 use App\Filament\Resources\DiscordSettingResource\Schemas\DiscordSettingForm;
 use App\Filament\Resources\DiscordSettingResource\Tables\DiscordSettingsTable;
 use App\Models\DiscordSetting;
-use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use BackedEnum;
 use UnitEnum;
 
 class DiscordSettingResource extends Resource
@@ -52,8 +52,8 @@ class DiscordSettingResource extends Resource
     {
         return [
             'index' => ListDiscordSettings::route('/'),
-            'create' => CreateDiscordSetting::route('/create'),
-            'edit' => EditDiscordSetting::route('/{record}/edit'),
+            // 'create' => CreateDiscordSetting::route('/create'),
+            // 'edit' => EditDiscordSetting::route('/{record}/edit'),
         ];
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\DiscordSettingResource\Pages;
 
-use App\Filament\Resources\DiscordSettingResource;
+use App\Filament\Resources\DiscordSettingResource\DiscordSettingResource;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateDiscordSetting extends CreateRecord
