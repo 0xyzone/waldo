@@ -199,4 +199,122 @@ class DiscordService
 
         return false;
     }
+
+    /**
+     * Get channels grouped by category for a specific DiscordSetting instance.
+     *
+     * @return array<string, array<string, string>>
+     */
+    public static function getChannelsGroupedByCategoryForSetting(int|string $settingId): array
+    {
+        $setting = DiscordSetting::find($settingId);
+        if (! $setting || ! $setting->bot_token || ! $setting->guild_id) {
+            return [];
+        }
+
+        try {
+            $response = Http::withoutVerifying()
+                ->withToken($setting->bot_token, 'Bot')
+                ->get("https://discord.com/api/v10/guilds/{$setting->guild_id}/channels");
+
+            if (! $response->successful()) {
+                Log::error('Discord getChannels API failed: '.$response->body());
+
+                return [];
+            }
+
+            $channels = $response->json();
+            $categories = [];
+            $textChannels = [];
+
+            foreach ($channels as $channel) {
+                if (($channel['type'] ?? null) === 4) {
+                    $categories[$channel['id']] = $channel['name'] ?? 'Unnamed Category';
+                } elseif (($channel['type'] ?? null) === 0) {
+                    $textChannels[] = $channel;
+                }
+            }
+
+            $grouped = [];
+            $uncategorized = [];
+
+            foreach ($textChannels as $channel) {
+                $parentId = $channel['parent_id'] ?? null;
+                $channelName = '#'.($channel['name'] ?? 'unnamed');
+
+                if ($parentId && isset($categories[$parentId])) {
+                    $grouped[$categories[$parentId]][$channel['id']] = $channelName;
+                } else {
+                    $uncategorized[$channel['id']] = $channelName;
+                }
+            }
+
+            if (! empty($uncategorized)) {
+                $grouped['Text Channels'] = $uncategorized;
+            }
+
+            return $grouped;
+        } catch (\Exception $e) {
+            Log::error('Discord getChannelsGroupedByCategoryForSetting exception: '.$e->getMessage());
+        }
+
+        return [];
+    }
+
+    /**
+     * Find the IT role mention for a specific DiscordSetting instance.
+     */
+    public static function getItRoleMentionForSetting(DiscordSetting $setting): string
+    {
+        try {
+            $response = Http::withoutVerifying()
+                ->withToken($setting->bot_token, 'Bot')
+                ->get("https://discord.com/api/v10/guilds/{$setting->guild_id}/roles");
+
+            if ($response->successful()) {
+                foreach ($response->json() as $role) {
+                    if (strcasecmp($role['name'] ?? '', 'IT') === 0) {
+                        return "<@&{$role['id']}>";
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error('Discord getItRoleMentionForSetting exception: '.$e->getMessage());
+        }
+
+        return '@IT';
+    }
+
+    /**
+     * Send an embedded message using a specific DiscordSetting instance.
+     *
+     * @param  array<string, mixed>  $embed
+     */
+    public static function sendEmbedMessageForSetting(DiscordSetting $setting, string $channelId, array $embed, ?string $content = null): bool
+    {
+        if (! $setting->bot_token) {
+            return false;
+        }
+
+        try {
+            $payload = ['embeds' => [$embed]];
+            if ($content !== null) {
+                $payload['content'] = $content;
+            }
+
+            $response = Http::withoutVerifying()
+                ->withToken($setting->bot_token, 'Bot')
+                ->post("https://discord.com/api/v10/channels/{$channelId}/messages", $payload);
+
+            if ($response->successful()) {
+                return true;
+            }
+
+            Log::error('Discord sendEmbedMessageForSetting API failed: '.$response->body());
+        } catch (\Exception $e) {
+            Log::error('Discord sendEmbedMessageForSetting exception: '.$e->getMessage());
+        }
+
+        return false;
+    }
 }

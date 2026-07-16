@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\BiometricAllotment\Tables;
 
 use App\Models\BiometricAllotment;
+use App\Models\DiscordSetting;
 use App\Models\Employee;
 use App\Services\DiscordService;
 use Filament\Actions\Action;
@@ -11,6 +12,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -150,10 +152,27 @@ class BiometricAllotmentsTable
                     ->label('Send to Discord')
                     ->icon('heroicon-o-paper-airplane')
                     ->color('primary')
-                    ->requiresConfirmation()
-                    ->modalHeading('Send Biometric Requests to Discord?')
-                    ->modalDescription('This will notify the IT role in your configured Discord channel about the new biometric allotment requests.')
-                    ->action(function () {
+                    ->form([
+                        Select::make('setting_id')
+                            ->label('Bot Configuration')
+                            ->options(fn () => DiscordSetting::whereNotNull('name')->pluck('name', 'id'))
+                            ->searchable()
+                            ->placeholder('Select a bot')
+                            ->required()
+                            ->live(),
+                        Select::make('channel_id')
+                            ->label('Target Discord Channel')
+                            ->options(fn (Get $get) => $get('setting_id')
+                                ? DiscordService::getChannelsGroupedByCategoryForSetting($get('setting_id'))
+                                : [])
+                            ->searchable()
+                            ->placeholder('Select a channel')
+                            ->required()
+                            ->disabled(fn (Get $get) => ! $get('setting_id')),
+                    ])
+                    ->modalHeading('Send Biometric Requests to Discord')
+                    ->modalDescription('Select the bot and target Discord channel, then notify the IT role about pending biometric allotment requests.')
+                    ->action(function (array $data) {
                         $pendingAllotments = BiometricAllotment::where('status', 'Not Done Yet')->get();
 
                         if ($pendingAllotments->isEmpty()) {
@@ -166,8 +185,8 @@ class BiometricAllotmentsTable
                             return;
                         }
 
-                        $setting = DiscordService::getSetting();
-                        if (! $setting || ! $setting->bot_token || ! $setting->guild_id || ! $setting->target_channel_id) {
+                        $setting = DiscordSetting::find($data['setting_id']);
+                        if (! $setting || ! $setting->bot_token || ! $setting->guild_id) {
                             Notification::make()
                                 ->title('Discord Setup Incomplete')
                                 ->body('Please configure the Discord bot settings first in the Discord Setup page.')
@@ -177,7 +196,7 @@ class BiometricAllotmentsTable
                             return;
                         }
 
-                        $itRoleMention = DiscordService::getItRoleMention();
+                        $itRoleMention = DiscordService::getItRoleMentionForSetting($setting);
 
                         $description = "The following employees have been added and need their biometric enrollment completed:\n\n";
                         foreach ($pendingAllotments as $allotment) {
@@ -196,8 +215,9 @@ class BiometricAllotmentsTable
 
                         $content = "{$itRoleMention} - New biometric allotment(s) require action:";
 
-                        $success = DiscordService::sendEmbedMessage(
-                            $setting->target_channel_id,
+                        $success = DiscordService::sendEmbedMessageForSetting(
+                            $setting,
+                            $data['channel_id'],
                             $embed,
                             $content
                         );

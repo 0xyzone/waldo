@@ -14,6 +14,10 @@ class DiscordSettingsTable
     {
         return $table
             ->columns([
+                TextColumn::make('name')
+                    ->label('Bot Name')
+                    ->searchable()
+                    ->weight('bold'),
                 TextColumn::make('bot_token')
                     ->label('Bot Token')
                     ->formatStateUsing(fn ($state) => $state ? '••••••••••••••••' : 'Not Set')
@@ -21,10 +25,6 @@ class DiscordSettingsTable
                     ->color(fn ($state) => $state ? 'success' : 'danger'),
                 TextColumn::make('guild_id')
                     ->label('Guild (Server) ID')
-                    ->placeholder('Not Set')
-                    ->fontFamily('mono'),
-                TextColumn::make('target_channel_id')
-                    ->label('Target Channel ID')
                     ->placeholder('Not Set')
                     ->fontFamily('mono'),
                 TextColumn::make('updated_at')

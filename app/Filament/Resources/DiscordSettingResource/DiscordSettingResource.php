@@ -8,11 +8,11 @@ use App\Filament\Resources\DiscordSettingResource\Pages\ListDiscordSettings;
 use App\Filament\Resources\DiscordSettingResource\Schemas\DiscordSettingForm;
 use App\Filament\Resources\DiscordSettingResource\Tables\DiscordSettingsTable;
 use App\Models\DiscordSetting;
+use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use BackedEnum;
 use UnitEnum;
 
 class DiscordSettingResource extends Resource
@@ -29,7 +29,7 @@ class DiscordSettingResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Discord Setup';
 
-    protected static string|UnitEnum|null $navigationGroup = 'IT';
+    protected static string|UnitEnum|null $navigationGroup = 'HR & Admin';
 
     protected static ?int $navigationSort = 5;
 

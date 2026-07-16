@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Filament\Resources\DiscordSettingResource;
+use App\Filament\Resources\DiscordSettingResource\DiscordSettingResource;
 use App\Models\DiscordSetting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;

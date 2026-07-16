@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('discord_settings', function (Blueprint $table) {
             $table->id();
+            $table->string('name')->nullable();
             $table->string('bot_token')->nullable();
             $table->string('guild_id')->nullable();
             $table->string('target_channel_id')->nullable();

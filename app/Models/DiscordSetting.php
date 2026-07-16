@@ -12,6 +12,7 @@ class DiscordSetting extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'name',
         'bot_token',
         'guild_id',
         'target_channel_id',
