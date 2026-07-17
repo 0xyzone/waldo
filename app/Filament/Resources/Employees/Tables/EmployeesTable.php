@@ -30,17 +30,17 @@ class EmployeesTable
                             ->sortable(query: function (Builder $query, string $direction): Builder {
                                 $driver = $query->getConnection()->getDriverName();
                                 if ($driver === 'sqlite') {
-                                    return $query->orderByRaw('CAST(SUBSTR(employee_code, 4) AS INTEGER) '.$direction);
+                                    return $query->orderByRaw('CAST(SUBSTR(employee_code, 4) AS INTEGER) ' . $direction);
                                 }
 
-                                return $query->orderByRaw('CAST(SUBSTR(employee_code, 4) AS UNSIGNED) '.$direction);
+                                return $query->orderByRaw('CAST(SUBSTR(employee_code, 4) AS UNSIGNED) ' . $direction);
                             })
                             ->color('gray')
                             ->grow(false),
                         Split::make([
                             TextColumn::make('employee_status')
                                 ->badge()
-                                ->color(fn (string $state): string => match ($state) {
+                                ->color(fn(string $state): string => match ($state) {
                                     'Active' => 'success',
                                     'Inactive' => 'gray',
                                     'Resigned' => 'danger',
@@ -52,9 +52,34 @@ class EmployeesTable
                                 ->getStateUsing(function ($record) {
                                     return $record->isIncomplete() ? '⏳' : '☑️';
                                 })
-                                ->color(fn (string $state): string => match ($state) {
+                                ->color(fn(string $state): string => match ($state) {
                                     '☑️' => 'success',
                                     '⏳' => 'gray',
+                                })
+                                ->tooltip(function ($record) {
+                                    $fields = [
+                                        'designation_id',
+                                        'name',
+                                        'gender',
+                                        'join_date_formatted',
+                                        'contact_number',
+                                        'email',
+                                        'citizenship_number',
+                                        'citizenship_issue_date',
+                                        'citizenship_issue_place',
+                                        'dob_ad',
+                                        'marital_status',
+                                        'tips_amount',
+                                        'point_value',
+                                    ];
+
+                                    $missing = collect($fields)->filter(fn($field) => empty($record->$field));
+
+                                    if ($missing->count() > 0) {
+                                        return 'Missing fields: ' . $missing->implode(', ');
+                                    }
+
+                                    return 'All fields complete';
                                 }),
                         ])->grow(false),
                     ])->extraAttributes(['class' => 'justify-between items-center']),
@@ -88,7 +113,7 @@ class EmployeesTable
                 'md' => 3,
                 'lg' => 4,
             ])
-            ->recordClasses(fn (Employee $record) => match ($record->employee_status) {
+            ->recordClasses(fn(Employee $record) => match ($record->employee_status) {
                 'Active' => null,
                 'Inactive' => 'bg-gray-row border-gray-200 dark:border-gray-700',
                 'Resigned' => 'bg-rose-row border-rose-200 dark:border-rose-900',
