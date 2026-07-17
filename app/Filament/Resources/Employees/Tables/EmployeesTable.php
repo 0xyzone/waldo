@@ -125,7 +125,7 @@ class EmployeesTable
             ->filters([
                 //
             ])
-            ->defaultSort('employee_code', 'asc')
+            ->defaultSort('employee_code', 'desc')
             ->recordActions([
                 ViewAction::make()->modalWidth('7xl'),
                 EditAction::make()->modalWidth('7xl'),
