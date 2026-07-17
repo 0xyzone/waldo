@@ -118,6 +118,17 @@ class Employee extends Model
         return $this->hasOne(Leaver::class, 'employee_id', 'employee_code');
     }
 
+    /**
+     * Get the tips adjustment record associated with the Employee.
+     */
+    public function tipsAdjustment(): HasMany
+    {
+        return $this->hasMany(TipsAdjustment::class, 'employee_id', 'employee_code');
+    }
+
+    /**
+     * Check if the employee is incomplete.
+     */
     public function isIncomplete()
     {
         $checkFields = [

@@ -54,6 +54,7 @@ class AdjustmentForm
                                 Select::make('employee_id')
                                     ->label('Employee')
                                     ->relationship('employee', 'name')
+                                    ->getOptionLabelFromRecordUsing(fn ($record) => strtoupper($record->employee_code).' | '.$record->name)
                                     ->searchable(['name', 'employee_code'])
                                     ->required()
                                     ->live()

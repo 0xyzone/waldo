@@ -15,6 +15,8 @@ class AdjustmentsTable
     {
         return $table
             ->columns([
+                TextColumn::make('employee.employee_code')
+                    ->searchable(),
                 TextColumn::make('employee.name')
                     ->searchable(),
                 TextColumn::make('type')

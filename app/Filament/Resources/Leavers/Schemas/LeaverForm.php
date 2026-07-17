@@ -26,7 +26,8 @@ class LeaverForm
                                         name: 'employee',
                                         titleAttribute: 'name'
                                     )
-                                    ->searchable()
+                                    ->getOptionLabelFromRecordUsing(fn ($record) => strtoupper($record->employee_code).' | '.$record->name)
+                                    ->searchable(['name', 'employee_code'])
                                     ->preload()
                                     ->required(),
                                 DatePicker::make('leaving_date')

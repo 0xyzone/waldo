@@ -1,35 +1,35 @@
 <?php
 
-namespace App\Filament\Resources\Leavers\Tables;
+namespace App\Filament\Resources\TipsAdjustments\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
-class LeaversTable
+class TipsAdjustmentsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('employee_id')
+                TextColumn::make('employee.employee_code')
+                    ->label('#')
                     ->searchable(),
                 TextColumn::make('employee.name')
+                    ->label('Name')
                     ->searchable(),
-                TextColumn::make('employee.department.name'),
-                TextColumn::make('employee.designation.name'),
-                TextColumn::make('leaving_date')
-                    ->date()
+                TextColumn::make('employee.department.name')
+                    ->label('Department')
+                    ->searchable(),
+                TextColumn::make('employee.designation.name')
+                    ->label('Designation')
+                    ->searchable(),
+                TextColumn::make('amount')
+                    ->label('Amount')
+                    ->numeric()
                     ->sortable(),
-                IconColumn::make('hold_salary')
-                    ->boolean(),
-                IconColumn::make('hold_tips')
-                    ->boolean(),
-                IconColumn::make('publish_cl')
-                    ->boolean(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
