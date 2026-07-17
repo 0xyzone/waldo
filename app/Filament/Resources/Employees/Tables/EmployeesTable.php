@@ -30,17 +30,17 @@ class EmployeesTable
                             ->sortable(query: function (Builder $query, string $direction): Builder {
                                 $driver = $query->getConnection()->getDriverName();
                                 if ($driver === 'sqlite') {
-                                    return $query->orderByRaw('CAST(SUBSTR(employee_code, 4) AS INTEGER) ' . $direction);
+                                    return $query->orderByRaw('CAST(SUBSTR(employee_code, 4) AS INTEGER) '.$direction);
                                 }
 
-                                return $query->orderByRaw('CAST(SUBSTR(employee_code, 4) AS UNSIGNED) ' . $direction);
+                                return $query->orderByRaw('CAST(SUBSTR(employee_code, 4) AS UNSIGNED) '.$direction);
                             })
                             ->color('gray')
                             ->grow(false),
                         Split::make([
                             TextColumn::make('employee_status')
                                 ->badge()
-                                ->color(fn(string $state): string => match ($state) {
+                                ->color(fn (string $state): string => match ($state) {
                                     'Active' => 'success',
                                     'Inactive' => 'gray',
                                     'Resigned' => 'danger',
@@ -52,7 +52,7 @@ class EmployeesTable
                                 ->getStateUsing(function ($record) {
                                     return $record->isIncomplete() ? '⏳' : '☑️';
                                 })
-                                ->color(fn(string $state): string => match ($state) {
+                                ->color(fn (string $state): string => match ($state) {
                                     '☑️' => 'success',
                                     '⏳' => 'gray',
                                 })
@@ -73,10 +73,10 @@ class EmployeesTable
                                         'point_value',
                                     ];
 
-                                    $missing = collect($fields)->filter(fn($field) => empty($record->$field));
+                                    $missing = collect($fields)->filter(fn ($field) => empty($record->$field));
 
                                     if ($missing->count() > 0) {
-                                        return 'Missing fields: ' . $missing->implode(', ');
+                                        return 'Missing fields: '.$missing->implode(', ');
                                     }
 
                                     return 'All fields complete';
@@ -113,7 +113,7 @@ class EmployeesTable
                 'md' => 3,
                 'lg' => 4,
             ])
-            ->recordClasses(fn(Employee $record) => match ($record->employee_status) {
+            ->recordClasses(fn (Employee $record) => match ($record->employee_status) {
                 'Active' => null,
                 'Inactive' => 'bg-gray-row border-gray-200 dark:border-gray-700',
                 'Resigned' => 'bg-rose-row border-rose-200 dark:border-rose-900',
@@ -127,8 +127,8 @@ class EmployeesTable
             ])
             ->defaultSort('employee_code', 'asc')
             ->recordActions([
-                ViewAction::make(),
-                EditAction::make(),
+                ViewAction::make()->modalWidth('7xl'),
+                EditAction::make()->modalWidth('7xl'),
                 // Action::make('syncToGoogleSheet')
                 //     ->label('Sync to Google Sheet')
                 //     ->icon('heroicon-o-arrow-path')

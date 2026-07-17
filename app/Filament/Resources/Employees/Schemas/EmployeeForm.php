@@ -10,8 +10,8 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Wizard;
+use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
 
 class EmployeeForm
@@ -20,10 +20,11 @@ class EmployeeForm
     {
         return $schema
             ->components([
-                Tabs::make('Employee Information')
-                    ->tabs([
-                        Tab::make('Personal Details')
-                            ->icon('heroicon-m-user')
+                Wizard::make()
+                    ->skippable()
+                    ->steps([
+                        Step::make('👤 Who Are They?')
+                            ->description('Basic personal information')
                             ->schema([
                                 TextInput::make('name')
                                     ->label('Full Name')
@@ -103,8 +104,8 @@ class EmployeeForm
                                     ]),
                             ]),
 
-                        Tab::make('Employment & HR')
-                            ->icon('heroicon-m-briefcase')
+                        Step::make('💼 Work Details')
+                            ->description('Employment & role information')
                             ->schema([
                                 Grid::make(['default' => 1, 'sm' => 2])
                                     ->schema([
@@ -157,8 +158,8 @@ class EmployeeForm
                                             ->native(false)
                                             ->format('d F, Y')
                                             ->placeholder('e.g. 01 January, 2024')
-                                            ->formatStateUsing(fn($state) => $state ? Carbon::parse($state)->format('d F, Y') : null)
-                                            ->dehydrateStateUsing(fn($state) => $state ? Carbon::parse($state)->format('d F, Y') : null),
+                                            ->formatStateUsing(fn ($state) => $state ? Carbon::parse($state)->format('d F, Y') : null)
+                                            ->dehydrateStateUsing(fn ($state) => $state ? Carbon::parse($state)->format('d F, Y') : null),
                                     ]),
 
                                 TextInput::make('hrms_password')
@@ -168,8 +169,8 @@ class EmployeeForm
                                     ->visibleOn('view'),
                             ]),
 
-                        Tab::make('Identification & Payroll')
-                            ->icon('heroicon-m-credit-card')
+                        Step::make('🪪 ID & Payroll')
+                            ->description('Citizenship, payroll & tips settings')
                             ->schema([
                                 Section::make('Legal Identification')
                                     ->schema([
