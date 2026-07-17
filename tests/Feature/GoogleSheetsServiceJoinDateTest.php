@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Employee;
 use App\Services\GoogleSheetsService;
-use Carbon\Carbon;
 use Mockery;
 use ReflectionMethod;
 use ReflectionProperty;
@@ -26,10 +25,10 @@ class GoogleSheetsServiceJoinDateTest extends TestCase
     }
 
     /** @test */
-    public function test_join_date_formatted_returns_human_readable_date(): void
+    public function test_join_date_formatted_returns_as_is(): void
     {
         $employee = Mockery::mock(Employee::class)->makePartial();
-        $employee->join_date = Carbon::parse('2024-01-15');
+        $employee->join_date_formatted = '15 January, 2024';
 
         $result = $this->resolveField($employee, 'join_date_formatted');
 
@@ -37,35 +36,34 @@ class GoogleSheetsServiceJoinDateTest extends TestCase
     }
 
     /** @test */
-    public function test_join_date_returns_yyyy_mm_dd_format(): void
+    public function test_join_date_formatted_returns_empty_string_when_null(): void
     {
         $employee = Mockery::mock(Employee::class)->makePartial();
-        $employee->join_date = Carbon::parse('2024-01-15');
+        $employee->join_date_formatted = null;
 
-        $result = $this->resolveField($employee, 'join_date');
-
-        $this->assertSame('2024.01.15', $result);
-    }
-
-    /** @test */
-    public function test_join_date_returns_empty_string_when_null(): void
-    {
-        $employee = Mockery::mock(Employee::class)->makePartial();
-        $employee->join_date = null;
-
-        $this->assertSame('', $this->resolveField($employee, 'join_date'));
         $this->assertSame('', $this->resolveField($employee, 'join_date_formatted'));
     }
 
     /** @test */
-    public function test_column_map_contains_join_date_at_index_nine(): void
+    public function test_join_date_is_not_in_column_map(): void
     {
         $service = Mockery::mock(GoogleSheetsService::class)->makePartial();
         $prop = new ReflectionProperty(GoogleSheetsService::class, 'columnMap');
         /** @var array<string,int> $map */
         $map = $prop->getValue($service);
 
-        $this->assertArrayHasKey('join_date', $map);
-        $this->assertSame(9, $map['join_date']);
+        $this->assertArrayNotHasKey('join_date', $map);
+    }
+
+    /** @test */
+    public function test_join_date_formatted_is_mapped_correctly(): void
+    {
+        $service = Mockery::mock(GoogleSheetsService::class)->makePartial();
+        $prop = new ReflectionProperty(GoogleSheetsService::class, 'columnMap');
+        /** @var array<string,int> $map */
+        $map = $prop->getValue($service);
+
+        $this->assertArrayHasKey('join_date_formatted', $map);
+        $this->assertSame(8, $map['join_date_formatted']);
     }
 }

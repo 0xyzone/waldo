@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -115,5 +116,52 @@ class Employee extends Model
     public function leaver(): HasOne
     {
         return $this->hasOne(Leaver::class, 'employee_id', 'employee_code');
+    }
+
+    public function isIncomplete()
+    {
+        $checkFields = [
+            'designation_id',
+            'name',
+            'gender',
+            'join_date_formatted',
+            'contact_number',
+            'email',
+            'citizenship_number',
+            'citizenship_issue_date',
+            'citizenship_issue_place',
+            'dob_ad',
+            'marital_status',
+            'tips_amount',
+            'point_value',
+        ];
+
+        $incompleteFields = collect($checkFields)->filter(function ($field) {
+            return $this->{$field} == null;
+        })->values();
+
+        return $incompleteFields->count() > 0 ? $incompleteFields : false;
+    }
+
+    /**
+     * Scope a query to only include incomplete employees.
+     */
+    public function scopeIsIncomplete(Builder $query): Builder
+    {
+        return $query->where(function (Builder $q) {
+            $q->whereNull('designation_id')
+                ->orWhereNull('name')
+                ->orWhereNull('gender')
+                ->orWhereNull('join_date_formatted')
+                ->orWhereNull('contact_number')
+                ->orWhereNull('email')
+                ->orWhereNull('citizenship_number')
+                ->orWhereNull('citizenship_issue_date')
+                ->orWhereNull('citizenship_issue_place')
+                ->orWhereNull('dob_ad')
+                ->orWhereNull('marital_status')
+                ->orWhereNull('tips_amount')
+                ->orWhereNull('point_value');
+        });
     }
 }

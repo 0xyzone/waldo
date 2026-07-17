@@ -35,7 +35,6 @@ class GoogleSheetsService
         'department_id' => 6,  // resolved to department name
         'designation_id' => 7,  // resolved to designation name
         'join_date_formatted' => 8,
-        'join_date' => 9,          // written as Y.m.d; read back by EmployeeSyncService
         'contact_number' => 10,
         'email' => 11,
         'citizenship_number' => 12,
@@ -242,12 +241,7 @@ class GoogleSheetsService
     protected function resolveFieldValue(Employee $employee, string $field): string
     {
         return match ($field) {
-            'join_date_formatted' => $employee->join_date
-                                    ? Carbon::parse($employee->join_date)->format('d F, Y')
-                                    : '',
-            'join_date' => $employee->join_date
-                                    ? Carbon::parse($employee->join_date)->format('Y.m.d')
-                                    : '',
+            'join_date_formatted' => (string) ($employee->join_date_formatted ?? ''),
             'dob_ad' => $employee->dob_ad
                                     ? Carbon::parse($employee->dob_ad)->format('d F, Y')
                                     : '',

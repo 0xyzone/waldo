@@ -21,15 +21,15 @@ class ListBiometricAllotments extends ListRecords
         return [
             'all' => Tab::make('All')
                 ->badge(BiometricAllotment::count()),
+            'not_done_yet' => Tab::make('Not Done Yet')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'Not Done Yet'))
+                ->badge(BiometricAllotment::where('status', 'Not Done Yet')->count()),
             'done' => Tab::make('Done')
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'Done'))
                 ->badge(BiometricAllotment::where('status', 'Done')->count()),
             'left_job' => Tab::make('Left Job')
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'Left Job'))
                 ->badge(BiometricAllotment::where('status', 'Left Job')->count()),
-            'not_done_yet' => Tab::make('Not Done Yet')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'Not Done Yet'))
-                ->badge(BiometricAllotment::where('status', 'Not Done Yet')->count()),
             'bio_not_required' => Tab::make('Bio Not Required')
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'Bio Not Required'))
                 ->badge(BiometricAllotment::where('status', 'Bio Not Required')->count()),

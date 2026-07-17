@@ -37,39 +37,44 @@ class EmployeesTable
                             })
                             ->color('gray')
                             ->grow(false),
-                        TextColumn::make('employee_status')
-                            ->badge()
-                            ->color(fn (string $state): string => match ($state) {
-                                'Active' => 'success',
-                                'Inactive' => 'gray',
-                                'Resigned' => 'danger',
-                                'Resigning this month' => 'warning',
-                                'Terminated' => 'danger',
-                                default => 'gray',
-                            })
-                            ->grow(false),
+                        Split::make([
+                            TextColumn::make('employee_status')
+                                ->badge()
+                                ->color(fn (string $state): string => match ($state) {
+                                    'Active' => 'success',
+                                    'Inactive' => 'gray',
+                                    'Resigned' => 'danger',
+                                    'Resigning this month' => 'warning',
+                                    'Terminated' => 'danger',
+                                    default => 'gray',
+                                }),
+                            TextColumn::make('isIncomplete')
+                                ->getStateUsing(function ($record) {
+                                    return $record->isIncomplete() ? '⏳' : '☑️';
+                                })
+                                ->color(fn (string $state): string => match ($state) {
+                                    '☑️' => 'success',
+                                    '⏳' => 'gray',
+                                }),
+                        ])->grow(false),
                     ])->extraAttributes(['class' => 'justify-between items-center']),
-
                     TextColumn::make('name')
                         ->searchable()
                         ->sortable()
                         ->weight('bold')
                         ->size('lg')
                         ->extraAttributes(['class' => 'mt-3 block']),
-
                     TextColumn::make('department.name')
                         ->icon('heroicon-m-building-office-2')
                         ->color('gray')
                         ->size('sm')
                         ->extraAttributes(['class' => 'mt-1 block']),
-
                     TextColumn::make('designation.name')
                         ->icon('heroicon-m-briefcase')
                         ->color('gray')
                         ->size('sm')
                         ->extraAttributes(['class' => 'mt-1 block']),
-
-                    TextColumn::make('join_date')
+                    TextColumn::make('join_date_formatted')
                         ->icon('heroicon-m-calendar')
                         ->date()
                         ->color('gray')
@@ -105,7 +110,6 @@ class EmployeesTable
                 //     ->color('success')
                 //     ->action(function (Employee $record, GoogleSheetsService $service) {
                 //         $service->syncEmployee($record);
-
                 //         Notification::make()
                 //             ->title('Synced successfully')
                 //             ->body("Employee {$record->employee_code} was successfully synced to Google Sheets.")

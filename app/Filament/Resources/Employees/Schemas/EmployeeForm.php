@@ -152,9 +152,13 @@ class EmployeeForm
 
                                 Grid::make(['default' => 1, 'sm' => 2])
                                     ->schema([
-                                        DatePicker::make('join_date')
+                                        DatePicker::make('join_date_formatted')
                                             ->label('Join Date')
-                                            ->native(false),
+                                            ->native(false)
+                                            ->format('d F, Y')
+                                            ->placeholder('e.g. 01 January, 2024')
+                                            ->formatStateUsing(fn($state) => $state ? Carbon::parse($state)->format('d F, Y') : null)
+                                            ->dehydrateStateUsing(fn($state) => $state ? Carbon::parse($state)->format('d F, Y') : null),
                                     ]),
 
                                 TextInput::make('hrms_password')

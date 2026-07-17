@@ -20,6 +20,9 @@ class ListEmployees extends ListRecords
     {
         return [
             'all' => Tab::make('All Employees'),
+            'incomplete' => Tab::make('Incomplete')
+                ->modifyQueryUsing(fn (Builder $query) => $query->isIncomplete())
+                ->badge(Employee::query()->isIncomplete()->count()),
             'active' => Tab::make('Active')
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('employee_status', 'Active'))
                 ->badge(Employee::where('employee_status', 'Active')->count()),
