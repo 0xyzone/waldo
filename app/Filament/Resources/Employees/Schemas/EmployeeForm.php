@@ -9,10 +9,10 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Wizard;
-use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
 
 class EmployeeForm
@@ -155,25 +155,26 @@ class EmployeeForm
                                             ->formatStateUsing(fn($state) => $state ? Carbon::parse($state)->format('d F, Y') : null)
                                             ->dehydrateStateUsing(fn($state) => $state ? Carbon::parse($state)->format('d F, Y') : null),
                                     ]),
-                                Grid::make(['default' => 1, 'sm' => 2])
+                                Section::make('HRMS Credentials')
+                                    ->visibleOn('view')
                                     ->schema([
-                                        TextEntry::make('hrms_username')
-                                        ->label('HRMS username')
-                                        ->visibleOn('view')
-                                        ->default(function ($record) {
-                                            return strtolower($record->employee_code);
-                                        }),
-                                        TextEntry::make('email')
-                                        ->label('HRMS Email')
-                                        ->visibleOn('view')
-                                        ->default(function ($record) {
-                                            return strtolower($record->email);
-                                        }),
-                                        TextInput::make('hrms_password')
-                                            ->label('HRMS Password')
-                                            ->dehydrateStateUsing(fn($state) => filled($state) ? $state : null)
-                                            ->dehydrated(fn($state) => filled($state))
-                                            ->visibleOn('view'),
+                                        Grid::make(['default' => 1, 'sm' => 2])
+                                            ->schema([
+                                                TextEntry::make('hrms_username')
+                                                    ->label('HRMS username')
+                                                    ->default(function ($record) {
+                                                        return strtolower($record->employee_code);
+                                                    }),
+                                                TextEntry::make('email')
+                                                    ->label('HRMS Email')
+                                                    ->default(function ($record) {
+                                                        return strtolower($record->email);
+                                                    }),
+                                                TextInput::make('hrms_password')
+                                                    ->label('HRMS Password')
+                                                    ->dehydrateStateUsing(fn($state) => filled($state) ? $state : null)
+                                                    ->dehydrated(fn($state) => filled($state)),
+                                            ])
                                     ])
                             ]),
                         Step::make('🪪 ID & Payroll')
