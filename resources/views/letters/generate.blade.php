@@ -534,12 +534,7 @@
                         if (k === 'email') return emp.email ?? '';
                         if (k === 'contact_number') return emp.contact_number ?? '';
                         if ((k === 'join_date' || k === 'dob_ad') && emp[k]) {
-                            const d = new Date(emp[k]);
-                            return isNaN(d) ? emp[k] : d.toLocaleDateString('en-US', {
-                                day: 'numeric',
-                                month: 'long',
-                                year: 'numeric'
-                            });
+                            return this.formatDate(emp[k]);
                         }
                         return emp[k] !== undefined ? emp[k] : (emp['employee_' + k] !== undefined ? emp[
                             'employee_' + k] : match);
@@ -548,7 +543,12 @@
                     // Replace custom variable placeholders
                     html = html.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (match, k) => {
                         if (k.toLowerCase().startsWith('employee_')) return match;
-                        return this.customValues[k] !== undefined ? this.customValues[k] : '';
+                        const variableConfig = (this.selectedTemplate.variables ?? []).find(v => (v.key || v) === k);
+                        let val = this.customValues[k] !== undefined ? this.customValues[k] : '';
+                        if (variableConfig && variableConfig.type === 'date' && val) {
+                            return this.formatDate(val);
+                        }
+                        return val;
                     });
 
                     return html;
@@ -556,6 +556,25 @@
 
                 formatLabel(str) {
                     return str.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                },
+
+                formatDate(dateVal) {
+                    if (!dateVal) return '';
+                    const d = new Date(dateVal);
+                    if (isNaN(d.getTime())) return dateVal;
+                    const day = d.getDate();
+                    const month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][d.getMonth()];
+                    const year = d.getFullYear();
+                    
+                    let suffix = 'th';
+                    if (day < 11 || day > 13) {
+                        switch (day % 10) {
+                            case 1: suffix = 'st'; break;
+                            case 2: suffix = 'nd'; break;
+                            case 3: suffix = 'rd'; break;
+                        }
+                    }
+                    return `${day}${suffix} ${month} ${year}`;
                 },
 
             };
