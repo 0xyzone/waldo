@@ -158,7 +158,7 @@ class EmployeeForm
                                 Section::make('HRMS Credentials')
                                     ->visibleOn('view')
                                     ->schema([
-                                        Grid::make(['default' => 1, 'sm' => 2])
+                                        Grid::make(['default' => 1, 'sm' => 3])
                                             ->schema([
                                                 TextEntry::make('hrms_username')
                                                     ->label('HRMS username')
@@ -170,7 +170,7 @@ class EmployeeForm
                                                     ->default(function ($record) {
                                                         return strtolower($record->email);
                                                     }),
-                                                TextInput::make('hrms_password')
+                                                TextEntry::make('hrms_password')
                                                     ->label('HRMS Password')
                                                     ->dehydrateStateUsing(fn($state) => filled($state) ? $state : null)
                                                     ->dehydrated(fn($state) => filled($state)),
