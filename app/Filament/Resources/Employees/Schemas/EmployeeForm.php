@@ -159,10 +159,15 @@ class EmployeeForm
                                     ->schema([
                                         TextEntry::make('hrms_username')
                                         ->label('HRMS username')
-                                        ->disabled()
                                         ->visibleOn('view')
                                         ->default(function ($record) {
                                             return strtolower($record->employee_code);
+                                        }),
+                                        TextEntry::make('email')
+                                        ->label('HRMS Email')
+                                        ->visibleOn('view')
+                                        ->default(function ($record) {
+                                            return strtolower($record->email);
                                         }),
                                         TextInput::make('hrms_password')
                                             ->label('HRMS Password')
