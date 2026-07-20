@@ -42,7 +42,7 @@ class GoogleSheetsService
         'citizenship_issue_place' => 14,
         'ssid' => 15,
         'dob_ad' => 16, // formatted as d F, Y
-        'dob_bs' => 17,
+        // dob_bs (col 17) is intentionally excluded: data flows sheet → DB only (never DB → sheet)
         'marital_status' => 18,
         'employee_status' => 19,
         'tips_amount' => 20,
@@ -108,10 +108,6 @@ class GoogleSheetsService
                     fn (string $f) => isset($this->columnMap[$f])
                 );
             }
-
-            // join_date is now written to column J (index 9) in Y.m.d format so the
-            // backward sync can read it back without losing the value.
-            // No fields need to be excluded here any more.
 
             if (empty($fieldsToSync)) {
                 return;

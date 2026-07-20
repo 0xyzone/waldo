@@ -29,8 +29,18 @@ class ReportController extends Controller
         $employees = Employee::with(['department', 'designation'])
             ->where('employee_status', 'Active')
             ->whereMonth('dob_ad', $month)
-            ->where('join_date', '<', $cutoffDate)
             ->get()
+            ->filter(function ($emp) use ($cutoffDate) {
+                // join_date_formatted is stored as "dd Month, yyyy" string — parse it for comparison
+                if (empty($emp->join_date_formatted)) {
+                    return false;
+                }
+                try {
+                    return Carbon::parse($emp->join_date_formatted)->format('Y-m-d') < $cutoffDate;
+                } catch (\Exception) {
+                    return false;
+                }
+            })
             // Sorting by Department Rank, Overall Rank, then Day of Birth
             ->sortBy([
                 ['dp_rank', 'asc'],
@@ -122,11 +132,19 @@ class ReportController extends Controller
                             'code' => $emp->employee_code,
                             'name' => $emp->name,
                             'gender' => $emp->gender ?? 'N/A',
-                            'join_date' => $emp->join_date ? $emp->join_date->format('Y-m-d') : 'N/A',
+                            'join_date' => $emp->join_date_formatted ?? 'N/A',
                             'status' => $emp->employee_status,
                             'designation' => $emp->designation ? $emp->designation->name : 'N/A',
                             'tips_status' => $emp->tips_status ?? 'N/A',
-                            'join_years' => $emp->join_date ? $emp->join_date->diffInYears(now()) : 0,
+                            'join_years' => $emp->join_date_formatted
+                                ? (function () use ($emp) {
+                                    try {
+                                        return Carbon::parse($emp->join_date_formatted)->diffInYears(now());
+                                    } catch (\Exception) {
+                                        return 0;
+                                    }
+                                })()
+                                : 0,
                         ];
                     });
 

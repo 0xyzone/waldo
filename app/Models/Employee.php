@@ -45,7 +45,6 @@ class Employee extends Model
         'name',
         'gender',
         'join_date_formatted',
-        'join_date',
         'contact_number',
         'email',
         'citizenship_number',
@@ -76,7 +75,6 @@ class Employee extends Model
     protected function casts(): array
     {
         return [
-            'join_date' => 'date',
             'dob_ad' => 'date',
             'tips_amount' => 'decimal:2',
             'point_value' => 'decimal:4',

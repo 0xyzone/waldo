@@ -71,8 +71,8 @@ class EmployeeSyncService
                 }
 
                 // Parse dates
-                $joinDate = $this->parseDate($row[9] ?? null, 'Y.m.d');
-                $dobAd = $this->parseDate($row[16] ?? null, 'long');
+                // Column 9 (Join Date yyyy.mm.dd) is intentionally ignored — we only use join_date_formatted (col 8).
+                $dobAd = $this->parseDate($row[16] ?? null, 'd F, Y');
 
                 // Parse numbers
                 $dpRank = is_numeric($row[0] ?? null) ? (int) $row[0] : null;
@@ -95,7 +95,6 @@ class EmployeeSyncService
                         'name' => trim($row[4] ?? '') ?: null,
                         'gender' => trim($row[5] ?? '') ?: null,
                         'join_date_formatted' => trim($row[8] ?? '') ?: null,
-                        'join_date' => $joinDate,
                         'contact_number' => trim($row[10] ?? '') ?: null,
                         'email' => trim($row[11] ?? '') ?: null,
                         'citizenship_number' => trim($row[12] ?? '') ?: null,
@@ -130,6 +129,8 @@ class EmployeeSyncService
 
     /**
      * Parse date string into standard Y-m-d format.
+     *
+     * @param  string  $format  The expected input format (e.g. 'd F, Y' for "12 December, 1988").
      */
     private function parseDate(?string $value, string $format): ?string
     {
@@ -139,15 +140,14 @@ class EmployeeSyncService
         }
 
         try {
-            if ($format === 'Y.m.d') {
-                $cleaned = str_replace('.', '-', $value);
-
-                return Carbon::parse($cleaned)->format('Y-m-d');
-            }
-
-            return Carbon::parse($value)->format('Y-m-d');
+            return Carbon::createFromFormat($format, $value)?->format('Y-m-d');
         } catch (\Exception) {
-            return null;
+            // Fallback: attempt a generic parse for flexibility
+            try {
+                return Carbon::parse($value)->format('Y-m-d');
+            } catch (\Exception) {
+                return null;
+            }
         }
     }
 

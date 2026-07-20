@@ -69,7 +69,6 @@ class EmployeeSyncTest extends TestCase
         $this->assertEquals('Sarmila Bhandari', $employee->name);
         $this->assertEquals('Female', $employee->gender);
         $this->assertEquals('01 January, 2024', $employee->join_date_formatted);
-        $this->assertEquals('2024-01-01', $employee->join_date->format('Y-m-d'));
         $this->assertEquals('9865914116', $employee->contact_number);
         $this->assertEquals('sarmila@test.com', $employee->email);
         $this->assertEquals('713018/53', $employee->citizenship_number);
