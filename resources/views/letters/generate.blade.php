@@ -248,7 +248,7 @@
                                    class="rounded border-slate-300 text-amber-500 focus:ring-amber-500">
                             <div class="flex flex-col">
                                 <span class="text-xs font-bold text-slate-800 dark:text-zinc-200" x-text="e.employee_code + ' | ' + e.name"></span>
-                                <span class="text-[10px] text-slate-400 dark:text-zinc-500" x-text="(e.designation || 'Staff') + ' · ' + (e.department || 'N/A')"></span>
+                                <span class="text-[10px] text-slate-400 dark:text-zinc-500" x-text="(e.designation ? (e.designation.name || e.designation) : 'Staff') + ' · ' + (e.department ? (e.department.name || e.department) : 'N/A')"></span>
                             </div>
                         </label>
                     </template>
@@ -772,7 +772,7 @@ function generatorState() {
             const date = new Date(dateStr);
             if (isNaN(date.getTime())) return dateStr;
             const day    = date.getDate();
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
             const month  = months[date.getMonth()];
             const year   = date.getFullYear();
 
@@ -781,7 +781,7 @@ function generatorState() {
             else if (day === 2 || day === 22)          suffix = 'nd';
             else if (day === 3 || day === 23)          suffix = 'rd';
 
-            return day + suffix + ' ' + month + ' ' + year;
+            return day + suffix + ' ' + month + ', ' + year;
         },
 
         formatLabel(key) {
