@@ -240,12 +240,24 @@
             <option>Plus Jakarta Sans</option>
         </select>
 
-        <div class="flex items-center border border-slate-200 dark:border-zinc-700 rounded-lg bg-slate-50 dark:bg-zinc-950 overflow-hidden">
-            <button type="button" @mousedown.prevent="adjustSize(-1)" class="px-1.5 py-1 hover:bg-slate-200 dark:hover:bg-zinc-800 text-slate-500 cursor-pointer"><i class="fa-solid fa-minus text-xs"></i></button>
-            <input type="number" id="tb-size" value="12" min="1" max="200"
-                   class="w-8 text-center font-bold text-sm bg-transparent border-none focus:outline-none text-slate-700 dark:text-zinc-300"
-                   @mousedown.stop @change="execFontSize(+$el.value)">
+        <div class="flex items-center border border-slate-200 dark:border-zinc-700 rounded-lg bg-slate-50 dark:bg-zinc-950 overflow-visible relative" x-data="{ dropdownOpen: false }" @click.outside="dropdownOpen = false">
+            <button type="button" @mousedown.prevent="adjustSize(-1)" class="px-1.5 py-1 hover:bg-slate-200 dark:hover:bg-zinc-800 text-slate-500 cursor-pointer border-r border-slate-200 dark:border-zinc-700"><i class="fa-solid fa-minus text-xs"></i></button>
+            <input type="number" id="tb-size" value="12" min="1" max="100"
+                   class="w-10 text-center font-bold text-sm bg-transparent border-none focus:outline-none text-slate-700 dark:text-zinc-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                   @focus="saveSelection()"
+                   @change="restoreSelection(); execFontSize(+$el.value)">
+            <button type="button" @click="dropdownOpen = !dropdownOpen" @mousedown.prevent
+                    class="px-1 py-1 hover:bg-slate-200 dark:hover:bg-zinc-800 text-slate-400 cursor-pointer border-r border-slate-200 dark:border-zinc-700"><i class="fa-solid fa-caret-down text-xs"></i></button>
             <button type="button" @mousedown.prevent="adjustSize(1)"  class="px-1.5 py-1 hover:bg-slate-200 dark:hover:bg-zinc-800 text-slate-500 cursor-pointer"><i class="fa-solid fa-plus text-xs"></i></button>
+            <div x-show="dropdownOpen" x-transition
+                 class="absolute left-1/2 -translate-x-1/2 top-full mt-1 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto w-20 py-1" style="display:none">
+                @foreach([8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 48, 60, 72, 96] as $sz)
+                    <button type="button" @click="restoreSelection(); execFontSize({{ $sz }}); document.getElementById('tb-size').value = {{ $sz }}; dropdownOpen = false;" @mousedown.prevent
+                            class="w-full text-center px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-zinc-800 text-xs font-bold text-slate-700 dark:text-zinc-300 cursor-pointer">
+                        {{ $sz }}
+                    </button>
+                @endforeach
+            </div>
         </div>
 
         <div class="h-5 w-px bg-slate-200 dark:bg-zinc-700 mx-0.5"></div>
@@ -255,19 +267,70 @@
         <button type="button" @mousedown.prevent="exec('underline')"     id="tb-under"  class="tb-btn p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"><i class="fa-solid fa-underline text-sm"></i></button>
         <button type="button" @mousedown.prevent="exec('strikeThrough')" id="tb-strike" class="tb-btn p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"><i class="fa-solid fa-strikethrough text-sm"></i></button>
 
-        <div class="relative flex items-center">
-            <button type="button" @mousedown.prevent="$refs.colorInp.click()" class="p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer" title="Text Color">
+        <!-- Text Color Dropdown -->
+        <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+            <button type="button" @click="open = !open" @mousedown.prevent
+                    class="p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer" title="Text Color">
                 <i class="fa-solid fa-font text-sm"></i>
                 <div id="color-bar" class="h-0.5 w-full bg-slate-800 rounded-full mt-0.5"></div>
             </button>
-            <input type="color" x-ref="colorInp" class="absolute opacity-0 w-0 h-0 pointer-events-none" @change="execColor($el.value)">
+            <div x-show="open" x-transition
+                 class="absolute left-0 mt-1 p-3 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-xl z-50 w-48 space-y-2.5" style="display:none">
+                <div class="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800/80 pb-1.5 shrink-0">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Theme Colors</span>
+                    <button type="button" @click="execColor('initial'); open = false;" @mousedown.prevent
+                            class="text-[10px] font-bold text-amber-500 hover:text-amber-600 dark:hover:text-amber-400 flex items-center gap-1 cursor-pointer">
+                        <i class="fa-solid fa-eraser text-[9px]"></i> Reset
+                    </button>
+                </div>
+                <div class="grid grid-cols-6 gap-1.5">
+                    @foreach(['#000000', '#374151', '#4b5563', '#6b7280', '#9ca3af', '#d1d5db',
+                              '#ef4444', '#f97316', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6',
+                              '#ec4899', '#fca5a5', '#fdba74', '#fcd34d', '#6ee7b7', '#93c5fd'] as $color)
+                    <button type="button" @click="execColor('{{ $color }}'); open = false;" @mousedown.prevent
+                            class="w-5 h-5 rounded-md border border-slate-200/50 dark:border-zinc-700/50 cursor-pointer hover:scale-110 transition-transform shadow-xs"
+                            style="background-color: {{ $color }}"></button>
+                    @endforeach
+                </div>
+                <div class="border-t border-slate-100 dark:border-zinc-800/80 pt-2 flex items-center justify-between">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase">Custom</span>
+                    <button type="button" @click="$refs.colorInp.click(); open = false;" @mousedown.prevent class="text-[11px] font-bold text-amber-500 hover:underline cursor-pointer">Choose...</button>
+                </div>
+                <input type="color" x-ref="colorInp" class="absolute opacity-0 w-0 h-0 pointer-events-none" @change="execColor($el.value)">
+            </div>
         </div>
-        <div class="relative flex items-center">
-            <button type="button" @mousedown.prevent="$refs.hlInp.click()" class="p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer" title="Highlight">
+
+        <!-- Highlight Color Dropdown -->
+        <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+            <button type="button" @click="open = !open" @mousedown.prevent
+                    class="p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer" title="Highlight Color">
                 <i class="fa-solid fa-highlighter text-sm"></i>
                 <div id="hl-bar" class="h-0.5 w-full bg-yellow-300 rounded-full mt-0.5"></div>
             </button>
-            <input type="color" x-ref="hlInp" class="absolute opacity-0 w-0 h-0 pointer-events-none" value="#fef08a" @change="execHighlight($el.value)">
+            <div x-show="open" x-transition
+                 class="absolute left-0 mt-1 p-3 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-xl z-50 w-48 space-y-2.5" style="display:none">
+                <div class="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800/80 pb-1.5 shrink-0">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Highlight Colors</span>
+                    <button type="button" @click="execHighlight('transparent'); open = false;" @mousedown.prevent
+                            class="text-[10px] font-bold text-amber-500 hover:text-amber-600 dark:hover:text-amber-400 flex items-center gap-1 cursor-pointer" title="No Fill">
+                        <i class="fa-solid fa-droplet-slash text-[9px]"></i> Clear
+                    </button>
+                </div>
+                <div class="grid grid-cols-6 gap-1.5">
+                    @foreach(['#fef08a', '#bbf7d0', '#bfdbfe', '#fbcfe8', '#fed7aa', '#ddd6fe',
+                              '#eab308', '#22c55e', '#3b82f6', '#ec4899', '#f97316', '#a855f7',
+                              '#facc15', '#4ade80', '#60a5fa', '#f472b6', '#fb923c', '#c084fc'] as $color)
+                    <button type="button" @click="execHighlight('{{ $color }}'); open = false;" @mousedown.prevent
+                            class="w-5 h-5 rounded-md border border-slate-200/50 dark:border-zinc-700/50 cursor-pointer hover:scale-110 transition-transform shadow-xs"
+                            style="background-color: {{ $color }}"></button>
+                    @endforeach
+                </div>
+                <div class="border-t border-slate-100 dark:border-zinc-800/80 pt-2 flex items-center justify-between">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase">Custom</span>
+                    <button type="button" @click="$refs.hlInp.click(); open = false;" @mousedown.prevent class="text-[11px] font-bold text-amber-500 hover:underline cursor-pointer">Choose...</button>
+                </div>
+                <input type="color" x-ref="hlInp" class="absolute opacity-0 w-0 h-0 pointer-events-none" @change="execHighlight($el.value)">
+            </div>
         </div>
 
         <div class="h-5 w-px bg-slate-200 dark:bg-zinc-700 mx-0.5"></div>
@@ -481,27 +544,50 @@
 @section('scripts')
 <script>
 let _activeContent = null;
+let savedRange = null;
 
 function getActive() {
     return _activeContent || document.querySelector('.doc-page-content');
 }
 
+function saveSelection() {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+        const active = getActive();
+        if (active && active.contains(sel.getRangeAt(0).commonAncestorContainer)) {
+            savedRange = sel.getRangeAt(0).cloneRange();
+        }
+    }
+}
+
+function restoreSelection() {
+    if (savedRange) {
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(savedRange);
+    }
+}
+
 function exec(cmd, val = null) {
+    restoreSelection();
     const el = getActive();
     if (el) { el.focus(); document.execCommand(cmd, false, val); }
 }
 
 function execBlock(tag) {
+    restoreSelection();
     const el = getActive();
     if (el) { el.focus(); document.execCommand('formatBlock', false, '<' + tag + '>'); }
 }
 
 function execFont(name) {
+    restoreSelection();
     const el = getActive();
     if (el) { el.focus(); document.execCommand('fontName', false, name); }
 }
 
 function execFontSize(pt) {
+    restoreSelection();
     const el = getActive();
     if (!el) return;
     el.focus();
@@ -514,22 +600,27 @@ function execFontSize(pt) {
 
 function adjustSize(delta) {
     const inp = document.getElementById('tb-size');
-    let s = Math.max(1, Math.min(200, (parseInt(inp.value) || 12) + delta));
+    let s = Math.max(1, Math.min(100, (parseInt(inp.value) || 12) + delta));
     inp.value = s;
     execFontSize(s);
 }
 
 function execColor(color) {
-    document.getElementById('color-bar').style.background = color;
+    restoreSelection();
+    const bar = document.getElementById('color-bar');
+    if (bar) bar.style.background = color;
     const el = getActive(); if (el) { el.focus(); document.execCommand('foreColor', false, color); }
 }
 
 function execHighlight(color) {
-    document.getElementById('hl-bar').style.background = color;
+    restoreSelection();
+    const bar = document.getElementById('hl-bar');
+    if (bar) bar.style.background = color;
     const el = getActive(); if (el) { el.focus(); document.execCommand('hiliteColor', false, color); }
 }
 
 function applyToCurrentBlock(prop, value) {
+    restoreSelection();
     const sel = window.getSelection();
     const el = getActive();
     if (!sel || !el) return;
@@ -599,7 +690,10 @@ function updateToolbarState() {
     }
 }
 
-document.addEventListener('selectionchange', updateToolbarState);
+document.addEventListener('selectionchange', () => {
+    saveSelection();
+    updateToolbarState();
+});
 
 function editTemplateState() {
     return {
@@ -656,20 +750,35 @@ function editTemplateState() {
                 return;
             }
 
-            // 1. Save cursor position
+            // 1. Save selection/cursor position
             const sel = window.getSelection();
-            let marker = null;
+            let hasSelectionMarkers = false;
             if (sel && sel.rangeCount > 0) {
                 const range = sel.getRangeAt(0);
                 const activeEl = getActive();
                 if (activeEl && activeEl.contains(range.startContainer)) {
-                    marker = document.createElement('span');
-                    marker.id = 'cursor-marker';
-                    marker.style.display = 'none';
+                    const startMarker = document.createElement('span');
+                    startMarker.id = 'cursor-start-marker';
+                    startMarker.style.display = 'none';
+                    
+                    const endMarker = document.createElement('span');
+                    endMarker.id = 'cursor-end-marker';
+                    endMarker.style.display = 'none';
+                    
                     try {
-                        range.insertNode(marker);
+                        const endRange = range.cloneRange();
+                        endRange.collapse(false);
+                        endRange.insertNode(endMarker);
+                        
+                        const startRange = range.cloneRange();
+                        startRange.collapse(true);
+                        startRange.insertNode(startMarker);
+                        
+                        hasSelectionMarkers = true;
                     } catch(e) {
-                        marker = null;
+                        console.error('Error inserting selection markers:', e);
+                        if (startMarker.parentNode) startMarker.remove();
+                        if (endMarker.parentNode) endMarker.remove();
                     }
                 }
             }
@@ -901,20 +1010,24 @@ function editTemplateState() {
             // Update page count
             this.pages = container.querySelectorAll('.doc-page').length;
 
-            // 5. Restore cursor position
-            if (marker) {
-                const savedMarker = document.getElementById('cursor-marker');
-                if (savedMarker) {
-                    const parent = savedMarker.parentNode;
+            // 5. Restore selection position
+            if (hasSelectionMarkers) {
+                const startMarker = document.getElementById('cursor-start-marker');
+                const endMarker = document.getElementById('cursor-end-marker');
+                if (startMarker && endMarker) {
+                    const parent = startMarker.parentNode;
                     const range = document.createRange();
-                    range.setStartBefore(savedMarker);
-                    range.collapse(true);
+                    
+                    range.setStartAfter(startMarker);
+                    range.setEndBefore(endMarker);
                     
                     const sel = window.getSelection();
                     sel.removeAllRanges();
                     sel.addRange(range);
                     
-                    savedMarker.remove();
+                    startMarker.remove();
+                    endMarker.remove();
+                    
                     if (parent) {
                         parent.normalize();
                         const activeContent = parent.closest('.doc-page-content');
@@ -922,6 +1035,11 @@ function editTemplateState() {
                             _activeContent = activeContent;
                             activeContent.focus();
                         }
+                    }
+                    
+                    const endParent = endMarker.parentNode;
+                    if (endParent && endParent !== parent) {
+                        endParent.normalize();
                     }
                 }
             }
@@ -1006,6 +1124,10 @@ function editTemplateState() {
             const pages = Array.from(document.querySelectorAll('.doc-page-content')).map(p => {
                 const clone = p.cloneNode(true);
                 clone.querySelectorAll('.page-break-marker').forEach(el => el.remove());
+                const cms = clone.querySelector('#cursor-start-marker');
+                if (cms) cms.remove();
+                const cme = clone.querySelector('#cursor-end-marker');
+                if (cme) cme.remove();
                 const cm = clone.querySelector('#cursor-marker');
                 if (cm) cm.remove();
                 return clone.innerHTML;
