@@ -226,11 +226,11 @@
             </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-6 space-y-6">
+        <div class="flex-1 flex flex-col overflow-hidden p-6 space-y-4">
             
             <!-- Employee Selector -->
-            <div class="space-y-3">
-                <div class="flex items-center justify-between">
+            <div class="flex-1 flex flex-col min-h-0 space-y-3">
+                <div class="flex items-center justify-between shrink-0">
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">Target Employees</label>
                     <span class="text-[10px] bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 px-2 py-0.5 rounded font-bold" 
                           x-text="selectedCodes.length + ' selected'"></span>
@@ -238,10 +238,10 @@
                 
                 <!-- Search bar -->
                 <input type="text" x-model="search" placeholder="Search by name or employee code..." 
-                       class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500 transition-all">
+                       class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500 transition-all shrink-0">
                 
                 <!-- Checkboxes list -->
-                <div class="border border-slate-200 dark:border-zinc-800 rounded-xl max-h-48 overflow-y-auto divide-y divide-slate-100 dark:divide-zinc-800/80 bg-slate-50 dark:bg-zinc-950 shadow-inner">
+                <div class="flex-1 overflow-y-auto border border-slate-200 dark:border-zinc-800 rounded-xl divide-y divide-slate-100 dark:divide-zinc-800/80 bg-slate-50 dark:bg-zinc-950 shadow-inner min-h-0">
                     <template x-for="e in filteredEmployees" :key="e.employee_code">
                         <label class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-zinc-800/50 cursor-pointer transition-colors">
                             <input type="checkbox" :value="e.employee_code" x-model="selectedCodes" 
@@ -254,62 +254,9 @@
                     </template>
                 </div>
             </div>
-
-            <!-- Custom Variables Form Fields -->
-            <div x-show="selectedTemplate && selectedTemplate.variables && selectedTemplate.variables.length > 0" class="space-y-4 border-t border-slate-100 dark:border-zinc-800/80 pt-6">
-                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">Custom Template Variables</label>
-                
-                <div class="space-y-4">
-                    <template x-for="v in (selectedTemplate ? selectedTemplate.variables : [])" :key="v.key || v">
-                        <div class="space-y-1.5">
-                            <label class="block text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider" 
-                                   x-text="formatLabel(v.key || v)"></label>
-                            
-                            <!-- Date Field -->
-                            <template x-if="(v.type || 'text') === 'date'">
-                                <input type="date" x-model="customValues[v.key || v]" 
-                                       class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
-                            </template>
-
-                            <!-- Number Field -->
-                            <template x-if="(v.type || 'text') === 'number'">
-                                <input type="number" x-model="customValues[v.key || v]" :placeholder="'Enter ' + formatLabel(v.key || v)" 
-                                       class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
-                            </template>
-
-                            <!-- Boolean Yes/No Dropdown -->
-                            <template x-if="(v.type || 'text') === 'boolean'">
-                                <select x-model="customValues[v.key || v]" 
-                                        class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
-                                    <option value="">Select Option</option>
-                                    <option value="Yes">Yes</option>
-                                    <option value="No">No</option>
-                                </select>
-                            </template>
-
-                            <!-- Dropdown Field -->
-                            <template x-if="(v.type || 'text') === 'dropdown'">
-                                <select x-model="customValues[v.key || v]" 
-                                        class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
-                                    <option value="">— Select Option —</option>
-                                    <template x-for="option in (v.options && v.options.trim() ? v.options.split(',').map(s => s.trim()).filter(s => s) : [])" :key="option">
-                                        <option :value="option" x-text="option"></option>
-                                    </template>
-                                </select>
-                            </template>
-
-                            <!-- Default Text Field -->
-                            <template x-if="!v.type || v.type === 'text'">
-                                <input type="text" x-model="customValues[v.key || v]" :placeholder="'Enter ' + formatLabel(v.key || v)" 
-                                       class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
-                            </template>
-                        </div>
-                    </template>
-                </div>
-            </div>
             
             <!-- Margin Guides Toggle -->
-            <div class="border-t border-slate-100 dark:border-zinc-800/80 pt-6">
+            <div class="border-t border-slate-100 dark:border-zinc-800/80 pt-4 shrink-0">
                 <label class="flex items-center gap-3 cursor-pointer">
                     <input type="checkbox" x-model="showGuides" class="rounded border-slate-300 text-amber-500 focus:ring-amber-500">
                     <span class="text-xs font-bold text-slate-600 dark:text-zinc-400">Show page margin guides</span>
@@ -386,6 +333,64 @@
         </div>
 
     </div>
+
+    <!-- Right Sidebar: Custom variables input (no-print) -->
+    <aside x-show="selectedTemplate && selectedTemplate.variables && selectedTemplate.variables.length > 0"
+           class="no-print w-full md:w-80 bg-white dark:bg-zinc-900 border-l border-slate-200 dark:border-zinc-800 flex flex-col overflow-hidden shrink-0 shadow-sm z-20">
+        
+        <div class="p-6 border-b border-slate-200 dark:border-zinc-800 space-y-2 shrink-0">
+            <h2 class="text-sm font-bold text-slate-800 dark:text-zinc-200 uppercase tracking-wider">Custom Variables</h2>
+            <p class="text-xs text-slate-400 mt-1">Specify values for template placeholders.</p>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-6 space-y-4">
+            <template x-for="v in (selectedTemplate ? selectedTemplate.variables : [])" :key="v.key || v">
+                <div class="space-y-1.5">
+                    <label class="block text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider" 
+                           x-text="formatLabel(v.key || v)"></label>
+                    
+                    <!-- Date Field -->
+                    <template x-if="(v.type || 'text') === 'date'">
+                        <input type="date" x-model="customValues[v.key || v]" 
+                               class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
+                    </template>
+
+                    <!-- Number Field -->
+                    <template x-if="(v.type || 'text') === 'number'">
+                        <input type="number" x-model="customValues[v.key || v]" :placeholder="'Enter ' + formatLabel(v.key || v)" 
+                               class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
+                    </template>
+
+                    <!-- Boolean Yes/No Dropdown -->
+                    <template x-if="(v.type || 'text') === 'boolean'">
+                        <select x-model="customValues[v.key || v]" 
+                                class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
+                            <option value="">Select Option</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </template>
+
+                    <!-- Dropdown Field -->
+                    <template x-if="(v.type || 'text') === 'dropdown'">
+                        <select x-model="customValues[v.key || v]" 
+                                class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
+                            <option value="">— Select Option —</option>
+                            <template x-for="option in (v.options && v.options.trim() ? v.options.split(',').map(s => s.trim()).filter(s => s) : [])" :key="option">
+                                <option :value="option" x-text="option"></option>
+                            </template>
+                        </select>
+                    </template>
+
+                    <!-- Default Text Field -->
+                    <template x-if="!v.type || v.type === 'text'">
+                        <input type="text" x-model="customValues[v.key || v]" :placeholder="'Enter ' + formatLabel(v.key || v)" 
+                               class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
+                    </template>
+                </div>
+            </template>
+        </div>
+    </aside>
 
     <!-- Offscreen sandbox container for paginating generated letters -->
     <div id="sandbox-container" class="no-print"
