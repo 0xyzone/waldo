@@ -18,6 +18,10 @@
 }
 .dark #editor-scroll { background: #0f0f10; }
 
+#pages-container:focus {
+    outline: none;
+}
+
 .doc-page {
     position: relative;
     width: 210mm;
@@ -212,7 +216,7 @@
 @endsection
 
 @section('content')
-<div x-data="editTemplateState()" class="flex-1 flex flex-col overflow-hidden" x-init="init()">
+<div x-data="editTemplateState()" class="flex-1 flex flex-col overflow-hidden">
 
     <!-- ── TOOLBAR ── -->
     <div class="no-print bg-white dark:bg-zinc-900 border-b border-slate-200 dark:border-zinc-800 px-3 py-2 flex flex-wrap items-center gap-1 shrink-0 shadow-sm z-20">
@@ -376,54 +380,109 @@
         <button type="button" @mousedown.prevent="exec('removeFormat')" class="p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer" title="Clear Format"><i class="fa-solid fa-eraser text-sm"></i></button>
     </div>
 
-    <!-- ── 3-PANE LAYOUT ── -->
-    <div class="flex-1 flex overflow-hidden">
+    <!-- Form wraps the entire 3-pane layout -->
+    <form id="template-form" action="{{ route('letters.update', $template->id) }}" method="POST" class="flex-1 flex flex-row overflow-hidden" @submit.prevent="doSave($event)">
+        @csrf
+        @method('PUT')
+        <input type="hidden" name="content" id="content-hidden">
 
-        <!-- LEFT: Variables panel -->
-        <aside class="no-print w-72 bg-white dark:bg-zinc-900 border-r border-slate-200 dark:border-zinc-800 flex flex-col overflow-hidden shrink-0">
-            <div class="p-4 border-b border-slate-200 dark:border-zinc-800 shrink-0">
-                <h3 class="text-sm font-bold text-slate-800 dark:text-zinc-200 uppercase tracking-wider">Placeholders</h3>
-                <p class="text-xs text-slate-400 mt-1">Click a pill to insert at cursor.</p>
-                <p class="text-xs text-amber-600 dark:text-amber-400 mt-1.5 font-semibold"><i class="fa-solid fa-keyboard mr-1"></i>Ctrl+Enter → Page Break</p>
+        <!-- LEFT Sidebar: Document Settings & Placeholders -->
+        <aside class="no-print w-80 bg-white dark:bg-zinc-900 border-r border-slate-200 dark:border-zinc-800 flex flex-col overflow-hidden shrink-0 shadow-sm z-20">
+            <!-- Document Settings section -->
+            <div class="p-5 border-b border-slate-200 dark:border-zinc-800 shrink-0 space-y-3">
+                <h3 class="text-sm font-bold text-slate-800 dark:text-zinc-200 uppercase tracking-wider">Document Settings</h3>
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Template Title *</label>
+                    <input type="text" name="title" x-model="title" required
+                           class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-sm font-semibold text-slate-900 dark:text-zinc-100 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all"
+                           placeholder="e.g. Appointment Letter">
+                </div>
             </div>
-            <div class="flex-1 overflow-y-auto p-4 space-y-5">
-                <div class="space-y-2">
-                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                        <i class="fa-solid fa-id-card text-amber-500"></i> Employee
-                    </h4>
-                    <div class="flex flex-wrap gap-1.5">
-                        @foreach([
-                            'employee_name'               => 'Name',
-                            'employee_employee_code'      => 'Code',
-                            'employee_department'         => 'Department',
-                            'employee_designation'        => 'Designation',
-                            'employee_gender'             => 'Gender',
-                            'employee_join_date'          => 'Join Date',
-                            'employee_contact_number'     => 'Phone',
-                            'employee_email'              => 'Email',
-                            'employee_citizenship_number' => 'Citizenship No',
-                            'employee_ssid'               => 'SSID',
-                            'employee_dob_ad'             => 'DOB (AD)',
-                            'employee_marital_status'     => 'Marital Status',
-                            'employee_tips_amount'        => 'Tips Amount',
-                            'employee_tips_status'        => 'Tips Status',
-                            'employee_his_her'            => 'his/her',
-                            'employee_he_she'             => 'he/she',
-                            'employee_his_her_cap'        => 'His/Her',
-                            'employee_he_she_cap'         => 'He/She',
-                        ] as $key => $label)
-                        <button type="button" @mousedown.prevent="insertVar('{!! $key !!}')"
-                                class="px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 rounded-md text-xs font-semibold font-mono border border-amber-500/20 active:scale-95 cursor-pointer transition-all">
-                            {{ $label }}
-                        </button>
+
+            <!-- Placeholders section -->
+            <div class="p-5 border-b border-slate-200 dark:border-zinc-800 shrink-0 space-y-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-800 dark:text-zinc-200 uppercase tracking-wider">Placeholders</h3>
+                    <p class="text-xs text-amber-600 dark:text-amber-400 font-semibold"><i class="fa-solid fa-keyboard mr-1"></i>Ctrl+Enter → Break</p>
+                </div>
+                <input type="text" x-model="varSearch" placeholder="Search variables..."
+                       class="w-full px-2.5 py-1.5 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-lg text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500 transition-all outline-none">
+            </div>
+
+            <!-- Prebuilt Variables list -->
+            <div class="flex-1 overflow-y-auto p-5 space-y-3 min-h-0">
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                    <i class="fa-solid fa-id-card text-amber-500"></i> Employee Fields
+                </h4>
+                <div class="flex flex-wrap gap-1.5">
+                    <template x-for="pv in filteredPrebuiltVars" :key="pv.key">
+                        <button type="button" @mousedown.prevent="insertVar(pv.key)"
+                                class="px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 rounded-md text-xs font-semibold font-mono border border-amber-500/20 active:scale-95 cursor-pointer transition-all"
+                                x-text="pv.label"></button>
+                    </template>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CENTER Pane: Pages -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <div id="editor-scroll">
+                <div id="pages-container" contenteditable="true" class="w-full flex flex-col items-center gap-6">
+                    <!-- Pages rendered by init() -->
+                </div>
+            </div>
+            <div id="page-info-bar" class="no-print">
+                <span x-text="pages + (pages === 1 ? ' page' : ' pages')"></span>
+                <span class="text-slate-300 dark:text-zinc-600">·</span>
+                <span class="text-amber-600 dark:text-amber-400 font-bold">Ctrl+Enter</span>
+                <span class="text-slate-400">= Page Break</span>
+            </div>
+        </div>
+
+        <!-- RIGHT Sidebar: Custom Variables, Margins, Page Count, Submit -->
+        <aside class="no-print w-80 bg-white dark:bg-zinc-900 border-l border-slate-200 dark:border-zinc-800 flex flex-col overflow-hidden shrink-0 shadow-sm z-20">
+            <!-- Header -->
+            <div class="p-5 border-b border-slate-200 dark:border-zinc-800 space-y-1 shrink-0">
+                <h3 class="text-sm font-bold text-slate-800 dark:text-zinc-200 uppercase tracking-wider">Configuration</h3>
+                <p class="text-xs text-slate-400">Custom variables and formatting.</p>
+            </div>
+
+            <!-- Body (Scrollable) -->
+            <div class="flex-1 overflow-y-auto p-5 space-y-6 min-h-0">
+                
+                @if($errors->any())
+                <div class="p-3 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-700 dark:text-rose-400 text-xs space-y-1">
+                    @foreach($errors->all() as $e)<p>• {{ $e }}</p>@endforeach
+                </div>
+                @endif
+
+                <!-- Page Margins -->
+                <div class="p-4 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl space-y-3">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Page Margins (mm)</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        @foreach(['top' => 'Top', 'bottom' => 'Bottom', 'left' => 'Left', 'right' => 'Right'] as $side => $label)
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-400 mb-0.5">{{ $label }}</label>
+                            <input type="number" name="margin_{{ $side }}" x-model.number="margins.{{ $side }}"
+                                   min="0" max="100"
+                                   class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none"
+                                   @change="applyMarginsToAll()">
+                        </div>
                         @endforeach
                     </div>
                 </div>
 
+                <!-- Page Count Display -->
+                <div class="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/50 rounded-xl text-center">
+                    <div class="text-2xl font-black text-amber-600" x-text="pages"></div>
+                    <div class="text-xs font-semibold text-amber-700 dark:text-amber-400" x-text="pages === 1 ? 'Page' : 'Pages'"></div>
+                </div>
+
+                <!-- Custom Variables Editor -->
                 <div class="space-y-3 border-t border-slate-100 dark:border-zinc-800 pt-4">
                     <div class="flex items-center justify-between">
                         <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                            <i class="fa-solid fa-sliders text-amber-500"></i> Custom
+                            <i class="fa-solid fa-sliders text-amber-500"></i> Custom Variables
                         </h4>
                         <button type="button" @mousedown.prevent="addVariable()"
                                 class="px-2 py-1 bg-amber-500 text-white text-[10px] font-bold rounded-md hover:bg-amber-600 cursor-pointer">
@@ -463,79 +522,18 @@
                         <div x-show="variables.length === 0" class="py-5 text-center text-xs text-slate-400 italic border border-dashed border-slate-200 dark:border-zinc-800 rounded-xl">No custom variables yet.</div>
                     </div>
                 </div>
+
+            </div>
+
+            <!-- Footer (Submit buttons) -->
+            <div class="p-4 border-t border-slate-200 dark:border-zinc-800 space-y-2 shrink-0 bg-white dark:bg-zinc-900">
+                <button type="submit" class="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm rounded-xl shadow-md shadow-amber-500/20 transition-all cursor-pointer">
+                    <i class="fa-solid fa-floppy-disk mr-1.5"></i> Update Template
+                </button>
+                <a href="{{ route('letters.index') }}" class="block text-center py-2 text-sm text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200 transition-colors">Cancel</a>
             </div>
         </aside>
-
-        <!-- CENTER: Pages -->
-        <div class="flex-1 flex flex-col overflow-hidden">
-            <div id="editor-scroll">
-                <div id="pages-container" class="w-full flex flex-col items-center gap-6">
-                    <!-- Pages rendered by init() -->
-                </div>
-            </div>
-            <div id="page-info-bar" class="no-print">
-                <span x-text="pages + (pages === 1 ? ' page' : ' pages')"></span>
-                <span class="text-slate-300 dark:text-zinc-600">·</span>
-                <span class="text-amber-600 dark:text-amber-400 font-bold">Ctrl+Enter</span>
-                <span class="text-slate-400">= Page Break</span>
-            </div>
-        </div>
-
-        <!-- RIGHT: Settings -->
-        <aside class="no-print w-80 bg-white dark:bg-zinc-900 border-l border-slate-200 dark:border-zinc-800 flex flex-col overflow-hidden shrink-0">
-            <form id="template-form" action="{{ route('letters.update', $template->id) }}" method="POST" class="flex flex-col h-full" @submit.prevent="doSave($event)">
-                @csrf
-                @method('PUT')
-                <input type="hidden" name="content" id="content-hidden">
-
-                <div class="flex-1 overflow-y-auto p-5 space-y-5">
-                    <div>
-                        <h3 class="text-sm font-bold text-slate-800 dark:text-zinc-200 uppercase tracking-wider">Document Settings</h3>
-                        <p class="text-xs text-slate-400 mt-1">Title and page margins.</p>
-                    </div>
-
-                    @if($errors->any())
-                    <div class="p-3 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-700 dark:text-rose-400 text-xs space-y-1">
-                        @foreach($errors->all() as $e)<p>• {{ $e }}</p>@endforeach
-                    </div>
-                    @endif
-
-                    <div class="space-y-1.5">
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Template Title *</label>
-                        <input type="text" name="title" x-model="title" required
-                               class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-sm font-semibold text-slate-900 dark:text-zinc-100 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all"
-                               placeholder="e.g. Appointment Letter">
-                    </div>
-
-                    <div class="p-4 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl space-y-3">
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Page Margins (mm)</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            @foreach(['top' => 'Top', 'bottom' => 'Bottom', 'left' => 'Left', 'right' => 'Right'] as $side => $label)
-                            <div>
-                                <label class="block text-[9px] font-bold text-slate-400 mb-0.5">{{ $label }}</label>
-                                <input type="number" name="margin_{{ $side }}" x-model.number="margins.{{ $side }}"
-                                       min="0" max="100"
-                                       class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none"
-                                       @change="applyMarginsToAll()">
-                            </div>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    <div class="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/50 rounded-xl text-center">
-                        <div class="text-2xl font-black text-amber-600" x-text="pages"></div>
-                        <div class="text-xs font-semibold text-amber-700 dark:text-amber-400" x-text="pages === 1 ? 'Page' : 'Pages'"></div>
-                    </div>
-                </div>
-
-                <div class="p-4 border-t border-slate-200 dark:border-zinc-800 space-y-2 shrink-0">
-                    <button type="submit" class="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm rounded-xl shadow-md shadow-amber-500/20 transition-all cursor-pointer">
-                        <i class="fa-solid fa-floppy-disk mr-1.5"></i> Update Template
-                    </button>
-                    <a href="{{ route('letters.index') }}" class="block text-center py-2 text-sm text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200 transition-colors">Cancel</a>
-                </div>
-            </form>
-        </aside>
+    </form>
 
     </div>
 </div>
@@ -543,18 +541,29 @@
 
 @section('scripts')
 <script>
-let _activeContent = null;
 let savedRange = null;
 
+function getEditorRoot() {
+    return document.getElementById('pages-container');
+}
+
 function getActive() {
-    return _activeContent || document.querySelector('.doc-page-content');
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+        const node = sel.getRangeAt(0).commonAncestorContainer;
+        const content = node.nodeType === Node.ELEMENT_NODE
+            ? node.closest('.doc-page-content')
+            : node.parentNode?.closest('.doc-page-content');
+        if (content) return content;
+    }
+    return document.querySelector('.doc-page-content');
 }
 
 function saveSelection() {
     const sel = window.getSelection();
     if (sel && sel.rangeCount > 0) {
-        const active = getActive();
-        if (active && active.contains(sel.getRangeAt(0).commonAncestorContainer)) {
+        const root = getEditorRoot();
+        if (root && root.contains(sel.getRangeAt(0).commonAncestorContainer)) {
             savedRange = sel.getRangeAt(0).cloneRange();
         }
     }
@@ -562,6 +571,8 @@ function saveSelection() {
 
 function restoreSelection() {
     if (savedRange) {
+        const root = getEditorRoot();
+        if (root) root.focus();
         const sel = window.getSelection();
         sel.removeAllRanges();
         sel.addRange(savedRange);
@@ -570,29 +581,24 @@ function restoreSelection() {
 
 function exec(cmd, val = null) {
     restoreSelection();
-    const el = getActive();
-    if (el) { el.focus(); document.execCommand(cmd, false, val); }
+    document.execCommand(cmd, false, val);
 }
 
 function execBlock(tag) {
     restoreSelection();
-    const el = getActive();
-    if (el) { el.focus(); document.execCommand('formatBlock', false, '<' + tag + '>'); }
+    document.execCommand('formatBlock', false, '<' + tag + '>');
 }
 
 function execFont(name) {
     restoreSelection();
-    const el = getActive();
-    if (el) { el.focus(); document.execCommand('fontName', false, name); }
+    document.execCommand('fontName', false, name);
 }
 
 function execFontSize(pt) {
     restoreSelection();
-    const el = getActive();
-    if (!el) return;
-    el.focus();
     document.execCommand('fontSize', false, '7');
-    el.querySelectorAll('[size="7"]').forEach(n => {
+    const root = getEditorRoot();
+    if (root) root.querySelectorAll('[size="7"]').forEach(n => {
         n.removeAttribute('size');
         n.style.fontSize = pt + 'pt';
     });
@@ -609,14 +615,14 @@ function execColor(color) {
     restoreSelection();
     const bar = document.getElementById('color-bar');
     if (bar) bar.style.background = color;
-    const el = getActive(); if (el) { el.focus(); document.execCommand('foreColor', false, color); }
+    document.execCommand('foreColor', false, color);
 }
 
 function execHighlight(color) {
     restoreSelection();
     const bar = document.getElementById('hl-bar');
     if (bar) bar.style.background = color;
-    const el = getActive(); if (el) { el.focus(); document.execCommand('hiliteColor', false, color); }
+    document.execCommand('hiliteColor', false, color);
 }
 
 function applyToCurrentBlock(prop, value) {
@@ -708,9 +714,69 @@ function editTemplateState() {
         pages: 1,
         _reflowInProgress: false,
         _reflowTimer: null,
+        varSearch: '',
+        prebuiltVars: [
+            { key: 'employee_name', label: 'Name' },
+            { key: 'employee_first_name', label: 'First Name' },
+            { key: 'employee_middle_name', label: 'Middle Name' },
+            { key: 'employee_last_name', label: 'Last Name' },
+            { key: 'employee_employee_code', label: 'Code' },
+            { key: 'employee_department', label: 'Department' },
+            { key: 'employee_designation', label: 'Designation' },
+            { key: 'employee_gender', label: 'Gender' },
+            { key: 'employee_join_date', label: 'Join Date' },
+            { key: 'employee_join_date_formatted', label: 'Join Date Formatted' },
+            { key: 'employee_contact_number', label: 'Phone' },
+            { key: 'employee_email', label: 'Email' },
+            { key: 'employee_citizenship_number', label: 'Citizenship No' },
+            { key: 'employee_citizenship_issue_date', label: 'Citizenship Issue Date' },
+            { key: 'employee_citizenship_issue_place', label: 'Citizenship Issue Place' },
+            { key: 'employee_ssid', label: 'SSID' },
+            { key: 'employee_dob_ad', label: 'DOB (AD)' },
+            { key: 'employee_dob_bs', label: 'DOB (BS)' },
+            { key: 'employee_marital_status', label: 'Marital Status' },
+            { key: 'employee_employee_status', label: 'Employee Status' },
+            { key: 'employee_rank', label: 'Rank' },
+            { key: 'employee_dp_rank', label: 'DP Rank' },
+            { key: 'employee_tips_amount', label: 'Tips Amount' },
+            { key: 'employee_tips_status', label: 'Tips Status' },
+            { key: 'employee_point_value', label: 'Point Value' },
+            { key: 'employee_tips_blank', label: 'Tips Blank' },
+            { key: 'employee_publish_tips', label: 'Publish Tips' },
+            { key: 'employee_tips_fixed', label: 'Tips Fixed' },
+            { key: 'employee_his_her', label: 'his/her' },
+            { key: 'employee_he_she', label: 'he/she' },
+            { key: 'employee_his_her_cap', label: 'His/Her' },
+            { key: 'employee_he_she_cap', label: 'He/She' }
+        ],
+        get filteredPrebuiltVars() {
+            if (!this.varSearch) return this.prebuiltVars;
+            const q = this.varSearch.toLowerCase();
+            return this.prebuiltVars.filter(v => 
+                v.key.toLowerCase().includes(q) || v.label.toLowerCase().includes(q)
+            );
+        },
 
         addVariable()     { this.variables.push({ key: '', type: 'text', dummy: '', options: '' }); },
         removeVariable(i) { this.variables.splice(i, 1); },
+
+        isCursorAtStartOfEditable(editable, range) {
+            const preRange = document.createRange();
+            preRange.selectNodeContents(editable);
+            preRange.setEnd(range.startContainer, range.startOffset);
+            const text = preRange.toString().trim();
+            const clone = preRange.cloneContents();
+            return text.length === 0 && !clone.querySelector('img, table, hr, p, div, h1, h2, h3, ul, ol');
+        },
+
+        isCursorAtEndOfEditable(editable, range) {
+            const postRange = document.createRange();
+            postRange.selectNodeContents(editable);
+            postRange.setStart(range.endContainer, range.endOffset);
+            const text = postRange.toString().trim();
+            const clone = postRange.cloneContents();
+            return text.length === 0 && !clone.querySelector('img, table, hr, p, div, h1, h2, h3, ul, ol');
+        },
 
         insertVar(key) {
             const el = getActive();
@@ -1030,11 +1096,8 @@ function editTemplateState() {
                     
                     if (parent) {
                         parent.normalize();
-                        const activeContent = parent.closest('.doc-page-content');
-                        if (activeContent) {
-                            _activeContent = activeContent;
-                            activeContent.focus();
-                        }
+                        const root = getEditorRoot();
+                        if (root) root.focus();
                     }
                     
                     const endParent = endMarker.parentNode;
@@ -1055,6 +1118,7 @@ function editTemplateState() {
             // Gap label
             const gap = document.createElement('div');
             gap.className = 'no-print flex items-center justify-center';
+            gap.contentEditable = 'false';
             gap.innerHTML = '<span class="page-gap-label">— Page ' + num + ' —</span>';
 
             const page = document.createElement('div');
@@ -1064,11 +1128,10 @@ function editTemplateState() {
             page.style.setProperty('--ml', m.left   + 'mm');
             page.style.setProperty('--mr', m.right  + 'mm');
 
-            page.innerHTML = '<span class="page-number-label no-print">Page ' + num + '</span>';
+            page.innerHTML = '<span class="page-number-label no-print" contenteditable="false">Page ' + num + '</span>';
 
             const content = document.createElement('div');
             content.className = 'doc-page-content';
-            content.contentEditable = 'true';
             content.spellcheck = true;
             if (num === 1) content.dataset.placeholder = 'Start typing your letter here…';
             this.bindPageContent(content, page);
@@ -1081,19 +1144,7 @@ function editTemplateState() {
         },
 
         bindPageContent(content, page) {
-            const self = this;
-            content.addEventListener('focus', () => { _activeContent = content; });
-            content.addEventListener('keydown', (e) => {
-                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); self.insertPageBreak(); return; }
-                if (e.key === 'Tab') { e.preventDefault(); document.execCommand(e.shiftKey ? 'outdent' : 'indent'); }
-            });
-            content.addEventListener('input', () => {
-                updateToolbarState();
-                clearTimeout(self._reflowTimer);
-                self._reflowTimer = setTimeout(() => self.reflowPages(), 150);
-            });
-            content.addEventListener('mouseup', updateToolbarState);
-            content.addEventListener('keyup', updateToolbarState);
+            // Managed globally at root pages-container level
         },
 
         insertPageBreak() {
@@ -1172,8 +1223,87 @@ function editTemplateState() {
                 
                 this.reflowPages();
                 
-                const first = document.querySelector('.doc-page-content');
-                if (first) { first.focus(); _activeContent = first; }
+                const root = getEditorRoot();
+                if (root) root.focus();
+
+                // Register editing and boundary events at the root pages-container level
+                const container = document.getElementById('pages-container');
+                const self = this;
+
+                container.addEventListener('keydown', (e) => {
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); self.insertPageBreak(); return; }
+                    if (e.key === 'Tab') { e.preventDefault(); document.execCommand(e.shiftKey ? 'outdent' : 'indent'); return; }
+
+                    const sel = window.getSelection();
+                    if (sel && sel.isCollapsed && sel.rangeCount > 0) {
+                        const range = sel.getRangeAt(0);
+                        const node = range.startContainer;
+                        const content = node.nodeType === Node.ELEMENT_NODE ? node.closest('.doc-page-content') : node.parentNode?.closest('.doc-page-content');
+                        if (content) {
+                            if (e.key === 'Backspace') {
+                                if (self.isCursorAtStartOfEditable(content, range)) {
+                                    const pages = Array.from(document.querySelectorAll('.doc-page-content'));
+                                    const idx = pages.indexOf(content);
+                                    if (idx > 0) {
+                                        e.preventDefault();
+                                        const prevPage = pages[idx - 1];
+                                        const marker = document.createElement('span');
+                                        marker.id = 'cursor-start-marker';
+                                        prevPage.appendChild(marker);
+                                        while (content.firstChild) {
+                                            prevPage.appendChild(content.firstChild);
+                                        }
+                                        self.reflowPages();
+                                        const m = document.getElementById('cursor-start-marker');
+                                        if (m) {
+                                            const newRange = document.createRange();
+                                            newRange.setStartAfter(m);
+                                            newRange.collapse(true);
+                                            sel.removeAllRanges();
+                                            sel.addRange(newRange);
+                                            m.remove();
+                                        }
+                                    }
+                                }
+                            }
+                            if (e.key === 'Delete') {
+                                if (self.isCursorAtEndOfEditable(content, range)) {
+                                    const pages = Array.from(document.querySelectorAll('.doc-page-content'));
+                                    const idx = pages.indexOf(content);
+                                    if (idx < pages.length - 1) {
+                                        e.preventDefault();
+                                        const nextPage = pages[idx + 1];
+                                        const marker = document.createElement('span');
+                                        marker.id = 'cursor-start-marker';
+                                        range.insertNode(marker);
+                                        while (nextPage.firstChild) {
+                                            content.appendChild(nextPage.firstChild);
+                                        }
+                                        self.reflowPages();
+                                        const m = document.getElementById('cursor-start-marker');
+                                        if (m) {
+                                            const newRange = document.createRange();
+                                            newRange.setStartAfter(m);
+                                            newRange.collapse(true);
+                                            sel.removeAllRanges();
+                                            sel.addRange(newRange);
+                                            m.remove();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                container.addEventListener('input', () => {
+                    updateToolbarState();
+                    clearTimeout(self._reflowTimer);
+                    self._reflowTimer = setTimeout(() => self.reflowPages(), 150);
+                });
+
+                container.addEventListener('mouseup', updateToolbarState);
+                container.addEventListener('keyup', updateToolbarState);
             });
         }
     };
