@@ -111,4 +111,52 @@ class LetterTemplateTest extends TestCase
         $response->assertViewHas('templates');
         $response->assertSee('Offer Letter');
     }
+
+    /**
+     * Test a letter template can be updated.
+     */
+    public function test_can_update_letter_template(): void
+    {
+        $role = Role::create(['name' => 'HR']);
+        $user = User::factory()->create();
+        $user->assignRole($role);
+        $this->actingAs($user);
+
+        $template = LetterTemplate::create([
+            'title' => 'Offer Letter',
+            'content' => '<p>Dear {{ employee_name }}</p>',
+            'variables' => [
+                ['key' => 'salary', 'type' => 'number', 'dummy' => '5000'],
+            ],
+            'margin_top' => 25,
+            'margin_bottom' => 25,
+            'margin_left' => 20,
+            'margin_right' => 20,
+        ]);
+
+        $response = $this->put(route('letters.update', $template->id), [
+            'title' => 'Updated Offer Letter',
+            'content' => '<p>Dear {{ employee_name }}</p>',
+            'variables' => [
+                ['key' => 'salary', 'type' => 'number', 'dummy' => '6000'],
+                ['key' => 'start_date', 'type' => 'date', 'dummy' => '2026-07-20'],
+            ],
+            'margin_top' => 25,
+            'margin_bottom' => 25,
+            'margin_left' => 20,
+            'margin_right' => 20,
+        ]);
+
+        $response->assertRedirect(route('letters.index'));
+        $this->assertDatabaseHas('letter_templates', [
+            'id' => $template->id,
+            'title' => 'Updated Offer Letter',
+        ]);
+
+        $updatedVariables = $template->fresh()->variables;
+        $this->assertCount(2, $updatedVariables);
+        $this->assertEquals('salary', $updatedVariables[0]['key']);
+        $this->assertEquals('6000', $updatedVariables[0]['dummy']);
+        $this->assertEquals('start_date', $updatedVariables[1]['key']);
+    }
 }

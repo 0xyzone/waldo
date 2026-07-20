@@ -91,12 +91,21 @@ class EmployeesTable
                         ->extraAttributes(['class' => 'mt-3 block']),
                     TextColumn::make('department.name')
                         ->icon('heroicon-m-building-office-2')
+                        ->iconColor('primary')
                         ->color('gray')
                         ->size('sm')
                         ->extraAttributes(['class' => 'mt-1 block']),
                     TextColumn::make('designation.name')
                         ->icon('heroicon-m-briefcase')
+                        ->iconColor('primary')
                         ->color('gray')
+                        ->size('sm')
+                        ->extraAttributes(['class' => 'mt-1 block']),
+                    TextColumn::make('dob_ad')
+                        ->icon('heroicon-m-cake')
+                        ->iconColor('primary')
+                        ->color('gray')
+                        ->date('jS F, Y')
                         ->size('sm')
                         ->extraAttributes(['class' => 'mt-1 block']),
                     TextColumn::make('join_date_formatted')

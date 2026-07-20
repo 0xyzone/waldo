@@ -4,289 +4,385 @@
 
 @section('styles')
 <style>
-/* =====================================================
-   GOOGLE DOCS-STYLE DOCUMENT EDITOR — Premium Theme
-   ===================================================== */
+/* ═══════════════════════════════════════════════════
+   DOCUMENT STUDIO — page-per-div layout
+   Each .doc-page is an A4 sheet with margin padding.
+   Content fills the page; JS pushes overflow to next.
+═══════════════════════════════════════════════════ */
+#editor-scroll {
+    background: #e2e8f0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 24px 80px;
+    gap: 24px;
+}
+.dark #editor-scroll { background: #0f0f10; }
 
-/* --- Toolbar --- */
-.doc-toolbar {
+.doc-page {
+    position: relative;
+    width: 210mm;
+    background: #ffffff;
+    box-shadow: 0 2px 16px rgba(0,0,0,.14), 0 0 0 1px rgba(0,0,0,.06);
+    border-radius: 2px;
+    box-sizing: border-box;
+    padding-top:    var(--mt, 25mm);
+    padding-bottom: var(--mb, 25mm);
+    padding-left:   var(--ml, 20mm);
+    padding-right:  var(--mr, 20mm);
+    height: 297mm;
+    max-height: 297mm;
+    overflow: hidden;
+}
+.dark .doc-page {
+    background: #1c1c1e;
+    box-shadow: 0 4px 24px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.06);
+}
+
+.page-break-marker {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 3px;
-    padding: 6px 14px;
-    background: linear-gradient(to bottom, #ffffff, #f8fafc);
-    border-bottom: 1px solid #e2e8f0;
-    min-height: 46px;
-    flex-shrink: 0;
-    position: relative;
-    z-index: 10;
-}
-.dark .doc-toolbar {
-    background: linear-gradient(to bottom, #1c1c1f, #18181b);
-    border-bottom-color: #2d2d32;
-}
-
-.tb-btn {
-    display: inline-flex;
-    align-items: center;
     justify-content: center;
-    min-width: 30px;
-    height: 30px;
-    padding: 0 6px;
-    border-radius: 5px;
-    border: none;
-    background: transparent;
-    color: #4b5563;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    transition: all 0.12s;
-    font-family: inherit;
-    flex-shrink: 0;
-}
-.dark .tb-btn { color: #a1a1aa; }
-.tb-btn:hover {
-    background: #f0f4f8;
-    color: #1e293b;
-}
-.dark .tb-btn:hover {
-    background: #2d2d32;
-    color: #f4f4f5;
-}
-.tb-btn.is-active {
-    background: #fef3c7;
-    color: #92400e;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,.08);
-}
-.dark .tb-btn.is-active {
-    background: #422006;
-    color: #fcd34d;
-    box-shadow: none;
-}
-
-.tb-sep {
-    width: 1px;
-    height: 22px;
-    background: #e2e8f0;
-    margin: 0 5px;
-    flex-shrink: 0;
-}
-.dark .tb-sep { background: #2d2d32; }
-
-.tb-select {
-    height: 30px;
-    border: 1px solid #e2e8f0;
-    border-radius: 5px;
-    font-size: 12px;
-    padding: 0 8px;
-    background: #fff;
-    color: #374151;
-    cursor: pointer;
-    outline: none;
-    font-family: inherit;
-    flex-shrink: 0;
-    transition: border-color .15s, box-shadow .15s;
-}
-.tb-select:focus {
-    border-color: #f59e0b;
-    box-shadow: 0 0 0 2px rgba(245,158,11,.12);
-}
-.dark .tb-select {
-    background: #232327;
-    border-color: #2d2d32;
-    color: #d4d4d8;
-}
-.dark .tb-select:focus {
-    border-color: #f59e0b;
-}
-
-/* Page counter bar */
-#page-count-bar {
-    width: 210mm;
-    text-align: right;
-    font-size: 10px;
-    color: #9ca3af;
-    font-family: 'Inter', sans-serif;
-    padding: 4px 8px 0;
+    margin: 16px 0;
+    border-top: 2px dashed #f59e0b;
+    position: relative;
     user-select: none;
+    height: 0;
+}
+.page-break-marker::after {
+    content: 'Page Break';
+    position: absolute;
+    background: #fef3c7;
+    color: #b45309;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid #fcd34d;
+    transform: translateY(-50%);
+}
+.dark .page-break-marker {
+    border-top-color: #d97706;
+}
+.dark .page-break-marker::after {
+    background: rgba(245,158,11,0.18);
+    color: #fbbf24;
+    border-color: rgba(245,158,11,0.3);
 }
 
-/* ---- COPY TOOLTIP ---- */
-.copy-tip {
-    position: fixed;
-    background: linear-gradient(135deg, #1e293b, #0f172a);
-    color: #f1f5f9;
-    font-size: 11px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 500;
-    padding: 5px 12px;
-    border-radius: 7px;
-    pointer-events: none;
-    z-index: 9999;
-    white-space: nowrap;
-    opacity: 0;
-    transform: translateY(6px);
-    transition: opacity 0.15s, transform 0.15s;
-    box-shadow: 0 4px 16px rgba(0,0,0,.25);
+.doc-page-content {
+    outline: none;
+    width: 100%;
+    min-height: 10px;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 12pt;
+    line-height: 1.6;
+    color: #1e293b;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    caret-color: #1d4ed8;
 }
-.copy-tip::before {
+.dark .doc-page-content { color: #e4e4e7; }
+.doc-page-content:focus { outline: none; }
+.doc-page-content:empty::before {
+    content: attr(data-placeholder);
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+.doc-page-content p  { margin: 0 0 8pt; }
+.doc-page-content h1 { font-size: 22pt; font-weight: bold; margin: 14pt 0 6pt; }
+.doc-page-content h2 { font-size: 18pt; font-weight: bold; margin: 12pt 0 4pt; }
+.doc-page-content h3 { font-size: 14pt; font-weight: bold; margin: 10pt 0 4pt; }
+.doc-page-content ul { list-style: disc;    padding-left: 24pt; margin-bottom: 8pt; }
+.doc-page-content ol { list-style: decimal; padding-left: 24pt; margin-bottom: 8pt; }
+.doc-page-content table { width: 100%; border-collapse: collapse; margin: 10pt 0; }
+.doc-page-content td, .doc-page-content th {
+    border: 1px solid #cbd5e1;
+    padding: 6px 10px;
+    min-width: 30px;
+    vertical-align: top;
+}
+.dark .doc-page-content td, .dark .doc-page-content th { border-color: #3f3f46; }
+
+.doc-page::before {
     content: '';
     position: absolute;
-    top: -4px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 8px;
-    height: 4px;
-    background: #0f172a;
-    clip-path: polygon(0 100%, 50% 0, 100% 100%);
+    inset: 0;
+    border: 1px dashed rgba(245,158,11,0.25);
+    margin: var(--mt, 25mm) var(--mr, 20mm) var(--mb, 25mm) var(--ml, 20mm);
+    pointer-events: none;
+    z-index: 1;
 }
-.copy-tip.show {
-    opacity: 1;
-    transform: translateY(0);
+
+.page-number-label {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    user-select: none;
+    pointer-events: none;
+}
+.dark .page-number-label { color: #52525b; }
+
+.page-gap-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    padding: 3px 10px;
+    background: rgba(0,0,0,0.06);
+    border-radius: 4px;
+    user-select: none;
+}
+.dark .page-gap-label { background: rgba(255,255,255,.06); }
+
+.tb-btn.active {
+    background: #fef3c7 !important;
+    color: #b45309 !important;
+}
+.dark .tb-btn.active {
+    background: rgba(245,158,11,.18) !important;
+    color: #fbbf24 !important;
+}
+
+#page-info-bar {
+    position: sticky;
+    bottom: 0;
+    background: rgba(255,255,255,.9);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid #e2e8f0;
+    padding: 4px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-align: center;
+    z-index: 10;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.dark #page-info-bar {
+    background: rgba(24,24,27,.9);
+    border-color: #27272a;
+    color: #71717a;
+}
+
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 0 !important;
+    }
+    body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+    }
+    #editor-scroll { background: white !important; padding: 0 !important; gap: 0 !important; overflow: visible !important; display: block !important; }
+    #pages-container { display: block !important; }
+    .doc-page {
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        width: 210mm !important;
+        height: 297mm !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        overflow: hidden !important;
+        display: block !important;
+    }
+    .doc-page:last-child {
+        page-break-after: auto !important;
+        break-after: auto !important;
+    }
+    .doc-page::before { display: none !important; }
+    .page-number-label, .page-gap-label { display: none !important; }
+    .no-print { display: none !important; }
 }
 </style>
 @endsection
 
-
 @section('content')
-<!-- ===== Copy Tooltip (global) ===== -->
-<div id="copy-tip" class="copy-tip">✓ Copied!</div>
+<div x-data="createTemplateState()" class="flex-1 flex flex-col overflow-hidden" x-init="init()">
 
-<div x-data="createTemplateState()" class="h-full flex flex-col md:flex-row-reverse overflow-hidden">
+    <!-- ── TOOLBAR ── -->
+    <div class="no-print bg-white dark:bg-zinc-900 border-b border-slate-200 dark:border-zinc-800 px-3 py-2 flex flex-wrap items-center gap-1 shrink-0 shadow-sm z-20">
 
-    <!-- ============================================================
-         RIGHT SIDEBAR — Configuration
-         ============================================================ -->
-    <aside class="w-full md:w-[320px] xl:w-90 bg-white dark:bg-zinc-900 border-l border-slate-200 dark:border-zinc-800 flex flex-col h-full overflow-hidden shrink-0 transition-colors duration-200">
-        <form id="template-form" action="{{ route('letters.store') }}" method="POST" class="flex flex-col h-full overflow-hidden" @submit="syncContent()">
-            @csrf
+        <button type="button" @mousedown.prevent="exec('undo')" class="p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer" title="Undo"><i class="fa-solid fa-rotate-left text-sm"></i></button>
+        <button type="button" @mousedown.prevent="exec('redo')" class="p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer" title="Redo"><i class="fa-solid fa-rotate-right text-sm"></i></button>
 
-            {{-- Serialize Alpine variables to hidden inputs --}}
-            <template x-for="(v, idx) in variables" :key="idx">
-                <div>
-                    <input type="hidden" :name="'variables['+idx+'][key]'" :value="v.key">
-                    <input type="hidden" :name="'variables['+idx+'][type]'" :value="v.type">
-                    <input type="hidden" :name="'variables['+idx+'][dummy]'" :value="v.dummy">
-                    <input type="hidden" :name="'variables['+idx+'][options]'" :value="v.options">
-                </div>
-            </template>
-            {{-- Content synced from editor on submit --}}
-            <input type="hidden" name="content" id="content-hidden">
+        <div class="h-5 w-px bg-slate-200 dark:bg-zinc-700 mx-0.5"></div>
 
-            <!-- Scrollable form area -->
-            <div class="flex-1 overflow-y-auto p-4 space-y-4">
+        <select @mousedown.stop @change="execBlock($el.value); $el.value='p'"
+                class="px-2 py-1 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-sm font-semibold rounded-lg text-slate-700 dark:text-zinc-300 focus:outline-none cursor-pointer">
+            <option value="p">Normal</option>
+            <option value="h1">Heading 1</option>
+            <option value="h2">Heading 2</option>
+            <option value="h3">Heading 3</option>
+        </select>
 
-                <div>
-                    <h2 class="text-sm font-bold text-slate-800 dark:text-zinc-100">New Letter Template</h2>
-                    <p class="text-[10px] text-slate-400 mt-0.5">Configure this template's settings and variables. Write the content in the document editor on the right.</p>
-                </div>
+        <select id="tb-font" @mousedown.stop @change="execFont($el.value)"
+                class="px-2 py-1 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-sm font-semibold rounded-lg text-slate-700 dark:text-zinc-300 focus:outline-none cursor-pointer">
+            <option>Times New Roman</option>
+            <option>Arial</option>
+            <option>Georgia</option>
+            <option>Courier New</option>
+            <option>Verdana</option>
+            <option>Plus Jakarta Sans</option>
+        </select>
 
-                @if($errors->any())
-                <div class="p-3 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 rounded-lg text-rose-700 dark:text-rose-400 text-xs space-y-1">
-                    @foreach($errors->all() as $e)<p>• {{ $e }}</p>@endforeach
-                </div>
-                @endif
+        <div class="flex items-center border border-slate-200 dark:border-zinc-700 rounded-lg bg-slate-50 dark:bg-zinc-950 overflow-hidden">
+            <button type="button" @mousedown.prevent="adjustSize(-1)" class="px-1.5 py-1 hover:bg-slate-200 dark:hover:bg-zinc-800 text-slate-500 cursor-pointer"><i class="fa-solid fa-minus text-xs"></i></button>
+            <input type="number" id="tb-size" value="12" min="1" max="200"
+                   class="w-8 text-center font-bold text-sm bg-transparent border-none focus:outline-none text-slate-700 dark:text-zinc-300"
+                   @mousedown.stop @change="execFontSize(+$el.value)">
+            <button type="button" @mousedown.prevent="adjustSize(1)"  class="px-1.5 py-1 hover:bg-slate-200 dark:hover:bg-zinc-800 text-slate-500 cursor-pointer"><i class="fa-solid fa-plus text-xs"></i></button>
+        </div>
 
-                <!-- Title -->
-                <div class="space-y-1">
-                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Title *</label>
-                    <input
-                        type="text" name="title" x-model="title" required
-                        value="{{ old('title') }}"
-                        class="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-sm text-slate-900 dark:text-zinc-100 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all"
-                        placeholder="e.g. Promotion Letter"
-                    >
-                </div>
+        <div class="h-5 w-px bg-slate-200 dark:bg-zinc-700 mx-0.5"></div>
 
-                <!-- Margins -->
-                <div class="bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl p-3 space-y-2">
-                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Page Margins (mm)</label>
-                    <div class="grid grid-cols-4 gap-1.5">
-                        @foreach(['top' => '↑', 'bottom' => '↓', 'left' => '←', 'right' => '→'] as $side => $arrow)
-                        <div>
-                            <label class="block text-[9px] font-bold text-slate-400 text-center mb-0.5">{{ $arrow }}</label>
-                            <input type="number" name="margin_{{ $side }}" x-model.number="margins.{{ $side }}"
-                                min="0" max="100"
-                                class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none transition-all"
-                                @change="applyMarginsToPages()">
-                        </div>
-                        @endforeach
-                    </div>
-                </div>
+        <button type="button" @mousedown.prevent="exec('bold')"          id="tb-bold"   class="tb-btn p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"><i class="fa-solid fa-bold text-sm"></i></button>
+        <button type="button" @mousedown.prevent="exec('italic')"        id="tb-italic" class="tb-btn p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"><i class="fa-solid fa-italic text-sm"></i></button>
+        <button type="button" @mousedown.prevent="exec('underline')"     id="tb-under"  class="tb-btn p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"><i class="fa-solid fa-underline text-sm"></i></button>
+        <button type="button" @mousedown.prevent="exec('strikeThrough')" id="tb-strike" class="tb-btn p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"><i class="fa-solid fa-strikethrough text-sm"></i></button>
 
-                <!-- ---- Employee Variable Pills ---- -->
-                <div class="space-y-1.5">
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400">Employee Placeholders</label>
-                    <p class="text-xs text-slate-400">Click a placeholder to copy it, then paste it into the editor.</p>
-                    <div class="flex flex-wrap gap-1">
+        <div class="relative flex items-center">
+            <button type="button" @mousedown.prevent="$refs.colorInp.click()" class="p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer" title="Text Color">
+                <i class="fa-solid fa-font text-sm"></i>
+                <div id="color-bar" class="h-0.5 w-full bg-slate-800 rounded-full mt-0.5"></div>
+            </button>
+            <input type="color" x-ref="colorInp" class="absolute opacity-0 w-0 h-0 pointer-events-none" @change="execColor($el.value)">
+        </div>
+        <div class="relative flex items-center">
+            <button type="button" @mousedown.prevent="$refs.hlInp.click()" class="p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer" title="Highlight">
+                <i class="fa-solid fa-highlighter text-sm"></i>
+                <div id="hl-bar" class="h-0.5 w-full bg-yellow-300 rounded-full mt-0.5"></div>
+            </button>
+            <input type="color" x-ref="hlInp" class="absolute opacity-0 w-0 h-0 pointer-events-none" value="#fef08a" @change="execHighlight($el.value)">
+        </div>
+
+        <div class="h-5 w-px bg-slate-200 dark:bg-zinc-700 mx-0.5"></div>
+
+        <button type="button" @mousedown.prevent="exec('justifyLeft')"   id="tb-left"    class="tb-btn p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"><i class="fa-solid fa-align-left text-sm"></i></button>
+        <button type="button" @mousedown.prevent="exec('justifyCenter')" id="tb-center"  class="tb-btn p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"><i class="fa-solid fa-align-center text-sm"></i></button>
+        <button type="button" @mousedown.prevent="exec('justifyRight')"  id="tb-right"   class="tb-btn p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"><i class="fa-solid fa-align-right text-sm"></i></button>
+        <button type="button" @mousedown.prevent="exec('justifyFull')"   id="tb-justify" class="tb-btn p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"><i class="fa-solid fa-align-justify text-sm"></i></button>
+
+        <div class="h-5 w-px bg-slate-200 dark:bg-zinc-700 mx-0.5"></div>
+
+        <select id="tb-lh" @mousedown.stop @change="applyLineHeight($el.value); $el.value=''"
+                class="px-2 py-1 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-sm rounded-lg text-slate-700 dark:text-zinc-300 focus:outline-none cursor-pointer">
+            <option value="">Line Height</option>
+            <option value="1.0">1.0</option>
+            <option value="1.15">1.15</option>
+            <option value="1.5">1.5</option>
+            <option value="2.0">2.0</option>
+        </select>
+
+        <select id="tb-ls" @mousedown.stop @change="applyLetterSpacing($el.value); $el.value=''"
+                class="px-2 py-1 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-sm rounded-lg text-slate-700 dark:text-zinc-300 focus:outline-none cursor-pointer">
+            <option value="">Letter Spacing</option>
+            <option value="0">Normal</option>
+            <option value="0.03em">Slightly Wide</option>
+            <option value="0.07em">Wide</option>
+            <option value="0.12em">Extra Wide</option>
+        </select>
+
+        <div class="h-5 w-px bg-slate-200 dark:bg-zinc-700 mx-0.5"></div>
+
+        <button type="button" @mousedown.prevent="exec('insertUnorderedList')" class="p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer" title="Bullet List"><i class="fa-solid fa-list-ul text-sm"></i></button>
+        <button type="button" @mousedown.prevent="exec('insertOrderedList')"   class="p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer" title="Numbered List"><i class="fa-solid fa-list-ol text-sm"></i></button>
+        <button type="button" @mousedown.prevent="insertTable()"               class="p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer" title="Table"><i class="fa-solid fa-table text-sm"></i></button>
+        <button type="button" @mousedown.prevent="exec('insertHorizontalRule')" class="p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer" title="HR"><i class="fa-solid fa-minus text-sm"></i></button>
+
+        <button type="button" @mousedown.prevent="insertPageBreak()"
+                class="flex items-center gap-1 px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-400/30 text-amber-700 dark:text-amber-400 rounded-lg text-xs font-bold cursor-pointer transition-all"
+                title="Page Break (Ctrl+Enter)">
+            <i class="fa-solid fa-file-circle-plus text-sm"></i> Page Break
+        </button>
+
+        <button type="button" @mousedown.prevent="exec('removeFormat')" class="p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer" title="Clear Format"><i class="fa-solid fa-eraser text-sm"></i></button>
+    </div>
+
+    <!-- ── 3-PANE LAYOUT ── -->
+    <div class="flex-1 flex overflow-hidden">
+
+        <!-- LEFT: Variables panel -->
+        <aside class="no-print w-72 bg-white dark:bg-zinc-900 border-r border-slate-200 dark:border-zinc-800 flex flex-col overflow-hidden shrink-0">
+            <div class="p-4 border-b border-slate-200 dark:border-zinc-800 shrink-0">
+                <h3 class="text-sm font-bold text-slate-800 dark:text-zinc-200 uppercase tracking-wider">Placeholders</h3>
+                <p class="text-xs text-slate-400 mt-1">Click a pill to insert at cursor.</p>
+                <p class="text-xs text-amber-600 dark:text-amber-400 mt-1.5 font-semibold"><i class="fa-solid fa-keyboard mr-1"></i>Ctrl+Enter → Page Break</p>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4 space-y-5">
+                <div class="space-y-2">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                        <i class="fa-solid fa-id-card text-amber-500"></i> Employee
+                    </h4>
+                    <div class="flex flex-wrap gap-1.5">
                         @foreach([
-                            'employee_name'                  => 'Name',
-                            'employee_employee_code'         => 'Code',
-                            'employee_department'            => 'Department',
-                            'employee_designation'           => 'Designation',
-                            'employee_gender'                => 'Gender',
-                            'employee_join_date'             => 'Join Date',
-                            'employee_contact_number'        => 'Phone',
-                            'employee_email'                 => 'Email',
-                            'employee_citizenship_number'    => 'Citizenship No',
-                            'employee_citizenship_issue_date'=> 'Cit Issue Date',
-                            'employee_citizenship_issue_place'=> 'Cit Issue Place',
-                            'employee_ssid'                  => 'SSID',
-                            'employee_dob_ad'                => 'DOB (AD)',
-                            'employee_dob_bs'                => 'DOB (BS)',
-                            'employee_marital_status'        => 'Marital Status',
-                            'employee_employee_status'       => 'Status',
-                            'employee_tips_amount'           => 'Tips Amount',
-                            'employee_tips_status'           => 'Tips Status',
-                            'employee_point_value'           => 'Point Value',
+                            'employee_name'               => 'Name',
+                            'employee_employee_code'      => 'Code',
+                            'employee_department'         => 'Department',
+                            'employee_designation'        => 'Designation',
+                            'employee_gender'             => 'Gender',
+                            'employee_join_date'          => 'Join Date',
+                            'employee_contact_number'     => 'Phone',
+                            'employee_email'              => 'Email',
+                            'employee_citizenship_number' => 'Citizenship No',
+                            'employee_ssid'               => 'SSID',
+                            'employee_dob_ad'             => 'DOB (AD)',
+                            'employee_marital_status'     => 'Marital Status',
+                            'employee_tips_amount'        => 'Tips Amount',
+                            'employee_tips_status'        => 'Tips Status',
+                            'employee_his_her'            => 'his/her',
+                            'employee_he_she'             => 'he/she',
+                            'employee_his_her_cap'        => 'His/Her',
+                            'employee_he_she_cap'         => 'He/She',
                         ] as $key => $label)
-                        @php $token = '{{ ' . $key . ' }}'; @endphp
-                        <button
-                            type="button"
-                            data-copy="{{ $token }}"
-                            onclick="copyToken(this)"
-                            class="group flex items-center gap-1 px-2.5 py-1 bg-amber-50 dark:bg-amber-950/30 rounded-md text-xs font-semibold font-mono text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors cursor-pointer border border-amber-200/60 dark:border-amber-800/30"
-                            title="{{ $token }}"
-                        >
-                            <svg class="w-2.5 h-2.5 opacity-50 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                            </svg>
+                        <button type="button" @mousedown.prevent="insertVar('{!! $key !!}')"
+                                class="px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 rounded-md text-xs font-semibold font-mono border border-amber-500/20 active:scale-95 cursor-pointer transition-all">
                             {{ $label }}
                         </button>
                         @endforeach
                     </div>
                 </div>
 
-                <!-- ---- Custom Variables ---- -->
-                <div class="space-y-2">
+                <div class="space-y-3 border-t border-slate-100 dark:border-zinc-800 pt-4">
                     <div class="flex items-center justify-between">
-                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Custom Variables</label>
-                        <button type="button" @click="addVariable()"
-                            class="flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 rounded hover:bg-amber-100 transition-colors cursor-pointer">
-                            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-                            Add
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                            <i class="fa-solid fa-sliders text-amber-500"></i> Custom
+                        </h4>
+                        <button type="button" @mousedown.prevent="addVariable()"
+                                class="px-2 py-1 bg-amber-500 text-white text-[10px] font-bold rounded-md hover:bg-amber-600 cursor-pointer">
+                            <i class="fa-solid fa-plus mr-0.5"></i> Add
                         </button>
                     </div>
-
-                    <div class="space-y-2 max-h-64 overflow-y-auto pr-0.5">
+                    <div class="space-y-2.5">
                         <template x-for="(v, idx) in variables" :key="idx">
-                            <div class="relative p-2.5 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-lg space-y-1.5">
-                                <button type="button" @click="removeVariable(idx)"
-                                    class="absolute top-2 right-2 text-slate-300 hover:text-rose-500 cursor-pointer transition-colors">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                                </button>
-
-                                <div class="grid grid-cols-2 gap-1.5 pr-5">
+                            <div class="relative p-3 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl space-y-2">
+                                <button type="button" @mousedown.prevent="removeVariable(idx)" class="absolute top-2 right-2 text-slate-400 hover:text-rose-500 cursor-pointer"><i class="fa-solid fa-xmark text-xs"></i></button>
+                                <div class="grid grid-cols-2 gap-2 pr-4">
                                     <div>
                                         <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Key</label>
-                                        <input type="text" x-model="v.key" placeholder="my_variable"
-                                            class="w-full p-1 border border-slate-200 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-[10px] font-mono text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
+                                        <input type="text" x-model="v.key" placeholder="var_name" class="w-full px-2 py-1 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs font-mono focus:border-amber-500 outline-none">
                                     </div>
                                     <div>
                                         <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Type</label>
-                                        <select x-model="v.type" @change="typeChanged(v)"
-                                            class="w-full p-1 border border-slate-200 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-[10px] text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
+                                        <select x-model="v.type" class="w-full px-2 py-1 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs focus:border-amber-500 outline-none cursor-pointer">
                                             <option value="text">Text</option>
                                             <option value="date">Date</option>
                                             <option value="number">Number</option>
@@ -295,597 +391,700 @@
                                         </select>
                                     </div>
                                 </div>
-
-                                <div x-show="v.type === 'dropdown'" class="mt-1">
-                                    <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Dropdown Options (comma-separated)</label>
-                                    <input type="text" x-model="v.options" placeholder="Option 1, Option 2, Option 3"
-                                        class="w-full p-1 border border-slate-200 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-[10px] focus:border-amber-500 outline-none">
+                                <div x-show="v.type === 'dropdown'">
+                                    <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Options</label>
+                                    <input type="text" x-model="v.options" placeholder="Option 1, Option 2" class="w-full px-2 py-1 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs focus:border-amber-500 outline-none">
                                 </div>
-
-
-
-                                {{-- Copy hint for this variable --}}
-                                <div x-show="v.key" class="flex items-center gap-1">
-                                    <span class="text-xs text-slate-400">Placeholder:</span>
-                                    <button
-                                        type="button"
-                                        :data-copy="'@{{ ' + v.key + ' }}'"
-                                        onclick="copyToken(this)"
-                                        class="text-xs font-mono text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 underline cursor-pointer transition-colors"
-                                        x-text="'@{{ ' + v.key + ' }}'">
-                                    </button>
+                                <div x-show="v.key" class="flex items-center justify-between pt-1">
+                                    <span class="text-[10px] text-slate-400">Insert:</span>
+                                    <button type="button" @mousedown.prevent="insertVar(v.key)" class="text-xs font-bold font-mono text-amber-600 dark:text-amber-400 hover:underline cursor-pointer">@{{ <span x-text="v.key"></span> }}</button>
                                 </div>
                             </div>
                         </template>
-                        <div x-show="variables.length === 0" class="py-4 text-center text-[10px] text-slate-400 italic border border-dashed border-slate-200 dark:border-zinc-800 rounded-lg">
-                            No custom variables yet.
-                        </div>
+                        <div x-show="variables.length === 0" class="py-5 text-center text-xs text-slate-400 italic border border-dashed border-slate-200 dark:border-zinc-800 rounded-xl">No custom variables yet.</div>
                     </div>
                 </div>
-
-            </div><!-- /scrollable -->
-
-            <!-- Footer -->
-            <div class="shrink-0 p-3 border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex gap-2 transition-colors duration-200">
-                <button
-                    type="submit"
-                    @click="syncContent()"
-                    class="flex-1 py-2.5 bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-amber-500/10 active:scale-[0.98] transition-all cursor-pointer"
-                >
-                    Create Template
-                </button>
-                <a href="{{ route('letters.index') }}" class="px-3 py-2.5 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-300 rounded-xl text-sm font-semibold hover:bg-slate-50 dark:hover:bg-zinc-750 transition-all">
-                    Cancel
-                </a>
             </div>
-        </form>
-    </aside>
+        </aside>
 
-    <!-- ============================================================
-         RIGHT: GOOGLE DOCS-STYLE EDITOR
-         ============================================================ -->
-    <div class="flex-1 flex flex-col overflow-hidden">
-
-        <!-- === Formatting Toolbar === -->
-        <div class="doc-toolbar no-print" id="doc-toolbar">
-
-            <!-- Paragraph / Heading -->
-            <select class="tb-select" style="width:108px;" onchange="execBlock(this.value); this.blur();" id="tb-block" title="Paragraph style">
-                <option value="p">Normal text</option>
-                <option value="h1">Heading 1</option>
-                <option value="h2">Heading 2</option>
-                <option value="h3">Heading 3</option>
-            </select>
-
-            <!-- Font -->
-            <select class="tb-select ml-1" style="width:155px;" onchange="execFont(this.value); this.blur();" id="tb-font" title="Font">
-                <option value="Times New Roman" selected>Times New Roman</option>
-                <option value="Arial">Arial</option>
-                <option value="Georgia">Georgia</option>
-                <option value="Courier New">Courier New</option>
-                <option value="Verdana">Verdana</option>
-                <option value="Inter">Inter</option>
-                <option value="Playfair Display">Playfair Display</option>
-                <option value="Roboto">Roboto</option>
-                <option value="Merriweather">Merriweather</option>
-                <option value="Montserrat">Montserrat</option>
-            </select>
-
-            <!-- Font size stepper -->
-            <div class="flex items-center h-7.5 rounded-[5px] border border-[#e2e8f0] dark:border-[#2d2d32] overflow-hidden bg-white dark:bg-[#232327]" title="Font size">
-                <button type="button" class="tb-btn rounded-none border-none h-full px-2 text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-700 hover:text-slate-800 dark:hover:text-zinc-100 transition-colors"
-                    onmousedown="event.preventDefault(); adjustFontSize(-1);" title="Decrease font size">
-                    <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15"/></svg>
-                </button>
-                <div class="relative border-l border-r border-[#e2e8f0] dark:border-[#2d2d32]">
-                    <input type="number" id="tb-size" min="1" max="200"
-                        class="w-9.5 text-center border-none outline-none font-semibold text-xs text-[#374151] dark:text-[#d4d4d8] bg-transparent py-0 h-7.5 appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                        value="11"
-                        onchange="execFontSizeFromInput(this.value)"
-                        onkeydown="if(event.key==='Enter'){execFontSizeFromInput(this.value);this.blur();}">
-                </div>
-                <button type="button" class="tb-btn rounded-none border-none h-full px-2 text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-700 hover:text-slate-800 dark:hover:text-zinc-100 transition-colors"
-                    onmousedown="event.preventDefault(); adjustFontSize(1);" title="Increase font size">
-                    <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-                </button>
-            </div>
-
-            <div class="tb-sep"></div>
-
-            <!-- Bold / Italic / Underline / Strike -->
-            <button type="button" class="tb-btn" id="tb-bold"    onclick="exec('bold')"          title="Bold (Ctrl+B)"><strong>B</strong></button>
-            <button type="button" class="tb-btn" id="tb-italic"  onclick="exec('italic')"        title="Italic (Ctrl+I)"><em>I</em></button>
-            <button type="button" class="tb-btn" id="tb-under"   onclick="exec('underline')"     title="Underline (Ctrl+U)"><u>U</u></button>
-            <button type="button" class="tb-btn" id="tb-strike"  onclick="exec('strikeThrough')" title="Strikethrough"><s>S</s></button>
-
-            <div class="tb-sep"></div>
-
-            <!-- Text colour -->
-            <button type="button" class="tb-btn relative overflow-visible" title="Text color" style="min-width:32px;" onclick="document.getElementById('color-inp').click()">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><text x="2" y="18" font-size="18" font-family="serif" font-weight="bold">A</text></svg>
-                <span id="color-bar" style="position:absolute;bottom:2px;left:4px;right:4px;height:3px;border-radius:1px;background:#111;"></span>
-                <input type="color" id="color-inp" value="#111111" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;" oninput="execColor(this.value)">
-            </button>
-
-            <!-- Highlight -->
-            <button type="button" class="tb-btn relative overflow-visible" title="Highlight color" style="min-width:32px;" onclick="document.getElementById('highlight-inp').click()">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l-2 8 3-2 8-8-5-5-9 9 2 3M15 3l6 6"/></svg>
-                <span id="highlight-bar" style="position:absolute;bottom:2px;left:4px;right:4px;height:3px;border-radius:1px;background:#fde68a;"></span>
-                <input type="color" id="highlight-inp" value="#fde68a" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;" oninput="execHighlight(this.value)">
-            </button>
-
-            <div class="tb-sep"></div>
-
-            <!-- Alignment -->
-            <button type="button" class="tb-btn" id="tb-left"    onclick="exec('justifyLeft')"   title="Align left">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 6h18M3 12h12M3 18h15"/></svg>
-            </button>
-            <button type="button" class="tb-btn" id="tb-center"  onclick="exec('justifyCenter')" title="Align center">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 6h18M6 12h12M4 18h16"/></svg>
-            </button>
-            <button type="button" class="tb-btn" id="tb-right"   onclick="exec('justifyRight')"  title="Align right">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 6h18M9 12h12M6 18h15"/></svg>
-            </button>
-            <button type="button" class="tb-btn" id="tb-justify" onclick="exec('justifyFull')"   title="Justify">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-            </button>
-
-            <div class="tb-sep"></div>
-
-            <!-- Lists -->
-            <button type="button" class="tb-btn" onclick="exec('insertUnorderedList')" title="Bullet list">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                    <circle cx="4.5" cy="7" r="1.5" fill="currentColor" stroke="none"/><path d="M8 7h13"/>
-                    <circle cx="4.5" cy="12" r="1.5" fill="currentColor" stroke="none"/><path d="M8 12h13"/>
-                    <circle cx="4.5" cy="17" r="1.5" fill="currentColor" stroke="none"/><path d="M8 17h13"/>
-                </svg>
-            </button>
-            <button type="button" class="tb-btn" onclick="exec('insertOrderedList')" title="Numbered list">
-                <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
-                    <text x="2" y="9" font-size="7.5">1.</text>
-                    <text x="2" y="15.5" font-size="7.5">2.</text>
-                    <text x="2" y="22" font-size="7.5">3.</text>
-                    <line x1="9" y1="7" x2="22" y2="7" stroke="currentColor" stroke-width="1.8"/>
-                    <line x1="9" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="1.8"/>
-                    <line x1="9" y1="17" x2="22" y2="17" stroke="currentColor" stroke-width="1.8"/>
-                </svg>
-            </button>
-
-            <div class="tb-sep"></div>
-
-            <!-- Indent / Outdent -->
-            <button type="button" class="tb-btn" onclick="exec('indent')"  title="Indent (Tab)">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 6h18M3 18h18M11 12h10M3 9l4 3-4 3"/></svg>
-            </button>
-            <button type="button" class="tb-btn" onclick="exec('outdent')" title="Outdent (Shift+Tab)">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 6h18M3 18h18M3 12h10M15 9l4 3-4 3"/></svg>
-            </button>
-
-            <div class="tb-sep"></div>
-
-            <!-- Clear formatting -->
-            <button type="button" class="tb-btn" onclick="exec('removeFormat')" title="Clear formatting">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L17.94 6M15 6h5M19 11l-6 7H7"/></svg>
-            </button>
-
-            <!-- Insert Horizontal Rule -->
-            <button type="button" class="tb-btn" onclick="exec('insertHorizontalRule')" title="Insert horizontal line">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 12h18M8 6l-5 6 5 6M16 6l5 6-5 6"/></svg>
-            </button>
-
-        </div><!-- /toolbar -->
-
-        <!-- === Document editor area === -->
-        <div class="editor-desk" id="editor-desk">
-            <div id="pages-container">
-                <!-- First page — always present -->
-                <div class="page-sheet">
-                    <div class="a4-doc-page" contenteditable="true" spellcheck="true"
-                         data-placeholder="Start typing your letter content here…"></div>
+        <!-- CENTER: Pages -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <div id="editor-scroll">
+                <div id="pages-container" class="w-full flex flex-col items-center gap-6">
+                    <!-- Pages appended by JS -->
                 </div>
             </div>
-            <div id="page-count-bar" class="no-print">
-                <span x-text="pageCount + (pageCount === 1 ? ' page' : ' pages')"></span>
+            <div id="page-info-bar" class="no-print">
+                <span x-text="pages + (pages === 1 ? ' page' : ' pages')"></span>
+                <span class="text-slate-300 dark:text-zinc-600">·</span>
+                <span class="text-amber-600 dark:text-amber-400 font-bold">Ctrl+Enter</span>
+                <span class="text-slate-400">= Page Break</span>
             </div>
         </div>
 
-    </div><!-- /right -->
+        <!-- RIGHT: Settings -->
+        <aside class="no-print w-80 bg-white dark:bg-zinc-900 border-l border-slate-200 dark:border-zinc-800 flex flex-col overflow-hidden shrink-0">
+            <form id="template-form" action="{{ route('letters.store') }}" method="POST" class="flex flex-col h-full" @submit.prevent="doSave($event)">
+                @csrf
+                <input type="hidden" name="content" id="content-hidden">
 
-</div><!-- /main -->
+                <div class="flex-1 overflow-y-auto p-5 space-y-5">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-800 dark:text-zinc-200 uppercase tracking-wider">Document Settings</h3>
+                        <p class="text-xs text-slate-400 mt-1">Title and page margins.</p>
+                    </div>
+
+                    @if($errors->any())
+                    <div class="p-3 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-700 dark:text-rose-400 text-xs space-y-1">
+                        @foreach($errors->all() as $e)<p>• {{ $e }}</p>@endforeach
+                    </div>
+                    @endif
+
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Template Title *</label>
+                        <input type="text" name="title" x-model="title" required
+                               class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-sm font-semibold text-slate-900 dark:text-zinc-100 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all"
+                               placeholder="e.g. Appointment Letter">
+                    </div>
+
+                    <div class="p-4 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl space-y-3">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Page Margins (mm)</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            @foreach(['top' => 'Top', 'bottom' => 'Bottom', 'left' => 'Left', 'right' => 'Right'] as $side => $label)
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 mb-0.5">{{ $label }}</label>
+                                <input type="number" name="margin_{{ $side }}" x-model.number="margins.{{ $side }}"
+                                       min="0" max="100"
+                                       class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none"
+                                       @change="applyMarginsToAll()">
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/50 rounded-xl text-center">
+                        <div class="text-2xl font-black text-amber-600" x-text="pages"></div>
+                        <div class="text-xs font-semibold text-amber-700 dark:text-amber-400" x-text="pages === 1 ? 'Page' : 'Pages'"></div>
+                    </div>
+                </div>
+
+                <div class="p-4 border-t border-slate-200 dark:border-zinc-800 space-y-2 shrink-0">
+                    <button type="submit" class="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm rounded-xl shadow-md shadow-amber-500/20 active:scale-98 transition-all cursor-pointer">
+                        <i class="fa-solid fa-floppy-disk mr-1.5"></i> Save Template
+                    </button>
+                    <a href="{{ route('letters.index') }}" class="block text-center py-2 text-sm text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200 transition-colors">Cancel</a>
+                </div>
+            </form>
+        </aside>
+
+    </div>
+</div>
 @endsection
-
 
 @section('scripts')
 <script>
-function copyToken(btn) {
-    const text = btn.dataset.copy;
-    if (!text) return;
-    
-    const showTip = () => {
-        const tip = document.getElementById('copy-tip');
-        if (tip) {
-            const rect = btn.getBoundingClientRect();
-            tip.style.left      = (rect.left + rect.width / 2) + 'px';
-            tip.style.top       = (rect.top - 36) + 'px';
-            tip.style.transform = 'translateX(-50%)';
-            tip.classList.add('show');
-            setTimeout(() => tip.classList.remove('show'), 1600);
-        }
-    };
+/* ===================================================================
+   EDITOR ENGINE
+   - Each page is a separate .doc-page div containing a .doc-page-content div
+   - Content fills the page naturally; we check for overflow and push to next
+   - All toolbar commands target the currently focused page content
+=================================================================== */
 
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(showTip).catch(err => {
-            fallbackCopy(text, showTip);
-        });
-    } else {
-        fallbackCopy(text, showTip);
-    }
+let _activeContent = null; // The currently focused .doc-page-content div
+
+function getActive() {
+    return _activeContent || document.querySelector('.doc-page-content');
 }
 
-function fallbackCopy(text, cb) {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.select();
-    try {
-        document.execCommand('copy');
-        cb();
-    } catch(e) {
-        console.error('Fallback copy failed', e);
-    }
-    document.body.removeChild(ta);
-}
-
-/* ================================================================
-   TOOLBAR COMMANDS
-   ================================================================ */
-function exec(cmd, val) {
-    document.execCommand(cmd, false, val ?? null);
-    updateToolbarState();
+// Execute a document command on the active contenteditable
+function exec(cmd, val = null) {
+    const el = getActive();
+    if (el) { el.focus(); document.execCommand(cmd, false, val); }
 }
 
 function execBlock(tag) {
-    const formatTag = tag.startsWith('<') ? tag : '<' + tag + '>';
-    document.execCommand('formatBlock', false, formatTag);
-    updateToolbarState();
+    const el = getActive();
+    if (el) { el.focus(); document.execCommand('formatBlock', false, '<' + tag + '>'); }
 }
 
 function execFont(name) {
-    document.execCommand('fontName', false, name);
-}
-
-// Saved selection so ± clicks don't lose editor focus
-let _savedRange = null;
-function saveSelection() {
-    const sel = window.getSelection();
-    if (sel && sel.rangeCount > 0) {
-        _savedRange = sel.getRangeAt(0).cloneRange();
-    }
-}
-function restoreSelection() {
-    if (!_savedRange) return;
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(_savedRange);
+    const el = getActive();
+    if (el) { el.focus(); document.execCommand('fontName', false, name); }
 }
 
 function execFontSize(pt) {
-    restoreSelection();
-    document.execCommand('fontSize', false, '7');
-    document.querySelectorAll('#pages-container [size="7"]').forEach(el => {
-        el.removeAttribute('size');
-        el.style.fontSize = pt + 'pt';
-    });
+    const el = getActive();
+    if (!el) return;
+    el.focus();
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
+        // Text selected — apply to selection
+        document.execCommand('fontSize', false, '7');
+        el.querySelectorAll('[size="7"]').forEach(n => {
+            n.removeAttribute('size');
+            n.style.fontSize = pt + 'pt';
+        });
+    } else {
+        // No selection — set font size for next typing by wrapping in span
+        document.execCommand('fontSize', false, '7');
+        el.querySelectorAll('[size="7"]').forEach(n => {
+            n.removeAttribute('size');
+            n.style.fontSize = pt + 'pt';
+        });
+    }
 }
 
-function execFontSizeFromInput(pt) {
-    const size = Math.max(1, Math.min(200, parseFloat(pt) || 11));
-    document.getElementById('tb-size').value = size;
-    execFontSize(size);
-}
-
-function adjustFontSize(delta) {
-    const input = document.getElementById('tb-size');
-    if (!input) return;
-    let size = parseFloat(input.value);
-    if (isNaN(size)) size = 11;
-    size = Math.max(1, Math.min(200, size + delta));
-    input.value = size;
-    execFontSize(size);
+function adjustSize(delta) {
+    const inp = document.getElementById('tb-size');
+    let s = Math.max(1, Math.min(200, (parseInt(inp.value) || 12) + delta));
+    inp.value = s;
+    execFontSize(s);
 }
 
 function execColor(color) {
     document.getElementById('color-bar').style.background = color;
-    document.execCommand('foreColor', false, color);
+    const el = getActive(); if (el) { el.focus(); document.execCommand('foreColor', false, color); }
 }
 
 function execHighlight(color) {
-    document.getElementById('highlight-bar').style.background = color;
-    document.execCommand('hiliteColor', false, color);
+    document.getElementById('hl-bar').style.background = color;
+    const el = getActive(); if (el) { el.focus(); document.execCommand('hiliteColor', false, color); }
+}
+
+// Apply line-height to the current block (paragraph/heading)
+function applyToCurrentBlock(prop, value) {
+    const sel = window.getSelection();
+    const el = getActive();
+    if (!sel || !el) return;
+
+    const apply = (node) => {
+        if (!node) return;
+        // Walk up to find block-level ancestor inside the editor content
+        let cur = node.nodeType === 3 ? node.parentNode : node;
+        while (cur && cur !== el) {
+            const tag = cur.tagName ? cur.tagName.toLowerCase() : '';
+            if (['p','div','h1','h2','h3','li','td','th'].includes(tag)) {
+                cur.style[prop] = value;
+                return;
+            }
+            cur = cur.parentNode;
+        }
+        // Fallback: apply to whole content
+        el.style[prop] = value;
+    };
+
+    if (sel.rangeCount === 0) { apply(el); return; }
+    const range = sel.getRangeAt(0);
+    if (sel.isCollapsed) {
+        apply(range.startContainer);
+    } else {
+        // Apply to all blocks in selection
+        el.querySelectorAll('p,div,h1,h2,h3,li,td,th').forEach(block => {
+            if (sel.containsNode(block, true)) block.style[prop] = value;
+        });
+    }
+}
+
+function insertTable() {
+    const el = getActive();
+    if (!el) return;
+    el.focus();
+    let html = '<table><tbody>';
+    for (let r = 0; r < 3; r++) {
+        html += '<tr>';
+        for (let c = 0; c < 3; c++) html += '<td>&nbsp;</td>';
+        html += '</tr>';
+    }
+    html += '</tbody></table><p><br></p>';
+    document.execCommand('insertHTML', false, html);
 }
 
 function updateToolbarState() {
-    const pairs = [
-        ['bold','tb-bold'], ['italic','tb-italic'], ['underline','tb-under'], ['strikeThrough','tb-strike'],
-        ['justifyLeft','tb-left'], ['justifyCenter','tb-center'], ['justifyRight','tb-right'], ['justifyFull','tb-justify']
-    ];
-    pairs.forEach(([cmd, id]) => {
-        const el = document.getElementById(id);
-        if (el) el.classList.toggle('is-active', document.queryCommandState(cmd));
+    [['bold','tb-bold'],['italic','tb-italic'],['underline','tb-under'],['strikeThrough','tb-strike'],
+     ['justifyLeft','tb-left'],['justifyCenter','tb-center'],['justifyRight','tb-right'],['justifyFull','tb-justify']]
+    .forEach(([cmd, id]) => {
+        const btn = document.getElementById(id);
+        if (btn) btn.classList.toggle('active', document.queryCommandState(cmd));
     });
-    const block = document.queryCommandValue('formatBlock').toLowerCase();
-    const sel = document.getElementById('tb-block');
-    if (sel) sel.value = ['h1','h2','h3'].includes(block) ? block : 'p';
 
-    // Sync font family & size from the active node styling
-    const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0) {
-        let node = selection.getRangeAt(0).startContainer;
-        if (node.nodeType === Node.TEXT_NODE) {
-            node = node.parentNode;
-        }
-        if (node && node.closest('#pages-container')) {
-            const style = window.getComputedStyle(node);
-            
-            // Sync Font Family
-            const fontSelect = document.getElementById('tb-font');
-            if (fontSelect) {
-                let activeFont = style.fontFamily.replace(/['"]/g, '');
-                for (let option of fontSelect.options) {
-                    if (activeFont.toLowerCase().includes(option.value.toLowerCase()) || option.value.toLowerCase().includes(activeFont.toLowerCase())) {
-                        fontSelect.value = option.value;
-                        break;
-                    }
+    // Update font / size pickers
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+        let node = sel.getRangeAt(0).startContainer;
+        if (node.nodeType === 3) node = node.parentNode;
+        const ed = getActive();
+        if (ed && ed.contains(node)) {
+            const cs = window.getComputedStyle(node);
+            const fontSel = document.getElementById('tb-font');
+            if (fontSel) {
+                const fn = cs.fontFamily.replace(/['"]/g,'');
+                for (const opt of fontSel.options) {
+                    if (fn.toLowerCase().includes(opt.value.toLowerCase())) { fontSel.value = opt.value; break; }
                 }
             }
-            
-            // Sync Font Size
-            const sizeInput = document.getElementById('tb-size');
-            if (sizeInput) {
-                const px = parseFloat(style.fontSize);
-                const pt = Math.round(px * 0.75); // 1px = 0.75pt
-                sizeInput.value = pt;
-                
-                const sizeSelect = document.getElementById('tb-size-select');
-                if (sizeSelect) {
-                    sizeSelect.value = sizeSelect.querySelector(`option[value="${pt}"]`) ? pt : '';
-                }
-            }
+            const sizInp = document.getElementById('tb-size');
+            if (sizInp) sizInp.value = Math.round(parseFloat(cs.fontSize) * 0.75) || 12;
         }
     }
 }
 
-document.addEventListener('selectionchange', () => { saveSelection(); updateToolbarState(); });
+document.addEventListener('selectionchange', updateToolbarState);
 
-/* ================================================================
-   ALPINE STATE — no DOM pagination, just tracking page count
-   ================================================================ */
+/* ===================================================================
+   ALPINE STATE
+=================================================================== */
 function createTemplateState() {
     return {
         title: '',
         margins: { top: 25, bottom: 25, left: 20, right: 20 },
         variables: [],
-        pageCount: 1,
-
-        addVariable()      { this.variables.push({ key: '', type: 'text', dummy: '', options: '' }); },
-        removeVariable(i)  { this.variables.splice(i, 1); },
-        typeChanged(v) {
-            const d = { boolean: 'Yes', date: new Date().toISOString().slice(0, 10), number: '1000', text: '', dropdown: '' };
-            v.dummy = d[v.type] ?? '';
-            if (v.type === 'dropdown') {
-                v.options = v.options || '';
-            }
-        },
-
-        /* Called by the Tab keydown handler on the editor */
-        handleKey(e) {
-            if (e.key === 'Tab') {
-                e.preventDefault();
-                exec(e.shiftKey ? 'outdent' : 'indent');
-            }
-        },
-
-        /* ---- Page management ---- */
-        _reflowing: false,
+        pages: 1,
+        _reflowInProgress: false,
         _reflowTimer: null,
 
-        debouncedReflow() {
-            clearTimeout(this._reflowTimer);
-            this._reflowTimer = setTimeout(() => this.reflowPages(), 150);
+        addVariable()     { this.variables.push({ key: '', type: 'text', dummy: '', options: '' }); },
+        removeVariable(i) { this.variables.splice(i, 1); },
+
+        /* Insert a placeholder token at cursor */
+        insertVar(key) {
+            const el = getActive();
+            if (!el) return;
+            el.focus();
+            const ob = String.fromCharCode(123,123);
+            const cb = String.fromCharCode(125,125);
+            document.execCommand('insertText', false, ob + ' ' + key + ' ' + cb);
         },
 
-        allPages() {
-            return Array.from(document.querySelectorAll('#pages-container .a4-doc-page'));
-        },
+        /* Toolbar proxies */
+        exec(cmd)                { exec(cmd); },
+        execBlock(tag)           { execBlock(tag); },
+        execFont(name)           { execFont(name); },
+        execFontSize(pt)         { execFontSize(pt); },
+        insertTable()            { insertTable(); },
+        applyLineHeight(v)       { if (v) applyToCurrentBlock('lineHeight', v); },
+        applyLetterSpacing(v)    { if (v !== '') applyToCurrentBlock('letterSpacing', v); },
 
-        applyMarginToPage(el) {
-            el.style.paddingTop    = this.margins.top    + 'mm';
-            el.style.paddingBottom = this.margins.bottom + 'mm';
-            el.style.paddingLeft   = this.margins.left   + 'mm';
-            el.style.paddingRight  = this.margins.right  + 'mm';
-        },
-
-        createPage() {
-            const container = document.getElementById('pages-container');
-
-            // Gap
-            const gap = document.createElement('div');
-            gap.className = 'page-gap no-print';
-
-            // Sheet wrapper
-            const sheet = document.createElement('div');
-            sheet.className = 'page-sheet';
-
-            // Content div
-            const page = document.createElement('div');
-            page.className = 'a4-doc-page';
-            page.contentEditable = 'true';
-            page.spellcheck = true;
-            this.applyMarginToPage(page);
-            this.bindPageListeners(page);
-
-            sheet.appendChild(page);
-            container.appendChild(gap);
-            container.appendChild(sheet);
-            this.pageCount = document.querySelectorAll('#pages-container .page-sheet').length;
-            return page;
-        },
-
-        destroyLastPage() {
-            const container = document.getElementById('pages-container');
-            const sheets = container.querySelectorAll('.page-sheet');
-            if (sheets.length <= 1) return;
-            const last = sheets[sheets.length - 1];
-            const gap  = last.previousElementSibling;
-            if (gap?.classList.contains('page-gap')) gap.remove();
-            last.remove();
-            this.pageCount = container.querySelectorAll('.page-sheet').length;
-        },
-
-        isPageEmpty(page) {
-            return !page.firstChild ||
-                   page.innerHTML.trim() === '' ||
-                   page.innerHTML.trim() === '<br>';
+        /* Apply margins to all pages */
+        applyMarginsToAll() {
+            const m = this.margins;
+            document.querySelectorAll('.doc-page').forEach(p => {
+                p.style.setProperty('--mt', m.top    + 'mm');
+                p.style.setProperty('--mb', m.bottom + 'mm');
+                p.style.setProperty('--ml', m.left   + 'mm');
+                p.style.setProperty('--mr', m.right  + 'mm');
+            });
+            this.reflowPages();
         },
 
         reflowPages() {
-            if (this._reflowing) return;
-            this._reflowing = true;
-            try {
-                const pages = this.allPages();
+            if (this._reflowInProgress) return;
+            this._reflowInProgress = true;
 
-                // Forward: push overflow from page[i] to page[i+1]
-                for (let i = 0; i < pages.length; i++) {
-                    let guard = 200;
-                    while (pages[i].scrollHeight > pages[i].clientHeight + 2 && guard-- > 0) {
-                        let next = pages[i + 1];
-                        if (!next) {
-                            next = this.createPage();
-                            pages.push(next);
-                        }
-                        // Move last meaningful child to start of next page
-                        let child = pages[i].lastChild;
-                        while (child && child.nodeType === 3 && !child.textContent.trim()) {
-                            child = child.previousSibling;
-                        }
-                        if (!child) break;
-                        next.insertBefore(child, next.firstChild);
-                    }
-                }
-
-                // Backward: pull content back if prev has room; remove empty tail pages
-                const allPgs = this.allPages();
-                for (let i = allPgs.length - 1; i > 0; i--) {
-                    const curr = allPgs[i];
-                    const prev = allPgs[i - 1];
-                    let guard = 200;
-                    while (curr.firstChild && guard-- > 0) {
-                        const node = curr.firstChild;
-                        prev.appendChild(node);
-                        if (prev.scrollHeight > prev.clientHeight + 2) {
-                            curr.insertBefore(prev.lastChild, curr.firstChild);
-                            break;
-                        }
-                    }
-                    if (this.isPageEmpty(curr)) this.destroyLastPage();
-                }
-
-                this.pageCount = document.querySelectorAll('#pages-container .page-sheet').length;
-            } finally {
-                this._reflowing = false;
+            const container = document.getElementById('pages-container');
+            if (!container) {
+                this._reflowInProgress = false;
+                return;
             }
+
+            // 1. Save cursor position
+            const sel = window.getSelection();
+            let marker = null;
+            if (sel && sel.rangeCount > 0) {
+                const range = sel.getRangeAt(0);
+                const activeEl = getActive();
+                if (activeEl && activeEl.contains(range.startContainer)) {
+                    marker = document.createElement('span');
+                    marker.id = 'cursor-marker';
+                    marker.style.display = 'none';
+                    try {
+                        range.insertNode(marker);
+                    } catch(e) {
+                        marker = null;
+                    }
+                }
+            }
+
+            // Promote all page break markers to the top level (direct children of .doc-page-content)
+            const extractMarkerToTop = (mNode, root) => {
+                let current = mNode;
+                while (current.parentNode && current.parentNode !== root) {
+                    const parent = current.parentNode;
+                    const clone = parent.cloneNode(false);
+                    let sibling = current.nextSibling;
+                    while (sibling) {
+                        const next = sibling.nextSibling;
+                        clone.appendChild(sibling);
+                        sibling = next;
+                    }
+                    if (parent.nextSibling) {
+                        parent.parentNode.insertBefore(clone, parent.nextSibling);
+                        parent.parentNode.insertBefore(current, clone);
+                    } else {
+                        parent.parentNode.appendChild(current);
+                        parent.parentNode.appendChild(clone);
+                    }
+                    if (parent.childNodes.length === 0) {
+                        parent.remove();
+                    }
+                }
+            };
+
+            const markers = Array.from(container.querySelectorAll('.page-break-marker'));
+            markers.forEach(m => {
+                const content = m.closest('.doc-page-content');
+                if (content) {
+                    extractMarkerToTop(m, content);
+                }
+            });
+
+            // 2. Gather all child nodes of all pages into a temporary container
+            const temp = document.createElement('div');
+            const pages = Array.from(container.querySelectorAll('.doc-page'));
+            pages.forEach(p => {
+                const content = p.querySelector('.doc-page-content');
+                if (content) {
+                    while (content.firstChild) {
+                        temp.appendChild(content.firstChild);
+                    }
+                }
+            });
+
+            // 3. Clear container
+            container.innerHTML = '';
+
+            // 4. Distribute nodes node-by-node
+            let currentPage = this.createPage(1);
+            let currentContent = currentPage.querySelector('.doc-page-content');
+
+            let pageH = currentPage.clientHeight;
+            let marginB = this.margins.bottom * (96 / 25.4);
+            let usableBottom = pageH - marginB;
+
+            const splitNode = (node, usableBottom, pageRect, forceFit = false) => {
+                if (node.nodeType === 3) {
+                    let low = 0;
+                    let high = node.length;
+                    let bestSplit = node.length;
+                    while (low <= high) {
+                        let mid = Math.floor((low + high) / 2);
+                        const r = document.createRange();
+                        r.setStart(node, 0);
+                        r.setEnd(node, mid);
+                        const rRect = r.getBoundingClientRect();
+                        const rBottom = rRect.bottom - pageRect.top;
+                        if (rBottom <= usableBottom) {
+                            low = mid + 1;
+                        } else {
+                            bestSplit = mid;
+                            high = mid - 1;
+                        }
+                    }
+                    if (bestSplit === 0) {
+                        if (forceFit && node.length > 0) {
+                            bestSplit = 1;
+                        } else {
+                            return { fits: null, overflows: node };
+                        }
+                    }
+                    if (bestSplit === node.length) {
+                        return { fits: node, overflows: null };
+                    } else {
+                        const secondPart = node.splitText(bestSplit);
+                        return { fits: node, overflows: secondPart };
+                    }
+                }
+
+                if (node.nodeType === 1) {
+                    const rect = node.getBoundingClientRect();
+                    const nodeBottom = rect.bottom - pageRect.top;
+                    const nodeTop = rect.top - pageRect.top;
+
+                    if (nodeBottom <= usableBottom + 1) {
+                        return { fits: node, overflows: null };
+                    }
+                    if (nodeTop >= usableBottom - 1 && !forceFit) {
+                        return { fits: null, overflows: node };
+                    }
+
+                    if (node.tagName.toLowerCase() === 'tr') {
+                        if (forceFit) {
+                            return { fits: node, overflows: null };
+                        } else {
+                            return { fits: null, overflows: node };
+                        }
+                    }
+
+                    const children = Array.from(node.childNodes);
+                    if (children.length === 0) {
+                        if (forceFit) {
+                            return { fits: node, overflows: null };
+                        } else {
+                            return { fits: null, overflows: node };
+                        }
+                    }
+
+                    const clone = node.cloneNode(false);
+                    let targetParent = clone;
+                    let sourceParent = node;
+                    if (node.tagName.toLowerCase() === 'table') {
+                        const tbody = node.querySelector('tbody');
+                        if (tbody) {
+                            const tbodyClone = tbody.cloneNode(false);
+                            clone.appendChild(tbodyClone);
+                            targetParent = tbodyClone;
+                            sourceParent = tbody;
+                        }
+                    }
+
+                    let hasFits = false;
+                    let hasOverflows = false;
+                    let childForceFit = forceFit;
+
+                    for (let child of children) {
+                        if (hasOverflows) {
+                            targetParent.appendChild(child);
+                            continue;
+                        }
+
+                        const result = splitNode(child, usableBottom, pageRect, childForceFit);
+                        childForceFit = false;
+
+                        if (result.fits) {
+                            hasFits = true;
+                        }
+                        if (result.overflows) {
+                            hasOverflows = true;
+                            targetParent.appendChild(result.overflows);
+                        }
+                    }
+
+                    return {
+                        fits: hasFits ? node : null,
+                        overflows: hasOverflows ? clone : null
+                    };
+                }
+
+                return { fits: node, overflows: null };
+            };
+
+            while (temp.firstChild) {
+                const node = temp.firstChild;
+
+                // Handle manual page break marker
+                if (node.nodeType === 1 && node.classList.contains('page-break-marker')) {
+                    currentContent.appendChild(node);
+                    currentPage = this.createPage();
+                    currentContent = currentPage.querySelector('.doc-page-content');
+                    
+                    const newPageH = currentPage.clientHeight;
+                    const newMarginB = this.margins.bottom * (96 / 25.4);
+                    usableBottom = newPageH - newMarginB;
+                    continue;
+                }
+
+                currentContent.appendChild(node);
+
+                let rect = null;
+                if (node.nodeType === 1) {
+                    rect = node.getBoundingClientRect();
+                } else if (node.nodeType === 3 && node.textContent.trim()) {
+                    const r = document.createRange();
+                    r.selectNode(node);
+                    rect = r.getBoundingClientRect();
+                }
+
+                if (rect) {
+                    const pageRect = currentPage.getBoundingClientRect();
+                    const nodeBottom = rect.bottom - pageRect.top;
+
+                    if (nodeBottom > usableBottom) {
+                        const isPageEmpty = (currentContent.childNodes.length === 1);
+                        const result = splitNode(node, usableBottom, pageRect, isPageEmpty);
+
+                        if (result.fits === null) {
+                            node.remove();
+                        }
+                        if (result.overflows) {
+                            if (temp.firstChild) {
+                                temp.insertBefore(result.overflows, temp.firstChild);
+                            } else {
+                                temp.appendChild(result.overflows);
+                            }
+                        }
+
+                        currentPage = this.createPage();
+                        currentContent = currentPage.querySelector('.doc-page-content');
+
+                        const newPageH = currentPage.clientHeight;
+                        const newMarginB = this.margins.bottom * (96 / 25.4);
+                        usableBottom = newPageH - newMarginB;
+                    }
+                }
+            }
+
+            // Remove gap label on the first page
+            const firstGap = container.firstElementChild;
+            if (firstGap && !firstGap.classList.contains('doc-page')) {
+                firstGap.remove();
+            }
+
+            // Update page count
+            this.pages = container.querySelectorAll('.doc-page').length;
+
+            // 5. Restore cursor position
+            if (marker) {
+                const savedMarker = document.getElementById('cursor-marker');
+                if (savedMarker) {
+                    const parent = savedMarker.parentNode;
+                    const range = document.createRange();
+                    range.setStartBefore(savedMarker);
+                    range.collapse(true);
+                    
+                    const sel = window.getSelection();
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                    
+                    savedMarker.remove();
+                    if (parent) {
+                        parent.normalize();
+                        const activeContent = parent.closest('.doc-page-content');
+                        if (activeContent) {
+                            _activeContent = activeContent;
+                            activeContent.focus();
+                        }
+                    }
+                }
+            }
+
+            this._reflowInProgress = false;
         },
 
-        bindPageListeners(page) {
-            page.addEventListener('input', () => {
-                this.debouncedReflow();
+        /* Create a new A4 page div */
+        createPage(pageNum) {
+            const container = document.getElementById('pages-container');
+            const m = this.margins;
+            const num = pageNum || (container.querySelectorAll('.doc-page').length + 1);
+
+            // Gap label between pages
+            const gap = document.createElement('div');
+            gap.className = 'no-print flex items-center justify-center';
+            gap.innerHTML = '<span class="page-gap-label">— Page ' + num + ' —</span>';
+
+            const page = document.createElement('div');
+            page.className = 'doc-page';
+            page.style.setProperty('--mt', m.top    + 'mm');
+            page.style.setProperty('--mb', m.bottom + 'mm');
+            page.style.setProperty('--ml', m.left   + 'mm');
+            page.style.setProperty('--mr', m.right  + 'mm');
+
+            page.innerHTML = '<span class="page-number-label no-print">Page ' + num + '</span>';
+
+            const content = document.createElement('div');
+            content.className = 'doc-page-content';
+            content.contentEditable = 'true';
+            content.spellcheck = true;
+            if (num === 1) content.dataset.placeholder = 'Start typing your letter here…';
+            this.bindPageContent(content, page);
+
+            page.appendChild(content);
+            container.appendChild(gap);
+            container.appendChild(page);
+            this.pages = container.querySelectorAll('.doc-page').length;
+            return page;
+        },
+
+        /* Bind event handlers to a .doc-page-content div */
+        bindPageContent(content, page) {
+            const self = this;
+            content.addEventListener('focus', () => { _activeContent = content; });
+            content.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); self.insertPageBreak(); return; }
+                if (e.key === 'Tab') { e.preventDefault(); document.execCommand(e.shiftKey ? 'outdent' : 'indent'); }
+            });
+            content.addEventListener('input', () => {
                 updateToolbarState();
+                clearTimeout(self._reflowTimer);
+                self._reflowTimer = setTimeout(() => self.reflowPages(), 150);
             });
-            page.addEventListener('paste', (e) => {
-                // Strip rich formatting — paste as plain text only to avoid layout thrash
-                e.preventDefault();
-                e.stopPropagation();
-                e.stopImmediatePropagation();
-                const text = (e.clipboardData || window.clipboardData).getData('text/plain');
-                document.execCommand('insertText', false, text);
-                // Reflow after browser has painted the inserted content
-                requestAnimationFrame(() => this.debouncedReflow());
-            });
-            page.addEventListener('keydown', e => {
-                if (e.key === 'Tab') {
-                    e.preventDefault();
-                    document.execCommand(e.shiftKey ? 'outdent' : 'indent');
-                }
-                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                    e.preventDefault();
-                    this.insertManualPageBreak(page);
-                }
-            });
+            content.addEventListener('mouseup', updateToolbarState);
+            content.addEventListener('keyup', updateToolbarState);
         },
 
-        insertManualPageBreak(pageEl) {
+        /* Insert a manual page break — creates new page and moves cursor there */
+        insertPageBreak() {
+            const el = getActive();
+            if (!el) return;
+            el.focus();
+            
+            const marker = document.createElement('div');
+            marker.className = 'page-break-marker';
+            marker.contentEditable = 'false';
+            
             const sel = window.getSelection();
-            if (!sel.rangeCount) return;
-            const range = sel.getRangeAt(0);
-
-            // Create a range starting from caret position to the end of the pageEl
-            const postRange = document.createRange();
-            postRange.selectNodeContents(pageEl);
-            postRange.setStart(range.endContainer, range.endOffset);
-
-            // Extract the contents
-            const fragment = postRange.extractContents();
-
-            // Find or create next page
-            const pages = this.allPages();
-            const idx = pages.indexOf(pageEl);
-            let nextEl = pages[idx + 1];
-            if (!nextEl) {
-                nextEl = this.createPage();
+            if (sel && sel.rangeCount > 0) {
+                const range = sel.getRangeAt(0);
+                range.insertNode(marker);
+                
+                const nextRange = document.createRange();
+                nextRange.setStartAfter(marker);
+                nextRange.collapse(true);
+                sel.removeAllRanges();
+                sel.addRange(nextRange);
             }
-
-            // Insert at start of the next page
-            nextEl.insertBefore(fragment, nextEl.firstChild);
-
-            // Clean up any empty pages or blocks
+            
             this.reflowPages();
-
-            // Focus new page start
-            this.focusStartOfPage(nextEl);
         },
 
-        focusStartOfPage(pageEl) {
-            pageEl.focus();
-            const range = document.createRange();
-            range.selectNodeContents(pageEl);
-            range.collapse(true);
-            const sel = window.getSelection();
-            sel.removeAllRanges();
-            sel.addRange(range);
-        },
-
-        updateAllMargins() {
-            this.allPages().forEach(p => this.applyMarginToPage(p));
-            // Reflow after margin change because available height changed
-            setTimeout(() => this.reflowPages(), 50);
-        },
-
+        /* Collect all page HTML and submit the form */
         syncContent() {
-            const html = this.allPages().map(p => p.innerHTML).join('\n<!-- PAGE_BREAK -->\n');
+            const pages = Array.from(document.querySelectorAll('.doc-page-content')).map(p => {
+                const clone = p.cloneNode(true);
+                clone.querySelectorAll('.page-break-marker').forEach(el => el.remove());
+                const cm = clone.querySelector('#cursor-marker');
+                if (cm) cm.remove();
+                return clone.innerHTML;
+            });
+            
+            const ob = '<!-- PAGE_BREAK -->';
+            const html = pages.join('\n' + ob + '\n');
             document.getElementById('content-hidden').value = html;
+        },
+
+        doSave() {
+            this.syncContent();
+            const form = document.getElementById('template-form');
+            form.querySelectorAll('.dynamic-var-input').forEach(el => el.remove());
+            this.variables.forEach((v, idx) => {
+                const fields = {
+                    key: v.key,
+                    type: v.type,
+                    dummy: v.dummy ?? '',
+                    options: v.options ?? ''
+                };
+                Object.entries(fields).forEach(([fName, fVal]) => {
+                    const inp = document.createElement('input');
+                    inp.type = 'hidden';
+                    inp.className = 'dynamic-var-input';
+                    inp.name = `variables[${idx}][${fName}]`;
+                    inp.value = fVal;
+                    form.appendChild(inp);
+                });
+            });
+            form.submit();
         },
 
         init() {
             this.$nextTick(() => {
+                // Create first page
+                this.createPage(1);
+                // Rename gap label to hide for first page
                 const container = document.getElementById('pages-container');
-                const first = container.querySelector('.a4-doc-page');
-                if (!first) return;
-                this.applyMarginToPage(first);
-                this.bindPageListeners(first);
-                first.focus();
-                this.$watch('margins', () => this.updateAllMargins());
+                const firstGap = container.firstElementChild;
+                if (firstGap && !firstGap.classList.contains('doc-page')) firstGap.remove();
+
+                // Focus first page content
+                const first = document.querySelector('.doc-page-content');
+                if (first) { first.focus(); _activeContent = first; }
             });
         }
     };
