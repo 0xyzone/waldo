@@ -58,9 +58,11 @@ class SyncLogResource extends Resource
                     ->label('Run At')
                     ->dateTime()
                     ->placeholder('-'),
-                \Filament\Infolists\Components\KeyValueEntry::make('changes')
+                \Filament\Infolists\Components\TextEntry::make('changes')
                     ->label('Detailed Changes')
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->formatStateUsing(fn ($state) => '<pre style="max-height: 400px; overflow-y: auto; background-color: #f3f4f6; padding: 1rem; border-radius: 0.5rem; color: #1f2937;">' . htmlspecialchars(json_encode($state, JSON_PRETTY_PRINT)) . '</pre>')
+                    ->html(),
             ]);
     }
 
