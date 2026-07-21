@@ -19,11 +19,11 @@ class ReportController extends Controller
         $month = $request->integer('month');
         $year = $request->integer('year');
 
-        // Joined before the 15th of the previous month relative to selected month/year.
+        // Joined before the 10th of the previous month relative to selected month/year.
         // Let's construct that cut-off date:
         $selectedDate = Carbon::createFromDate($year, $month, 1);
         $previousMonth = $selectedDate->copy()->subMonth();
-        $cutoffDate = $previousMonth->copy()->setDay(15)->format('Y-m-d');
+        $cutoffDate = $previousMonth->copy()->setDay(10)->format('Y-m-d');
 
         $employees = Employee::with(['department', 'designation'])
             ->whereIn('employee_status', ['Active', 'Resigning this month'])
@@ -35,17 +35,23 @@ class ReportController extends Controller
                     return false;
                 }
                 try {
-                    return Carbon::parse($emp->join_date_formatted)->format('Y-m-d') < $cutoffDate;
+                    $cleanedDate = str_replace(',', '', $emp->join_date_formatted);
+
+                    return Carbon::parse($cleanedDate)->format('Y-m-d') < $cutoffDate;
                 } catch (\Exception) {
                     return false;
                 }
+            })
+            ->map(function ($emp) {
+                $emp->dob_day = $emp->dob_ad ? $emp->dob_ad->day : 99;
+
+                return $emp;
             })
             // Sorting by Department Rank, Overall Rank, then Day of Birth
             ->sortBy([
                 ['dp_rank', 'asc'],
                 ['rank', 'asc'],
-                // Sort by the day of the month for birthdays
-                fn ($employee) => $employee->dob_ad ? $employee->dob_ad->day : 99,
+                ['dob_day', 'asc'],
             ]);
 
         $monthName = $selectedDate->format('F');

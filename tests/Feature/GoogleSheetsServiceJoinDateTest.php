@@ -66,4 +66,27 @@ class GoogleSheetsServiceJoinDateTest extends TestCase
         $this->assertArrayHasKey('join_date_formatted', $map);
         $this->assertSame(8, $map['join_date_formatted']);
     }
+
+    /** @test */
+    public function test_dob_bs_is_mapped_correctly(): void
+    {
+        $service = Mockery::mock(GoogleSheetsService::class)->makePartial();
+        $prop = new ReflectionProperty(GoogleSheetsService::class, 'columnMap');
+        /** @var array<string,int> $map */
+        $map = $prop->getValue($service);
+
+        $this->assertArrayHasKey('dob_bs', $map);
+        $this->assertSame(17, $map['dob_bs']);
+    }
+
+    /** @test */
+    public function test_dob_bs_resolves_correctly(): void
+    {
+        $employee = Mockery::mock(Employee::class)->makePartial();
+        $employee->dob_bs = '2045.05.10';
+
+        $result = $this->resolveField($employee, 'dob_bs');
+
+        $this->assertSame('2045.05.10', $result);
+    }
 }

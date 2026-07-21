@@ -47,7 +47,7 @@ class BirthdayListWidget extends Widget
 
             $selectedDate = Carbon::createFromDate($year, $month, 1);
             $previousMonth = $selectedDate->copy()->subMonth();
-            $cutoffDate = $previousMonth->copy()->setDay(15)->format('Y-m-d');
+            $cutoffDate = $previousMonth->copy()->setDay(10)->format('Y-m-d');
 
             return Employee::with(['department', 'designation'])
                 ->whereIn('employee_status', ['Active', 'Resigning this month'])
@@ -58,14 +58,23 @@ class BirthdayListWidget extends Widget
                         return false;
                     }
                     try {
-                        return Carbon::parse($emp->join_date_formatted)->format('Y-m-d') < $cutoffDate;
+                        $cleanedDate = str_replace(',', '', $emp->join_date_formatted);
+
+                        return Carbon::parse($cleanedDate)->format('Y-m-d') < $cutoffDate;
                     } catch (\Exception) {
                         return false;
                     }
                 })
-                ->sortBy(function ($emp) {
-                    return $emp->dob_ad ? $emp->dob_ad->day : 99;
-                });
+                ->map(function ($emp) {
+                    $emp->dob_day = $emp->dob_ad ? $emp->dob_ad->day : 99;
+
+                    return $emp;
+                })
+                ->sortBy([
+                    ['dp_rank', 'asc'],
+                    ['rank', 'asc'],
+                    ['dob_day', 'asc'],
+                ]);
         } catch (\Exception $e) {
             return collect();
         }

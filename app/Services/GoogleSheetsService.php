@@ -42,7 +42,7 @@ class GoogleSheetsService
         'citizenship_issue_place' => 14,
         'ssid' => 15,
         'dob_ad' => 16, // formatted as d F, Y
-        // dob_bs (col 17) is intentionally excluded: data flows sheet → DB only (never DB → sheet)
+        'dob_bs' => 17,
         'marital_status' => 18,
         'employee_status' => 19,
         'tips_amount' => 20,
