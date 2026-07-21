@@ -154,6 +154,15 @@ class EmployeeForm
                                             ->placeholder('e.g. 01 January, 2024')
                                             ->formatStateUsing(fn($state) => $state ? Carbon::parse($state)->format('d F, Y') : null)
                                             ->dehydrateStateUsing(fn($state) => $state ? Carbon::parse($state)->format('d F, Y') : null),
+                                        Select::make('shift')
+                                            ->label('Shift')
+                                            ->options([
+                                                'Morning' => 'Morning',
+                                                'Evening' => 'Evening',
+                                                'Night' => 'Night',
+                                            ])
+                                            ->native(false)
+                                            ->default('Morning'),
                                     ]),
                                 Section::make('HRMS Credentials')
                                     ->visibleOn('view')
