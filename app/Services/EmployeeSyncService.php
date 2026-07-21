@@ -37,8 +37,9 @@ class EmployeeSyncService
         fgetcsv($stream);
 
         $syncedCount = 0;
+        $allChanges = [];
 
-        Employee::withoutEvents(function () use ($stream, &$syncedCount) {
+        Employee::withoutEvents(function () use ($stream, &$syncedCount, &$allChanges) {
             while (($row = fgetcsv($stream)) !== false) {
                 // Pad the row to 30 elements to avoid undefined index offsets
                 if (count($row) < 30) {
@@ -122,7 +123,7 @@ class EmployeeSyncService
                     }
                 }
 
-                Employee::updateOrCreate(
+                $employee = Employee::updateOrCreate(
                     ['employee_code' => $employeeCode],
                     [
                         'department_id' => $department?->id,
@@ -155,11 +156,31 @@ class EmployeeSyncService
                     ]
                 );
 
+                if ($employee->wasRecentlyCreated) {
+                    $allChanges[] = [
+                        'employee_code' => $employeeCode,
+                        'action' => 'created',
+                    ];
+                } elseif ($employee->wasChanged()) {
+                    $allChanges[] = [
+                        'employee_code' => $employeeCode,
+                        'action' => 'updated',
+                        'changes' => $employee->getChanges(),
+                    ];
+                }
+
                 $syncedCount++;
             }
         });
 
         fclose($stream);
+
+        \App\Models\SyncLog::create([
+            'type' => 'Employees Sync',
+            'status' => 'Success',
+            'records_processed' => $syncedCount,
+            'changes' => $allChanges,
+        ]);
 
         return $syncedCount;
     }

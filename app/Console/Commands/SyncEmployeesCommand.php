@@ -24,6 +24,13 @@ class SyncEmployeesCommand extends Command
 
             return Command::SUCCESS;
         } catch (\Exception $e) {
+            \App\Models\SyncLog::create([
+                'type' => 'Employees Sync',
+                'status' => 'Failed: ' . $e->getMessage(),
+                'records_processed' => 0,
+                'changes' => null,
+            ]);
+
             $this->error('Sync failed: '.$e->getMessage());
 
             return Command::FAILURE;
