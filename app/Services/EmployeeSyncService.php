@@ -55,7 +55,7 @@ class EmployeeSyncService
                 $department = null;
                 $dpRank = is_numeric($row[0] ?? null) ? (int) $row[0] : null;
                 if (! empty($departmentName)) {
-                    $department = Department::updateOrCreate(
+                    $department = Department::withTrashed()->updateOrCreate(
                         ['name' => $departmentName],
                         array_filter(['rank' => $dpRank], fn ($v) => $v !== null)
                     );
@@ -69,7 +69,7 @@ class EmployeeSyncService
                 $designation = null;
                 $desigRank = is_numeric($row[1] ?? null) ? (int) $row[1] : null;
                 if ($department !== null && ! empty($designationName)) {
-                    $designation = Designation::firstOrCreate([
+                    $designation = Designation::withTrashed()->firstOrCreate([
                         'department_id' => $department->id,
                         'name' => $designationName,
                     ]);

@@ -79,6 +79,7 @@ class DesignationsTable
                     ->placeholder('All Designations')
                     ->trueLabel('Active only')
                     ->falseLabel('Inactive only'),
+                \Filament\Tables\Filters\TrashedFilter::make(),
             ])
             ->recordActions([
                 EditAction::make(),
