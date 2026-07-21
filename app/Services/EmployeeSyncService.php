@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\NepaliDate\NepaliDate;
 use App\Models\Department;
 use App\Models\Designation;
 use App\Models\Employee;
@@ -85,6 +86,31 @@ class EmployeeSyncService
                 $publishTips = $this->parseBoolean($row[24] ?? null);
                 $tipsFixed = $this->parseBoolean($row[25] ?? null);
 
+                // Handle dob_bs: Since dob_bs is not synced back to Google Sheet,
+                // we should calculate it from dob_ad if empty, or keep the existing DB value.
+                $dobBs = trim($row[17] ?? '');
+                if (empty($dobBs)) {
+                    if (! empty($dobAd)) {
+                        try {
+                            $dateObj = Carbon::parse($dobAd);
+                            $converter = new NepaliDate;
+                            $converted = $converter->convertAdToBs($dateObj->year, $dateObj->month, $dateObj->day);
+                            if (! empty($converted)) {
+                                $dobBs = sprintf('%04d.%02d.%02d', $converted['year'], $converted['month'], $converted['day']);
+                            }
+                        } catch (\Exception $e) {
+                            // ignore
+                        }
+                    }
+
+                    if (empty($dobBs)) {
+                        $existingEmployee = Employee::where('employee_code', $employeeCode)->first();
+                        if ($existingEmployee) {
+                            $dobBs = $existingEmployee->dob_bs;
+                        }
+                    }
+                }
+
                 Employee::updateOrCreate(
                     ['employee_code' => $employeeCode],
                     [
@@ -102,7 +128,7 @@ class EmployeeSyncService
                         'citizenship_issue_place' => trim($row[14] ?? '') ?: null,
                         'ssid' => trim($row[15] ?? '') ?: null,
                         'dob_ad' => $dobAd,
-                        'dob_bs' => trim($row[17] ?? '') ?: null,
+                        'dob_bs' => $dobBs ?: null,
                         'marital_status' => trim($row[18] ?? '') ?: null,
                         'employee_status' => trim($row[19] ?? '') ?: null,
                         'tips_amount' => $tipsAmount,

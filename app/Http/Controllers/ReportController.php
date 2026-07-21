@@ -19,15 +19,14 @@ class ReportController extends Controller
         $month = $request->integer('month');
         $year = $request->integer('year');
 
-        // Logic from Sheet: E < DATE '"&TEXT(EOMONTH(TODAY(), -2)+1, "yyyy-mm-")&"10'
-        // Which translates to: joined before the 10th of the previous month relative to selected month/year.
+        // Joined before the 15th of the previous month relative to selected month/year.
         // Let's construct that cut-off date:
         $selectedDate = Carbon::createFromDate($year, $month, 1);
         $previousMonth = $selectedDate->copy()->subMonth();
-        $cutoffDate = $previousMonth->copy()->setDay(10)->format('Y-m-d');
+        $cutoffDate = $previousMonth->copy()->setDay(15)->format('Y-m-d');
 
         $employees = Employee::with(['department', 'designation'])
-            ->where('employee_status', 'Active')
+            ->whereIn('employee_status', ['Active', 'Resigning this month'])
             ->whereMonth('dob_ad', $month)
             ->get()
             ->filter(function ($emp) use ($cutoffDate) {
