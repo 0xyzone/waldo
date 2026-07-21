@@ -8,6 +8,30 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Department extends Model
 {
     /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
+    protected $fillable = [
+        'name',
+        'rank',
+        'is_active',
+    ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'rank' => 'integer',
+            'is_active' => 'boolean',
+        ];
+    }
+
+    /**
      * Get the designations under this department.
      */
     public function designations(): HasMany

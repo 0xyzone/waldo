@@ -22,6 +22,7 @@
     <php>
         <ini name="error_reporting" value="6143"/>
         <ini name="display_errors" value="0"/>
+        <env name="XDEBUG_MODE" value="off"/>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>

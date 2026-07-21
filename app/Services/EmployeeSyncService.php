@@ -50,34 +50,45 @@ class EmployeeSyncService
                     continue;
                 }
 
-                // Find/Create Department
+                // Find/Create Department — always sync rank from sheet col[0] (Dp. Rank)
                 $departmentName = trim($row[6] ?? '');
                 $department = null;
+                $dpRank = is_numeric($row[0] ?? null) ? (int) $row[0] : null;
                 if (! empty($departmentName)) {
-                    $dpRank = is_numeric($row[0] ?? null) ? (int) $row[0] : null;
                     $department = Department::updateOrCreate(
                         ['name' => $departmentName],
-                        ['rank' => $dpRank]
+                        array_filter(['rank' => $dpRank], fn ($v) => $v !== null)
                     );
                 }
 
-                // Find/Create Designation
+                // Find/Create Designation — always sync rank from sheet col[1] (Rank).
+                // The sheet has no separate designation-rank column; col[1] is the employee rank
+                // which also represents the designation's relative ordering within the department.
+                // We take the lowest rank value seen for a designation as its canonical rank.
                 $designationName = trim($row[7] ?? '');
                 $designation = null;
+                $desigRank = is_numeric($row[1] ?? null) ? (int) $row[1] : null;
                 if ($department !== null && ! empty($designationName)) {
                     $designation = Designation::firstOrCreate([
                         'department_id' => $department->id,
                         'name' => $designationName,
                     ]);
+
+                    // Update rank if the sheet provides one and it is lower than the stored value
+                    // (lower = higher priority), so the first/top employee rank defines the designation rank.
+                    if ($desigRank !== null) {
+                        if ($designation->rank === null || $desigRank < $designation->rank) {
+                            $designation->rank = $desigRank;
+                            $designation->save();
+                        }
+                    }
                 }
 
                 // Parse dates
                 // Column 9 (Join Date yyyy.mm.dd) is intentionally ignored — we only use join_date_formatted (col 8).
                 $dobAd = $this->parseDate($row[16] ?? null, 'd F, Y');
 
-                // Parse numbers
-                $dpRank = is_numeric($row[0] ?? null) ? (int) $row[0] : null;
-                $rank = is_numeric($row[1] ?? null) ? (int) $row[1] : null;
+                // Parse numbers ($dpRank and $desigRank already computed above for dept/designation sync)
                 $tipsAmount = is_numeric($row[20] ?? null) ? (float) $row[20] : null;
                 $pointValue = is_numeric($row[22] ?? null) ? (float) $row[22] : null;
 
@@ -117,7 +128,7 @@ class EmployeeSyncService
                         'department_id' => $department?->id,
                         'designation_id' => $designation?->id,
                         'dp_rank' => $dpRank,
-                        'rank' => $rank,
+                        'rank' => $desigRank,
                         'name' => trim($row[4] ?? '') ?: null,
                         'gender' => trim($row[5] ?? '') ?: null,
                         'join_date_formatted' => trim($row[8] ?? '') ?: null,
