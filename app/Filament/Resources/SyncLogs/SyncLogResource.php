@@ -71,6 +71,7 @@ class SyncLogResource extends Resource
         return $table
             ->recordTitleAttribute('id')
             ->columns([
+                TextColumn::make('id'),
                 TextColumn::make('type')
                     ->searchable(),
                 TextColumn::make('status')
@@ -81,12 +82,13 @@ class SyncLogResource extends Resource
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('id', 'desc')
             ->filters([
                 //
             ])
