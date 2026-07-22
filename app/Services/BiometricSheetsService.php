@@ -40,6 +40,8 @@ class BiometricSheetsService
         'shift' => 9,
         'remarks' => 10,
         'phone' => 11,
+        'created_at' => 12,
+        'updated_at' => 13,
     ];
 
     public function __construct()
@@ -59,7 +61,7 @@ class BiometricSheetsService
      */
     public function sync(): int
     {
-        $range = "'{$this->sheetName}'!A2:L";
+        $range = "'{$this->sheetName}'!A2:N";
         $response = $this->service->spreadsheets_values->get($this->spreadsheetId, $range);
         $rows = $response->getValues() ?: [];
 
@@ -68,8 +70,8 @@ class BiometricSheetsService
         // Run without triggering model events during pull sync to prevent infinite loops
         BiometricAllotment::withoutEvents(function () use ($rows, &$syncedCount) {
             foreach ($rows as $row) {
-                if (count($row) < 12) {
-                    $row = array_pad($row, 12, '');
+                if (count($row) < 14) {
+                    $row = array_pad($row, 14, '');
                 }
 
                 $code = trim($row[0] ?? '');
@@ -95,21 +97,52 @@ class BiometricSheetsService
                     }
                 }
 
+                // Parse created_at and updated_at if provided in sheet
+                $createdAt = null;
+                $createdAtStr = trim($row[12] ?? '');
+                if (! empty($createdAtStr)) {
+                    try {
+                        $createdAt = Carbon::parse($createdAtStr);
+                    } catch (\Exception $e) {
+                        Log::warning('Failed to parse created_at date: '.$createdAtStr);
+                    }
+                }
+
+                $updatedAt = null;
+                $updatedAtStr = trim($row[13] ?? '');
+                if (! empty($updatedAtStr)) {
+                    try {
+                        $updatedAt = Carbon::parse($updatedAtStr);
+                    } catch (\Exception $e) {
+                        Log::warning('Failed to parse updated_at date: '.$updatedAtStr);
+                    }
+                }
+
+                $updateData = [
+                    'name' => trim($row[1] ?? '') ?: null,
+                    'department_id' => $department?->id,
+                    'status' => trim($row[3] ?? '') ?: null,
+                    'enrolled_date' => $enrolledDate,
+                    'set_by' => trim($row[5] ?? '') ?: null,
+                    'old_checkout_device' => filter_var($row[6] ?? false, FILTER_VALIDATE_BOOLEAN),
+                    'new_checkin' => filter_var($row[7] ?? false, FILTER_VALIDATE_BOOLEAN),
+                    'new_checkout' => filter_var($row[8] ?? false, FILTER_VALIDATE_BOOLEAN),
+                    'shift' => trim($row[9] ?? '') ?: null,
+                    'remarks' => trim($row[10] ?? '') ?: null,
+                    'phone' => trim($row[11] ?? '') ?: null,
+                ];
+
+                if ($createdAt !== null) {
+                    $updateData['created_at'] = $createdAt;
+                }
+
+                if ($updatedAt !== null) {
+                    $updateData['updated_at'] = $updatedAt;
+                }
+
                 BiometricAllotment::updateOrCreate(
                     ['code' => $code],
-                    [
-                        'name' => trim($row[1] ?? '') ?: null,
-                        'department_id' => $department?->id,
-                        'status' => trim($row[3] ?? '') ?: null,
-                        'enrolled_date' => $enrolledDate,
-                        'set_by' => trim($row[5] ?? '') ?: null,
-                        'old_checkout_device' => filter_var($row[6] ?? false, FILTER_VALIDATE_BOOLEAN),
-                        'new_checkin' => filter_var($row[7] ?? false, FILTER_VALIDATE_BOOLEAN),
-                        'new_checkout' => filter_var($row[8] ?? false, FILTER_VALIDATE_BOOLEAN),
-                        'shift' => trim($row[9] ?? '') ?: null,
-                        'remarks' => trim($row[10] ?? '') ?: null,
-                        'phone' => trim($row[11] ?? '') ?: null,
-                    ]
+                    $updateData
                 );
 
                 $syncedCount++;
@@ -191,7 +224,7 @@ class BiometricSheetsService
                 return;
             }
 
-            $clearRange = "'{$this->sheetName}'!A{$sheetRowNumber}:L{$sheetRowNumber}";
+            $clearRange = "'{$this->sheetName}'!A{$sheetRowNumber}:N{$sheetRowNumber}";
             $clearRequest = new ClearValuesRequest;
             $this->service->spreadsheets_values->clear(
                 $this->spreadsheetId,
@@ -250,7 +283,7 @@ class BiometricSheetsService
     protected function appendAllotment(BiometricAllotment $allotment): void
     {
         $targetRow = $this->findFirstEmptyRow();
-        $newRow = array_fill(0, 12, '');
+        $newRow = array_fill(0, 14, '');
 
         foreach ($this->columnMap as $field => $colIndex) {
             $newRow[$colIndex] = $this->resolveFieldValue($allotment, $field);
@@ -261,7 +294,7 @@ class BiometricSheetsService
         $body = new ValueRange(['values' => [$newRow]]);
         $this->service->spreadsheets_values->update(
             $this->spreadsheetId,
-            "'{$this->sheetName}'!A{$targetRow}:L{$targetRow}",
+            "'{$this->sheetName}'!A{$targetRow}:N{$targetRow}",
             $body,
             ['valueInputOption' => 'USER_ENTERED']
         );
@@ -275,6 +308,12 @@ class BiometricSheetsService
         return match ($field) {
             'enrolled_date' => $allotment->enrolled_date
                 ? Carbon::parse($allotment->enrolled_date)->format('n/j/Y') // e.g. 5/24/2025 matches sheet
+                : '',
+            'created_at' => $allotment->created_at
+                ? $allotment->created_at->format('Y-m-d H:i:s')
+                : '',
+            'updated_at' => $allotment->updated_at
+                ? $allotment->updated_at->format('Y-m-d H:i:s')
                 : '',
             'department_id' => (string) ($allotment->department?->name ?? ''),
             'old_checkout_device' => $allotment->old_checkout_device ? 'TRUE' : 'FALSE',
