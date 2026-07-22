@@ -19,8 +19,10 @@ class SyncBiometricsCommand extends Command
         $this->info('Starting biometric allotment synchronization from Google Sheets...');
 
         try {
-            $count = $syncService->sync();
-            $this->info("Successfully synced {$count} records.");
+            $res = $syncService->sync();
+            $pulled = $res['pulled'] ?? 0;
+            $pushed = $res['pushed'] ?? 0;
+            $this->info("Successfully synced! Pulled {$pulled} records from Google Sheet and pushed {$pushed} records to Google Sheet.");
 
             return Command::SUCCESS;
         } catch (\Exception $e) {

@@ -44,15 +44,17 @@ class ListBiometricAllotments extends ListRecords
                 ->color('success')
                 ->icon('heroicon-o-arrow-path')
                 ->requiresConfirmation()
-                ->modalHeading('Sync Biometrics from Google Sheet')
-                ->modalDescription('Are you sure you want to pull data from the Google Sheet? This will update existing allotments and create new ones.')
+                ->modalHeading('Sync Biometrics with Google Sheet')
+                ->modalDescription('This will sync data bidirectionally between the app and Google Sheet. Data will be pulled from Sheet to App and new app records will be pushed to Sheet.')
                 ->action(function (BiometricSheetsService $syncService): void {
                     try {
-                        $count = $syncService->sync();
+                        $res = $syncService->sync();
+                        $pulled = $res['pulled'] ?? 0;
+                        $pushed = $res['pushed'] ?? 0;
 
                         Notification::make()
                             ->title('Sync Completed')
-                            ->body("Successfully synced {$count} biometric records from Google Sheet!")
+                            ->body("Successfully synced! Pulled {$pulled} record(s) from Google Sheet and pushed {$pushed} record(s) to Google Sheet.")
                             ->success()
                             ->send();
                     } catch (\Exception $e) {

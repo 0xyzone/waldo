@@ -57,18 +57,20 @@ class BiometricSheetsService
     }
 
     /**
-     * Pull biometric allotments from Google Sheets to database.
+     * Pull biometric allotments from Google Sheets to database and push new database records to sheet.
      */
-    public function sync(): int
+    public function sync(): array
     {
         $range = "'{$this->sheetName}'!A2:N";
         $response = $this->service->spreadsheets_values->get($this->spreadsheetId, $range);
         $rows = $response->getValues() ?: [];
 
-        $syncedCount = 0;
+        $pulledCount = 0;
+        $pushedCount = 0;
+        $sheetCodes = [];
 
         // Run without triggering model events during pull sync to prevent infinite loops
-        BiometricAllotment::withoutEvents(function () use ($rows, &$syncedCount) {
+        BiometricAllotment::withoutEvents(function () use ($rows, &$pulledCount, &$sheetCodes) {
             foreach ($rows as $row) {
                 if (count($row) < 14) {
                     $row = array_pad($row, 14, '');
@@ -78,6 +80,8 @@ class BiometricSheetsService
                 if (empty($code) || strtolower($code) === 'code') {
                     continue;
                 }
+
+                $sheetCodes[] = $code;
 
                 // Resolve department by name
                 $departmentName = trim($row[2] ?? '');
@@ -118,6 +122,13 @@ class BiometricSheetsService
                     }
                 }
 
+                $existing = BiometricAllotment::find($code);
+
+                // If DB record exists and has a newer updated_at timestamp than sheet, keep DB version and schedule push
+                if ($existing && $updatedAt && $existing->updated_at && $existing->updated_at->gt($updatedAt)) {
+                    continue;
+                }
+
                 $updateData = [
                     'name' => trim($row[1] ?? '') ?: null,
                     'department_id' => $department?->id,
@@ -145,11 +156,38 @@ class BiometricSheetsService
                     $updateData
                 );
 
-                $syncedCount++;
+                $pulledCount++;
             }
         });
 
-        return $syncedCount;
+        // Push any database records that don't exist on the sheet or are newer in database
+        $dbAllotments = BiometricAllotment::all();
+        foreach ($dbAllotments as $allotment) {
+            if (! in_array($allotment->code, $sheetCodes, true)) {
+                $this->syncAllotment($allotment);
+                $pushedCount++;
+            }
+        }
+
+        return [
+            'pulled' => $pulledCount,
+            'pushed' => $pushedCount,
+        ];
+    }
+
+    /**
+     * Push all local biometric allotments to Google Sheet.
+     */
+    public function syncAllToSheet(): int
+    {
+        $allotments = BiometricAllotment::all();
+        $count = 0;
+        foreach ($allotments as $allotment) {
+            $this->syncAllotment($allotment);
+            $count++;
+        }
+
+        return $count;
     }
 
     /**
