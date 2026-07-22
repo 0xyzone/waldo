@@ -220,6 +220,10 @@ class BiometricSheetsService
                     $changedFields,
                     fn (string $f) => isset($this->columnMap[$f])
                 );
+                // Ensure updated_at is always synced whenever any change occurs
+                if (! empty($fieldsToSync) && ! in_array('updated_at', $fieldsToSync, true)) {
+                    $fieldsToSync[] = 'updated_at';
+                }
             }
 
             if (empty($fieldsToSync)) {
