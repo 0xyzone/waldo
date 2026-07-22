@@ -114,7 +114,6 @@ class BiometricAllotmentsTable
 
                             return ! $employee;
                         }
-
                         return false;
                     })
                     ->form([
