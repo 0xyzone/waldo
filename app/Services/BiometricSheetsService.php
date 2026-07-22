@@ -160,13 +160,11 @@ class BiometricSheetsService
             }
         });
 
-        // Push any database records that don't exist on the sheet or are newer in database
+        // Push all database records to Google Sheet (creates missing rows or updates created_at/updated_at and fields)
         $dbAllotments = BiometricAllotment::all();
         foreach ($dbAllotments as $allotment) {
-            if (! in_array($allotment->code, $sheetCodes, true)) {
-                $this->syncAllotment($allotment);
-                $pushedCount++;
-            }
+            $this->syncAllotment($allotment);
+            $pushedCount++;
         }
 
         return [
