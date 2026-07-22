@@ -81,6 +81,12 @@ class BiometricAllotmentsTable
                     ->copyMessage('Phone number copied!')
                     ->placeholder('—')
                     ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('created_at')
+                    ->label('Created At')
+                    ->toggleable(isToggledHiddenByDefault: false),
+                TextColumn::make('updated_at')
+                    ->label('Updated At')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->modifyQueryUsing(fn(Builder $query) => $query->orderByRaw('CAST(REGEXP_REPLACE(code, "[^0-9]", "") AS UNSIGNED) DESC'))
             ->filters([
