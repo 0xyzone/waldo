@@ -5,12 +5,7 @@ namespace App\Filament\Resources\SyncLogs;
 use App\Filament\Resources\SyncLogs\Pages\ManageSyncLogs;
 use App\Models\SyncLog;
 use BackedEnum;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -57,11 +52,12 @@ class SyncLogResource extends Resource
                 TextEntry::make('created_at')
                     ->label('Run At')
                     ->dateTime()
+                    ->timezone(config('app.timezone', 'Asia/Kathmandu'))
                     ->placeholder('-'),
-                \Filament\Infolists\Components\TextEntry::make('changes')
+                TextEntry::make('changes')
                     ->label('Detailed Changes')
                     ->columnSpanFull()
-                    ->formatStateUsing(fn ($state) => '<pre style="max-height: 400px; overflow-y: auto; background-color: #f3f4f6; padding: 1rem; border-radius: 0.5rem; color: #1f2937;">' . htmlspecialchars(json_encode($state, JSON_PRETTY_PRINT)) . '</pre>')
+                    ->formatStateUsing(fn ($state) => '<pre style="max-height: 400px; overflow-y: auto; background-color: #f3f4f6; padding: 1rem; border-radius: 0.5rem; color: #1f2937;">'.htmlspecialchars(json_encode($state, JSON_PRETTY_PRINT)).'</pre>')
                     ->html(),
             ]);
     }
@@ -81,10 +77,12 @@ class SyncLogResource extends Resource
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
+                    ->timezone(config('app.timezone', 'Asia/Kathmandu'))
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('updated_at')
                     ->dateTime()
+                    ->timezone(config('app.timezone', 'Asia/Kathmandu'))
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
