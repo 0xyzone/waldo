@@ -206,11 +206,20 @@
         <div class="p-6 border-b border-slate-200 dark:border-zinc-800 space-y-4 shrink-0">
             <div class="flex items-center justify-between">
                 <h2 class="text-sm font-bold text-slate-800 dark:text-zinc-200 uppercase tracking-wider">Letter Generation</h2>
-                <!-- Print Trigger Button -->
-                <button type="button" @click="window.print()" :disabled="selectedCodes.length === 0 || !selectedTemplateId"
-                        class="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 disabled:from-slate-300 disabled:to-slate-400 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl shadow-md tracking-wide transition-all active:scale-95 cursor-pointer">
-                    <i class="fa-solid fa-print mr-1"></i> Print
-                </button>
+                <div class="flex items-center gap-2">
+                    <button type="button" @click="saveToHistory(false)" :disabled="selectedCodes.length === 0 || !selectedTemplateId || isSaving"
+                            class="px-3 py-2 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 disabled:opacity-50 text-slate-700 dark:text-zinc-300 text-xs font-bold rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
+                            title="Save generated letters to history">
+                        <i class="fa-solid fa-floppy-disk text-amber-500"></i> Save
+                    </button>
+                    <button type="button" @click="saveToHistory(true)" :disabled="selectedCodes.length === 0 || !selectedTemplateId || isSaving"
+                            class="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 disabled:from-slate-300 disabled:to-slate-400 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl shadow-md tracking-wide transition-all active:scale-95 cursor-pointer flex items-center gap-1.5">
+                        <i class="fa-solid fa-print"></i> Print
+                    </button>
+                </div>
+            </div>
+            <div x-show="saveMessage" x-transition class="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                <i class="fa-solid fa-circle-check"></i> <span x-text="saveMessage"></span>
             </div>
             
             <!-- Select Template -->
@@ -422,6 +431,55 @@ function generatorState() {
         showGuides: true,
         margins: { top: 25, bottom: 25, left: 20, right: 20 },
         paginatedLetters: {},
+        isSaving: false,
+        saveMessage: '',
+
+        async saveToHistory(andPrint = false) {
+            if (this.selectedCodes.length === 0 || !this.selectedTemplateId || this.isSaving) return;
+
+            this.isSaving = true;
+            this.saveMessage = '';
+
+            const payloadLetters = this.selectedCodes.map(code => {
+                const emp = this.getEmployee(code);
+                return {
+                    letter_template_id: this.selectedTemplateId ? parseInt(this.selectedTemplateId) : null,
+                    employee_code: code,
+                    template_title: this.selectedTemplate ? this.selectedTemplate.title : 'Untitled Template',
+                    employee_name: emp ? emp.name : code,
+                    content: this.renderLetter(code),
+                    custom_values: this.customValues,
+                    margins: this.margins
+                };
+            });
+
+            try {
+                const res = await fetch('{{ route('letters.save-generated') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ letters: payloadLetters })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    this.saveMessage = 'Saved to history!';
+                    setTimeout(() => { this.saveMessage = ''; }, 3000);
+                    if (andPrint) {
+                        window.print();
+                    }
+                } else {
+                    alert(data.message || 'Failed to save letters to history.');
+                }
+            } catch (e) {
+                alert('An error occurred while saving letters to history.');
+            } finally {
+                this.isSaving = false;
+            }
+        },
 
         init() {
             if (this.selectedTemplateId) {

@@ -13,6 +13,14 @@ Route::prefix('/letters')->middleware('role:super_admin|HR')->group(function () 
     Route::get('/create', [LetterController::class, 'create'])->name('letters.create');
     Route::get('/generate', [LetterController::class, 'generate'])->name('letters.generate');
 
+    // Generated Letters History & Saving
+    Route::get('/history', [LetterController::class, 'history'])->name('letters.history');
+    Route::post('/save-generated', [LetterController::class, 'saveGenerated'])->name('letters.save-generated');
+    Route::get('/history/{id}', [LetterController::class, 'showGenerated'])->name('letters.history.show');
+    Route::get('/history/{id}/edit', [LetterController::class, 'editGenerated'])->name('letters.history.edit');
+    Route::put('/history/{id}', [LetterController::class, 'updateGenerated'])->name('letters.history.update');
+    Route::delete('/history/{id}', [LetterController::class, 'destroyGenerated'])->name('letters.history.destroy');
+
     // Font management (must be before /{id} routes)
     Route::get('/fonts', [FontController::class, 'index'])->name('letters.fonts');
     Route::post('/fonts', [FontController::class, 'store'])->name('letters.fonts.store');

@@ -143,4 +143,6 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - To run all tests in a file: `php artisan test --compact tests/Feature/ExampleTest.php`.
 - To filter on a particular test name: `php artisan test --compact --filter=testName` (recommended after making a change to a related file).
 
-</laravel-boost-guidelines>
+# Employee Testing & Seeding Rules
+- Do NOT create dummy or temporary employee records in the database for testing/demonstration purposes; always use existing employee records instead.
+

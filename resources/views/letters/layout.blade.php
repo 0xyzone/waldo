@@ -82,6 +82,10 @@
                class="px-4 py-2 text-sm font-semibold rounded-xl transition-all {{ request()->routeIs('letters.generate') ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-950 dark:hover:text-zinc-50' }}">
                 <i class="fa-solid fa-file-invoice mr-1.5 text-base"></i> Generate Letters
             </a>
+            <a href="{{ route('letters.history') }}" 
+               class="px-4 py-2 text-sm font-semibold rounded-xl transition-all {{ request()->routeIs('letters.history*') ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-950 dark:hover:text-zinc-50' }}">
+                <i class="fa-solid fa-clock-rotate-left mr-1.5 text-base"></i> Generated History
+            </a>
             <a href="{{ route('letters.fonts') }}" 
                class="px-4 py-2 text-sm font-semibold rounded-xl transition-all {{ request()->routeIs('letters.fonts') ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-950 dark:hover:text-zinc-50' }}">
                 <i class="fa-solid fa-font mr-1.5 text-base"></i> Fonts
