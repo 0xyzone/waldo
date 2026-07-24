@@ -133,7 +133,7 @@ class LetterTemplateForm
                                                 <div class="space-y-2">
                                                     <div class="grid grid-cols-1 gap-2 text-xs font-mono">
                                                         <div class="flex flex-col gap-1">
-                                                            <span class="text-gray-500 font-sans font-semibold">General Info:</span>
+                                                             <span class="text-gray-500 font-sans font-semibold">General Info <span class="text-[10px] text-amber-600 dark:text-amber-400 font-normal">(employee_name includes Mr. / Miss based on gender)</span>:</span>
                                                             <div class="flex flex-wrap gap-1.5">
                                                                 <code class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-semibold text-amber-600 dark:text-amber-400 cursor-pointer select-all" onclick="navigator.clipboard.writeText(this.innerText)">&#123;&#123; employee_name &#125;&#125;</code>
                                                                 <code class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded font-semibold text-amber-600 dark:text-amber-400 cursor-pointer select-all" onclick="navigator.clipboard.writeText(this.innerText)">&#123;&#123; employee_employee_code &#125;&#125;</code>

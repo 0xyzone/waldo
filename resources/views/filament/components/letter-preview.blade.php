@@ -112,13 +112,17 @@ if (!$employee) {
         // Replace employee variables using underscore notation
         parsed = parsed.replace(/\{\{\s*employee_([a-zA-Z0-9_]+)\s*\}\}/g, (match, key) => {
             if (key === 'name') {
-                const name = employee.name || '';
-                const gender = employee.gender || '';
+                const name = (employee.name || '').trim();
+                if (!name) return '';
+                if (/^(mr|miss|mrs|ms)\.?\s+/i.test(name)) {
+                    return name;
+                }
+                const g = (employee.gender || '').toLowerCase().trim();
                 let prefix = '';
-                if (gender === 'Male') {
+                if (g === 'male' || g === 'm') {
                     prefix = 'Mr. ';
-                } else if (gender === 'Female') {
-                    prefix = 'Miss. ';
+                } else if (g === 'female' || g === 'f') {
+                    prefix = 'Miss ';
                 }
                 return prefix + name;
             }

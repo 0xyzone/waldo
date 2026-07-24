@@ -695,7 +695,7 @@ function generatorState() {
 
              // Replace prebuilt employee variables — use character class [{}]{2} to avoid Blade parsing
             const prebuilts = {
-                employee_name:                     emp.name || '',
+                employee_name:                     this.getEmployeeNameWithPrefix(emp.name, emp.gender),
                 employee_first_name:               emp.first_name || '',
                 employee_middle_name:              emp.middle_name || '',
                 employee_last_name:                emp.last_name || '',
@@ -749,6 +749,22 @@ function generatorState() {
             });
 
             return html;
+        },
+
+        getGenderPrefix(gender) {
+            const g = (gender || '').toLowerCase().trim();
+            if (g === 'male' || g === 'm') return 'Mr. ';
+            if (g === 'female' || g === 'f') return 'Miss ';
+            return '';
+        },
+
+        getEmployeeNameWithPrefix(name, gender) {
+            if (!name) return '';
+            const trimmedName = name.trim();
+            if (/^(mr|miss|mrs|ms)\.?\s+/i.test(trimmedName)) {
+                return trimmedName;
+            }
+            return (this.getGenderPrefix(gender) + trimmedName).trim();
         },
 
         getHisHer(gender, capitalize) {
