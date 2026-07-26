@@ -72,4 +72,47 @@ class EmployeeSsidPublicViewTest extends TestCase
         $response->assertSee('SSID-DEPT1');
         $response->assertDontSee('SSID-DEPT2');
     }
+
+    public function test_can_filter_employees_by_status(): void
+    {
+        Employee::withoutEvents(function () {
+            $emp1 = new Employee;
+            $emp1->employee_code = 'CWD030';
+            $emp1->name = 'Charlie';
+            $emp1->employee_status = 'Active';
+            $emp1->ssid = 'SSID-ACTIVE';
+            $emp1->save();
+
+            $emp2 = new Employee;
+            $emp2->employee_code = 'CWD040';
+            $emp2->name = 'David';
+            $emp2->employee_status = 'Resigned';
+            $emp2->ssid = 'SSID-RESIGNED';
+            $emp2->save();
+        });
+
+        $response = $this->get('/employee-ssids?status=Active');
+
+        $response->assertStatus(200);
+        $response->assertSee('CWD030');
+        $response->assertSee('SSID-ACTIVE');
+        $response->assertDontSee('SSID-RESIGNED');
+    }
+
+    public function test_can_export_employee_ssids_to_excel(): void
+    {
+        Employee::withoutEvents(function () {
+            $emp = new Employee;
+            $emp->employee_code = 'CWD050';
+            $emp->name = 'Export Tester';
+            $emp->employee_status = 'Active';
+            $emp->ssid = 'SSID-EXPORT';
+            $emp->save();
+        });
+
+        $response = $this->get('/employee-ssids/export');
+
+        $response->assertStatus(200);
+        $response->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    }
 }
