@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\EmployeeSsidController;
 use App\Http\Controllers\FontController;
 use App\Http\Controllers\LetterController;
 use App\Http\Controllers\ReportController;
@@ -8,6 +9,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Employee Public SSID Search & Directory
+Route::get('/employee-ssids', [EmployeeSsidController::class, 'index'])->name('employees.ssid-list');
+
 Route::prefix('/letters')->middleware('role:super_admin|HR')->group(function () {
     Route::get('/', [LetterController::class, 'index'])->name('letters.index');
     Route::get('/create', [LetterController::class, 'create'])->name('letters.create');
