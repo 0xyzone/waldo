@@ -276,7 +276,7 @@
                                             </span>
                                         @elseif($isTerminated)
                                             <span
-                                                class="px-2.5 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20">
+                                                class="px-2.5 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20 shrink-0 flex-1">
                                                 {{ $employee->employee_status }}
                                             </span>
                                         @else
@@ -299,7 +299,7 @@
                                                         stroke-width="2"
                                                         d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                                 </svg>
-                                                <span class="flex-1">Copy SSID</span>
+                                                <span class="flex-1 shrink-0">Copy SSID</span>
                                             </button>
                                         @else
                                             <span class="text-slate-600 text-xs">—</span>
