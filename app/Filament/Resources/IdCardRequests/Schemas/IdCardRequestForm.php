@@ -31,22 +31,16 @@ class IdCardRequestForm
                                     ->icon('heroicon-o-user-circle')
                                     ->description('Select an existing employee or enter details manually.')
                                     ->schema([
-                                        Checkbox::make('is_existing_employee')
+                                        Checkbox::make('source')
                                             ->label('Select from Existing Employee Database')
-                                            ->default(false)
-                                            ->live()
                                             ->formatStateUsing(fn ($record, $state) => $record ? $record->source === 'employee' : (bool) $state)
-                                            ->dehydrated(false)
+                                            ->dehydrateStateUsing(fn ($state) => $state ? 'employee' : 'custom')
+                                            ->live()
                                             ->afterStateUpdated(function (bool $state, Set $set) {
-                                                $set('source', $state ? 'employee' : 'custom');
                                                 if (! $state) {
                                                     $set('selected_employee_code', null);
                                                 }
                                             }),
-
-                                        TextInput::make('source')
-                                            ->hidden()
-                                            ->default('custom'),
 
                                         Select::make('selected_employee_code')
                                             ->label('Search & Autofill Employee')
@@ -59,10 +53,11 @@ class IdCardRequestForm
                                                         return [$emp->employee_code => "{$name} ({$emp->employee_code})"];
                                                     });
                                             })
+                                            ->formatStateUsing(fn ($record) => $record?->employee_code)
                                             ->searchable()
                                             ->preload()
                                             ->live()
-                                            ->visible(fn (Get $get) => (bool) $get('is_existing_employee'))
+                                            ->visible(fn (Get $get) => (bool) $get('source'))
                                             ->dehydrated(false)
                                             ->afterStateUpdated(function (?string $state, Set $set) {
                                                 if (! $state) {
