@@ -9,10 +9,10 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Wizard;
+use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
 
 class EmployeeForm
@@ -79,7 +79,7 @@ class EmployeeForm
                                                     $date = Carbon::parse($state);
                                                     $converter = new NepaliDate;
                                                     $converted = $converter->convertAdToBs($date->year, $date->month, $date->day);
-                                                    if (!empty($converted)) {
+                                                    if (! empty($converted)) {
                                                         $set('dob_bs', sprintf('%04d.%02d.%02d', $converted['year'], $converted['month'], $converted['day']));
                                                     }
                                                 } catch (\Exception $e) {
@@ -110,7 +110,7 @@ class EmployeeForm
                                             ->required()
                                             ->unique(ignoreRecord: true)
                                             ->extraInputAttributes(['style' => 'text-transform: uppercase'])
-                                            ->dehydrateStateUsing(fn($state) => strtoupper($state)),
+                                            ->dehydrateStateUsing(fn ($state) => strtoupper($state)),
                                         Select::make('employee_status')
                                             ->label('Employee Status')
                                             ->options([
@@ -129,18 +129,18 @@ class EmployeeForm
                                             ->relationship(
                                                 name: 'department',
                                                 titleAttribute: 'name',
-                                                modifyQueryUsing: fn($query) => $query->where('name', 'not like', '%20%')
+                                                modifyQueryUsing: fn ($query) => $query->where('name', 'not like', '%20%')
                                             )
                                             ->searchable()
                                             ->preload()
                                             ->live()
-                                            ->afterStateUpdated(fn(callable $set) => $set('designation_id', null)),
+                                            ->afterStateUpdated(fn (callable $set) => $set('designation_id', null)),
                                         Select::make('designation_id')
                                             ->relationship(
                                                 name: 'designation',
                                                 titleAttribute: 'name',
-                                                modifyQueryUsing: fn($query, callable $get) => $query
-                                                    ->when($get('department_id'), fn($q, $deptId) => $q->where('department_id', $deptId))
+                                                modifyQueryUsing: fn ($query, callable $get) => $query
+                                                    ->when($get('department_id'), fn ($q, $deptId) => $q->where('department_id', $deptId))
                                             )
                                             ->searchable()
                                             ->preload(),
@@ -152,8 +152,8 @@ class EmployeeForm
                                             ->native(false)
                                             ->format('d F, Y')
                                             ->placeholder('e.g. 01 January, 2024')
-                                            ->formatStateUsing(fn($state) => $state ? Carbon::parse($state)->format('d F, Y') : null)
-                                            ->dehydrateStateUsing(fn($state) => $state ? Carbon::parse($state)->format('d F, Y') : null),
+                                            ->formatStateUsing(fn ($state) => $state ? Carbon::parse($state)->format('d F, Y') : null)
+                                            ->dehydrateStateUsing(fn ($state) => $state ? Carbon::parse($state)->format('d F, Y') : null),
                                         Select::make('shift')
                                             ->label('Shift')
                                             ->options([
@@ -181,10 +181,10 @@ class EmployeeForm
                                                     }),
                                                 TextEntry::make('hrms_password')
                                                     ->label('HRMS Password')
-                                                    ->dehydrateStateUsing(fn($state) => filled($state) ? $state : null)
-                                                    ->dehydrated(fn($state) => filled($state)),
-                                            ])
-                                    ])
+                                                    ->dehydrateStateUsing(fn ($state) => filled($state) ? $state : null)
+                                                    ->dehydrated(fn ($state) => filled($state)),
+                                            ]),
+                                    ]),
                             ]),
                         Step::make('🪪 ID & Payroll')
                             ->description('Citizenship, payroll & tips settings')

@@ -6,6 +6,7 @@ use App\Helpers\NepaliDate\NepaliDate;
 use App\Models\Department;
 use App\Models\Designation;
 use App\Models\Employee;
+use App\Models\SyncLog;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 
@@ -175,7 +176,7 @@ class EmployeeSyncService
 
         fclose($stream);
 
-        \App\Models\SyncLog::create([
+        SyncLog::create([
             'type' => 'Employees Sync',
             'status' => 'Success',
             'records_processed' => $syncedCount,

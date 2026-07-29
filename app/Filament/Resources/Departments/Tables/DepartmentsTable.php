@@ -10,6 +10,7 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
 class DepartmentsTable
@@ -70,7 +71,7 @@ class DepartmentsTable
                     ->placeholder('All Departments')
                     ->trueLabel('Active only')
                     ->falseLabel('Inactive only'),
-                \Filament\Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
             ->recordActions([
                 EditAction::make(),

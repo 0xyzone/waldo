@@ -12,6 +12,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
 class DesignationsTable
@@ -79,7 +80,7 @@ class DesignationsTable
                     ->placeholder('All Designations')
                     ->trueLabel('Active only')
                     ->falseLabel('Inactive only'),
-                \Filament\Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
             ->recordActions([
                 EditAction::make(),
