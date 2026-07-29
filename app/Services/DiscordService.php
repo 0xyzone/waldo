@@ -262,6 +262,40 @@ class DiscordService
     }
 
     /**
+     * Get server roles for a specific DiscordSetting instance.
+     *
+     * @return array<string, string>
+     */
+    public static function getRolesForSetting(int|string|DiscordSetting $setting): array
+    {
+        $settingObj = $setting instanceof DiscordSetting ? $setting : DiscordSetting::find($setting);
+        if (! $settingObj || ! $settingObj->bot_token || ! $settingObj->guild_id) {
+            return [];
+        }
+
+        try {
+            $response = Http::withoutVerifying()
+                ->withToken($settingObj->bot_token, 'Bot')
+                ->get("https://discord.com/api/v10/guilds/{$settingObj->guild_id}/roles");
+
+            if ($response->successful()) {
+                $roles = [];
+                foreach ($response->json() as $role) {
+                    if (($role['name'] ?? '') !== '@everyone') {
+                        $roles[$role['id']] = '@'.($role['name'] ?? 'Unnamed Role');
+                    }
+                }
+
+                return $roles;
+            }
+        } catch (\Exception $e) {
+            Log::error('Discord getRolesForSetting exception: '.$e->getMessage());
+        }
+
+        return [];
+    }
+
+    /**
      * Find the IT role mention for a specific DiscordSetting instance.
      */
     public static function getItRoleMentionForSetting(DiscordSetting $setting): string
