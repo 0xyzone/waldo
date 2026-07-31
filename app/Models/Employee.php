@@ -117,6 +117,14 @@ class Employee extends Model
     }
 
     /**
+     * Get the terminated employee record associated with the Employee.
+     */
+    public function terminatedEmployee(): HasOne
+    {
+        return $this->hasOne(TerminatedEmployee::class, 'employee_id', 'employee_code');
+    }
+
+    /**
      * Get the tips adjustment record associated with the Employee.
      */
     public function tipsAdjustment(): HasMany

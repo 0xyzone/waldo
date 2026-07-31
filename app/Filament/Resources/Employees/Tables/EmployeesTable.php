@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\Employees\Tables;
 
 use App\Models\Employee;
+use App\Models\TerminatedEmployee;
 use App\Services\EmployeeExportService;
-use App\Services\GoogleSheetsService;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -14,6 +14,7 @@ use Filament\Actions\ViewAction;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\Layout\Split;
@@ -264,18 +265,43 @@ class EmployeesTable
             ->recordActions([
                 ViewAction::make()->modalWidth('7xl'),
                 EditAction::make()->modalWidth('7xl'),
-                // Action::make('syncToGoogleSheet')
-                //     ->label('Sync to Google Sheet')
-                //     ->icon('heroicon-o-arrow-path')
-                //     ->color('success')
-                //     ->action(function (Employee $record, GoogleSheetsService $service) {
-                //         $service->syncEmployee($record);
-                //         Notification::make()
-                //             ->title('Synced successfully')
-                //             ->body("Employee {$record->employee_code} was successfully synced to Google Sheets.")
-                //             ->success()
-                //             ->send();
-                //     }),
+                Action::make('terminate')
+                    ->label('Terminate')
+                    ->icon('heroicon-o-user-minus')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('Terminate Employee')
+                    ->modalDescription(fn (Employee $record) => "Are you sure you want to terminate {$record->name} ({$record->employee_code})? This will set their status to Terminated.")
+                    ->modalSubmitActionLabel('Confirm Termination')
+                    ->form([
+                        DatePicker::make('last_working_date')
+                            ->label('Last Date of Working')
+                            ->native(false)
+                            ->default(now())
+                            ->required(),
+                        DatePicker::make('termination_date')
+                            ->label('Date of Termination')
+                            ->native(false)
+                            ->default(now())
+                            ->required(),
+                        Textarea::make('reason')
+                            ->label('Reason for Termination')
+                            ->rows(3),
+                    ])
+                    ->action(function (Employee $record, array $data): void {
+                        TerminatedEmployee::create([
+                            'employee_id' => $record->employee_code,
+                            'last_working_date' => $data['last_working_date'],
+                            'termination_date' => $data['termination_date'],
+                            'reason' => $data['reason'] ?? null,
+                        ]);
+
+                        Notification::make()
+                            ->title('Employee Terminated')
+                            ->body("{$record->name} ({$record->employee_code}) has been marked as Terminated.")
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->toolbarActions([
                 Action::make('export')
