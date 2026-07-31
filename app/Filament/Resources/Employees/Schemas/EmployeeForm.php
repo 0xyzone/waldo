@@ -144,7 +144,7 @@ class EmployeeForm
                                                 'Active' => 'Active',
                                                 'Inactive' => 'Inactive',
                                                 'Resigned' => 'Resigned',
-                                                'Resigning this month' => 'Resigning this month',
+                                                'Resigning This Month' => 'Resigning This Month',
                                                 'Terminated' => 'Terminated',
                                             ])
                                             ->native(false)
