@@ -14,4 +14,19 @@ class Leaver extends Model
     {
         return $this->belongsTo(Employee::class, 'employee_id', 'employee_code');
     }
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::created(function (Leaver $leaver): void {
+            if ($leaver->employee_id) {
+                $employee = Employee::where('employee_code', $leaver->employee_id)->first();
+                if ($employee) {
+                    $employee->update(['employee_status' => 'Resigning This Month']);
+                }
+            }
+        });
+    }
 }

@@ -54,7 +54,7 @@ class EmployeesTable
                                     'Active' => 'success',
                                     'Inactive' => 'gray',
                                     'Resigned' => 'danger',
-                                    'Resigning this month' => 'warning',
+                                    'Resigning this month', 'Resigning This Month' => 'warning',
                                     'Terminated' => 'danger',
                                     default => 'gray',
                                 }),

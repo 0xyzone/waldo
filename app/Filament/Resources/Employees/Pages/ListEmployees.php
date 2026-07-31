@@ -30,8 +30,8 @@ class ListEmployees extends ListRecords
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('employee_status', 'Inactive'))
                 ->badge(Employee::where('employee_status', 'Inactive')->count()),
             'resigning_this_month' => Tab::make('Resigning This Month')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('employee_status', 'Resigning this month'))
-                ->badge(Employee::where('employee_status', 'Resigning this month')->count()),
+                ->modifyQueryUsing(fn (Builder $query) => $query->whereIn('employee_status', ['Resigning this month', 'Resigning This Month']))
+                ->badge(Employee::whereIn('employee_status', ['Resigning this month', 'Resigning This Month'])->count()),
             'resigned' => Tab::make('Resigned')
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('employee_status', 'Resigned'))
                 ->badge(Employee::where('employee_status', 'Resigned')->count()),
