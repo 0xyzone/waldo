@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Employees\Schemas;
 
 use App\Helpers\NepaliDate\NepaliDate;
 use Carbon\Carbon;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -14,6 +15,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Js;
 
 class EmployeeForm
 {
@@ -115,7 +117,27 @@ class EmployeeForm
                                             ->required()
                                             ->unique(ignoreRecord: true)
                                             ->extraInputAttributes(['style' => 'text-transform: uppercase'])
-                                            ->dehydrateStateUsing(fn ($state) => strtoupper($state)),
+                                            ->dehydrateStateUsing(fn ($state) => strtoupper($state))
+                                            ->suffixAction(
+                                                Action::make('copyCodeNumber')
+                                                    ->icon('heroicon-m-clipboard-document-list')
+                                                    ->color('gray')
+                                                    ->tooltip('Copy employee code number')
+                                                    ->alpineClickHandler(function (mixed $state): string {
+                                                        $digits = preg_replace('/[^0-9]/', '', (string) $state);
+                                                        $jsDigits = Js::from($digits);
+
+                                                        return <<<JS
+                                                            const currentVal = (typeof state !== 'undefined' && state) ? state : {$jsDigits};
+                                                            const digits = String(currentVal).replace(/[^0-9]/g, '');
+                                                            window.navigator.clipboard.writeText(digits);
+                                                            \$tooltip('Copied ' + digits, {
+                                                                theme: \$store.theme,
+                                                                timeout: 2000,
+                                                            });
+                                                            JS;
+                                                    })
+                                            ),
                                         Select::make('employee_status')
                                             ->label('Employee Status')
                                             ->options([
