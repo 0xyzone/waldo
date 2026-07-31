@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\SyncLog;
 use App\Services\EmployeeSyncService;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
@@ -24,9 +25,9 @@ class SyncEmployeesCommand extends Command
 
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            \App\Models\SyncLog::create([
+            SyncLog::create([
                 'type' => 'Employees Sync',
-                'status' => 'Failed: ' . $e->getMessage(),
+                'status' => 'Failed: '.$e->getMessage(),
                 'records_processed' => 0,
                 'changes' => null,
             ]);

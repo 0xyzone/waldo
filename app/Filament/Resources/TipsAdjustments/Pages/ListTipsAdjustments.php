@@ -14,7 +14,7 @@ class ListTipsAdjustments extends ListRecords
     {
         return [
             CreateAction::make()
-            ->modalWidth('6xl'),
+                ->modalWidth('6xl'),
         ];
     }
 }

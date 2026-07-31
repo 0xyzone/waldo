@@ -114,6 +114,7 @@ class BiometricAllotmentsTable
 
                             return ! $employee;
                         }
+
                         return false;
                     })
                     ->form([
@@ -185,9 +186,22 @@ class BiometricAllotmentsTable
                             ->placeholder('Select a channel')
                             ->required()
                             ->disabled(fn (Get $get) => ! $get('setting_id')),
+                        Select::make('role_ids')
+                            ->label('Mention Roles (Optional)')
+                            ->multiple()
+                            ->options(fn (Get $get) => $get('setting_id')
+                                ? DiscordService::getRolesForSetting($get('setting_id'))
+                                : [])
+                            ->default(fn (Get $get) => $get('setting_id')
+                                ? DiscordService::getDefaultRoleIdsForSetting($get('setting_id'))
+                                : [])
+                            ->searchable()
+                            ->preload()
+                            ->placeholder('Select role(s) to ping')
+                            ->disabled(fn (Get $get) => ! $get('setting_id')),
                     ])
                     ->modalHeading('Send Biometric Requests to Discord')
-                    ->modalDescription('Select the bot and target Discord channel, then notify the IT role about pending biometric allotment requests.')
+                    ->modalDescription('Select the bot, target channel, and optional roles to ping about pending biometric allotment requests.')
                     ->action(function (array $data) {
                         $pendingAllotments = BiometricAllotment::where('status', 'Not Done Yet')->get();
 
@@ -212,7 +226,12 @@ class BiometricAllotmentsTable
                             return;
                         }
 
-                        $itRoleMention = DiscordService::getItRoleMentionForSetting($setting);
+                        $selectedRoleIds = array_filter((array) ($data['role_ids'] ?? []));
+                        if (! empty($selectedRoleIds)) {
+                            $roleMentions = implode(' ', array_map(fn ($roleId) => "<@&{$roleId}>", $selectedRoleIds));
+                        } else {
+                            $roleMentions = DiscordService::getItRoleMentionForSetting($setting);
+                        }
 
                         $description = "The following employees have been added and need their biometric enrollment completed:\n\n";
                         foreach ($pendingAllotments as $allotment) {
@@ -229,7 +248,7 @@ class BiometricAllotmentsTable
                             ],
                         ];
 
-                        $content = "{$itRoleMention} - New biometric allotment(s) require action:";
+                        $content = "{$roleMentions} - New biometric allotment(s) require action:";
 
                         $success = DiscordService::sendEmbedMessageForSetting(
                             $setting,
