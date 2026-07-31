@@ -762,8 +762,10 @@ function createTemplateState() {
             { key: 'employee_tips_fixed', label: 'Tips Fixed' },
             { key: 'employee_his_her', label: 'his/her' },
             { key: 'employee_he_she', label: 'he/she' },
+            { key: 'employee_him_her', label: 'him/her' },
             { key: 'employee_his_her_cap', label: 'His/Her' },
-            { key: 'employee_he_she_cap', label: 'He/She' }
+            { key: 'employee_he_she_cap', label: 'He/She' },
+            { key: 'employee_him_her_cap', label: 'Him/Her' }
         ],
         get filteredPrebuiltVars() {
             if (!this.varSearch) return this.prebuiltVars;

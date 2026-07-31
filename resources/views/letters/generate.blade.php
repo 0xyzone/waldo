@@ -783,8 +783,10 @@ function generatorState() {
                 employee_tips_fixed:               emp.tips_fixed ? 'Yes' : 'No',
                 employee_his_her:                  this.getHisHer(emp.gender, false),
                 employee_he_she:                   this.getHeShe(emp.gender, false),
+                employee_him_her:                  this.getHimHer(emp.gender, false),
                 employee_his_her_cap:              this.getHisHer(emp.gender, true),
                 employee_he_she_cap:               this.getHeShe(emp.gender, true),
+                employee_him_her_cap:              this.getHimHer(emp.gender, true),
             };
 
             Object.entries(prebuilts).forEach(([k, val]) => {
@@ -838,6 +840,14 @@ function generatorState() {
             let val = 'it';
             if (g === 'male' || g === 'm') val = 'he';
             else if (g === 'female' || g === 'f') val = 'she';
+            return capitalize ? val.charAt(0).toUpperCase() + val.slice(1) : val;
+        },
+
+        getHimHer(gender, capitalize) {
+            const g = (gender || '').toLowerCase();
+            let val = 'them';
+            if (g === 'male' || g === 'm') val = 'him';
+            else if (g === 'female' || g === 'f') val = 'her';
             return capitalize ? val.charAt(0).toUpperCase() + val.slice(1) : val;
         },
 

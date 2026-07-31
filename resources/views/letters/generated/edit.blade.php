@@ -448,8 +448,10 @@ function editGeneratedLetterState() {
             { key: 'employee_point_value', label: 'Point Value' },
             { key: 'employee_his_her', label: 'his/her' },
             { key: 'employee_he_she', label: 'he/she' },
+            { key: 'employee_him_her', label: 'him/her' },
             { key: 'employee_his_her_cap', label: 'His/Her' },
-            { key: 'employee_he_she_cap', label: 'He/She' }
+            { key: 'employee_he_she_cap', label: 'He/She' },
+            { key: 'employee_him_her_cap', label: 'Him/Her' }
         ],
 
         get filteredPrebuiltVars() {
@@ -489,6 +491,14 @@ function editGeneratedLetterState() {
             let val = 'it';
             if (g === 'male' || g === 'm') val = 'he';
             else if (g === 'female' || g === 'f') val = 'she';
+            return capitalize ? val.charAt(0).toUpperCase() + val.slice(1) : val;
+        },
+
+        getHimHer(gender, capitalize) {
+            const g = (gender || '').toLowerCase();
+            let val = 'them';
+            if (g === 'male' || g === 'm') val = 'him';
+            else if (g === 'female' || g === 'f') val = 'her';
             return capitalize ? val.charAt(0).toUpperCase() + val.slice(1) : val;
         },
 
@@ -572,10 +582,14 @@ function editGeneratedLetterState() {
                     return this.getHisHer(emp.gender, false);
                 case 'employee_he_she':
                     return this.getHeShe(emp.gender, false);
+                case 'employee_him_her':
+                    return this.getHimHer(emp.gender, false);
                 case 'employee_his_her_cap':
                     return this.getHisHer(emp.gender, true);
                 case 'employee_he_she_cap':
                     return this.getHeShe(emp.gender, true);
+                case 'employee_him_her_cap':
+                    return this.getHimHer(emp.gender, true);
                 default:
                     const cleanKey = key.replace('employee_', '');
                     return emp[cleanKey] !== undefined && emp[cleanKey] !== null ? emp[cleanKey] : '';
