@@ -177,10 +177,32 @@ class EmployeeForm
                                         DatePicker::make('join_date_formatted')
                                             ->label('Join Date')
                                             ->native(false)
-                                            ->format('d F, Y')
+                                            ->displayFormat('d F, Y')
                                             ->placeholder('e.g. 01 January, 2024')
-                                            ->formatStateUsing(fn ($state) => $state ? Carbon::parse($state)->format('d F, Y') : null)
-                                            ->dehydrateStateUsing(fn ($state) => $state ? Carbon::parse($state)->format('d F, Y') : null),
+                                            ->formatStateUsing(function ($state) {
+                                                if (empty($state)) {
+                                                    return null;
+                                                }
+                                                try {
+                                                    return Carbon::createFromFormat('d F, Y', $state)->format('Y-m-d');
+                                                } catch (\Exception) {
+                                                    try {
+                                                        return Carbon::parse($state)->format('Y-m-d');
+                                                    } catch (\Exception) {
+                                                        return $state;
+                                                    }
+                                                }
+                                            })
+                                            ->dehydrateStateUsing(function ($state) {
+                                                if (empty($state)) {
+                                                    return null;
+                                                }
+                                                try {
+                                                    return Carbon::parse($state)->format('d F, Y');
+                                                } catch (\Exception) {
+                                                    return $state;
+                                                }
+                                            }),
                                         Select::make('shift')
                                             ->label('Shift')
                                             ->options([
