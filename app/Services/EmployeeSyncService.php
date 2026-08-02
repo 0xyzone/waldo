@@ -176,13 +176,6 @@ class EmployeeSyncService
 
         fclose($stream);
 
-        // 2. Push data from app DB back to Google Sheet
-        try {
-            app(GoogleSheetsService::class)->syncAllToSheet();
-        } catch (\Exception $e) {
-            // Log error if push to sheet fails without breaking sync completion
-        }
-
         SyncLog::create([
             'type' => 'Employees Sync',
             'status' => 'Success',
