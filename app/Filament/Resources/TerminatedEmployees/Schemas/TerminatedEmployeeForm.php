@@ -16,6 +16,7 @@ class TerminatedEmployeeForm
         return $schema
             ->components([
                 Section::make('Termination Details')
+                    ->columnSpanFull()
                     ->schema([
                         Grid::make(['default' => 1, 'sm' => 2])
                             ->schema([
@@ -25,7 +26,7 @@ class TerminatedEmployeeForm
                                         name: 'employee',
                                         titleAttribute: 'name'
                                     )
-                                    ->getOptionLabelFromRecordUsing(fn ($record) => strtoupper($record->employee_code).' | '.$record->name)
+                                    ->getOptionLabelFromRecordUsing(fn($record) => strtoupper($record->employee_code) . ' | ' . $record->name)
                                     ->searchable(['name', 'employee_code'])
                                     ->preload()
                                     ->required(),
