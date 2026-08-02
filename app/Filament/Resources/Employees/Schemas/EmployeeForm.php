@@ -178,19 +178,16 @@ class EmployeeForm
                                             ->label('Join Date')
                                             ->native(false)
                                             ->displayFormat('d F, Y')
+                                            ->format('d F, Y')
                                             ->placeholder('e.g. 01 January, 2024')
                                             ->formatStateUsing(function ($state) {
                                                 if (empty($state)) {
                                                     return null;
                                                 }
                                                 try {
-                                                    return Carbon::createFromFormat('d F, Y', $state)->format('Y-m-d');
+                                                    return Carbon::parse(str_replace(',', '', $state))->format('d F, Y');
                                                 } catch (\Exception) {
-                                                    try {
-                                                        return Carbon::parse($state)->format('Y-m-d');
-                                                    } catch (\Exception) {
-                                                        return $state;
-                                                    }
+                                                    return $state;
                                                 }
                                             })
                                             ->dehydrateStateUsing(function ($state) {
@@ -198,7 +195,7 @@ class EmployeeForm
                                                     return null;
                                                 }
                                                 try {
-                                                    return Carbon::parse($state)->format('d F, Y');
+                                                    return Carbon::parse(str_replace(',', '', $state))->format('d F, Y');
                                                 } catch (\Exception) {
                                                     return $state;
                                                 }

@@ -121,7 +121,6 @@ class EmployeesTable
                         ->extraAttributes(['class' => 'mt-1 block']),
                     TextColumn::make('join_date_formatted')
                         ->icon('heroicon-m-calendar')
-                        ->date()
                         ->color('gray')
                         ->size('sm')
                         ->extraAttributes(['class' => 'mt-3 block border-t pt-2 border-gray-150 dark:border-gray-800']),
