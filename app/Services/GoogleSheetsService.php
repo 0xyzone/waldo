@@ -70,6 +70,22 @@ class GoogleSheetsService
     }
 
     /**
+     * Push all local employee records from DB to Google Sheet.
+     */
+    public function syncAllToSheet(): int
+    {
+        $employees = Employee::all();
+        $count = 0;
+
+        foreach ($employees as $employee) {
+            $this->syncEmployee($employee);
+            $count++;
+        }
+
+        return $count;
+    }
+
+    /**
      * Sync specific changed fields of an employee record to Google Sheet.
      *
      * @param  array<string>|null  $changedFields  Model attribute names that changed.
