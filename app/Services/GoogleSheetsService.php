@@ -26,8 +26,8 @@ class GoogleSheetsService
      * @var array<string, int>
      */
     protected array $columnMap = [
-        'dp_rank' => 0,
-        'rank' => 1,
+        // 0 = Dp. Rank (generated in sheet only, never written from app)
+        // 1 = Rank (generated in sheet only, never written from app)
         // 2 = S. No. (never written)
         'employee_code' => 3,
         'name' => 4,
@@ -51,10 +51,10 @@ class GoogleSheetsService
         'tips_blank' => 23,
         'publish_tips' => 24,
         'tips_fixed' => 25,
-        'hrms_password' => 26,
-        'first_name' => 27,
-        'middle_name' => 28,
-        'last_name' => 29,
+        // 26 = hrms_password (generated in sheet only, never written from app)
+        // 27 = first_name (generated in sheet only, never written from app)
+        // 28 = middle_name (generated in sheet only, never written from app)
+        // 29 = last_name (generated in sheet only, never written from app)
     ];
 
     public function __construct()
