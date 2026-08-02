@@ -26,12 +26,8 @@ class EmployeeObserver
             'changes' => $employee->getChanges(),
         ]);
 
-        // On fresh insert sync everything; on update only sync the changed columns
-        $changedFields = $employee->wasRecentlyCreated
-            ? null
-            : array_keys($employee->getChanges());
-
-        $this->sheetsService->syncEmployee($employee, $changedFields);
+        // Always sync the employee record to Google Sheet on save/update
+        $this->sheetsService->syncEmployee($employee);
     }
 
     /**

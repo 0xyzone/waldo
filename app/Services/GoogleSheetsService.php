@@ -99,6 +99,8 @@ class GoogleSheetsService
         ]);
 
         try {
+            $employee->loadMissing(['department', 'designation']);
+
             // Find the sheet row for this employee
             $sheetRowNumber = $this->findSheetRow($employee->employee_code);
 
@@ -253,6 +255,7 @@ class GoogleSheetsService
     protected function resolveFieldValue(Employee $employee, string $field): string
     {
         return match ($field) {
+            'name' => (string) ($employee->name ?: trim(implode(' ', array_filter([$employee->first_name, $employee->middle_name, $employee->last_name])))),
             'join_date_formatted' => (string) ($employee->join_date_formatted ?? ''),
             'dob_ad' => $employee->dob_ad
                                     ? Carbon::parse($employee->dob_ad)->format('d F, Y')

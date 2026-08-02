@@ -173,7 +173,7 @@ class EmployeeSyncTest extends TestCase
             ->once()
             ->with(\Mockery::on(function (Employee $employee) {
                 return $employee->employee_code === 'CWD999';
-            }), \Mockery::any());
+            }));
 
         // Expect deleteEmployee to be called when deleting employee
         $sheetsServiceMock->shouldReceive('deleteEmployee')
