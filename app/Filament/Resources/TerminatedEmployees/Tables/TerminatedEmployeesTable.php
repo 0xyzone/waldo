@@ -14,6 +14,7 @@ class TerminatedEmployeesTable
     {
         return $table
             ->columns([
+                TextColumn::make('id'),
                 TextColumn::make('employee.name')
                     ->label('Name')
                     ->searchable()
@@ -47,6 +48,7 @@ class TerminatedEmployeesTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('id', 'desc')
             ->filters([
                 //
             ])
