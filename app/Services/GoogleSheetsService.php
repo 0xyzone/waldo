@@ -273,17 +273,13 @@ class GoogleSheetsService
                 $values = array_pad($values, 30, '');
             }
 
-            $dpRank = is_numeric($values[0] ?? null) ? (int) $values[0] : null;
-            $desigRank = is_numeric($values[1] ?? null) ? (int) $values[1] : null;
             $hrmsPassword = trim($values[26] ?? '') ?: null;
             $firstName = trim($values[27] ?? '') ?: null;
             $middleName = trim($values[28] ?? '') ?: null;
             $lastName = trim($values[29] ?? '') ?: null;
 
-            Employee::withoutEvents(function () use ($employee, $dpRank, $desigRank, $hrmsPassword, $firstName, $middleName, $lastName) {
+            Employee::withoutEvents(function () use ($employee, $hrmsPassword, $firstName, $middleName, $lastName) {
                 $employee->update(array_filter([
-                    'dp_rank' => $dpRank,
-                    'rank' => $desigRank,
                     'hrms_password' => $hrmsPassword,
                     'first_name' => $firstName,
                     'middle_name' => $middleName,
