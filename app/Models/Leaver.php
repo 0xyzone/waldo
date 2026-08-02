@@ -20,10 +20,10 @@ class Leaver extends Model
      */
     protected static function booted(): void
     {
-        static::created(function (Leaver $leaver): void {
+        static::saved(function (Leaver $leaver): void {
             if ($leaver->employee_id) {
                 $employee = Employee::where('employee_code', $leaver->employee_id)->first();
-                if ($employee) {
+                if ($employee && $employee->employee_status !== 'Resigning This Month') {
                     $employee->update(['employee_status' => 'Resigning This Month']);
                 }
             }

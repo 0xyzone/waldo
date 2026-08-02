@@ -3,7 +3,6 @@
 namespace App\Observers;
 
 use App\Models\Employee;
-use App\Services\EmployeeSyncService;
 use App\Services\GoogleSheetsService;
 use Illuminate\Support\Facades\Log;
 
@@ -33,16 +32,6 @@ class EmployeeObserver
             : array_keys($employee->getChanges());
 
         $this->sheetsService->syncEmployee($employee, $changedFields);
-
-        // Run sync back from Google Sheet to project
-        if (! app()->runningUnitTests()) {
-            try {
-                Log::info('Running backward sync from Google Sheet to DB...');
-                app(EmployeeSyncService::class)->sync();
-            } catch (\Exception $e) {
-                Log::error('Backward sync failed: '.$e->getMessage());
-            }
-        }
     }
 
     /**
