@@ -50,8 +50,8 @@ class TerminatedEmployeeResource extends Resource
     {
         return [
             'index' => ListTerminatedEmployees::route('/'),
-            'create' => CreateTerminatedEmployee::route('/create'),
-            'edit' => EditTerminatedEmployee::route('/{record}/edit'),
+            // 'create' => CreateTerminatedEmployee::route('/create'),
+            // 'edit' => EditTerminatedEmployee::route('/{record}/edit'),
         ];
     }
 }
