@@ -25,9 +25,11 @@ class LeaversTable
                     ->date()
                     ->sortable(),
                 IconColumn::make('hold_salary')
-                    ->boolean(),
+                    ->boolean()
+                    ->color(fn ($record) => $record->hold_salary ? 'danger' : 'success'),
                 IconColumn::make('hold_tips')
-                    ->boolean(),
+                    ->boolean()
+                    ->color(fn ($record) => $record->hold_tips ? 'danger' : 'success'),
                 IconColumn::make('publish_cl')
                     ->boolean(),
                 TextColumn::make('created_at')

@@ -54,7 +54,8 @@ class LeaverForm
                                     ->required(),
                                 Toggle::make('publish_cl')
                                     ->label('Publish CL Balance')
-                                    ->required(),
+                                    ->required()
+                                    ->default(true),
                             ]),
                     ]),
             ]);
