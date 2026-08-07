@@ -15,6 +15,10 @@ class LeaversTable
     {
         return $table
             ->columns([
+                TextColumn::make('#')
+                    ->label('#')
+                    ->state(fn ($record, $livewire) => $livewire->getPage() * $livewire->getPerPage() + $record->getIndex() + 1)
+                    ->sortable(),
                 TextColumn::make('employee_id')
                     ->searchable(),
                 TextColumn::make('employee.name')
@@ -41,6 +45,7 @@ class LeaversTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('id', 'desc')
             ->filters([
                 //
             ])
