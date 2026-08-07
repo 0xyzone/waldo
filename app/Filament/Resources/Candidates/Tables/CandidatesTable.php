@@ -2,13 +2,18 @@
 
 namespace App\Filament\Resources\Candidates\Tables;
 
+use App\Models\Department;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class CandidatesTable
 {
@@ -16,12 +21,19 @@ class CandidatesTable
     {
         return $table
             ->columns([
+                TextColumn::make('#')
+                    ->rowIndex(),
                 TextColumn::make('name')
+                    ->label('Name')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('phone_number')
+                    ->label('Phone Number')
                     ->searchable(),
-                TextColumn::make('phone_number'),
                 ImageColumn::make('cv_image')
                     ->imageGallery(),
                 TextColumn::make('departmanet.name')
+                    ->label('Department')
                     ->badge(),
                 SelectColumn::make('status')
                     ->label('Status')
@@ -33,7 +45,9 @@ class CandidatesTable
                         'approved' => 'Approved',
                         'rejected' => 'Rejected',
                     ]),
-                TextColumn::make('reference'),
+                TextColumn::make('reference')
+                    ->label('Reference')
+                    ->searchable(),
                 TextColumn::make('notes')
                     ->label('Notes')
                     ->limit(20)
@@ -47,8 +61,43 @@ class CandidatesTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('id', 'desc')
             ->filters([
-                //
+                SelectFilter::make('department_id')
+                    ->label('Department')
+                    ->options(fn () => Department::pluck('name', 'id')->toArray())
+                    ->searchable()
+                    ->preload(),
+                SelectFilter::make('status')
+                    ->label('Status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'contacted' => 'Contacted',
+                        'unreachable' => 'Unreachable',
+                        'not_coming' => 'Not Coming',
+                        'approved' => 'Approved',
+                        'rejected' => 'Rejected',
+                    ]),
+                Filter::make('created_at')
+                    ->form([
+                        DatePicker::make('created_from')
+                            ->label('Applied From')
+                            ->native(false),
+                        DatePicker::make('created_to')
+                            ->label('Applied To')
+                            ->native(false),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date)
+                            )
+                            ->when(
+                                $data['created_to'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date)
+                            );
+                    }),
             ])
             ->recordActions([
                 EditAction::make(),

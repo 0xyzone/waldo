@@ -9,12 +9,15 @@ use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class IdCardRequestsTable
 {
@@ -40,7 +43,6 @@ class IdCardRequestsTable
                         default => (string) $state,
                     })
                     ->sortable(),
-
                 TextColumn::make('source')
                     ->label('Source')
                     ->badge()
@@ -50,43 +52,36 @@ class IdCardRequestsTable
                         'custom' => 'Custom Entry',
                         default => (string) $state,
                     }),
-
                 TextColumn::make('employee_code')
                     ->label('Employee Code')
                     ->fontFamily('mono')
                     ->searchable()
                     ->sortable()
                     ->placeholder('—'),
-
                 TextColumn::make('employee_name')
                     ->label('Employee Name')
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
-
                 TextColumn::make('employee_designation')
                     ->label('Designation')
                     ->searchable()
                     ->sortable()
                     ->placeholder('—'),
-
                 TextColumn::make('employee_department')
                     ->label('Department')
                     ->searchable()
                     ->sortable()
                     ->placeholder('—'),
-
                 TextColumn::make('notes')
                     ->label('IT Notes')
                     ->limit(30)
                     ->tooltip(fn ($state) => $state)
                     ->placeholder('—'),
-
                 TextColumn::make('created_at')
                     ->label('Created Date')
                     ->dateTime('M d, Y h:i A')
                     ->sortable(),
-
                 TextColumn::make('updated_at')
                     ->label('Updated Date')
                     ->dateTime('M d, Y h:i A')
@@ -103,13 +98,32 @@ class IdCardRequestsTable
                         'sent for print' => 'Sent for Print',
                         'done' => 'Done',
                     ]),
-
                 SelectFilter::make('source')
                     ->label('Source')
                     ->options([
                         'employee' => 'Existing Employee',
                         'custom' => 'Custom Entry',
                     ]),
+                Filter::make('created_at')
+                    ->form([
+                        DatePicker::make('created_from')
+                            ->label('Requested From')
+                            ->native(false),
+                        DatePicker::make('created_to')
+                            ->label('Requested To')
+                            ->native(false),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date)
+                            )
+                            ->when(
+                                $data['created_to'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date)
+                            );
+                    }),
             ])
             ->recordActions([
                 EditAction::make(),
@@ -127,7 +141,6 @@ class IdCardRequestsTable
                             ->placeholder('Select a bot')
                             ->required()
                             ->live(),
-
                         Select::make('channel_id')
                             ->label('Target Discord Channel')
                             ->options(fn (Get $get) => $get('setting_id')
@@ -137,7 +150,6 @@ class IdCardRequestsTable
                             ->placeholder('Select a channel')
                             ->required()
                             ->disabled(fn (Get $get) => ! $get('setting_id')),
-
                         Select::make('role_ids')
                             ->label('Mention Roles (Optional)')
                             ->multiple()

@@ -10,12 +10,15 @@ use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -92,7 +95,39 @@ class BiometricAllotmentsTable
             ])
             ->modifyQueryUsing(fn (Builder $query) => $query->orderByRaw('CAST(REGEXP_REPLACE(code, "[^0-9]", "") AS UNSIGNED) DESC'))
             ->filters([
-                //
+                SelectFilter::make('department_id')
+                    ->label('Department')
+                    ->relationship('department', 'name')
+                    ->searchable()
+                    ->preload(),
+                SelectFilter::make('status')
+                    ->label('Status')
+                    ->options([
+                        'Done' => 'Done',
+                        'Left Job' => 'Left Job',
+                        'Not Done Yet' => 'Not Done Yet',
+                        'Bio Not Required' => 'Bio Not Required',
+                    ]),
+                Filter::make('enrolled_date')
+                    ->form([
+                        DatePicker::make('enrolled_from')
+                            ->label('Enrolled From')
+                            ->native(false),
+                        DatePicker::make('enrolled_to')
+                            ->label('Enrolled To')
+                            ->native(false),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['enrolled_from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('enrolled_date', '>=', $date)
+                            )
+                            ->when(
+                                $data['enrolled_to'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('enrolled_date', '<=', $date)
+                            );
+                    }),
             ])
             ->recordActions([
                 Action::make('call')
