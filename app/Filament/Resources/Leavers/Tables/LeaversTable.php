@@ -16,9 +16,7 @@ class LeaversTable
         return $table
             ->columns([
                 TextColumn::make('#')
-                    ->label('#')
-                    ->state(fn ($record, $livewire) => $livewire->getPage() * $livewire->getPerPage() + $record->getIndex() + 1)
-                    ->sortable(),
+                    ->rowIndex(),
                 TextColumn::make('employee_id')
                     ->searchable(),
                 TextColumn::make('employee.name')
