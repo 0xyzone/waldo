@@ -761,7 +761,7 @@ function generatorState() {
                 employee_department:               emp.department ? (emp.department.name || '') : '',
                 employee_designation:              emp.designation ? (emp.designation.name || '') : '',
                 employee_gender:                   emp.gender || '',
-                employee_join_date_formatted:      this.formatDate(emp.join_date_formatted),
+                employee_join_date:      this.formatDate(emp.join_date_formatted),
                 // employee_join_date_formatted:      emp.join_date_formatted || '',
                 employee_contact_number:           emp.contact_number || '',
                 employee_email:                    emp.email || '',
