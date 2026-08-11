@@ -56,7 +56,9 @@ class BiometricAllotmentsTable
                     ->color(fn ($state) => match ($state) {
                         'Shuraz' => 'info',
                         'Saugat' => 'danger',
-                        'Suraj Raj Karmacharya' => 'warning'
+                        'Suraj Raj Karmacharya' => 'warning',
+                        'Prabesh' => 'primary',
+                        default => 'gray',
                     }),
                 IconColumn::make('old_checkout_device')
                     ->label('Old CO Device')
