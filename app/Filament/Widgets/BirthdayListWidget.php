@@ -50,7 +50,7 @@ class BirthdayListWidget extends Widget
             $cutoffDate = $previousMonth->copy()->setDay(10)->format('Y-m-d');
 
             return Employee::with(['department', 'designation'])
-                ->whereIn('employee_status', ['Active', 'Resigning this month'])
+                ->whereIn('employee_status', ['Active'])
                 ->whereMonth('dob_ad', $month)
                 ->get()
                 ->filter(function ($emp) use ($cutoffDate) {
