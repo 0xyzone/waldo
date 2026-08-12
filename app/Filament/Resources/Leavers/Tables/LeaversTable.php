@@ -15,6 +15,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
@@ -158,23 +159,25 @@ class LeaversTable
             ->recordActions([
                 EditAction::make(),
                 Action::make('Offboard')
-                ->button()
-                ->color('danger')
-                ->requiresConfirmation()
-                ->visible(fn ($record) => $record->offboarded != TRUE)
-                ->action(function ($record) {
-                    $record->offboarded = TRUE;
-                    $record->save();
+                    ->button()
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->visible(fn ($record) => ! $record->offboarded)
+                    ->action(function ($record) {
+                        $record->offboarded = true;
+                        $record->save();
 
-                    $employee = Employee::where('employee_code', $record->employee_id)->first();
-                    $employee->employee_status = 'Resigned';
-                    $employee->save();
+                        $employee = Employee::where('employee_code', $record->employee_id)->first();
+                        if ($employee) {
+                            $employee->employee_status = 'Resigned';
+                            $employee->save();
+                        }
 
-                    Notification::make()
-                        ->title('Leaver Offboarded')
-                        ->success()
-                        ->send();
-                })
+                        Notification::make()
+                            ->title('Leaver Offboarded')
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->toolbarActions([
                 Action::make('export')
