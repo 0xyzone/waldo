@@ -160,7 +160,8 @@ class LeaversTable
                 EditAction::make(),
                 Action::make('Offboard')
                     ->button()
-                    ->color('danger')
+                    ->color(fn ($record) => $record->offboarded == TRUE ? 'gray' : 'danger')
+                    ->label(fn ($record) => $record->offboarded == TRUE ? 'Offboarded!' : 'Offboard')
                     ->requiresConfirmation()
                     ->disabled(fn ($record) => $record->offboarded)
                     ->action(function ($record) {
