@@ -190,7 +190,7 @@ class BiometricAllotmentsTable
                             'shift' => $data['shift'],
                             'tips_status' => 'Release',
                             'point_value' => 1,
-                            'publish_tips' => true,
+                            'publish_tips' => false,
                             'tips_fixed' => true,
                         ]);
                         Notification::make()
