@@ -243,11 +243,14 @@ class EmployeeForm
                                         Grid::make(['default' => 1, 'sm' => 3])
                                             ->schema([
                                                 TextInput::make('citizenship_number')
-                                                    ->label('Citizenship Number'),
+                                                    ->label('Citizenship Number')
+                                                    ->autocomplete(false),
                                                 TextInput::make('citizenship_issue_date')
-                                                    ->label('Citizenship Issue Date'),
+                                                    ->label('Citizenship Issue Date')
+                                                    ->autocomplete(false),
                                                 TextInput::make('citizenship_issue_place')
-                                                    ->label('Citizenship Issue Place'),
+                                                    ->label('Citizenship Issue Place')
+                                                    ->autocomplete(false),
                                             ]),
                                         TextInput::make('ssid')
                                             ->label('SSID')
