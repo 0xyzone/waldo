@@ -283,7 +283,7 @@ class EmployeeForm
                                                     ->label('Tips Blank'),
                                                 Toggle::make('publish_tips')
                                                     ->label('Publish Tips')
-                                                    ->default(true),
+                                                    ->default(false),
                                                 Toggle::make('tips_fixed')
                                                     ->label('Tips Fixed')
                                                     ->default(true),
