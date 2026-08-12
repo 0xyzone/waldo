@@ -156,6 +156,24 @@ class LeaversTable
             ])
             ->recordActions([
                 EditAction::make(),
+                Action::make('Offboard')
+                ->button()
+                ->color('danger')
+                ->requiresConfirmation()
+                ->visible(fn ($record) => $record->offboarded != TRUE)
+                ->action(function ($record) {
+                    $record->offboarded = TRUE;
+                    $record->save();
+
+                    $employee = Employee::where('employee_code', $record->employee_id)->first();
+                    $employee->employee_status = 'Resigned';
+                    $employee->save();
+
+                    Notification::make()
+                        ->title('Leaver Offboarded')
+                        ->success()
+                        ->send();
+                })
             ])
             ->toolbarActions([
                 Action::make('export')
