@@ -162,7 +162,7 @@ class LeaversTable
                     ->button()
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->visible(fn ($record) => ! $record->offboarded)
+                    ->disabled(fn ($record) => $record->offboarded)
                     ->action(function ($record) {
                         $record->offboarded = true;
                         $record->save();
