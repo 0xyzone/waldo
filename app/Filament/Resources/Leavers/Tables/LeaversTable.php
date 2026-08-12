@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Leavers\Tables;
 
 use App\Models\Department;
 use App\Models\Designation;
+use App\Models\Employee;
 use App\Services\LeaverExportService;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
