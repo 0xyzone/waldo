@@ -19,43 +19,36 @@
                 });
             },
             async ensureExporter() {
-                if (typeof window.htmlToImage !== 'undefined') {
+                if (typeof window.html2canvas !== 'undefined' || typeof window.htmlToImage !== 'undefined') {
                     return true;
                 }
 
                 return new Promise((resolve) => {
-                    const cdns = [
-                        'https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js',
-                        'https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js',
-                        'https://unpkg.com/html-to-image@1.11.11/dist/html-to-image.js'
+                    const scriptsToLoad = [
+                        'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+                        'https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js'
                     ];
 
-                    let index = 0;
-                    const tryNext = () => {
-                        if (index >= cdns.length) {
-                            resolve(false);
-                            return;
-                        }
-
+                    let loadedCount = 0;
+                    scriptsToLoad.forEach(src => {
                         const script = document.createElement('script');
-                        script.src = cdns[index++];
-                        script.onload = () => resolve(true);
-                        script.onerror = () => tryNext();
+                        script.src = src;
+                        script.onload = () => {
+                            loadedCount++;
+                            if (loadedCount >= 1) resolve(true);
+                        };
+                        script.onerror = () => {
+                            loadedCount++;
+                            if (loadedCount >= scriptsToLoad.length) resolve(false);
+                        };
                         document.head.appendChild(script);
-                    };
-
-                    tryNext();
+                    });
                 });
             },
             async downloadCardJpg() {
                 this.isGenerating = true;
                 
-                const loaded = await this.ensureExporter();
-                if (!loaded || typeof window.htmlToImage === 'undefined') {
-                    alert('Image exporter is loading. Please check your internet connection and try again.');
-                    this.isGenerating = false;
-                    return;
-                }
+                await this.ensureExporter();
 
                 const cardEl = document.getElementById('birthday-wishing-card-canvas');
                 if (!cardEl) {
@@ -68,29 +61,67 @@
                 const year = '{{ $this->year }}' || 'Year';
                 const fileName = `Birthday_Wishing_Card_${monthName}_${year}.jpg`;
 
-                // Temporarily bring target card element to 100% opacity for native SVG capture
+                // Temporarily bring target card element to 100% opacity with fixed 2708x1492 dimensions
                 cardEl.style.position = 'fixed';
                 cardEl.style.left = '0';
                 cardEl.style.top = '0';
+                cardEl.style.width = '2708px';
+                cardEl.style.height = '1492px';
+                cardEl.style.minWidth = '2708px';
+                cardEl.style.minHeight = '1492px';
+                cardEl.style.maxWidth = '2708px';
+                cardEl.style.maxHeight = '1492px';
+                cardEl.style.boxSizing = 'border-box';
                 cardEl.style.opacity = '1';
                 cardEl.style.zIndex = '999999';
                 cardEl.style.pointerEvents = 'none';
 
-                // Allow browser to render layout frame
-                await new Promise(r => setTimeout(r, 60));
+                // Allow browser to render layout frame & wait for Google Fonts to be ready in browser memory
+                if (document.fonts && document.fonts.ready) {
+                    try { await document.fonts.ready; } catch(e) {}
+                }
+                await new Promise(r => setTimeout(r, 200));
 
                 try {
-                    const dataUrl = await window.htmlToImage.toJpeg(cardEl, {
-                        width: 2708,
-                        height: 1492,
-                        quality: 0.95,
-                        canvasWidth: 2708,
-                        canvasHeight: 1492,
-                        style: {
-                            transform: 'none',
-                            opacity: '1'
+                    let dataUrl = null;
+
+                    // Prefer html2canvas for 100% exact font rendering matching live browser canvas
+                    if (typeof window.html2canvas !== 'undefined') {
+                        try {
+                            const canvas = await window.html2canvas(cardEl, {
+                                width: 2708,
+                                height: 1492,
+                                scale: 1,
+                                useCORS: true,
+                                allowTaint: true,
+                                backgroundColor: '#0284c7',
+                                logging: false
+                            });
+                            dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+                        } catch (e) {
+                            console.warn('html2canvas failed, falling back to htmlToImage:', e);
                         }
-                    });
+                    }
+
+                    // Fallback to htmlToImage if html2canvas is unavailable
+                    if (!dataUrl && typeof window.htmlToImage !== 'undefined') {
+                        dataUrl = await window.htmlToImage.toJpeg(cardEl, {
+                            width: 2708,
+                            height: 1492,
+                            quality: 0.95,
+                            canvasWidth: 2708,
+                            canvasHeight: 1492,
+                            cacheBust: true,
+                            style: {
+                                transform: 'none',
+                                opacity: '1',
+                                width: '2708px',
+                                height: '1492px',
+                                minWidth: '2708px',
+                                minHeight: '1492px'
+                            }
+                        });
+                    }
 
                     if (dataUrl) {
                         const link = document.createElement('a');
@@ -110,6 +141,10 @@
                     cardEl.style.position = 'absolute';
                     cardEl.style.left = '-9999px';
                     cardEl.style.top = '0';
+                    cardEl.style.width = '2708px';
+                    cardEl.style.height = '1492px';
+                    cardEl.style.minWidth = '';
+                    cardEl.style.maxWidth = '';
                     cardEl.style.opacity = '0';
                     cardEl.style.zIndex = '-9999';
                     this.isGenerating = false;

@@ -1,55 +1,48 @@
-{{-- 2708px x 1492px Sky Blue Birthday Wishcard Template - Dynamic Expansive Container Scaling --}}
+{{-- 2708px x 1492px Sky Blue Birthday Wishcard Template - Ultra-Large Readable Text & High-Fashion Layout --}}
+<!-- Embedded Google Fonts for SVG Canvas & Native Export -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Playfair+Display:ital,wght@0,600;0,800;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
 @php
     $count = $birthdays->count();
     
-    // Dynamic Expansive Container & Typography Scaling Logic based on Celebrants Count
-    if ($count <= 8) {
-        $containerWidth = 'w-[74%]';
-        $leftWidth = 'w-[24%]';
-        $cols = 'grid-cols-2 gap-x-10 gap-y-4';
-        $nameSize = 'font-size: 32px; font-weight: 900;';
-        $codeSize = 'font-size: 26px; font-weight: 800;';
-        $dateSize = 'px-4 py-2 text-sm font-black';
-        $cakeSize = 'w-[480px] h-[560px]';
-    } elseif ($count <= 24) {
-        $containerWidth = 'w-[78%]';
-        $leftWidth = 'w-[20%]';
-        $cols = 'grid-cols-3 gap-x-8 gap-y-3';
-        $nameSize = 'font-size: 26px; font-weight: 900;';
-        $codeSize = 'font-size: 22px; font-weight: 800;';
-        $dateSize = 'px-3.5 py-1.5 text-xs font-black';
-        $cakeSize = 'w-[420px] h-[500px]';
-    } elseif ($count <= 44) {
-        $containerWidth = 'w-[82%]';
-        $leftWidth = 'w-[16%]';
-        $cols = 'grid-cols-3 gap-x-8 gap-y-2.5';
-        $nameSize = 'font-size: 24px; font-weight: 900;';
-        $codeSize = 'font-size: 20px; font-weight: 800;';
-        $dateSize = 'px-3 py-1 text-xs font-black';
-        $cakeSize = 'w-[360px] h-[430px]';
-    } elseif ($count <= 64) {
-        // 47 or 56 celebrants -> EXPAND CONTAINER TO 84% WIDTH FOR MASSIVE HIGH-VISIBILITY TEXT
-        $containerWidth = 'w-[84%]';
-        $leftWidth = 'w-[14%]';
-        $cols = 'grid-cols-4 gap-x-6 gap-y-2';
-        $nameSize = 'font-size: 23px; font-weight: 900;';
-        $codeSize = 'font-size: 19px; font-weight: 800;';
-        $dateSize = 'px-2.5 py-0.5 text-[11px] font-black';
-        $cakeSize = 'w-[320px] h-[380px]';
+    // Balanced Dynamic Widths & Readable Typography (Normal Weight, Not Too Bold)
+    if ($count <= 12) {
+        $containerStyle = 'width: 70%;';
+        $leftStyle = 'width: 28%;';
+        $cols = 'grid-cols-2 gap-x-8 gap-y-4';
+        $nameSize = 'font-size: 26px; font-weight: 600; line-height: 34px;';
+        $codeSize = 'font-size: 22px; font-weight: 500;';
+        $cakeSvgSize = 'width: 440px; height: 500px;';
+    } elseif ($count <= 30) {
+        $containerStyle = 'width: 72%;';
+        $leftStyle = 'width: 26%;';
+        $cols = 'grid-cols-3 gap-x-6 gap-y-3';
+        $nameSize = 'font-size: 22px; font-weight: 600; line-height: 28px;';
+        $codeSize = 'font-size: 18px; font-weight: 500;';
+        $cakeSvgSize = 'width: 400px; height: 460px;';
+    } elseif ($count <= 50) {
+        // 47 celebrants -> 74% Container Width, 24% Left Cake Column, 3 Spacious Columns
+        $containerStyle = 'width: 74%;';
+        $leftStyle = 'width: 24%;';
+        $cols = 'grid-cols-3 gap-x-6 gap-y-2';
+        $nameSize = 'font-size: 20px; font-weight: 600; line-height: 26px;';
+        $codeSize = 'font-size: 17px; font-weight: 500;';
+        $cakeSvgSize = 'width: 360px; height: 420px;';
     } else {
-        // > 64 employees -> 86% EXPANDED CONTAINER WIDTH
-        $containerWidth = 'w-[86%]';
-        $leftWidth = 'w-[12%]';
-        $cols = 'grid-cols-5 gap-x-4 gap-y-1.5';
-        $nameSize = 'font-size: 20px; font-weight: 900;';
-        $codeSize = 'font-size: 17px; font-weight: 800;';
-        $dateSize = 'px-2 py-0.5 text-[10px] font-black';
-        $cakeSize = 'w-[280px] h-[340px]';
+        // > 50 celebrants (e.g. 56) -> 76% Container Width, 4 Columns
+        $containerStyle = 'width: 76%;';
+        $leftStyle = 'width: 22%;';
+        $cols = 'grid-cols-4 gap-x-4 gap-y-1.5';
+        $nameSize = 'font-size: 17px; font-weight: 600; line-height: 22px;';
+        $codeSize = 'font-size: 14px; font-weight: 500;';
+        $cakeSvgSize = 'width: 320px; height: 380px;';
     }
 @endphp
 
 <div 
-    style="width: 2708px; height: 1492px; box-sizing: border-box; background: #0284c7; background-image: radial-gradient(circle at 30% 30%, #38bdf8 0%, #0284c7 60%, #0369a1 100%); font-family: 'Plus Jakarta Sans', sans-serif; color: #0f172a; border: 16px solid #0369a1;"
+    style="width: 2708px; height: 1492px; box-sizing: border-box; background: #0284c7; background-image: radial-gradient(circle at 30% 30%, #38bdf8 0%, #0284c7 60%, #0369a1 100%); font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; color: #0f172a; border: 16px solid #0369a1;"
     class="relative overflow-hidden flex flex-col justify-between p-10 select-none"
 >
     <!-- Outer Fine Frame Inset -->
@@ -83,14 +76,14 @@
     <!-- MAIN HERO CONTENT CONTAINER -->
     <div class="relative z-10 w-full h-full flex gap-8 items-center justify-between p-4">
         
-        <!-- LEFT SIDE: CUTE CHUBBY TASTY-LOOKING CAKE (DYNAMICALLY SCALED, NO RECTANGLE BOX BEHIND IT) -->
-        <div class="{{ $leftWidth }} h-full flex flex-col items-center justify-center relative pointer-events-none select-none transition-all">
+        <!-- LEFT SIDE: CUTE CHUBBY TASTY-LOOKING CAKE (NO RECTANGLE BOX BEHIND IT) -->
+        <div style="{{ $leftStyle }}" class="h-full flex flex-col items-center justify-center relative pointer-events-none select-none shrink-0">
             
             <!-- Soft Ambient Backdrop Glow behind Cake -->
-            <div class="absolute w-[450px] h-[450px] rounded-full bg-white/25 blur-3xl pointer-events-none"></div>
+            <div class="absolute w-[420px] h-[420px] rounded-full bg-white/25 blur-3xl pointer-events-none"></div>
 
             <!-- Extra Large Tasty & Cute Chubby Birthday Cake SVG -->
-            <svg class="{{ $cakeSize }} relative z-10 filter drop-shadow-[0_30px_55px_rgba(0,0,0,0.38)] transition-all" viewBox="0 0 120 140" fill="none">
+            <svg style="{{ $cakeSvgSize }}" class="relative z-10 filter drop-shadow-[0_30px_55px_rgba(0,0,0,0.38)] shrink-0" viewBox="0 0 120 140" fill="none">
                 <!-- Lit Flame Glow Effects -->
                 <circle cx="60" cy="14" r="11" fill="#fef08a" opacity="0.85" class="animate-pulse"/>
                 <circle cx="42" cy="18" r="9" fill="#fef08a" opacity="0.8" class="animate-pulse"/>
@@ -173,72 +166,62 @@
 
         <!-- RIGHT PANEL: HIGH-CONTRAST HEADER & DYNAMIC EXPANSIVE EMPLOYEE NAME GRID -->
         <div 
-            style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 2.5px solid #e2e8f0; box-shadow: 0 20px 50px rgba(0,0,0,0.25);"
-            class="{{ $containerWidth }} h-full rounded-3xl p-8 flex flex-col justify-between relative overflow-hidden shrink-0 transition-all"
+            style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 2.5px solid #cbd5e1; box-shadow: 0 20px 50px rgba(0,0,0,0.25); {{ $containerStyle }}"
+            class="h-full rounded-3xl p-8 flex flex-col justify-between relative overflow-hidden shrink-0"
         >
-            <!-- TOP HEADER SECTION INSIDE CARD -->
-            <div class="flex items-center justify-between border-b border-slate-200 pb-5">
+            <!-- TOP HEADER SECTION INSIDE CARD (STRICT NO-OVERLAP SPACING & LINE-HEIGHTS) -->
+            <div class="flex items-center justify-between border-b border-slate-200 pb-5" style="gap: 24px;">
                 <!-- Title & Subtitle -->
-                <div>
+                <div style="flex: 1 1 0%; min-width: 0;">
                     <p 
-                        style="font-family: 'Playfair Display', serif; font-style: italic; font-size: 26px; color: #0284c7;"
-                        class="font-semibold tracking-wide"
+                        style="font-family: 'Playfair Display', Georgia, 'Times New Roman', serif; font-style: italic; font-size: 22px; line-height: 28px; color: #0284c7; margin: 0; white-space: nowrap; overflow: hidden; font-weight: 400;"
                     >
                         Wishing you all the happiness on your special day!
                     </p>
                     <h1 
-                        style="font-family: 'Cinzel', serif; font-size: 58px; letter-spacing: 2px; color: #0f172a;"
-                        class="font-black leading-none uppercase mt-1"
+                        style="font-family: 'Cinzel', Georgia, 'Times New Roman', serif; font-size: 46px; line-height: 54px; letter-spacing: 2px; color: #0f172a; margin: 0; white-space: nowrap; font-weight: 700;"
                     >
-                        Happy Birthmonth
+                        HAPPY BIRTHMONTH
                     </h1>
                 </div>
 
                 <!-- Slanted Month Ribbon Badge -->
                 <div 
-                    style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 8px 20px rgba(16,185,129,0.3);"
-                    class="px-8 py-3 rounded-xl flex items-center justify-center transform rotate-2 border border-emerald-300/40"
+                    style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 8px 20px rgba(16,185,129,0.3); white-space: nowrap; flex-shrink: 0; padding: 12px 32px; border-radius: 12px; transform: rotate(2deg);"
                 >
                     <span 
-                        style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 28px; letter-spacing: 3px; color: #ffffff;"
-                        class="font-black uppercase drop-shadow-sm"
+                        style="font-family: 'Plus Jakarta Sans', Arial, sans-serif; font-size: 26px; line-height: 32px; letter-spacing: 3px; color: #ffffff; white-space: nowrap; font-weight: 600; display: block;"
                     >
                         {{ strtoupper($monthName) }} {{ $year }}
                     </span>
                 </div>
             </div>
 
-            <!-- MAIN EMPLOYEE NAMES GRID CONTAINER (100% READABLE & CLEAR) -->
-            <div class="my-4 flex-1 flex items-center justify-center overflow-hidden">
+            <!-- MAIN EMPLOYEE NAMES GRID CONTAINER (MASSIVE ULTRA-READABLE TEXT) -->
+            <div style="flex: 1 1 0%; display: flex; align-items: center; justify-content: center; overflow: hidden; margin: 16px 0;">
                 @if ($birthdays->isEmpty())
-                    <div class="text-center py-16 px-16 rounded-2xl bg-slate-50 border border-slate-200">
-                        <h3 class="text-3xl font-bold text-slate-800" style="font-family: 'Cinzel', serif;">
-                            No Birthdays in {{ $monthName }} {{ $year }}
-                        </h3>
-                        <p class="text-xl mt-2 text-slate-600">
-                            There are no active employee birthdays scheduled for this month.
-                        </p>
+                    <div style="text-align: center; padding: 64px; border-radius: 16px; background: #f8fafc; border: 1px solid #e2e8f0;">
+                        <h3 style="font-family: 'Cinzel', Georgia, serif; font-size: 28px; font-weight: 700; color: #1e293b; margin: 0;">No Birthdays in {{ $monthName }} {{ $year }}</h3>
+                        <p style="font-size: 18px; margin-top: 8px; color: #64748b;">There are no active employee birthdays scheduled for this month.</p>
                     </div>
                 @else
-                    <div class="w-full grid {{ $cols }} content-center justify-between items-center h-full">
+                    <div class="w-full grid {{ $cols }} content-center items-center h-full" style="align-content: center;">
                         @foreach ($birthdays as $employee)
                             @php
                                 $empCode = $employee->employee_code ?? $employee->code ?? ('EMP' . str_pad($employee->id ?? $loop->iteration, 3, '0', STR_PAD_LEFT));
                             @endphp
-                            <div class="flex items-center justify-between gap-2 p-2 bg-slate-50/80 hover:bg-sky-50 border border-slate-200/80 rounded-xl transition-all">
-                                <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px; background: rgba(248,250,252,0.9); border: 1px solid rgba(226,232,240,0.8); border-radius: 12px; overflow: visible;">
+                                <div style="display: flex; align-items: center; gap: 10px; flex: 1 1 0%; overflow: visible;">
                                     <!-- Employee Code Badge -->
                                     <span 
-                                        style="{{ $codeSize }} color: #0284c7; background: #e0f2fe;"
-                                        class="shrink-0 px-2 py-0.5 rounded-md font-black tracking-tight border border-sky-200"
+                                        style="{{ $codeSize }} color: #0284c7; background: #e0f2fe; white-space: nowrap; padding: 2px 8px; border-radius: 6px; border: 1px solid #bae6fd; flex-shrink: 0;"
                                     >
                                         {{ $empCode }}
                                     </span>
                                     
-                                    <!-- Employee Full Name (PURE DARK NAVY EXTRA BOLD) -->
+                                    <!-- Employee Full Name (READABLE WEIGHT, NOT TOO BOLD) -->
                                     <span 
-                                        style="{{ $nameSize }} color: #0f172a;"
-                                        class="truncate tracking-tight"
+                                        style="{{ $nameSize }} color: #0f172a; white-space: nowrap; overflow: visible; font-family: 'Plus Jakarta Sans', Arial, sans-serif; flex-shrink: 0;"
                                     >
                                         {{ $employee->name }}
                                     </span>
@@ -246,8 +229,7 @@
 
                                 <!-- Birthday Date Badge Tag -->
                                 <div 
-                                    style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #ffffff;"
-                                    class="shrink-0 {{ $dateSize }} rounded-md uppercase tracking-wider font-black shadow-sm"
+                                    style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #ffffff; white-space: nowrap; flex-shrink: 0; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 2px 8px; font-size: 11px;"
                                 >
                                     {{ $employee->dob_ad ? $employee->dob_ad->format('M d') : '' }}
                                 </div>
@@ -258,11 +240,11 @@
             </div>
 
             <!-- CARD FOOTER STATS -->
-            <div class="pt-3 border-t border-slate-200 flex items-center justify-between text-sm font-bold text-slate-500">
-                <span class="uppercase tracking-widest text-sky-800" style="font-family: 'Cinzel', serif;">
+            <div style="padding-top: 12px; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
+                <span style="font-family: 'Cinzel', Georgia, serif; font-size: 13px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #075985; white-space: nowrap;">
                     Official Birthday Celebration List
                 </span>
-                <span class="font-extrabold text-slate-800">
+                <span style="font-size: 14px; font-weight: 800; color: #1e293b; white-space: nowrap;">
                     Total {{ $birthdays->count() }} Celebrants
                 </span>
             </div>
