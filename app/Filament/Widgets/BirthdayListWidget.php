@@ -79,4 +79,17 @@ class BirthdayListWidget extends Widget
             return collect();
         }
     }
+
+    public function getMonthNameProperty(): string
+    {
+        if (empty($this->month)) {
+            return '';
+        }
+
+        try {
+            return Carbon::create(null, (int) $this->month)->format('F');
+        } catch (\Exception) {
+            return '';
+        }
+    }
 }
