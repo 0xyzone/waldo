@@ -287,6 +287,7 @@ class EmployeesTable
                             ->label('Reason for Termination')
                             ->rows(3),
                     ])
+                    ->visible(fn (): bool => Auth::user()->hasRole(['super_admin', 'HR']))
                     ->action(function (Employee $record, array $data): void {
                         TerminatedEmployee::create([
                             'employee_id' => $record->employee_code,
