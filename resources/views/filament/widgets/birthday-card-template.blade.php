@@ -42,7 +42,7 @@
 @endphp
 
 <div 
-    style="width: 2708px; height: 1492px; box-sizing: border-box; background: #0284c7; background-image: radial-gradient(circle at 30% 30%, #38bdf8 0%, #0284c7 60%, #0369a1 100%); font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; color: #0f172a; border: 16px solid #0369a1;"
+    style="width: 2708px; height: 1492px; box-sizing: border-box; background: #ffffff; font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; color: #0f172a; border: 16px solid #ffa600;"
     class="relative overflow-hidden flex flex-col justify-between p-10 select-none"
 >
     <!-- Outer Fine Frame Inset -->
@@ -50,40 +50,40 @@
 
     <!-- BACKGROUND CONFETTI SPRINKLES (NO EMOJIS, VECTOR SVG ONLY) -->
     <!-- Top Left Confetti Cluster -->
-    <svg class="absolute top-8 left-10 w-44 h-44 pointer-events-none opacity-80" viewBox="0 0 100 100" fill="none">
+    {{-- <svg class="absolute top-8 left-10 w-44 h-44 pointer-events-none opacity-80" viewBox="0 0 100 100" fill="none">
         <polygon points="15,20 22,10 28,22 20,30" fill="#fbbf24"/>
         <circle cx="45" cy="18" r="4" fill="#34d399"/>
         <polygon points="55,32 70,25 60,42" fill="#f43f5e"/>
         <circle cx="22" cy="48" r="5" fill="#ffffff"/>
         <rect x="75" y="12" width="8" height="18" transform="rotate(25 79 21)" fill="#fbbf24" rx="2"/>
-    </svg>
+    </svg> --}}
     <!-- Top Right Confetti Cluster -->
-    <svg class="absolute top-8 right-10 w-44 h-44 pointer-events-none opacity-80 transform rotate-90" viewBox="0 0 100 100" fill="none">
+    {{-- <svg class="absolute top-8 right-10 w-44 h-44 pointer-events-none opacity-80 transform rotate-90" viewBox="0 0 100 100" fill="none">
         <polygon points="15,20 22,10 28,22 20,30" fill="#fbbf24"/>
         <circle cx="45" cy="18" r="4" fill="#34d399"/>
         <polygon points="55,32 70,25 60,42" fill="#f43f5e"/>
         <circle cx="22" cy="48" r="5" fill="#ffffff"/>
         <rect x="75" y="12" width="8" height="18" transform="rotate(25 79 21)" fill="#fbbf24" rx="2"/>
-    </svg>
+    </svg> --}}
     <!-- Bottom Left Confetti Cluster -->
-    <svg class="absolute bottom-8 left-10 w-40 h-40 pointer-events-none opacity-75 transform -rotate-45" viewBox="0 0 100 100" fill="none">
+    {{-- <svg class="absolute bottom-8 left-10 w-40 h-40 pointer-events-none opacity-75 transform -rotate-45" viewBox="0 0 100 100" fill="none">
         <polygon points="20,15 28,28 15,35" fill="#34d399"/>
         <circle cx="60" cy="20" r="5" fill="#fbbf24"/>
         <rect x="30" y="50" width="10" height="20" transform="rotate(40 35 60)" fill="#f43f5e" rx="2"/>
         <circle cx="75" cy="65" r="4" fill="#ffffff"/>
-    </svg>
+    </svg> --}}
 
     <!-- MAIN HERO CONTENT CONTAINER -->
     <div class="relative z-10 w-full h-full flex gap-8 items-center justify-between p-4">
         
         <!-- LEFT SIDE: CUTE CHUBBY TASTY-LOOKING CAKE (NO RECTANGLE BOX BEHIND IT) -->
-        <div style="{{ $leftStyle }}" class="h-full flex flex-col items-center justify-center relative pointer-events-none select-none shrink-0">
+        <div style="{{ $leftStyle }}" class="h-full flex flex-col items-center justify-center  pointer-events-none select-none shrink-0">
             
             <!-- Soft Ambient Backdrop Glow behind Cake -->
-            <div class="absolute w-[420px] h-[420px] rounded-full bg-white/25 blur-3xl pointer-events-none"></div>
+            {{-- <div class="absolute w-[420px] h-[420px] rounded-full bg-white/25 blur-3xl pointer-events-none"></div> --}}
 
             <!-- Extra Large Tasty & Cute Chubby Birthday Cake SVG -->
-            <svg style="{{ $cakeSvgSize }}" class="relative z-10 filter drop-shadow-[0_30px_55px_rgba(0,0,0,0.38)] shrink-0" viewBox="0 0 120 140" fill="none">
+            {{-- <svg style="{{ $cakeSvgSize }}" class="relative z-10 filter drop-shadow-[0_30px_55px_rgba(0,0,0,0.38)] shrink-0" viewBox="0 0 120 140" fill="none">
                 <!-- Lit Flame Glow Effects -->
                 <circle cx="60" cy="14" r="11" fill="#fef08a" opacity="0.85" class="animate-pulse"/>
                 <circle cx="42" cy="18" r="9" fill="#fef08a" opacity="0.8" class="animate-pulse"/>
@@ -161,7 +161,8 @@
                         <stop offset="100%" stop-color="#fecdd3"/>
                     </linearGradient>
                 </defs>
-            </svg>
+            </svg> --}}
+            <img src="{{ asset('img/cake.png') }}" alt="Cake Img" class="h-[1800px] absolute right-[1200px]">
         </div>
 
         <!-- RIGHT PANEL: HIGH-CONTRAST HEADER & DYNAMIC EXPANSIVE EMPLOYEE NAME GRID -->
