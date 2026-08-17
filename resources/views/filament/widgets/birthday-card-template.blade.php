@@ -175,12 +175,12 @@
                 <!-- Title & Subtitle -->
                 <div style="flex: 1 1 0%; min-width: 0;">
                     <p 
-                        style="font-family: 'Playfair Display', Georgia, 'Times New Roman', serif; font-style: italic; font-size: 22px; line-height: 28px; color: #0284c7; margin: 0; white-space: nowrap; overflow: hidden; font-weight: 400;"
+                        style="font-family: 'Plus Jakarta Sans', Arial, sans-serif; font-style: italic; font-size: 22px; line-height: 28px; color: #0284c7; margin: 0; white-space: nowrap; overflow: hidden; font-weight: 400;"
                     >
                         Wishing you all the happiness on your special day!
                     </p>
                     <h1 
-                        style="font-family: 'Cinzel', Georgia, 'Times New Roman', serif; font-size: 46px; line-height: 54px; letter-spacing: 2px; color: #0f172a; margin: 0; white-space: nowrap; font-weight: 700;"
+                        style="font-family: 'Plus Jakarta Sans', Arial, sans-serif; font-size: 46px; line-height: 54px; letter-spacing: 2px; color: #0f172a; margin: 0; white-space: nowrap; font-weight: 700;"
                     >
                         HAPPY BIRTHMONTH
                     </h1>
