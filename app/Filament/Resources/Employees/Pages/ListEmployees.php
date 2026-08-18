@@ -4,9 +4,11 @@ namespace App\Filament\Resources\Employees\Pages;
 
 use App\Filament\Resources\Employees\EmployeeResource;
 use App\Models\Employee;
+use App\Services\EmployeeExportService;
 use App\Services\EmployeeSyncService;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
+use Filament\Forms\Components\Radio;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -22,22 +24,22 @@ class ListEmployees extends ListRecords
             'all' => Tab::make('All Employees')
                 ->badge(Employee::count()),
             'incomplete' => Tab::make('Incomplete')
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('employee_status', 'Active')->isIncomplete())
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('employee_status', 'Active')->isIncomplete())
                 ->badge(Employee::query()->where('employee_status', 'Active')->isIncomplete()->count()),
             'active' => Tab::make('Active')
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('employee_status', 'Active'))
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('employee_status', 'Active'))
                 ->badge(Employee::where('employee_status', 'Active')->count()),
             'inactive' => Tab::make('Inactive')
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('employee_status', 'Inactive'))
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('employee_status', 'Inactive'))
                 ->badge(Employee::where('employee_status', 'Inactive')->count()),
             'resigning_this_month' => Tab::make('Resigning This Month')
-                ->modifyQueryUsing(fn(Builder $query) => $query->whereIn('employee_status', ['Resigning this month', 'Resigning This Month']))
+                ->modifyQueryUsing(fn (Builder $query) => $query->whereIn('employee_status', ['Resigning this month', 'Resigning This Month']))
                 ->badge(Employee::whereIn('employee_status', ['Resigning this month', 'Resigning This Month'])->count()),
             'resigned' => Tab::make('Resigned')
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('employee_status', 'Resigned'))
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('employee_status', 'Resigned'))
                 ->badge(Employee::where('employee_status', 'Resigned')->count()),
             'terminated' => Tab::make('Terminated')
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('employee_status', 'Terminated'))
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('employee_status', 'Terminated'))
                 ->badge(Employee::where('employee_status', 'Terminated')->count()),
         ];
     }
@@ -50,6 +52,32 @@ class ListEmployees extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('downloadIncomplete')
+                ->label('Download Incomplete')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('warning')
+                ->modalHeading('Download Incomplete Employee List')
+                ->modalDescription('Downloads a report of active employees with missing profile information, including a list of the missing fields.')
+                ->modalSubmitActionLabel('Download')
+                ->form([
+                    Radio::make('format')
+                        ->label('File Format')
+                        ->options([
+                            'xlsx' => 'Excel Spreadsheet (.xlsx)',
+                            'csv' => 'CSV File (.csv)',
+                        ])
+                        ->default('xlsx')
+                        ->required(),
+                ])
+                ->action(function (array $data, EmployeeExportService $service) {
+                    $employees = Employee::query()
+                        ->where('employee_status', 'Active')
+                        ->isIncomplete()
+                        ->with(['department', 'designation'])
+                        ->get();
+
+                    return $service->exportIncomplete($employees, $data['format'] ?? 'xlsx');
+                }),
             Action::make('sync')
                 ->label('Sync Employees')
                 ->color('success')

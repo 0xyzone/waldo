@@ -151,4 +151,49 @@ class EmployeeFilterTest extends TestCase
 
         $this->assertEquals(['EMP_B', 'EMP_A', 'EMP_C'], $sorted->pluck('employee_code')->toArray());
     }
+
+    public function test_export_incomplete_generates_streamed_response(): void
+    {
+        $dept = Department::create(['name' => 'Finance', 'rank' => 1]);
+        $desig = Designation::create(['department_id' => $dept->id, 'name' => 'Accountant']);
+
+        // Incomplete employee — missing email, citizenship, dob, etc.
+        Employee::create([
+            'employee_code' => 'EMP_INC',
+            'name' => 'Incomplete Person',
+            'employee_status' => 'Active',
+            'department_id' => $dept->id,
+            'designation_id' => $desig->id,
+            'gender' => 'Female',
+            'join_date_formatted' => '01 January, 2023',
+            'marital_status' => 'Single',
+        ]);
+
+        // Complete employee — should be skipped
+        Employee::create([
+            'employee_code' => 'EMP_COMP',
+            'name' => 'Complete Person',
+            'employee_status' => 'Active',
+            'department_id' => $dept->id,
+            'designation_id' => $desig->id,
+            'gender' => 'Male',
+            'join_date_formatted' => '01 June, 2022',
+            'contact_number' => '9800000000',
+            'email' => 'complete@example.com',
+            'citizenship_number' => '12345',
+            'citizenship_issue_date' => '2010-01-01',
+            'citizenship_issue_place' => 'Kathmandu',
+            'dob_ad' => '1990-01-01',
+            'marital_status' => 'Married',
+            'tips_amount' => 500.00,
+            'point_value' => 1.5000,
+        ]);
+
+        $employees = Employee::with(['department', 'designation'])->get();
+
+        $service = new EmployeeExportService;
+        $response = $service->exportIncomplete($employees, 'xlsx');
+
+        $this->assertInstanceOf(StreamedResponse::class, $response);
+    }
 }

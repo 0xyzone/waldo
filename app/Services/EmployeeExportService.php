@@ -95,6 +95,89 @@ class EmployeeExportService
     }
 
     /**
+     * Human-readable labels for the fields checked in the incomplete check.
+     *
+     * @return array<string, string>
+     */
+    public static function getIncompleteFieldLabels(): array
+    {
+        return [
+            'designation_id' => 'Designation',
+            'name' => 'Name',
+            'gender' => 'Gender',
+            'join_date_formatted' => 'Join Date',
+            'contact_number' => 'Contact Number',
+            'email' => 'Email',
+            'citizenship_number' => 'Citizenship ID',
+            'citizenship_issue_date' => 'Citizenship Issue Date',
+            'citizenship_issue_place' => 'Citizenship Issue Place',
+            'dob_ad' => 'Date of Birth',
+            'marital_status' => 'Marital Status',
+            'tips_amount' => 'Tips Amount',
+            'point_value' => 'Point Value',
+        ];
+    }
+
+    /**
+     * Export only incomplete active employees with their missing details.
+     */
+    public function exportIncomplete(Collection $employees, string $format = 'xlsx'): StreamedResponse
+    {
+        $fieldLabels = static::getIncompleteFieldLabels();
+
+        $extension = $format === 'csv' ? 'csv' : 'xlsx';
+        $fileName = 'incomplete_employees_'.now()->format('Y_m_d_His').'.'.$extension;
+
+        return response()->streamDownload(function () use ($employees, $format, $fieldLabels) {
+            $writer = $format === 'csv' ? new CsvWriter : new XlsxWriter;
+            $writer->openToFile('php://output');
+
+            // Header row
+            $headerStyle = $format === 'csv' ? null : (new Style)
+                ->setFontBold()
+                ->setFontColor('FFFFFF')
+                ->setBackgroundColor('1E293B');
+
+            $writer->addRow(Row::fromValues([
+                'Code',
+                'Name',
+                'Department',
+                'Designation',
+                'Missing Details',
+            ], $headerStyle));
+
+            // Sort by dp_rank then rank
+            $employees = $employees->sortBy([
+                ['dp_rank', 'asc'],
+                ['rank', 'asc'],
+            ]);
+
+            foreach ($employees as $employee) {
+                $missingFields = collect($fieldLabels)
+                    ->filter(fn ($label, $field) => empty($employee->$field))
+                    ->values()
+                    ->implode(', ');
+
+                if (empty($missingFields)) {
+                    continue;
+                }
+
+                $writer->addRow(Row::fromValues([
+                    $employee->employee_code,
+                    $employee->name ?? '-',
+                    $employee->department?->name ?? '-',
+                    $employee->designation?->name ?? '-',
+                    $missingFields,
+                ]));
+            }
+
+            $writer->close();
+        }, $fileName, [
+            'Content-Type' => $format === 'csv' ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
+    /**
      * Export employee collection to CSV or Excel streamed response.
      */
     public function export(Collection $employees, array $selectedColumns, string $format = 'xlsx', bool $applyStyling = true): StreamedResponse
