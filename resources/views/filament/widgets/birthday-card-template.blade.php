@@ -188,7 +188,7 @@
 
                 <!-- Slanted Month Ribbon Badge -->
                 <div 
-                    style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 8px 20px rgba(16,185,129,0.3); white-space: nowrap; flex-shrink: 0; padding: 12px 32px; border-radius: 12px; transform: rotate(2deg);"
+                    style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 8px 20px rgba(16,185,129,0.3); white-space: nowrap; flex-shrink: 0; padding: 12px 32px; border-radius: 12px; transform: rotate(4deg);"
                 >
                     <span 
                         style="font-family: 'Plus Jakarta Sans', Arial, sans-serif; font-size: 26px; line-height: 32px; letter-spacing: 3px; color: #ffffff; white-space: nowrap; font-weight: 600; display: block;"
