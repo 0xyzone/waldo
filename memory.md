@@ -44,8 +44,18 @@
 - **Leavers**: `App\Models\Leaver` / `LeaverResource` (Finance group). Tracks last dates, salary holds, tips holds, CL balance publishing, and offboard action setting status to `Resigned`.
 - **Terminated Employees**: `App\Models\TerminatedEmployee` / `TerminatedEmployeeResource` (Finance group). Records termination date, last working date, reason; triggers employee status to `Terminated`.
 
-### 5. Background Commands & Integration
+### 5. Employee API Service
+- **Endpoints**:
+  - `GET /api/v1/employees` (or `/api/employees`): List employees with filtering (`status`, `department_id`, `designation_id`, `gender`, `tips_status`), keyword search (`search`), sorting (`sort_by`, `sort_order`), pagination (`per_page`, `page`), or full collection fetch (`all=true`).
+  - `GET /api/v1/employees/{employeeCode}` (or `/api/employees/{employeeCode}`): Fetch single employee details with all relationships.
+- **Relationship Inclusions via Query Params**:
+  - `include_suspensions=1`, `include_leaver=1`, `include_termination=1`, `include_adjustments=1`, or `include_all=1`.
+- **Resource Transformer**: `App\Http\Resources\EmployeeResource`.
+- **Controller**: `App\Http\Controllers\Api\EmployeeApiController`.
+
+### 6. Background Commands & Integration
 - `employees:sync` (Every 15 minutes) - Syncs employee records from Google Sheets.
 - `biometrics:sync` (Hourly) - Syncs biometric devices/attendance allotments.
 - `suspensions:check-status` (Daily) - Checks and updates suspension life-cycle statuses.
+
 
