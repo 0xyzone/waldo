@@ -35,11 +35,17 @@
   - Runs daily via `routes/console.php`.
   - Automatically marks expired suspensions (`end_date < today`) as `completed` and resets employee `employee_status` back to `Active` (leaving `tips_status` as `Hold`).
 
-### 3. Offboarding & Leavers
+### 3. Adjustments & Financial Holds
+- **Model**: `App\Models\Adjustment` / `AdjustmentResource` (Finance group).
+- **Statuses**: `pending` (Amber row highlight), `approved` (Emerald row highlight), `rejected` (Red row highlight), `cancelled` (Gray row highlight).
+- **Tabs**: Dedicated list view tabs for `All`, `Pending`, `Approved`, `Rejected`, and `Cancelled` with real-time count badges.
+
+### 4. Offboarding & Leavers
 - **Leavers**: `App\Models\Leaver` / `LeaverResource` (Finance group). Tracks last dates, salary holds, tips holds, CL balance publishing, and offboard action setting status to `Resigned`.
 - **Terminated Employees**: `App\Models\TerminatedEmployee` / `TerminatedEmployeeResource` (Finance group). Records termination date, last working date, reason; triggers employee status to `Terminated`.
 
-### 4. Background Commands & Integration
+### 5. Background Commands & Integration
 - `employees:sync` (Every 15 minutes) - Syncs employee records from Google Sheets.
 - `biometrics:sync` (Hourly) - Syncs biometric devices/attendance allotments.
 - `suspensions:check-status` (Daily) - Checks and updates suspension life-cycle statuses.
+

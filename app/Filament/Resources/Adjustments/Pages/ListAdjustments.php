@@ -18,12 +18,22 @@ class ListAdjustments extends ListRecords
         return [
             'all' => Tab::make('All')
                 ->badge(Adjustment::count()),
-            'add' => Tab::make('Additions')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('type', 'add'))
-                ->badge(Adjustment::where('type', 'add')->count()),
-            'subtract' => Tab::make('Deductions')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('type', 'subtract'))
-                ->badge(Adjustment::where('type', 'subtract')->count()),
+            'pending' => Tab::make('Pending')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'pending'))
+                ->badge(Adjustment::where('status', 'pending')->count())
+                ->badgeColor('warning'),
+            'approved' => Tab::make('Approved')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'approved'))
+                ->badge(Adjustment::where('status', 'approved')->count())
+                ->badgeColor('success'),
+            'rejected' => Tab::make('Rejected')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'rejected'))
+                ->badge(Adjustment::where('status', 'rejected')->count())
+                ->badgeColor('danger'),
+            'cancelled' => Tab::make('Cancelled')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'cancelled'))
+                ->badge(Adjustment::where('status', 'cancelled')->count())
+                ->badgeColor('gray'),
         ];
     }
 
