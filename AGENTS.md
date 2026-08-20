@@ -13,6 +13,7 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - filament/filament (FILAMENT) - v5
 - laravel/framework (LARAVEL) - v13
 - laravel/prompts (PROMPTS) - v0
+- laravel/sanctum (SANCTUM) - v4
 - livewire/livewire (LIVEWIRE) - v4
 - laravel/boost (BOOST) - v2
 - laravel/mcp (MCP) - v0
@@ -143,6 +144,4 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - To run all tests in a file: `php artisan test --compact tests/Feature/ExampleTest.php`.
 - To filter on a particular test name: `php artisan test --compact --filter=testName` (recommended after making a change to a related file).
 
-# Employee Testing & Seeding Rules
-- Do NOT create dummy or temporary employee records in the database for testing/demonstration purposes; always use existing employee records instead.
-
+</laravel-boost-guidelines>
