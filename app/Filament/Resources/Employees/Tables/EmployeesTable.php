@@ -55,6 +55,7 @@ class EmployeesTable
                                 ->color(fn (string $state): string => match ($state) {
                                     'Active' => 'success',
                                     'Inactive' => 'gray',
+                                    'Suspended' => 'warning',
                                     'Resigned' => 'danger',
                                     'Resigning this month', 'Resigning This Month' => 'warning',
                                     'Terminated' => 'danger',
@@ -136,6 +137,7 @@ class EmployeesTable
             ->recordClasses(fn (Employee $record) => match ($record->employee_status) {
                 'Active' => null,
                 'Inactive' => 'bg-gray-row border-gray-200 dark:border-gray-700',
+                'Suspended' => 'bg-amber-row border-amber-200 dark:border-amber-900',
                 'Resigned' => 'bg-rose-row border-rose-200 dark:border-rose-900',
                 'Resigning This Month' => 'bg-violet-row border-violet-200 dark:border-violet-900',
                 'Terminated' => 'bg-red-row border-red-200 dark:border-red-900',
@@ -158,6 +160,7 @@ class EmployeesTable
                     ->options([
                         'Active' => 'Active',
                         'Inactive' => 'Inactive',
+                        'Suspended' => 'Suspended',
                         'Resigned' => 'Resigned',
                         'Resigning this month' => 'Resigning this month',
                         'Terminated' => 'Terminated',

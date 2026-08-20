@@ -26,7 +26,7 @@ class TerminatedEmployeeForm
                                         name: 'employee',
                                         titleAttribute: 'name'
                                     )
-                                    ->getOptionLabelFromRecordUsing(fn($record) => strtoupper($record->employee_code) . ' | ' . $record->name)
+                                    ->getOptionLabelFromRecordUsing(fn ($record) => strtoupper($record->employee_code).' | '.$record->name)
                                     ->searchable(['name', 'employee_code'])
                                     ->preload()
                                     ->required(),

@@ -25,7 +25,7 @@ class CandidateResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'HR & Admin';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 6;
 
     protected static ?string $recordTitleAttribute = 'phone_number';
 

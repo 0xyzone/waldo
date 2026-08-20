@@ -143,6 +143,7 @@ class EmployeeForm
                                             ->options([
                                                 'Active' => 'Active',
                                                 'Inactive' => 'Inactive',
+                                                'Suspended' => 'Suspended',
                                                 'Resigned' => 'Resigned',
                                                 'Resigning This Month' => 'Resigning This Month',
                                                 'Terminated' => 'Terminated',

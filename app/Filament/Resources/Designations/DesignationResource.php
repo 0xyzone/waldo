@@ -23,7 +23,7 @@ class DesignationResource extends Resource
 
     protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::Briefcase;
 
-    protected static ?int $navigationSort = 11;
+    protected static ?int $navigationSort = 3;
 
     protected static string|UnitEnum|null $navigationGroup = 'HR & Admin';
 

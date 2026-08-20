@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('employees:sync')->everyFifteenMinutes();
 Schedule::command('biometrics:sync')->hourly();
+Schedule::command('suspensions:check-status')->daily();

@@ -54,7 +54,7 @@ class KamkajPanelProvider extends PanelProvider
                     ->group('HR & Admin')
                     ->visible(fn () => auth()->user()->hasRole(['HR'])),
                 NavigationItem::make('Employee SSF IDs')
-                    ->url("/employee-ssids")
+                    ->url('/employee-ssids')
                     ->icon('heroicon-o-arrow-top-right-on-square')
                     ->activeIcon('heroicon-s-document-text')
                     ->sort(10)

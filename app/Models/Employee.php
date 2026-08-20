@@ -133,6 +133,22 @@ class Employee extends Model
     }
 
     /**
+     * Get the suspensions associated with the Employee.
+     */
+    public function suspensions(): HasMany
+    {
+        return $this->hasMany(EmployeeSuspension::class, 'employee_id', 'employee_code');
+    }
+
+    /**
+     * Get the latest suspension record for the Employee.
+     */
+    public function latestSuspension(): HasOne
+    {
+        return $this->hasOne(EmployeeSuspension::class, 'employee_id', 'employee_code')->latestOfMany();
+    }
+
+    /**
      * Check if the employee is incomplete.
      */
     public function isIncomplete()
