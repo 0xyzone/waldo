@@ -11,7 +11,7 @@ Route::get('/', function () {
 });
 
 // Employee Public SSID Search & Directory
-Route::get('/employee-ssids', [EmployeeSsidController::class, 'index'])->name('employees.ssid.index');
+Route::get('/employee-ssids', [EmployeeSsidController::class, 'index'])->name('employees.ssid-list');
 Route::get('/employee-ssids/export', [EmployeeSsidController::class, 'exportExcel'])->name('employees.ssid.export');
 
 Route::prefix('/letters')->middleware('role:super_admin|HR')->group(function () {
