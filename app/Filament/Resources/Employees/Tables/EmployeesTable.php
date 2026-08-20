@@ -3,16 +3,19 @@
 namespace App\Filament\Resources\Employees\Tables;
 
 use App\Models\Employee;
+use App\Models\EmployeeSuspension;
 use App\Models\TerminatedEmployee;
 use App\Services\EmployeeExportService;
 use Carbon\Carbon;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
@@ -266,46 +269,102 @@ class EmployeesTable
             ->filtersFormColumns(3)
             ->defaultSort('employee_code', 'desc')
             ->recordActions([
-                ViewAction::make()->modalWidth('7xl'),
-                EditAction::make()->modalWidth('7xl'),
-                Action::make('terminate')
-                    ->label('Terminate')
-                    ->icon('heroicon-o-user-minus')
-                    ->color('danger')
-                    ->requiresConfirmation()
-                    ->modalHeading('Terminate Employee')
-                    ->modalDescription(fn (Employee $record) => "Are you sure you want to terminate {$record->name} ({$record->employee_code})? This will set their status to Terminated.")
-                    ->modalSubmitActionLabel('Confirm Termination')
-                    ->form([
-                        DatePicker::make('last_working_date')
-                            ->label('Last Date of Working')
-                            ->native(false)
-                            ->default(now())
-                            ->required(),
-                        DatePicker::make('termination_date')
-                            ->label('Date of Termination')
-                            ->native(false)
-                            ->default(now())
-                            ->required(),
-                        Textarea::make('reason')
-                            ->label('Reason for Termination')
-                            ->rows(3),
-                    ])
-                    ->visible(fn (): bool => Auth::user()->hasRole(['super_admin', 'HR']))
-                    ->action(function (Employee $record, array $data): void {
-                        TerminatedEmployee::create([
-                            'employee_id' => $record->employee_code,
-                            'last_working_date' => $data['last_working_date'],
-                            'termination_date' => $data['termination_date'],
-                            'reason' => $data['reason'] ?? null,
-                        ]);
+                ActionGroup::make([
+                    ViewAction::make()->modalWidth('7xl'),
+                    EditAction::make()->modalWidth('7xl'),
+                    Action::make('suspend')
+                        ->label('Suspend')
+                        ->icon('heroicon-o-exclamation-triangle')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->modalHeading('Suspend Employee')
+                        ->modalDescription(fn (Employee $record) => "Are you sure you want to suspend {$record->name} ({$record->employee_code})? This will update their status to Suspended and tips status to Hold.")
+                        ->modalSubmitActionLabel('Confirm Suspension')
+                        ->form([
+                            DatePicker::make('start_date')
+                                ->label('Suspended From')
+                                ->native(false)
+                                ->default(now())
+                                ->required(),
+                            DatePicker::make('end_date')
+                                ->label('Suspended To')
+                                ->native(false)
+                                ->default(now()->addDays(7))
+                                ->afterOrEqual('start_date')
+                                ->required(),
+                            Textarea::make('reason')
+                                ->label('Reason for Suspension')
+                                ->placeholder('Describe the incident, breach of policy, or reason for suspension...')
+                                ->rows(3)
+                                ->required(),
+                            FileUpload::make('attachments')
+                                ->label('Attachments / Evidence')
+                                ->multiple()
+                                ->directory('suspension-attachments')
+                                ->disk('public')
+                                ->maxSize(10240),
+                        ])
+                        ->visible(fn (Employee $record): bool => Auth::user()->hasRole(['super_admin', 'HR']) && $record->employee_status !== 'Suspended')
+                        ->action(function (Employee $record, array $data): void {
+                            EmployeeSuspension::create([
+                                'employee_id' => $record->employee_code,
+                                'start_date' => $data['start_date'],
+                                'end_date' => $data['end_date'],
+                                'reason' => $data['reason'],
+                                'attachments' => $data['attachments'] ?? null,
+                                'status' => 'active',
+                            ]);
 
-                        Notification::make()
-                            ->title('Employee Terminated')
-                            ->body("{$record->name} ({$record->employee_code}) has been marked as Terminated.")
-                            ->success()
-                            ->send();
-                    }),
+                            Notification::make()
+                                ->title('Employee Suspended')
+                                ->body("{$record->name} ({$record->employee_code}) has been marked as Suspended and Tips set to Hold.")
+                                ->warning()
+                                ->send();
+                        }),
+                    Action::make('terminate')
+                        ->label('Terminate')
+                        ->icon('heroicon-o-user-minus')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->modalHeading('Terminate Employee')
+                        ->modalDescription(fn (Employee $record) => "Are you sure you want to terminate {$record->name} ({$record->employee_code})? This will set their status to Terminated.")
+                        ->modalSubmitActionLabel('Confirm Termination')
+                        ->form([
+                            DatePicker::make('last_working_date')
+                                ->label('Last Date of Working')
+                                ->native(false)
+                                ->default(now())
+                                ->required(),
+                            DatePicker::make('termination_date')
+                                ->label('Date of Termination')
+                                ->native(false)
+                                ->default(now())
+                                ->required(),
+                            Textarea::make('reason')
+                                ->label('Reason for Termination')
+                                ->rows(3),
+                        ])
+                        ->visible(fn (): bool => Auth::user()->hasRole(['super_admin', 'HR']))
+                        ->action(function (Employee $record, array $data): void {
+                            TerminatedEmployee::create([
+                                'employee_id' => $record->employee_code,
+                                'last_working_date' => $data['last_working_date'],
+                                'termination_date' => $data['termination_date'],
+                                'reason' => $data['reason'] ?? null,
+                            ]);
+
+                            Notification::make()
+                                ->title('Employee Terminated')
+                                ->body("{$record->name} ({$record->employee_code}) has been marked as Terminated.")
+                                ->success()
+                                ->send();
+                        }),
+                ])
+                    ->label('Actions')
+                    ->icon('heroicon-m-ellipsis-vertical')
+                    ->size('sm')
+                    ->color('gray')
+                    ->button(),
             ])
             ->toolbarActions([
                 Action::make('export')
