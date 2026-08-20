@@ -84,7 +84,7 @@ class AdjustmentsTable
             ])
             ->defaultSort('id', 'desc')
             ->recordClasses(fn (Adjustment $record) => match (strtolower((string) $record->status)) {
-                'pending' => 'bg-amber-row border-amber-200 dark:border-amber-900',
+                'pending' => 'bg-amber-500/20 border-amber-200 dark:border-amber-900',
                 'approved' => 'bg-emerald-950 border-emerald-200 dark:border-emerald-900',
                 'rejected' => 'bg-red-950 border-red-200 dark:border-red-900',
                 'cancelled' => 'bg-gray-500 border-gray-200 dark:border-gray-700',
