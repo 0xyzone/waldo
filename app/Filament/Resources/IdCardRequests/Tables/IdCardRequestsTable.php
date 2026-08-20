@@ -13,6 +13,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -25,23 +26,14 @@ class IdCardRequestsTable
     {
         return $table
             ->columns([
-                TextColumn::make('status')
+                SelectColumn::make('status')
                     ->label('Record Status')
-                    ->badge()
-                    ->color(fn (?string $state): string => match ($state) {
-                        'pending' => 'warning',
-                        'designed' => 'info',
-                        'sent for print' => 'primary',
-                        'done' => 'success',
-                        default => 'secondary',
-                    })
-                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                    ->options([
                         'pending' => 'Pending',
                         'designed' => 'Designed',
                         'sent for print' => 'Sent for Print',
                         'done' => 'Done',
-                        default => (string) $state,
-                    })
+                    ])
                     ->sortable(),
                 TextColumn::make('source')
                     ->label('Source')
