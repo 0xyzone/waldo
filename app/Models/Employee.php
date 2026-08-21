@@ -65,6 +65,7 @@ class Employee extends Model
         'first_name',
         'middle_name',
         'last_name',
+        'onboarded',
     ];
 
     /**
