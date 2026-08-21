@@ -1,9 +1,9 @@
 <?php
 
+use App\Http\Controllers\ApiDocsController;
 use App\Http\Controllers\EmployeeSsidController;
 use App\Http\Controllers\FontController;
 use App\Http\Controllers\LetterController;
-use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -39,7 +39,6 @@ Route::prefix('/letters')->middleware('role:super_admin|HR')->group(function () 
     Route::delete('/{id}', [LetterController::class, 'destroy'])->name('letters.destroy');
 });
 
-// Reports
-Route::get('/reports/birthdays', [ReportController::class, 'birthdays'])->name('reports.birthdays');
-Route::get('/reports/departments', [ReportController::class, 'departments'])->name('reports.departments');
-Route::get('/reports/departments/view', [ReportController::class, 'viewDepartments'])->name('reports.departments.view');
+// API Documentation & Testing Console
+Route::get('/api-docs', [ApiDocsController::class, 'index'])->name('api.docs');
+Route::get('/api-docs/spec', [ApiDocsController::class, 'spec'])->name('api.docs.spec');
