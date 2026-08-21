@@ -69,6 +69,11 @@ class TipsAdjustmentsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('id', 'desc')
+            ->recordClasses(fn (TipsAdjustment $record) => match (strtolower((string) $record->status)) {
+                'updated' => 'bg-emerald-950 border-emerald-200 dark:border-emerald-900',
+                'cancelled' => 'bg-gray-500 border-gray-200 dark:border-gray-700',
+                default => null,
+            })
             ->filters([
                 SelectFilter::make('department_id')
                     ->label('Department')
