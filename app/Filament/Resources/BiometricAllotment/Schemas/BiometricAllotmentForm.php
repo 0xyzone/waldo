@@ -151,11 +151,15 @@ class BiometricAllotmentForm
                                         'Morning' => 'Morning',
                                         'Evening' => 'Evening',
                                         'Night' => 'Night',
+                                        '10-6' => '10-6'
                                     ])
+                                    ->searchable()
+                                    ->preload()
                                     ->native(false),
                                 TextInput::make('phone')
                                     ->label('Phone Number')
                                     ->tel()
+                                    ->autocomplete(false)
                                     ->maxLength(20)
                                     ->placeholder('+977 9800000000')
                                     ->disabled($isIt),
