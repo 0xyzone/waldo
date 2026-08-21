@@ -4,10 +4,12 @@ namespace App\Filament\Resources\TipsAdjustments\Tables;
 
 use App\Models\Department;
 use App\Models\Designation;
+use App\Models\TipsAdjustment;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -22,6 +24,12 @@ class TipsAdjustmentsTable
             ->columns([
                 TextColumn::make('#')
                     ->rowIndex(),
+                SelectColumn::make('status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'updated' => 'Updated',
+                        'cancelled' => 'Cancelled',
+                    ]),
                 TextColumn::make('employee.employee_code')
                     ->label('Employee Code')
                     ->searchable()
@@ -39,7 +47,18 @@ class TipsAdjustmentsTable
                 TextColumn::make('amount')
                     ->label('Amount')
                     ->numeric()
+                    ->formatStateUsing(function ($record) {
+                        if ($record->type === 'add') {
+                            return '+ ' . $record->amount;
+                        }
+                        return '- ' . $record->amount;
+                    })
+                    ->color(fn($record) => $record->type === 'add' ? 'success' : 'danger')
+                    ->badge()
                     ->sortable(),
+                TextColumn::make('remarks')
+                    ->limit(20)
+                    ->tooltip(fn(TipsAdjustment $record) => $record->remarks),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -53,22 +72,22 @@ class TipsAdjustmentsTable
             ->filters([
                 SelectFilter::make('department_id')
                     ->label('Department')
-                    ->options(fn () => Department::pluck('name', 'id')->toArray())
+                    ->options(fn() => Department::pluck('name', 'id')->toArray())
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
                             $data['value'],
-                            fn (Builder $query, $deptId) => $query->whereHas('employee', fn (Builder $q) => $q->where('department_id', $deptId))
+                            fn(Builder $query, $deptId) => $query->whereHas('employee', fn(Builder $q) => $q->where('department_id', $deptId))
                         );
                     })
                     ->searchable()
                     ->preload(),
                 SelectFilter::make('designation_id')
                     ->label('Designation')
-                    ->options(fn () => Designation::pluck('name', 'id')->toArray())
+                    ->options(fn() => Designation::pluck('name', 'id')->toArray())
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
                             $data['value'],
-                            fn (Builder $query, $desigId) => $query->whereHas('employee', fn (Builder $q) => $q->where('designation_id', $desigId))
+                            fn(Builder $query, $desigId) => $query->whereHas('employee', fn(Builder $q) => $q->where('designation_id', $desigId))
                         );
                     })
                     ->searchable()
@@ -86,11 +105,11 @@ class TipsAdjustmentsTable
                         return $query
                             ->when(
                                 $data['created_from'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date)
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date)
                             )
                             ->when(
                                 $data['created_to'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date)
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date)
                             );
                     }),
             ])

@@ -50,8 +50,8 @@ class TipsAdjustmentResource extends Resource
     {
         return [
             'index' => ListTipsAdjustments::route('/'),
-            'create' => CreateTipsAdjustment::route('/create'),
-            'edit' => EditTipsAdjustment::route('/{record}/edit'),
+            // 'create' => CreateTipsAdjustment::route('/create'),
+            // 'edit' => EditTipsAdjustment::route('/{record}/edit'),
         ];
     }
 }

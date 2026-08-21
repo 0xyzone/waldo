@@ -20,6 +20,13 @@ class TipsAdjustmentForm
                     ->searchable(['name', 'employee_code'])
                     ->native(false)
                     ->required(),
+                Select::make('type')
+                    ->options([
+                        'add' => 'Add',
+                        'deduct' => 'Deduct',
+                    ])
+                    ->native(false)
+                    ->required(),
                 TextInput::make('amount')
                     ->required()
                     ->numeric(),
