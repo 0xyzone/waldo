@@ -6,6 +6,7 @@ use App\Models\Department;
 use App\Models\Designation;
 use App\Models\Employee;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Components\Grid;
@@ -18,7 +19,12 @@ class EmployeePromotionForm
     {
         return $schema
             ->components([
+                // Hidden snapshot fields — captured when employee is selected
+                Hidden::make('from_department_id'),
+                Hidden::make('from_designation_id'),
+
                 Section::make('Employee')
+                    ->columnSpanFull()
                     ->schema([
                         Select::make('employee_id')
                             ->label('Employee')
@@ -27,7 +33,7 @@ class EmployeePromotionForm
                                 ->mapWithKeys(fn (Employee $e) => [
                                     $e->employee_code => strtoupper($e->employee_code).' | '.$e->name
                                         .(($e->designation?->name || $e->department?->name)
-                                            ? ' ('.(implode(', ', array_filter([$e->designation?->name, $e->department?->name]))).')'
+                                            ? ' ('.implode(', ', array_filter([$e->designation?->name, $e->department?->name])).')'
                                             : ''),
                                 ])
                                 ->toArray())
@@ -37,30 +43,46 @@ class EmployeePromotionForm
                             ->live()
                             ->afterStateUpdated(function ($state, callable $set) {
                                 if (! $state) {
+                                    // Clear all dependent fields when employee is deselected
+                                    $set('from_department_id', null);
+                                    $set('from_designation_id', null);
+                                    $set('to_department_id', null);
+                                    $set('to_designation_id', null);
+
                                     return;
                                 }
+
                                 $employee = Employee::where('employee_code', $state)->first();
+
                                 if ($employee) {
+                                    // Snapshot current state for "from" fields
                                     $set('from_department_id', $employee->department_id);
                                     $set('from_designation_id', $employee->designation_id);
+
+                                    // Pre-populate "to" fields with employee's current values
+                                    $set('to_department_id', $employee->department_id);
+                                    $set('to_designation_id', $employee->designation_id);
                                 }
                             }),
                     ]),
 
                 Section::make('Promotion Details')
+                    ->columnSpanFull()
                     ->schema([
-                        Grid::make(['default' => 1, 'sm' => 2])
+                        Grid::make(['default' => 1, 'sm' => 2, 'lg' => 3])
                             ->schema([
                                 DatePicker::make('promotion_date')
                                     ->label('Promotion Date')
                                     ->native(false)
-                                    ->required(),
+                                    ->required()
+                                    ->disabled(fn (callable $get) => ! $get('employee_id')),
                                 Select::make('to_department_id')
                                     ->label('New Department')
                                     ->options(fn () => Department::pluck('name', 'id')->toArray())
                                     ->searchable()
                                     ->preload()
                                     ->live()
+                                    ->disabled(fn (callable $get) => ! $get('employee_id'))
                                     ->afterStateUpdated(fn (callable $set) => $set('to_designation_id', null)),
                                 Select::make('to_designation_id')
                                     ->label('New Designation')
@@ -73,12 +95,14 @@ class EmployeePromotionForm
                                         return Designation::where('department_id', $deptId)->pluck('name', 'id')->toArray();
                                     })
                                     ->searchable()
-                                    ->preload(),
+                                    ->preload()
+                                    ->disabled(fn (callable $get) => ! $get('employee_id')),
                             ]),
                         Textarea::make('remarks')
                             ->label('Remarks / Notes')
                             ->rows(3)
-                            ->columnSpanFull(),
+                            ->columnSpanFull()
+                            ->disabled(fn (callable $get) => ! $get('employee_id')),
                     ]),
             ]);
     }
