@@ -33,28 +33,23 @@ class EmployeePromotionsTable
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
-                TextColumn::make('fromDepartment.name')
-                    ->label('From Dept.')
-                    ->placeholder('—')
-                    ->sortable(),
-                TextColumn::make('fromDesignation.name')
-                    ->label('From Designation')
-                    ->placeholder('—')
-                    ->sortable(),
-                TextColumn::make('toDepartment.name')
-                    ->label('To Dept.')
-                    ->placeholder('—')
-                    ->sortable()
-                    ->color('success'),
-                TextColumn::make('toDesignation.name')
-                    ->label('To Designation')
-                    ->placeholder('—')
-                    ->sortable()
-                    ->color('success'),
                 TextColumn::make('promotion_date')
                     ->label('Promotion Date')
                     ->date()
                     ->sortable(),
+                TextColumn::make('changes')
+                    ->label('Changes')
+                    ->getStateUsing(function (EmployeePromotion $record): string {
+                        $changes = [];
+                        if ($record->from_department_id !== $record->to_department_id) {
+                            $changes[] = '<span>' . $record->fromDepartment?->name . '</span> <span class="text-gray-500"> -> </span> <span class="text-green-500">' . $record->toDepartment?->name . '</span>';
+                        }
+                        if ($record->from_designation_id !== $record->to_designation_id) {
+                            $changes[] = '<span>' . $record->fromDesignation?->name . '</span> <span class="text-gray-500"> -> </span> <span class="text-green-500">' . $record->toDesignation?->name . '</span>';
+                        }
+                        return implode(' | ', $changes);
+                    })
+                    ->html(),
                 IconColumn::make('acknowledged')
                     ->label('Acknowledged')
                     ->boolean()
@@ -65,6 +60,10 @@ class EmployeePromotionsTable
                     ->boolean()
                     ->tooltip(fn(EmployeePromotion $record) => $record->hrms_synced_at ? $record->hrms_synced_at->format('d-M-Y h:i A') : 'Not Synced')
                     ->color(fn(EmployeePromotion $record) => $record->hrms_synced ? 'info' : 'gray'),
+                TextColumn::make('remarks')
+                    ->limit(30)
+                    ->tooltip(fn(EmployeePromotion $record) => $record->remarks)
+                    ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
