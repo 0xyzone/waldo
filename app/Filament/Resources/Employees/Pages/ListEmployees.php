@@ -24,23 +24,26 @@ class ListEmployees extends ListRecords
             'all' => Tab::make('All Employees')
                 ->badge(Employee::count()),
             'incomplete' => Tab::make('Incomplete')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('employee_status', 'Active')->isIncomplete())
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('employee_status', 'Active')->isIncomplete())
                 ->badge(Employee::query()->where('employee_status', 'Active')->isIncomplete()->count()),
             'active' => Tab::make('Active')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('employee_status', 'Active'))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('employee_status', 'Active'))
                 ->badge(Employee::where('employee_status', 'Active')->count()),
             'inactive' => Tab::make('Inactive')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('employee_status', 'Inactive'))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('employee_status', 'Inactive'))
                 ->badge(Employee::where('employee_status', 'Inactive')->count()),
             'resigning_this_month' => Tab::make('Resigning This Month')
-                ->modifyQueryUsing(fn (Builder $query) => $query->whereIn('employee_status', ['Resigning this month', 'Resigning This Month']))
+                ->modifyQueryUsing(fn(Builder $query) => $query->whereIn('employee_status', ['Resigning this month', 'Resigning This Month']))
                 ->badge(Employee::whereIn('employee_status', ['Resigning this month', 'Resigning This Month'])->count()),
             'resigned' => Tab::make('Resigned')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('employee_status', 'Resigned'))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('employee_status', 'Resigned'))
                 ->badge(Employee::where('employee_status', 'Resigned')->count()),
             'terminated' => Tab::make('Terminated')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('employee_status', 'Terminated'))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('employee_status', 'Terminated'))
                 ->badge(Employee::where('employee_status', 'Terminated')->count()),
+            'not_boarded' => Tab::make('Not Boarded')
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('onboarded', 'no'))
+                ->badge(Employee::where('onboarded', 'no')->count()),
         ];
     }
 
