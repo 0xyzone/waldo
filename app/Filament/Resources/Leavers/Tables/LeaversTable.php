@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Leavers\Tables;
 use App\Models\Department;
 use App\Models\Designation;
 use App\Models\Employee;
+use App\Models\Leaver;
 use App\Services\LeaverExportService;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -79,7 +80,7 @@ class LeaversTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('id', 'desc')
-            ->recordClasses(fn (Leavers $record) => match (strtolower((string) $record->status)) {
+            ->recordClasses(fn (Leaver $record) => match (strtolower((string) $record->status)) {
                 'cleared' => 'bg-emerald-950 border-emerald-200 dark:border-emerald-900',
                 'cancelled' => 'bg-gray-500 border-gray-200 dark:border-gray-700',
                 default => null,
