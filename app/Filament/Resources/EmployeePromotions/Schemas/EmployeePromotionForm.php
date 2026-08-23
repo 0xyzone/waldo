@@ -1,0 +1,85 @@
+<?php
+
+namespace App\Filament\Resources\EmployeePromotions\Schemas;
+
+use App\Models\Department;
+use App\Models\Designation;
+use App\Models\Employee;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+
+class EmployeePromotionForm
+{
+    public static function configure(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                Section::make('Employee')
+                    ->schema([
+                        Select::make('employee_id')
+                            ->label('Employee')
+                            ->options(fn () => Employee::with('department', 'designation')
+                                ->get()
+                                ->mapWithKeys(fn (Employee $e) => [
+                                    $e->employee_code => strtoupper($e->employee_code).' | '.$e->name
+                                        .(($e->designation?->name || $e->department?->name)
+                                            ? ' ('.(implode(', ', array_filter([$e->designation?->name, $e->department?->name]))).')'
+                                            : ''),
+                                ])
+                                ->toArray())
+                            ->searchable()
+                            ->preload()
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(function ($state, callable $set) {
+                                if (! $state) {
+                                    return;
+                                }
+                                $employee = Employee::where('employee_code', $state)->first();
+                                if ($employee) {
+                                    $set('from_department_id', $employee->department_id);
+                                    $set('from_designation_id', $employee->designation_id);
+                                }
+                            }),
+                    ]),
+
+                Section::make('Promotion Details')
+                    ->schema([
+                        Grid::make(['default' => 1, 'sm' => 2])
+                            ->schema([
+                                DatePicker::make('promotion_date')
+                                    ->label('Promotion Date')
+                                    ->native(false)
+                                    ->required(),
+                                Select::make('to_department_id')
+                                    ->label('New Department')
+                                    ->options(fn () => Department::pluck('name', 'id')->toArray())
+                                    ->searchable()
+                                    ->preload()
+                                    ->live()
+                                    ->afterStateUpdated(fn (callable $set) => $set('to_designation_id', null)),
+                                Select::make('to_designation_id')
+                                    ->label('New Designation')
+                                    ->options(function (callable $get) {
+                                        $deptId = $get('to_department_id');
+                                        if (! $deptId) {
+                                            return Designation::pluck('name', 'id')->toArray();
+                                        }
+
+                                        return Designation::where('department_id', $deptId)->pluck('name', 'id')->toArray();
+                                    })
+                                    ->searchable()
+                                    ->preload(),
+                            ]),
+                        Textarea::make('remarks')
+                            ->label('Remarks / Notes')
+                            ->rows(3)
+                            ->columnSpanFull(),
+                    ]),
+            ]);
+    }
+}

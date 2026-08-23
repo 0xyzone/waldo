@@ -142,6 +142,14 @@ class Employee extends Model
     }
 
     /**
+     * Get all promotions for the Employee.
+     */
+    public function promotions(): HasMany
+    {
+        return $this->hasMany(EmployeePromotion::class, 'employee_id', 'employee_code');
+    }
+
+    /**
      * Get the latest suspension record for the Employee.
      */
     public function latestSuspension(): HasOne

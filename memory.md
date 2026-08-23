@@ -58,4 +58,14 @@
 - `biometrics:sync` (Hourly) - Syncs biometric devices/attendance allotments.
 - `suspensions:check-status` (Daily) - Checks and updates suspension life-cycle statuses.
 
-
+### 7. Employee Promotions
+- **Model**: `App\Models\EmployeePromotion`
+  - Fields: `employee_id` (FK → `employees.employee_code`), `from_department_id`, `from_designation_id`, `to_department_id`, `to_designation_id`, `promotion_date`, `acknowledged`, `acknowledged_at`, `hrms_synced`, `hrms_synced_at`, `remarks`.
+  - Created event: Immediately updates `employee.department_id` / `designation_id` to new values, then dispatches `SyncPromotionToSheetJob` in background.
+- **Job**: `App\Jobs\SyncPromotionToSheetJob` (queued, database driver)
+  - Calls `GoogleSheetsService::syncEmployee($employee, ['department_id', 'designation_id'])`
+  - Sends Filament database notification to the triggering user on completion.
+- **Resource**: `App\Filament\Resources\EmployeePromotions\EmployeePromotionResource` (HR & Admin group)
+  - Simple resource (ManageRecords) with modal create/edit.
+  - Table Actions: **Acknowledge** (one-way, shows when not acknowledged), **Mark HRMS Synced** (reversible toggle).
+  - Row colors: emerald (acknowledged + hrms_synced), amber (acknowledged only).
