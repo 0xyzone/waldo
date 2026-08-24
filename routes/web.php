@@ -4,6 +4,7 @@ use App\Http\Controllers\ApiDocsController;
 use App\Http\Controllers\EmployeeSsidController;
 use App\Http\Controllers\FontController;
 use App\Http\Controllers\LetterController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -37,6 +38,12 @@ Route::prefix('/letters')->middleware('role:super_admin|HR')->group(function () 
     Route::get('/{id}/edit', [LetterController::class, 'edit'])->name('letters.edit');
     Route::put('/{id}', [LetterController::class, 'update'])->name('letters.update');
     Route::delete('/{id}', [LetterController::class, 'destroy'])->name('letters.destroy');
+});
+
+// Department Reports
+Route::prefix('/reports')->middleware('role:super_admin|HR')->group(function () {
+    Route::get('/departments', [ReportController::class, 'departments'])->name('reports.departments');
+    Route::get('/departments/view', [ReportController::class, 'viewDepartments'])->name('reports.departments.view');
 });
 
 // API Documentation & Testing Console
