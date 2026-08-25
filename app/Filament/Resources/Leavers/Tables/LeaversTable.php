@@ -57,16 +57,16 @@ class LeaversTable
                     ->options([
                         'pending' => 'Pending',
                         'cleared' => 'Cleared',
-                        'cancelled' => 'Cancelled'
+                        'cancelled' => 'Cancelled',
                     ]),
                 IconColumn::make('hold_salary')
                     ->label('Hold Salary')
                     ->boolean()
-                    ->color(fn($record) => $record->hold_salary ? 'danger' : 'success'),
+                    ->color(fn ($record) => $record->hold_salary ? 'danger' : 'success'),
                 IconColumn::make('hold_tips')
                     ->label('Hold Tips')
                     ->boolean()
-                    ->color(fn($record) => $record->hold_tips ? 'danger' : 'success'),
+                    ->color(fn ($record) => $record->hold_tips ? 'danger' : 'success'),
                 IconColumn::make('publish_cl')
                     ->label('Publish CL')
                     ->boolean(),
@@ -88,22 +88,22 @@ class LeaversTable
             ->filters([
                 SelectFilter::make('department_id')
                     ->label('Department')
-                    ->options(fn() => Department::pluck('name', 'id')->toArray())
+                    ->options(fn () => Department::pluck('name', 'id')->toArray())
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
                             $data['value'],
-                            fn(Builder $query, $deptId) => $query->whereHas('employee', fn(Builder $q) => $q->where('department_id', $deptId))
+                            fn (Builder $query, $deptId) => $query->whereHas('employee', fn (Builder $q) => $q->where('department_id', $deptId))
                         );
                     })
                     ->searchable()
                     ->preload(),
                 SelectFilter::make('designation_id')
                     ->label('Designation')
-                    ->options(fn() => Designation::pluck('name', 'id')->toArray())
+                    ->options(fn () => Designation::pluck('name', 'id')->toArray())
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
                             $data['value'],
-                            fn(Builder $query, $desigId) => $query->whereHas('employee', fn(Builder $q) => $q->where('designation_id', $desigId))
+                            fn (Builder $query, $desigId) => $query->whereHas('employee', fn (Builder $q) => $q->where('designation_id', $desigId))
                         );
                     })
                     ->searchable()
@@ -121,11 +121,11 @@ class LeaversTable
                         return $query
                             ->when(
                                 $data['leaving_date_from'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('leaving_date', '>=', $date)
+                                fn (Builder $query, $date): Builder => $query->whereDate('leaving_date', '>=', $date)
                             )
                             ->when(
                                 $data['leaving_date_to'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('leaving_date', '<=', $date)
+                                fn (Builder $query, $date): Builder => $query->whereDate('leaving_date', '<=', $date)
                             );
                     }),
                 Filter::make('leaving_month_year')
@@ -155,8 +155,8 @@ class LeaversTable
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
-                            ->when($data['month'] ?? null, fn(Builder $q, $m) => $q->whereMonth('leaving_date', $m))
-                            ->when($data['year'] ?? null, fn(Builder $q, $y) => $q->whereYear('leaving_date', $y));
+                            ->when($data['month'] ?? null, fn (Builder $q, $m) => $q->whereMonth('leaving_date', $m))
+                            ->when($data['year'] ?? null, fn (Builder $q, $y) => $q->whereYear('leaving_date', $y));
                     }),
                 TernaryFilter::make('hold_salary')
                     ->label('Hold Salary')
@@ -173,10 +173,10 @@ class LeaversTable
                 EditAction::make(),
                 Action::make('Offboard')
                     ->button()
-                    ->color(fn($record) => $record->offboarded == true ? 'gray' : 'danger')
-                    ->label(fn($record) => $record->offboarded == true ? 'Offboarded!' : 'Offboard')
+                    ->color(fn ($record) => $record->offboarded == true ? 'gray' : 'danger')
+                    ->label(fn ($record) => $record->offboarded == true ? 'Offboarded!' : 'Offboard')
                     ->requiresConfirmation()
-                    ->disabled(fn($record) => $record->offboarded)
+                    ->disabled(fn ($record) => $record->offboarded)
                     ->action(function ($record) {
                         $record->offboarded = true;
                         $record->save();
@@ -232,6 +232,14 @@ class LeaversTable
                             ->label('Filter Year (Leaving Date)')
                             ->options(['' => 'All Years'] + array_combine(range(now()->year + 1, 2020), range(now()->year + 1, 2020)))
                             ->native(false),
+                        CheckboxList::make('filter_statuses')
+                            ->label('Filter by Status (leave all unchecked to include all)')
+                            ->options([
+                                'pending' => 'Pending',
+                                'cleared' => 'Cleared',
+                                'cancelled' => 'Cancelled',
+                            ])
+                            ->columns(3),
                         Toggle::make('apply_styling')
                             ->label('Apply Status Highlight & Formatting (Excel only)')
                             ->default(true),
@@ -248,12 +256,16 @@ class LeaversTable
                             ->getFilteredTableQuery()
                             ->with(['employee.department', 'employee.designation']);
 
-                        if (!empty($data['filter_month'])) {
+                        if (! empty($data['filter_month'])) {
                             $query->whereMonth('leaving_date', $data['filter_month']);
                         }
 
-                        if (!empty($data['filter_year'])) {
+                        if (! empty($data['filter_year'])) {
                             $query->whereYear('leaving_date', $data['filter_year']);
+                        }
+
+                        if (! empty($data['filter_statuses'])) {
+                            $query->whereIn('status', $data['filter_statuses']);
                         }
 
                         $leavers = $query->get();
