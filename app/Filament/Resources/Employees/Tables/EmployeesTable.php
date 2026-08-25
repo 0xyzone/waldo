@@ -135,7 +135,10 @@ class EmployeesTable
                         ->color('gray')
                         ->size('sm')
                         ->prefix('SSID: ')
-                        ->copyable()
+                        ->copyable(function ($state){
+                            return $state;
+                        })
+                        ->copyMessage('SSID copied')
                         ->extraAttributes(['class' => 'mt-1 block']),
                     TextColumn::make('join_date_formatted')
                         ->icon('heroicon-m-calendar')
