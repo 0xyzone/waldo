@@ -48,8 +48,8 @@ class DesignationResource extends Resource
     {
         return [
             'index' => ListDesignations::route('/'),
-            'create' => CreateDesignation::route('/create'),
-            'edit' => EditDesignation::route('/{record}/edit'),
+            // 'create' => CreateDesignation::route('/create'),
+            // 'edit' => EditDesignation::route('/{record}/edit'),
         ];
     }
 }
