@@ -134,6 +134,7 @@ class EmployeesTable
                         ->iconColor('primary')
                         ->color('gray')
                         ->size('sm')
+                        ->prefix('SSID: ')
                         ->copyable()
                         ->extraAttributes(['class' => 'mt-1 block']),
                     TextColumn::make('join_date_formatted')
