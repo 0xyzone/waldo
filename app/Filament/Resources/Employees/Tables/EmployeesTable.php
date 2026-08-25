@@ -108,6 +108,7 @@ class EmployeesTable
                         ->sortable()
                         ->weight('bold')
                         ->size('lg')
+                        ->copyable()
                         ->extraAttributes(['class' => 'mt-3 block']),
                     TextColumn::make('department.name')
                         ->icon('heroicon-m-building-office-2')
