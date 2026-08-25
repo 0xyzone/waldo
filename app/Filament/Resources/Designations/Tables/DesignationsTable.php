@@ -83,7 +83,8 @@ class DesignationsTable
                 TrashedFilter::make(),
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->slideover(),
             ])
             ->toolbarActions([
                 CreateAction::make(),

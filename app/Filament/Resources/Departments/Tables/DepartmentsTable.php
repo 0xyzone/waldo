@@ -24,40 +24,34 @@ class DepartmentsTable
                     ->numeric()
                     ->sortable()
                     ->width('50px'),
-
                 TextColumn::make('name')
                     ->label('Department')
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
-
                 TextColumn::make('designations_count')
                     ->label('Designations')
                     ->counts('designations')
                     ->badge()
                     ->color('primary')
                     ->alignCenter(),
-
                 TextColumn::make('active_employees_count')
                     ->label('Active Staff')
-                    ->getStateUsing(fn ($record) => Employee::where('department_id', $record->id)
+                    ->getStateUsing(fn($record) => Employee::where('department_id', $record->id)
                         ->where('employee_status', 'Active')
                         ->count())
                     ->badge()
                     ->color('success')
                     ->alignCenter(),
-
                 IconColumn::make('is_active')
                     ->label('Active')
                     ->boolean()
                     ->alignCenter(),
-
                 TextColumn::make('created_at')
                     ->label('Created')
                     ->dateTime('d M Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-
                 TextColumn::make('updated_at')
                     ->label('Updated')
                     ->dateTime('d M Y')
@@ -74,7 +68,8 @@ class DepartmentsTable
                 TrashedFilter::make(),
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->slideover(),
             ])
             ->toolbarActions([
                 CreateAction::make(),
