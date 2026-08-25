@@ -129,6 +129,13 @@ class EmployeesTable
                         ->date('jS F, Y')
                         ->size('sm')
                         ->extraAttributes(['class' => 'mt-1 block']),
+                    TextColumn::make('ssid')
+                        ->icon('heroicon-o-document-text')
+                        ->iconColor('primary')
+                        ->color('gray')
+                        ->size('sm')
+                        ->copyable()
+                        ->extraAttributes(['class' => 'mt-1 block']),
                     TextColumn::make('join_date_formatted')
                         ->icon('heroicon-m-calendar')
                         ->color('gray')
