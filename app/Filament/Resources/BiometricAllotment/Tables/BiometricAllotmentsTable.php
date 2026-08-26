@@ -149,7 +149,7 @@ class BiometricAllotmentsTable
                         if ($auth->hasRole('HR')) {
                             $employee = Employee::where('employee_code', $record->code)->first();
 
-                            return ! $employee || $record?->status !== "Bio Not Required";
+                            return ! $employee && $record?->status !== "Bio Not Required";
                         }
 
                         return false;
