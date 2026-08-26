@@ -17,6 +17,7 @@ class CandidateForm
                 TextInput::make('name')
                     ->required(),
                 TextInput::make('phone_number')
+                    ->unique(ignoreRecord: true)
                     ->numeric()
                     ->required(),
                 FileUpload::make('cv_image')

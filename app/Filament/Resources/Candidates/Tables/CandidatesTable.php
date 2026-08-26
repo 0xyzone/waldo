@@ -28,7 +28,6 @@ class CandidatesTable
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('phone_number')
-                    ->unique(ignoreRecord: true)
                     ->label('Phone Number')
                     ->searchable(),
                 ImageColumn::make('cv_image')
