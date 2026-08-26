@@ -21,8 +21,7 @@ class CandidateForm
                     ->required(),
                 FileUpload::make('cv_image')
                     ->image()
-                    ->directory('cvs')
-                    ->required(),
+                    ->directory('cvs'),
                 TextInput::make('reference')
                     ->hintIcon('heroicon-o-information-circle')
                     ->hintIconTooltip('If there are no reference then you can leave it blank')
