@@ -28,6 +28,7 @@ class CandidatesTable
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('phone_number')
+                    ->unique(ignoreRecord: true)
                     ->label('Phone Number')
                     ->searchable(),
                 ImageColumn::make('cv_image')
@@ -43,6 +44,7 @@ class CandidatesTable
                         'unreachable' => 'Unreachable',
                         'not_coming' => 'Not Coming',
                         'approved' => 'Approved',
+                        'no_show' => 'No Show',
                         'rejected' => 'Rejected',
                     ]),
                 TextColumn::make('reference')
@@ -51,7 +53,7 @@ class CandidatesTable
                 TextColumn::make('notes')
                     ->label('Notes')
                     ->limit(20)
-                    ->tooltip(fn ($state) => $state),
+                    ->tooltip(fn($state) => $state),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -65,7 +67,7 @@ class CandidatesTable
             ->filters([
                 SelectFilter::make('department_id')
                     ->label('Department')
-                    ->options(fn () => Department::pluck('name', 'id')->toArray())
+                    ->options(fn() => Department::pluck('name', 'id')->toArray())
                     ->searchable()
                     ->preload(),
                 SelectFilter::make('status')
@@ -91,11 +93,11 @@ class CandidatesTable
                         return $query
                             ->when(
                                 $data['created_from'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date)
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date)
                             )
                             ->when(
                                 $data['created_to'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date)
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date)
                             );
                     }),
             ])
