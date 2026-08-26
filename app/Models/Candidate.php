@@ -7,6 +7,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Candidate extends Model
 {
+    protected $fillable = [
+        'cv_image',
+    ];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'cv_image' => 'array',
+        ];
+    }
+
     /**
      * Get the department that owns the Candidate
      */

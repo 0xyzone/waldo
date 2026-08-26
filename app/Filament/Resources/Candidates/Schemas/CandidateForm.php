@@ -21,7 +21,10 @@ class CandidateForm
                     ->numeric()
                     ->required(),
                 FileUpload::make('cv_image')
+                    ->label('CV / Portfolio Images')
                     ->image()
+                    ->multiple()
+                    ->reorderable()
                     ->directory('cvs'),
                 TextInput::make('reference')
                     ->hintIcon('heroicon-o-information-circle')
