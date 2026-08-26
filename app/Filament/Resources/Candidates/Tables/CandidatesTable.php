@@ -39,7 +39,7 @@ class CandidatesTable
                     ->overlap(4)
                     ->limitedRemainingText()
                     ->remainingTextBadge(true),
-                TextColumn::make('departmanet.name')
+                TextColumn::make('department.name')
                     ->label('Department')
                     ->badge(),
                 SelectColumn::make('status')
