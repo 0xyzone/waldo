@@ -25,6 +25,8 @@ class CandidateForm
                     ->image()
                     ->multiple()
                     ->reorderable()
+                    ->disk('public')
+                    ->visibility('public')
                     ->directory('cvs'),
                 TextInput::make('reference')
                     ->hintIcon('heroicon-o-information-circle')

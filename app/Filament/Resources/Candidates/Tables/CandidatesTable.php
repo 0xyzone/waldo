@@ -32,6 +32,8 @@ class CandidatesTable
                     ->searchable(),
                 ImageGalleryColumn::make('cv_image')
                     ->label('CV / Images')
+                    ->disk('public')
+                    ->visibility('public')
                     ->stacked()
                     ->limit(3)
                     ->overlap(4)
