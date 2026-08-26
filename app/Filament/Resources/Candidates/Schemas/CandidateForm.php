@@ -47,6 +47,7 @@ class CandidateForm
                         'unreachable' => 'Unreachable',
                         'not_coming' => 'Not Coming',
                         'approved' => 'Approved',
+                        'no_show' => 'No Show',
                         'rejected' => 'Rejected',
                     ])
                     ->required()
