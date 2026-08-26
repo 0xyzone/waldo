@@ -132,6 +132,7 @@ class EmployeesTable
                     TextColumn::make('ssid')
                         ->icon('heroicon-o-document-text')
                         ->iconColor('primary')
+                        ->searchable()
                         ->color('gray')
                         ->size('sm')
                         ->copyable()
