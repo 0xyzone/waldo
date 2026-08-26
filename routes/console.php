@@ -11,3 +11,4 @@ Artisan::command('inspire', function () {
 Schedule::command('employees:sync')->hourly();
 Schedule::command('biometrics:sync')->hourly();
 Schedule::command('suspensions:check-status')->daily();
+Schedule::command('sync-logs:prune')->daily();
