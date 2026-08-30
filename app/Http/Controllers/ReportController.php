@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Department;
 use App\Models\Employee;
+use App\Services\EmployeeExportService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -68,7 +69,10 @@ class ReportController extends Controller
      */
     public function departments(Request $request)
     {
+        $departmentId = $request->input('department_id');
+
         $departments = Department::where('is_active', true)
+            ->when($departmentId, fn ($query) => $query->where('id', $departmentId))
             ->with([
                 'parent',
                 'designations' => function ($query) {
@@ -190,6 +194,7 @@ class ReportController extends Controller
                 $tipsStats = $employees->groupBy('tips_status')->map(fn ($group) => $group->count())->toArray();
 
                 return [
+                    'id' => $department->id,
                     'name' => $department->name,
                     'count' => $departmentActiveCount,
                     'designations' => $designations,
@@ -224,6 +229,50 @@ class ReportController extends Controller
             'avgEmployeesPerDept' => $avgEmployeesPerDept,
             'topDepartmentName' => $topDepartmentName,
             'topDepartmentCount' => $topDepartmentCount,
+        ]);
+    }
+
+    /**
+     * Export active employees for a department to Excel.
+     */
+    public function exportDepartmentEmployees(Department $department, EmployeeExportService $service)
+    {
+        $employees = Employee::with('designation')
+            ->where('department_id', $department->id)
+            ->where('employee_status', 'Active')
+            ->get();
+
+        return $service->exportDepartmentEmployees($department->name, $employees, 'xlsx');
+    }
+
+    /**
+     * Print active employees for a specific department (table format matching popup modal).
+     */
+    public function printDepartmentEmployees(Department $department)
+    {
+        $employees = Employee::with('designation')
+            ->where('department_id', $department->id)
+            ->where('employee_status', 'Active')
+            ->get()
+            ->sortBy([
+                ['dp_rank', 'asc'],
+                ['rank', 'asc'],
+                ['name', 'asc'],
+            ]);
+
+        $managerEmployee = $department->getEffectiveManager();
+        $manager = null;
+        if ($managerEmployee) {
+            $manager = [
+                'name' => $managerEmployee->name,
+                'mobile' => $managerEmployee->contact_number ?? 'N/A',
+            ];
+        }
+
+        return view('reports.department-employees', [
+            'department' => $department,
+            'employees' => $employees,
+            'manager' => $manager,
         ]);
     }
 }

@@ -44,6 +44,8 @@ Route::prefix('/letters')->middleware('role:super_admin|HR')->group(function () 
 Route::prefix('/reports')->middleware('role:super_admin|HR')->group(function () {
     Route::get('/departments', [ReportController::class, 'departments'])->name('reports.departments');
     Route::get('/departments/view', [ReportController::class, 'viewDepartments'])->name('reports.departments.view');
+    Route::get('/departments/{department}/print', [ReportController::class, 'printDepartmentEmployees'])->name('reports.departments.print');
+    Route::get('/departments/{department}/export', [ReportController::class, 'exportDepartmentEmployees'])->name('reports.departments.export');
 });
 
 // API Documentation & Testing Console

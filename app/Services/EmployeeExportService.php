@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Employee;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use OpenSpout\Common\Entity\Row;
 use OpenSpout\Common\Entity\Style\Style;
 use OpenSpout\Writer\CSV\Writer as CsvWriter;
@@ -219,6 +220,72 @@ class EmployeeExportService
                 $rowStyle = ($format === 'csv')
                     ? null
                     : static::getStyleForStatus((string) $employee->employee_status, $applyStyling);
+
+                $writer->addRow(Row::fromValues($rowValues, $rowStyle));
+            }
+
+            $writer->close();
+        }, $fileName, [
+            'Content-Type' => $format === 'csv' ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
+    /**
+     * Export department employees collection to CSV or Excel streamed response.
+     */
+    public function exportDepartmentEmployees(string $deptName, Collection $employees, string $format = 'xlsx'): StreamedResponse
+    {
+        $safeDeptName = Str::slug($deptName, '_');
+
+        $columns = [
+            'employee_code' => 'Employee Code',
+            'name' => 'Full Name',
+            'gender' => 'Gender',
+            'join_date_formatted' => 'Join Date',
+            'designation' => 'Designation',
+            'tips_status' => 'Tips Status',
+            'contact_number' => 'Contact Number',
+            'employee_status' => 'Status',
+        ];
+
+        // Sort employees by Department Rank (dp_rank), then Overall Rank (rank), then Name
+        $employees = $employees->sortBy([
+            ['dp_rank', 'asc'],
+            ['rank', 'asc'],
+            ['name', 'asc'],
+        ]);
+
+        $extension = $format === 'csv' ? 'csv' : 'xlsx';
+        $fileName = 'active_employees_'.$safeDeptName.'_'.now()->format('Y_m_d_His').'.'.$extension;
+
+        return response()->streamDownload(function () use ($employees, $columns, $format) {
+            $writer = $format === 'csv' ? new CsvWriter : new XlsxWriter;
+            $writer->openToFile('php://output');
+
+            // Header Row Styling
+            $headerStyle = $format === 'csv' ? null : (new Style)
+                ->setFontBold()
+                ->setFontColor('FFFFFF')
+                ->setBackgroundColor('1E293B');
+
+            $writer->addRow(Row::fromValues(array_values($columns), $headerStyle));
+
+            // Data Rows
+            foreach ($employees as $employee) {
+                $rowValues = [
+                    $employee->employee_code,
+                    $employee->name,
+                    $employee->gender ?? '-',
+                    $employee->join_date_formatted ?? '-',
+                    $employee->designation?->name ?? ($employee->designation ?? '-'),
+                    $employee->tips_status ?? '-',
+                    $employee->contact_number ?? '-',
+                    $employee->employee_status ?? '-',
+                ];
+
+                $rowStyle = ($format === 'csv')
+                    ? null
+                    : static::getStyleForStatus((string) $employee->employee_status, true);
 
                 $writer->addRow(Row::fromValues($rowValues, $rowStyle));
             }

@@ -165,6 +165,7 @@
                     <!-- Embedded department data payload -->
                     <script type="application/json" class="dept-data-payload">
                         {!! json_encode([
+                            'id' => $dept['id'],
                             'name' => $dept['name'],
                             'count' => $dept['count'],
                             'employees' => $dept['employees'],
@@ -259,12 +260,31 @@
                         </p>
                     </div>
                 </div>
-                <!-- Close Button -->
-                <button onclick="closeDeptModal()" class="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition-all transform hover:scale-105 active:scale-95">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                    </svg>
-                </button>
+                
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <!-- Print PDF/Report Button -->
+                    <button id="modalPrintBtn" onclick="printCurrentDepartmentReport()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-bold tracking-wide shadow-lg shadow-orange-950/40 border border-orange-400/20 transition-all transform hover:scale-105 active:scale-95">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.821V21m0 0v-7.18m0 7.18-3.08-1.54A2.25 2.25 0 0 1 2 17.472v-9.623c0-.98.622-1.854 1.547-2.18l3.18-1.127a2.25 2.25 0 0 1 1.493 0l3.18 1.127a2.25 2.25 0 0 1 1.547 2.18v9.623a2.25 2.25 0 0 1-1.293 2.018L6.72 21Zm6.36-12.012v12.012m0 0 3.078-1.54A2.25 2.25 0 0 0 17.5 17.472v-9.623c0-.98-.622-1.854-1.547-2.18l-3.18-1.127a2.25 2.25 0 0 0-1.493 0L8.1 3.418a2.25 2.25 0 0 0-1.547 2.18v9.623a2.25 2.25 0 0 0 1.293 2.018L10.9 21m2.18-19.191v12.012" />
+                        </svg>
+                        <span>Print Report</span>
+                    </button>
+
+                    <!-- Export to Excel Button -->
+                    <button id="modalExportBtn" onclick="exportCurrentDepartmentExcel()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold tracking-wide shadow-lg shadow-emerald-950/40 border border-emerald-400/20 transition-all transform hover:scale-105 active:scale-95">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                        </svg>
+                        <span>Download Excel</span>
+                    </button>
+
+                    <!-- Close Button -->
+                    <button onclick="closeDeptModal()" class="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition-all transform hover:scale-105 active:scale-95">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <!-- Modal Body (Two Column Split) -->
@@ -430,10 +450,13 @@
             });
         }
 
+        let activeModalDeptId = null;
+
         // Modal Controllers
         function openDeptModal(cardElement) {
             const payload = JSON.parse(cardElement.querySelector('.dept-data-payload').textContent);
             activeModalEmployees = payload.employees;
+            activeModalDeptId = payload.id;
 
             // Set Title & Count
             document.getElementById('modalTitle').textContent = payload.name;
@@ -490,6 +513,22 @@
 
             modalContent.classList.remove('scale-100', 'opacity-100', 'translate-y-0');
             modalContent.classList.add('scale-95', 'opacity-0', 'translate-y-4');
+        }
+
+        function exportCurrentDepartmentExcel() {
+            if (!activeModalDeptId) {
+                return;
+            }
+            const exportUrl = `{{ url('/reports/departments') }}/${activeModalDeptId}/export`;
+            window.location.href = exportUrl;
+        }
+
+        function printCurrentDepartmentReport() {
+            if (!activeModalDeptId) {
+                return;
+            }
+            const printUrl = `{{ url('/reports/departments') }}/${activeModalDeptId}/print`;
+            window.open(printUrl, '_blank');
         }
 
         function renderModalEmployees(list) {
