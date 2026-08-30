@@ -46,10 +46,12 @@
         }
 
         /* Specific column widths and alignments */
-        th:nth-child(1), td:nth-child(1) { width: 8%; text-align: center; }
-        th:nth-child(2), td:nth-child(2) { width: 35%; }
-        th:nth-child(3), td:nth-child(3) { width: 37%; }
-        th:nth-child(4), td:nth-child(4) { width: 20%; text-align: center; }
+        th:nth-child(1), td:nth-child(1) { width: 6%; text-align: center; }
+        th:nth-child(2), td:nth-child(2) { width: 22%; }
+        th:nth-child(3), td:nth-child(3) { width: 22%; }
+        th:nth-child(4), td:nth-child(4) { width: 18%; }
+        th:nth-child(5), td:nth-child(5) { width: 16%; text-align: center; }
+        th:nth-child(6), td:nth-child(6) { width: 16%; text-align: center; }
 
         /* Header row formatting */
         .title-row th {
@@ -105,12 +107,14 @@
         <table>
             <thead>
                 <tr class="title-row">
-                    <th colspan="4">Casino Staff - Active Employee Counts (Department & Designation)</th>
+                    <th colspan="6">Casino Staff - Active Employee Counts (Department &amp; Designation)</th>
                 </tr>
                 <tr class="headers">
                     <th>S No</th>
                     <th>Department</th>
                     <th>Designation</th>
+                    <th>Manager Name</th>
+                    <th>Mobile No</th>
                     <th>Active Count</th>
                 </tr>
             </thead>
@@ -122,14 +126,18 @@
                         <td style="text-align: center;">{{ $sno++ }}</td>
                         <td>{{ $dept['name'] }}</td>
                         <td>All Designations</td>
+                        <td>{{ $dept['manager'] ? $dept['manager']['name'] : 'N/A' }}</td>
+                        <td style="text-align: center;">{{ $dept['manager'] ? $dept['manager']['mobile'] : 'N/A' }}</td>
                         <td style="text-align: center;">{{ $dept['count'] }}</td>
                     </tr>
-                    <!-- Designation Rows -->
+                    <!-- Designation Rows (sorted by rank) -->
                     @foreach($dept['designations'] as $desig)
                         <tr class="desig-row">
                             <td></td>
                             <td></td>
                             <td>{{ $desig['name'] }}</td>
+                            <td></td>
+                            <td></td>
                             <td style="text-align: center;">{{ $desig['count'] }}</td>
                         </tr>
                     @endforeach
@@ -137,7 +145,7 @@
                 
                 @if($departments->isEmpty())
                     <tr>
-                        <td colspan="4" style="text-align: center; padding: 20px;">No active departments/employees found.</td>
+                        <td colspan="6" style="text-align: center; padding: 20px;">No active departments/employees found.</td>
                     </tr>
                 @endif
             </tbody>

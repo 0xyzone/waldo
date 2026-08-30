@@ -70,7 +70,7 @@ class ReportController extends Controller
     {
         $departments = Department::where('is_active', true)
             ->with(['designations' => function ($query) {
-                $query->where('is_active', true);
+                $query->where('is_active', true)->orderBy('rank', 'asc');
             }])
             ->get()
             ->map(function ($department) {
@@ -78,6 +78,7 @@ class ReportController extends Controller
                     ->where('employee_status', 'Active')
                     ->count();
 
+                // Sort designations by rank and build designation list with counts
                 $designations = $department->designations->map(function ($designation) {
                     $designationActiveCount = Employee::where('designation_id', $designation->id)
                         ->where('employee_status', 'Active')
@@ -85,14 +86,34 @@ class ReportController extends Controller
 
                     return [
                         'name' => $designation->name,
+                        'rank' => $designation->rank,
                         'count' => $designationActiveCount,
                     ];
-                });
+                })->sortBy('rank')->values();
+
+                // Find the manager: active employee with the top-ranked (lowest rank) designation in this department
+                $topDesignationId = $department->designations->sortBy('rank')->first()?->id;
+                $manager = null;
+                if ($topDesignationId) {
+                    $managerEmployee = Employee::where('department_id', $department->id)
+                        ->where('designation_id', $topDesignationId)
+                        ->where('employee_status', 'Active')
+                        ->orderBy('rank', 'asc')
+                        ->first();
+
+                    if ($managerEmployee) {
+                        $manager = [
+                            'name' => $managerEmployee->name,
+                            'mobile' => $managerEmployee->contact_number ?? 'N/A',
+                        ];
+                    }
+                }
 
                 return [
                     'name' => $department->name,
                     'count' => $departmentActiveCount,
                     'designations' => $designations,
+                    'manager' => $manager,
                 ];
             });
 
