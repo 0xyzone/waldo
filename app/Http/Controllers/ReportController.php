@@ -69,9 +69,12 @@ class ReportController extends Controller
     public function departments(Request $request)
     {
         $departments = Department::where('is_active', true)
-            ->with(['designations' => function ($query) {
-                $query->where('is_active', true)->orderBy('rank', 'asc');
-            }])
+            ->with([
+                'parent',
+                'designations' => function ($query) {
+                    $query->where('is_active', true)->orderBy('rank', 'asc');
+                },
+            ])
             ->get()
             ->map(function ($department) {
                 $departmentActiveCount = Employee::where('department_id', $department->id)
@@ -91,11 +94,8 @@ class ReportController extends Controller
                     ];
                 })->sortBy('rank')->values();
 
-                // Find the manager: active employee marked as manager in this department
-                $managerEmployee = Employee::where('department_id', $department->id)
-                    ->where('employee_status', 'Active')
-                    ->where('is_manager', true)
-                    ->first();
+                // Find the manager: active employee marked as manager in this department or inherited from parent
+                $managerEmployee = $department->getEffectiveManager();
 
                 $manager = null;
                 if ($managerEmployee) {

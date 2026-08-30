@@ -29,6 +29,12 @@ class DepartmentsTable
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
+                TextColumn::make('parent.name')
+                    ->label('Parent Dept')
+                    ->placeholder('—')
+                    ->badge()
+                    ->color('gray')
+                    ->sortable(),
                 TextColumn::make('designations_count')
                     ->label('Designations')
                     ->counts('designations')
@@ -37,7 +43,7 @@ class DepartmentsTable
                     ->alignCenter(),
                 TextColumn::make('active_employees_count')
                     ->label('Active Staff')
-                    ->getStateUsing(fn($record) => Employee::where('department_id', $record->id)
+                    ->getStateUsing(fn ($record) => Employee::where('department_id', $record->id)
                         ->where('employee_status', 'Active')
                         ->count())
                     ->badge()
