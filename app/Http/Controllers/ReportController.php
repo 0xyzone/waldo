@@ -91,22 +91,18 @@ class ReportController extends Controller
                     ];
                 })->sortBy('rank')->values();
 
-                // Find the manager: active employee with the top-ranked (lowest rank) designation in this department
-                $topDesignationId = $department->designations->sortBy('rank')->first()?->id;
-                $manager = null;
-                if ($topDesignationId) {
-                    $managerEmployee = Employee::where('department_id', $department->id)
-                        ->where('designation_id', $topDesignationId)
-                        ->where('employee_status', 'Active')
-                        ->orderBy('rank', 'asc')
-                        ->first();
+                // Find the manager: active employee marked as manager in this department
+                $managerEmployee = Employee::where('department_id', $department->id)
+                    ->where('employee_status', 'Active')
+                    ->where('is_manager', true)
+                    ->first();
 
-                    if ($managerEmployee) {
-                        $manager = [
-                            'name' => $managerEmployee->name,
-                            'mobile' => $managerEmployee->contact_number ?? 'N/A',
-                        ];
-                    }
+                $manager = null;
+                if ($managerEmployee) {
+                    $manager = [
+                        'name' => $managerEmployee->name,
+                        'mobile' => $managerEmployee->contact_number ?? 'N/A',
+                    ];
                 }
 
                 return [

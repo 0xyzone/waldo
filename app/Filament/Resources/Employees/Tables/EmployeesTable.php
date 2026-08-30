@@ -52,7 +52,8 @@ class EmployeesTable
 
                                 return $query->orderByRaw('CAST(SUBSTR(employee_code, 4) AS UNSIGNED) ' . $direction);
                             })
-                            ->color('gray')
+                            ->color('primary')
+                            ->badge()
                             ->grow(false),
                         Split::make([
                             TextColumn::make('employee_status')
@@ -103,13 +104,20 @@ class EmployeesTable
                                 }),
                         ])->grow(false),
                     ])->extraAttributes(['class' => 'justify-between items-center']),
-                    TextColumn::make('name')
-                        ->searchable()
-                        ->sortable()
-                        ->weight('bold')
-                        ->size('lg')
-                        ->copyable()
-                        ->extraAttributes(['class' => 'mt-3 block']),
+                    Split::make([
+                        TextColumn::make('is_manager')
+                            ->getStateUsing(fn(Employee $record) => $record->is_manager ? '(M)' : '')
+                            ->color('primary')
+                            ->size('lg')
+                            ->weight('bold')
+                            ->grow(false),
+                        TextColumn::make('name')
+                            ->searchable()
+                            ->sortable()
+                            ->weight('bold')
+                            ->size('lg')
+                            ->copyable(),
+                    ])->extraAttributes(['class' => 'mt-3 justify-between items-center']),
                     TextColumn::make('department.name')
                         ->icon('heroicon-m-building-office-2')
                         ->iconColor('primary')
@@ -388,6 +396,49 @@ class EmployeesTable
                             Notification::make()
                                 ->title('Employee Onboarded')
                                 ->body("{$record->name} ({$record->employee_code}) has been marked as Onboarded.")
+                                ->success()
+                                ->send();
+                        }),
+                    Action::make('mark_as_manager')
+                        ->label('Mark as Manager')
+                        ->icon('heroicon-o-user-group')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Mark as Manager')
+                        ->modalDescription(fn(Employee $record) => "Are you sure you want to mark {$record->name} ({$record->employee_code}) as Manager? This will replace any currently assigned manager for this department.")
+                        ->modalSubmitActionLabel('Confirm Manager')
+                        ->visible(fn(Employee $record): bool => Auth::user()->hasRole(['super_admin', 'HR']) && !$record->is_manager)
+                        ->action(function (Employee $record): void {
+                            if ($record->department_id) {
+                                Employee::where('department_id', $record->department_id)
+                                    ->where('is_manager', true)
+                                    ->where('employee_code', '!=', $record->employee_code)
+                                    ->update(['is_manager' => false]);
+                            }
+
+                            $record->update(['is_manager' => true]);
+
+                            Notification::make()
+                                ->title('Employee Marked as Manager')
+                                ->body("{$record->name} ({$record->employee_code}) has been marked as Manager.")
+                                ->success()
+                                ->send();
+                        }),
+                    Action::make('remove_manager')
+                        ->label('Remove Manager')
+                        ->icon('heroicon-o-user')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->modalHeading('Remove Manager')
+                        ->modalDescription(fn(Employee $record) => "Are you sure you want to remove {$record->name} ({$record->employee_code}) as Manager?")
+                        ->modalSubmitActionLabel('Confirm Removal')
+                        ->visible(fn(Employee $record): bool => Auth::user()->hasRole(['super_admin', 'HR']) && (bool) $record->is_manager)
+                        ->action(function (Employee $record): void {
+                            $record->update(['is_manager' => false]);
+
+                            Notification::make()
+                                ->title('Manager Removed')
+                                ->body("{$record->name} ({$record->employee_code}) has been removed as Manager.")
                                 ->success()
                                 ->send();
                         }),

@@ -66,6 +66,7 @@ class Employee extends Model
         'middle_name',
         'last_name',
         'onboarded',
+        'is_manager',
     ];
 
     /**
@@ -82,6 +83,7 @@ class Employee extends Model
             'tips_blank' => 'boolean',
             'publish_tips' => 'boolean',
             'tips_fixed' => 'boolean',
+            'is_manager' => 'boolean',
         ];
     }
 
