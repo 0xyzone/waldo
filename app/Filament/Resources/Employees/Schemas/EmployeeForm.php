@@ -72,6 +72,7 @@ class EmployeeForm
                                     ->schema([
                                         DatePicker::make('dob_ad')
                                             ->label('Date of Birth (AD)')
+                                            ->firstDayOfWeek(0)
                                             ->live()
                                             ->native(false)
                                             ->afterStateUpdated(function ($state, callable $set) {
@@ -180,6 +181,7 @@ class EmployeeForm
                                             ->native(false)
                                             ->displayFormat('d F, Y')
                                             ->format('d F, Y')
+                                            ->firstDayOfWeek(0)
                                             ->placeholder('e.g. 01 January, 2024')
                                             ->formatStateUsing(function ($state) {
                                                 if (empty($state)) {
