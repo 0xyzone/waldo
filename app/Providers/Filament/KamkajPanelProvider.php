@@ -52,14 +52,14 @@ class KamkajPanelProvider extends PanelProvider
                     ->activeIcon('heroicon-s-document-text')
                     ->sort(9)
                     ->group('HR & Admin')
-                    ->visible(fn () => auth()->user()->hasRole(['HR'])),
+                    ->visible(fn () => auth()->user()->hasRole(['super_admin','HR'])),
                 NavigationItem::make('Employee SSF IDs')
                     ->url('/employee-ssids')
                     ->icon('heroicon-o-arrow-top-right-on-square')
                     ->activeIcon('heroicon-s-document-text')
                     ->sort(10)
                     ->group('HR & Admin')
-                    ->visible(fn () => auth()->user()->hasRole(['HR'])),
+                    ->visible(fn () => auth()->user()->hasRole(['super_admin','HR'])),
             ])
             ->navigationGroups([
                 'HR & Admin',

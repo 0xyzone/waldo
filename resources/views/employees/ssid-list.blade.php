@@ -69,26 +69,31 @@
 <body class="min-h-screen bg-slate-950 text-slate-100 antialiased selection:bg-sky-500 selection:text-white pb-16">
     <!-- Header / Navbar -->
     <header class="border-b border-slate-800/80 bg-slate-900/60 sticky top-0 z-50 backdrop-blur-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+        <div
+            class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
             <div class="flex items-center space-x-3">
                 <div
                     class="h-10 w-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20 text-white font-bold text-xl shrink-0">
                     S
                 </div>
                 <div>
-                    <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2 flex-wrap">
+                    <h1
+                        class="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2 flex-wrap">
                         Employee SSID Directory
                         <span
-                            class="text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20">Public View</span>
+                            class="text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20">Public
+                            View</span>
                     </h1>
                     <p class="text-xs text-slate-400">Search and verify employee SSID records by Employee Code</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-3">
-                <div class="flex items-center gap-2 bg-slate-800/60 px-3 py-1.5 rounded-lg border border-slate-700/50 text-xs sm:text-sm text-slate-400">
+                <div
+                    class="flex items-center gap-2 bg-slate-800/60 px-3 py-1.5 rounded-lg border border-slate-700/50 text-xs sm:text-sm text-slate-400">
                     <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span>Total Employees: <strong class="text-slate-200">{{ number_format($totalCount) }}</strong></span>
+                    <span>Total Employees: <strong
+                            class="text-slate-200">{{ number_format($totalCount) }}</strong></span>
                 </div>
                 <button type="button" onclick="openExportModal()"
                     class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-semibold transition shadow-lg shadow-emerald-600/25 border border-emerald-500/30 cursor-pointer">
@@ -102,7 +107,7 @@
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
+    <main class="max-w-360 mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
 
         <!-- Search & Filter Card -->
         <div class="glass-card rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 glow-effect">
@@ -147,7 +152,7 @@
                             Department
                         </label>
                         <select name="department_id" id="department_id" onchange="this.form.submit()"
-                            class="w-full py-2.5 sm:py-3 px-3.5 text-sm rounded-xl text-white glass-input focus:outline-none transition bg-slate-900">
+                            class="w-full py-2.5 sm:py-3 px-3.5 pr-4 text-sm rounded-xl text-white glass-input focus:outline-none transition bg-slate-900">
                             <option value="">All Departments</option>
                             @foreach ($departments as $dept)
                                 <option value="{{ $dept->id }}"
@@ -168,8 +173,7 @@
                             class="w-full py-2.5 sm:py-3 px-3.5 text-sm rounded-xl text-white glass-input focus:outline-none transition bg-slate-900">
                             <option value="">All Statuses</option>
                             @foreach ($statuses as $st)
-                                <option value="{{ $st }}"
-                                    {{ $selectedStatus == $st ? 'selected' : '' }}>
+                                <option value="{{ $st }}" {{ $selectedStatus == $st ? 'selected' : '' }}>
                                     {{ $st }}
                                 </option>
                             @endforeach
@@ -214,7 +218,8 @@
 
         <!-- Employee SSID List Container -->
         <div class="glass-card rounded-2xl overflow-hidden">
-            <div class="px-4 sm:px-6 py-4 border-b border-slate-800/80 flex items-center justify-between flex-wrap gap-2">
+            <div
+                class="px-4 sm:px-6 py-4 border-b border-slate-800/80 flex items-center justify-between flex-wrap gap-2">
                 <h2 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
                     Employee SSID Records
                     <span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-full border border-slate-700">
@@ -224,7 +229,7 @@
             </div>
 
             @if ($employees->count() > 0)
-                
+
                 <!-- Desktop Table View (Hidden on mobile) -->
                 <div class="hidden md:block overflow-x-auto">
                     <table class="w-full text-left border-collapse text-sm text-slate-300">
@@ -344,10 +349,11 @@
                 <div class="block md:hidden divide-y divide-slate-800/80">
                     @foreach ($employees as $employee)
                         <div class="p-4 space-y-3 bg-slate-900/40 hover:bg-slate-800/30 transition">
-                            
+
                             <!-- Header Row: Code & Status -->
                             <div class="flex items-center justify-between gap-2">
-                                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-500/10 text-sky-400 font-mono font-bold text-xs border border-sky-500/20">
+                                <div
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-500/10 text-sky-400 font-mono font-bold text-xs border border-sky-500/20">
                                     <span class="h-2 w-2 rounded-full bg-sky-400"></span>
                                     <span>{{ $employee->employee_code }}</span>
                                 </div>
@@ -359,19 +365,23 @@
                                     $isResigningThisMonth = $status == 'resigning this month';
                                 @endphp
                                 @if ($isResigningThisMonth)
-                                    <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-violet-500/10 text-violet-400 border border-violet-500/20">
+                                    <span
+                                        class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-violet-500/10 text-violet-400 border border-violet-500/20">
                                         {{ $employee->employee_status }}
                                     </span>
                                 @elseif($isResigned)
-                                    <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                    <span
+                                        class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
                                         {{ $employee->employee_status }}
                                     </span>
                                 @elseif($isTerminated)
-                                    <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20">
+                                    <span
+                                        class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20">
                                         {{ $employee->employee_status }}
                                     </span>
                                 @else
-                                    <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                    <span
+                                        class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                                         {{ $employee->employee_status ?: 'Active' }}
                                     </span>
                                 @endif
@@ -392,9 +402,12 @@
                             <!-- SSID & Quick Copy Action -->
                             <div class="pt-2 flex items-center justify-between gap-2 border-t border-slate-800/50">
                                 <div>
-                                    <span class="text-[10px] uppercase font-semibold text-slate-400 block tracking-wider">SSID Info</span>
+                                    <span
+                                        class="text-[10px] uppercase font-semibold text-slate-400 block tracking-wider">SSID
+                                        Info</span>
                                     @if (!empty($employee->ssid))
-                                        <span class="text-sm font-mono font-bold text-emerald-400">{{ $employee->ssid }}</span>
+                                        <span
+                                            class="text-sm font-mono font-bold text-emerald-400">{{ $employee->ssid }}</span>
                                     @else
                                         <span class="text-xs text-slate-500 italic">Not set</span>
                                     @endif
@@ -404,7 +417,8 @@
                                     <button onclick="copyToClipboard('{{ e($employee->ssid) }}', this)"
                                         class="copy-btn inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 active:bg-emerald-600 text-slate-100 text-xs font-semibold border border-slate-700 shadow-md transition cursor-pointer"
                                         title="Copy SSID">
-                                        <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                         </svg>
@@ -446,12 +460,15 @@
     </main>
 
     <!-- Export to Excel Modal -->
-    <div id="export-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="glass-card w-full max-w-2xl rounded-2xl border border-slate-700/80 bg-slate-900/95 shadow-2xl overflow-hidden transition-all transform">
+    <div id="export-modal"
+        class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div
+            class="glass-card w-full max-w-2xl rounded-2xl border border-slate-700/80 bg-slate-900/95 shadow-2xl overflow-hidden transition-all transform">
             <!-- Modal Header -->
             <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/80">
                 <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                    <div
+                        class="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -459,12 +476,15 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-bold text-white tracking-tight">Export SSID Report to Excel</h3>
-                        <p class="text-xs text-slate-400">Configure filters and employee selection before generating spreadsheet</p>
+                        <p class="text-xs text-slate-400">Configure filters and employee selection before generating
+                            spreadsheet</p>
                     </div>
                 </div>
-                <button type="button" onclick="closeExportModal()" class="text-slate-400 hover:text-white transition p-1.5 rounded-lg hover:bg-slate-800">
+                <button type="button" onclick="closeExportModal()"
+                    class="text-slate-400 hover:text-white transition p-1.5 rounded-lg hover:bg-slate-800">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
@@ -474,14 +494,16 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <!-- Department Select -->
                     <div>
-                        <label for="export_department_id" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+                        <label for="export_department_id"
+                            class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
                             Filter Department
                         </label>
                         <select name="department_id" id="export_department_id" onchange="filterExportEmployeeList()"
                             class="w-full py-2.5 px-3.5 text-sm rounded-xl text-white glass-input focus:outline-none transition bg-slate-900 border border-slate-700">
                             <option value="">All Departments</option>
                             @foreach ($departments as $dept)
-                                <option value="{{ $dept->id }}" {{ $selectedDepartment == $dept->id ? 'selected' : '' }}>
+                                <option value="{{ $dept->id }}"
+                                    {{ $selectedDepartment == $dept->id ? 'selected' : '' }}>
                                     {{ $dept->name }}
                                 </option>
                             @endforeach
@@ -490,10 +512,12 @@
 
                     <!-- Status Select -->
                     <div>
-                        <label for="export_employee_status" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+                        <label for="export_employee_status"
+                            class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
                             Filter Employee Status
                         </label>
-                        <select name="employee_status" id="export_employee_status" onchange="filterExportEmployeeList()"
+                        <select name="employee_status" id="export_employee_status"
+                            onchange="filterExportEmployeeList()"
                             class="w-full py-2.5 px-3.5 text-sm rounded-xl text-white glass-input focus:outline-none transition bg-slate-900 border border-slate-700">
                             <option value="">All Statuses</option>
                             @foreach ($statuses as $st)
@@ -512,9 +536,11 @@
                             Select Specific Employees (Optional)
                         </label>
                         <div class="space-x-2 text-xs">
-                            <button type="button" onclick="selectAllModalEmployees(true)" class="text-sky-400 hover:underline">Select All</button>
+                            <button type="button" onclick="selectAllModalEmployees(true)"
+                                class="text-sky-400 hover:underline">Select All</button>
                             <span class="text-slate-600">|</span>
-                            <button type="button" onclick="selectAllModalEmployees(false)" class="text-sky-400 hover:underline">Clear</button>
+                            <button type="button" onclick="selectAllModalEmployees(false)"
+                                class="text-sky-400 hover:underline">Clear</button>
                         </div>
                     </div>
 
@@ -523,20 +549,23 @@
                         <input type="text" id="modal_employee_search" onkeyup="filterExportEmployeeList()"
                             placeholder="Filter employee list by code or name..."
                             class="w-full pl-9 pr-3 py-2 text-xs rounded-lg text-white glass-input focus:outline-none bg-slate-950 border border-slate-800">
-                        <svg class="w-4 h-4 absolute left-3 top-2.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        <svg class="w-4 h-4 absolute left-3 top-2.5 text-slate-500" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </div>
 
                     <!-- Scrollable Employees List -->
-                    <div class="max-h-48 overflow-y-auto border border-slate-800 rounded-xl p-2 bg-slate-950/60 divide-y divide-slate-800/40 space-y-1" id="modal_employee_container">
+                    <div class="max-h-48 overflow-y-auto border border-slate-800 rounded-xl p-2 bg-slate-950/60 divide-y divide-slate-800/40 space-y-1"
+                        id="modal_employee_container">
                         @foreach ($allEmployeesForExport as $emp)
                             @php
                                 $empName = $emp->name ?? trim(($emp->first_name ?? '') . ' ' . ($emp->last_name ?? ''));
                             @endphp
-                            <label class="modal-emp-item flex items-center justify-between p-2 rounded-lg hover:bg-slate-800/50 transition cursor-pointer text-xs"
-                                data-dept="{{ $emp->department_id }}"
-                                data-status="{{ $emp->employee_status }}"
+                            <label
+                                class="modal-emp-item flex items-center justify-between p-2 rounded-lg hover:bg-slate-800/50 transition cursor-pointer text-xs"
+                                data-dept="{{ $emp->department_id }}" data-status="{{ $emp->employee_status }}"
                                 data-text="{{ strtolower($emp->employee_code . ' ' . $empName) }}">
                                 <div class="flex items-center gap-2.5">
                                     <input type="checkbox" name="employee_ids[]" value="{{ $emp->employee_code }}"
@@ -546,19 +575,23 @@
                                 </div>
                                 <div class="flex items-center gap-2 text-[10px] text-slate-400">
                                     <span>{{ $emp->department?->name ?? 'No Dept' }}</span>
-                                    <span class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700">{{ $emp->employee_status ?: 'Active' }}</span>
+                                    <span
+                                        class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700">{{ $emp->employee_status ?: 'Active' }}</span>
                                 </div>
                             </label>
                         @endforeach
                     </div>
-                    <p class="text-[11px] text-slate-500 mt-1 italic">* Leaving checkboxes blank will export all employees matching selected Department & Status filters.</p>
+                    <p class="text-[11px] text-slate-500 mt-1 italic">* Leaving checkboxes blank will export all
+                        employees matching selected Department & Status filters.</p>
                 </div>
 
                 <!-- Excel Report Preview Info Notice -->
-                <div class="p-3.5 rounded-xl bg-slate-800/40 border border-slate-700/60 text-xs text-slate-300 space-y-1">
+                <div
+                    class="p-3.5 rounded-xl bg-slate-800/40 border border-slate-700/60 text-xs text-slate-300 space-y-1">
                     <p class="font-semibold text-emerald-400 flex items-center gap-1.5">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         Formatted Report Features
                     </p>
@@ -578,7 +611,8 @@
                     <button type="submit" onclick="setTimeout(closeExportModal, 1000)"
                         class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl shadow-lg shadow-emerald-600/25 border border-emerald-500/30 transition flex items-center gap-2 cursor-pointer">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
                         Download Excel Report
                     </button>
