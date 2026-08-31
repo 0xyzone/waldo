@@ -69,3 +69,11 @@
   - Simple resource (ManageRecords) with modal create/edit.
   - Table Actions: **Acknowledge** (one-way, shows when not acknowledged), **Mark HRMS Synced** (reversible toggle).
   - Row colors: emerald (acknowledged + hrms_synced), amber (acknowledged only).
+
+### 8. Reports & Department Analytics
+- **Department Statistics Widget**: `App\Filament\Widgets\DepartmentEmployeeStatsWidget`
+  - Renders interactive department cards on the dashboard with designation progress bars.
+  - Clicking any department card opens a detail modal matching `/reports/departments/view` (average service tenure, gender distribution progress bars, searchable active employee list, print report, and role-protected Excel export).
+- **Interactive Department Reports Page**: `GET /reports/departments/view` (`ReportController@departmentsView`)
+- **Printable Department Reports**: `GET /reports/departments` and `GET /reports/departments/{id}/print`
+- **Department Employees Excel Export**: `GET /reports/departments/{id}/export` (Protected by `HR|super_admin` role)
