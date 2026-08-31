@@ -335,12 +335,12 @@
                     </div>
 
                     <!-- Metric Card 3: Tips Distribution -->
-                    <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 shadow-inner space-y-3">
+                    {{-- <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 shadow-inner space-y-3">
                         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider heading-font">Tips Status Summary</p>
                         <div id="statTipsList" class="space-y-2">
                             <!-- Dynamically loaded pills -->
                         </div>
-                    </div>
+                    </div> --}}
                 </div>
 
                 <!-- Right Column: Employee Table & List Filter -->
