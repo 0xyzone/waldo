@@ -67,6 +67,7 @@
                     </h1>
                 </div>
             </div>
+            @if(auth()->check() && auth()->user()->hasRole('HR|super_admin'))
             <div class="flex items-center gap-3">
                 <a href="{{ url('/reports/departments') }}" target="_blank"
                    class="inline-flex items-center justify-center gap-2 font-bold tracking-wide text-white bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-[0_4px_15px_rgba(249,115,22,0.25)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.4)] transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-amber-500/50 rounded-xl px-5 py-3 text-sm whitespace-nowrap">
@@ -76,6 +77,7 @@
                     Print PDF Report
                 </a>
             </div>
+            @endif
         </header>
 
         <!-- KPI Metrics Ribbon -->
@@ -271,12 +273,14 @@
                     </button>
 
                     <!-- Export to Excel Button -->
+                    @if(auth()->check() && auth()->user()->hasRole('HR|super_admin'))
                     <button id="modalExportBtn" onclick="exportCurrentDepartmentExcel()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold tracking-wide shadow-lg shadow-emerald-950/40 border border-emerald-400/20 transition-all transform hover:scale-105 active:scale-95">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
                         </svg>
                         <span>Download Excel</span>
                     </button>
+                    @endif
 
                     <!-- Close Button -->
                     <button onclick="closeDeptModal()" class="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition-all transform hover:scale-105 active:scale-95">
@@ -366,7 +370,7 @@
                                     <th class="px-4 py-3">Gender</th>
                                     <th class="px-4 py-3">Join Date</th>
                                     <th class="px-4 py-3">Designation</th>
-                                    <th class="px-4 py-3">Tips</th>
+                                    {{-- <th class="px-4 py-3">Tips</th> --}}
                                 </tr>
                             </thead>
                             <tbody id="modalEmployeesBody" class="divide-y divide-white/[0.02]">
@@ -473,19 +477,19 @@
             document.getElementById('barGenderFemale').style.width = `${gender.female_percent}%`;
 
             // Set Stats: Tips Statuses
-            const tipsContainer = document.getElementById('statTipsList');
-            tipsContainer.innerHTML = '';
-            const tips = payload.stats.tips;
-            if (Object.keys(tips).length > 0) {
-                Object.entries(tips).forEach(([status, count]) => {
-                    const pill = document.createElement('div');
-                    pill.className = 'flex items-center justify-between p-2 rounded-lg bg-slate-950/40 border border-white/5 text-xs text-slate-300';
-                    pill.innerHTML = `<span>${status}</span><span class="font-bold text-amber-500">${count}</span>`;
-                    tipsContainer.appendChild(pill);
-                });
-            } else {
-                tipsContainer.innerHTML = '<p class="text-xs text-slate-500 italic">No tips stats available</p>';
-            }
+            // const tipsContainer = document.getElementById('statTipsList');
+            // tipsContainer.innerHTML = '';
+            // const tips = payload.stats.tips;
+            // if (Object.keys(tips).length > 0) {
+            //     Object.entries(tips).forEach(([status, count]) => {
+            //         const pill = document.createElement('div');
+            //         pill.className = 'flex items-center justify-between p-2 rounded-lg bg-slate-950/40 border border-white/5 text-xs text-slate-300';
+            //         pill.innerHTML = `<span>${status}</span><span class="font-bold text-amber-500">${count}</span>`;
+            //         tipsContainer.appendChild(pill);
+            //     });
+            // } else {
+            //     tipsContainer.innerHTML = '<p class="text-xs text-slate-500 italic">No tips stats available</p>';
+            // }
 
             // Render employee tables
             renderModalEmployees(activeModalEmployees);
@@ -554,11 +558,11 @@
                     </td>
                     <td class="px-4 py-3 text-slate-400 text-xs">${emp.join_date}</td>
                     <td class="px-4 py-3 text-slate-300 text-xs">${emp.designation}</td>
-                    <td class="px-4 py-3 text-xs">
+                    {{-- <td class="px-4 py-3 text-xs">
                         <span class="inline-flex items-center px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 font-bold text-[9px] uppercase tracking-wider">
                             ${emp.tips_status}
                         </span>
-                    </td>
+                    </td> --}}
                 `;
                 tbody.appendChild(tr);
             });

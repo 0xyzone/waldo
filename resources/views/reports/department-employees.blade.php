@@ -108,9 +108,15 @@
                     <th colspan="6">{{ $department->name }} - Active Employees Report</th>
                 </tr>
                 <tr class="sub-header">
+                    @if(auth()->check() && auth()->user()->hasRole('HR|super_admin'))
                     <th colspan="3" style="text-align: left;">
                         <strong>Department Manager:</strong> {{ $manager ? $manager['name'] . ' (' . $manager['mobile'] . ')' : 'N/A' }}
                     </th>
+                    @else
+                    <th colspan="3" style="text-align: left;">
+                        <strong>Department:</strong> {{ $department->name }}
+                    </th>
+                    @endif
                     <th colspan="3" style="text-align: right;">
                         <strong>Total Active Staff:</strong> {{ $employees->count() }}
                     </th>
