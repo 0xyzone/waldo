@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -207,5 +208,14 @@ class Employee extends Model
                 ->orWhereNull('tips_amount')
                 ->orWhereNull('point_value');
         });
+    }
+
+    public function getAgeAttribute()
+    {
+        if (empty($this->dob_ad)) {
+            return null;
+        }
+
+        return Carbon::parse($this->dob_ad)->age;
     }
 }

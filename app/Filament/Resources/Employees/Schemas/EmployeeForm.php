@@ -79,9 +79,8 @@ class EmployeeForm
                                             ->hint(function ($state) {
                                                 if (! empty($state)) {
                                                     try {
-                                                        $date = Carbon::parse($state);
-                                                        $age = $date->diffForHumans(Carbon::now()); //grab only year
-                                                        return 'was born ' . $age;
+                                                        $age = Carbon::parse($state)->age;
+                                                        return $age . ' years old';
                                                     } catch (\Exception $e) {
                                                         // ignore
                                                     }
