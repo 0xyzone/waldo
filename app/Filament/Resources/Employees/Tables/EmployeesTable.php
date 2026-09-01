@@ -146,14 +146,6 @@ class EmployeesTable
                         ->copyable()
                         ->copyMessage('SSID copied')
                         ->extraAttributes(['class' => 'mt-1 block']),
-                    TextColumn::make('age')
-                        ->label('Age')
-                        ->getStateUsing(fn(Employee $record) => $record->age ? $record->age . ' years old' : null)
-                        ->icon('heroicon-m-cake')
-                        ->iconColor('primary')
-                        ->color('gray')
-                        ->size('sm')
-                        ->extraAttributes(['class' => 'mt-1 block']),
                     TextColumn::make('join_date_formatted')
                         ->icon('heroicon-m-calendar')
                         ->color('gray')
