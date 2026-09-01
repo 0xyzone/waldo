@@ -12,6 +12,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
@@ -75,6 +76,18 @@ class EmployeeForm
                                             ->firstDayOfWeek(0)
                                             ->live()
                                             ->native(false)
+                                            ->hint(function ($state) {
+                                                if (! empty($state)) {
+                                                    try {
+                                                        $date = Carbon::parse($state);
+                                                        $age = $date->diffForHumans(Carbon::now()); //grab only year
+                                                        return 'was born ' . $age;
+                                                    } catch (\Exception $e) {
+                                                        // ignore
+                                                    }
+                                                }
+                                                return null;
+                                            })
                                             ->afterStateUpdated(function ($state, callable $set) {
                                                 if (empty($state)) {
                                                     $set('dob_bs', null);
