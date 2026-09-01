@@ -7,6 +7,7 @@ use App\Models\Candidate;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 
 class ListCandidates extends ListRecords
 {
