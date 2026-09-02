@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\Candidates\Tables;
 
 use Alsaloul\ImageGallery\Tables\Columns\ImageGalleryColumn;
+use App\Models\Candidate;
 use App\Models\Department;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -108,6 +110,18 @@ class CandidatesTable
                     }),
             ])
             ->recordActions([
+                Action::make('print')
+                    ->label('Print')
+                    ->icon('heroicon-o-printer')
+                    ->color('info')
+                    ->tooltip('Print Preview & CV Images')
+                    ->modalHeading(fn (Candidate $record): string => "Print Preview — {$record->name}")
+                    ->modalWidth('4xl')
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Close')
+                    ->modalContent(fn (Candidate $record) => view('filament.resources.candidates.print-preview-modal', [
+                        'candidate' => $record,
+                    ])),
                 EditAction::make(),
             ])
             ->toolbarActions([

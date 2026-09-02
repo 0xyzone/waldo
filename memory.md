@@ -77,3 +77,12 @@
 - **Interactive Department Reports Page**: `GET /reports/departments/view` (`ReportController@departmentsView`)
 - **Printable Department Reports**: `GET /reports/departments` and `GET /reports/departments/{id}/print`
 - **Department Employees Excel Export**: `GET /reports/departments/{id}/export` (Protected by `HR|super_admin` role)
+
+### 9. Candidates & Document Printing
+- **Model**: `App\Models\Candidate`
+- **Resource**: `App\Filament\Resources\Candidates\CandidateResource` (HR & Admin group)
+- **Features**:
+  - Direct row action **Print** in `CandidatesTable` opening an interactive **Print Preview Modal** (`filament.resources.candidates.print-preview-modal`).
+  - Supports previewing uploaded multi-image CVs, single-page and bulk printing via in-modal iframe print engine.
+  - Standalone printable route: `GET /candidates/{candidate}/print` (`CandidatePrintController@print`).
+

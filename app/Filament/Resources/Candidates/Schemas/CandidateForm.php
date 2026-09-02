@@ -29,14 +29,16 @@ class CandidateForm
                     ->live(onBlur: true)
                     ->firstDayOfWeek(0)
                     ->hint(function ($state) {
-                        if (!empty($state)) {
+                        if (! empty($state)) {
                             try {
                                 $age = Carbon::parse($state)->age;
-                                return $age . ' years old';
+
+                                return $age.' years old';
                             } catch (\Exception $e) {
                                 // ignore
                             }
                         }
+
                         return null;
                     })
                     ->afterStateUpdated(function ($state, callable $set) {
@@ -49,7 +51,7 @@ class CandidateForm
                             $date = Carbon::parse($state);
                             $converter = new NepaliDate;
                             $converted = $converter->convertAdToBs($date->year, $date->month, $date->day);
-                            if (!empty($converted)) {
+                            if (! empty($converted)) {
                                 $set('dob_bs', sprintf('%04d.%02d.%02d', $converted['year'], $converted['month'], $converted['day']));
                             }
                         } catch (\Exception $e) {
@@ -65,9 +67,13 @@ class CandidateForm
                     ->image()
                     ->multiple()
                     ->reorderable()
+                    ->openable()
+                    ->downloadable()
+                    ->previewable()
                     ->disk('public')
                     ->visibility('public')
-                    ->directory('cvs'),
+                    ->directory('cvs')
+                    ->maxSize(20480),
                 TextInput::make('reference')
                     ->hintIcon('heroicon-o-information-circle')
                     ->hintIconTooltip('If there are no reference then you can leave it blank')

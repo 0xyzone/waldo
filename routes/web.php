@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ApiDocsController;
+use App\Http\Controllers\CandidatePrintController;
 use App\Http\Controllers\EmployeeSsidController;
 use App\Http\Controllers\FontController;
 use App\Http\Controllers\LetterController;
@@ -10,6 +11,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Candidates Print
+Route::get('/candidates/{candidate}/print', [CandidatePrintController::class, 'print'])
+    ->name('candidates.print')
+    ->middleware('auth');
 
 // Employee Public SSID Search & Directory
 Route::get('/employee-ssids', [EmployeeSsidController::class, 'index'])->name('employees.ssid-list');
