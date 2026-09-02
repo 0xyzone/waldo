@@ -70,7 +70,7 @@ class LeaversTable
                 IconColumn::make('publish_cl')
                     ->label('Publish CL')
                     ->boolean(),
-                TextColumn::make('notes')
+                TextColumn::make('remarks')
                     ->limit(20)
                     ->tooltip(fn($state) => $state)
                     ->sortable(),
