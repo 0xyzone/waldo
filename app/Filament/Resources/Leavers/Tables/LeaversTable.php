@@ -70,6 +70,10 @@ class LeaversTable
                 IconColumn::make('publish_cl')
                     ->label('Publish CL')
                     ->boolean(),
+                TextColumn::make('notes')
+                    ->limit(20)
+                    ->tooltip(fn($state) => $state)
+                    ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
