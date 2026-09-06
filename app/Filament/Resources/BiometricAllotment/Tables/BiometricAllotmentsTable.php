@@ -186,8 +186,7 @@ class BiometricAllotmentsTable
                             ->default(fn ($record) => $record->shift),
                         TextInput::make('join_date_formatted')
                             ->label('Joined Date')
-                            ->default(fn ($record) => $record->join_date)
-                            ->native(false),
+                            ->default(fn ($record) => $record->join_date),
                     ])
                     ->action(function (array $data) {
                         $employee = Employee::create([
