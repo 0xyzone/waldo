@@ -7,6 +7,7 @@ use App\Models\DiscordSetting;
 use App\Models\Employee;
 use App\Services\DiscordService;
 use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -21,6 +22,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 class BiometricAllotmentsTable
 {
@@ -152,7 +154,7 @@ class BiometricAllotmentsTable
                         if ($auth->hasRole('HR')) {
                             $employee = Employee::where('employee_code', $record->code)->first();
 
-                            return ! $employee && $record?->status !== "Bio Not Required";
+                            return ! $employee && $record?->status !== 'Bio Not Required';
                         }
 
                         return false;
@@ -181,10 +183,10 @@ class BiometricAllotmentsTable
                                 'Evening' => 'Evening',
                                 'Night' => 'Night',
                             ])
-                            ->default(fn($record) => $record->shift),
+                            ->default(fn ($record) => $record->shift),
                         DatePicker::make('join_date_formatted')
                             ->label('Joined Date')
-                            ->default(fn($record) => $record->join_date)
+                            ->default(fn ($record) => $record->join_date)
                             ->native(false)
                             ->displayFormat('F j, Y'),
                     ])
@@ -321,6 +323,62 @@ class BiometricAllotmentsTable
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    BulkAction::make('bulk_convert_to_employee')
+                        ->label('Convert to Employee')
+                        ->icon('heroicon-o-user-plus')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Bulk Convert to Employee')
+                        ->modalDescription('Selected records will be converted to employees in ascending employee code order. Records that are already converted or marked as "Bio Not Required" will be skipped.')
+                        ->visible(function (): bool {
+                            $user = auth()->user();
+
+                            return $user->hasRole('super_admin') || $user->hasRole('HR');
+                        })
+                        ->action(function (Collection $records): void {
+                            $sorted = $records->sortBy(fn ($record) => (int) preg_replace('/[^0-9]/', '', $record->code));
+
+                            $converted = 0;
+                            $skipped = 0;
+
+                            foreach ($sorted as $record) {
+                                if ($record->status === 'Bio Not Required') {
+                                    $skipped++;
+
+                                    continue;
+                                }
+
+                                $alreadyExists = Employee::where('employee_code', $record->code)->exists();
+
+                                if ($alreadyExists) {
+                                    $skipped++;
+
+                                    continue;
+                                }
+
+                                Employee::create([
+                                    'employee_code' => $record->code,
+                                    'name' => $record->name,
+                                    'department_id' => $record->department_id,
+                                    'contact_number' => $record->phone,
+                                    'employee_status' => 'Active',
+                                    'shift' => $record->shift,
+                                    'tips_status' => 'Release',
+                                    'point_value' => 1,
+                                    'publish_tips' => false,
+                                    'tips_fixed' => true,
+                                    'joined_date_formatted' => $record->join_date,
+                                ]);
+
+                                $converted++;
+                            }
+
+                            Notification::make()
+                                ->title('Bulk Conversion Complete')
+                                ->body("Converted: {$converted} | Skipped: {$skipped}")
+                                ->success()
+                                ->send();
+                        }),
                 ]),
             ]);
     }
