@@ -49,6 +49,8 @@ class TipsAdjustmentsTable
                 TextColumn::make('amount')
                     ->label('Amount')
                     ->numeric()
+                    ->copyable(fn ($record) => $record->amount)
+                    ->copyMessage(fn($record) => $record->amount . ' copied!')
                     ->formatStateUsing(function ($record) {
                         if ($record->type === 'add') {
                             return '+ ' . $record->amount;
