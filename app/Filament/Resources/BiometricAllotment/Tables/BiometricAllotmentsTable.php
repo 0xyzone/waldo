@@ -184,11 +184,10 @@ class BiometricAllotmentsTable
                                 'Night' => 'Night',
                             ])
                             ->default(fn ($record) => $record->shift),
-                        DatePicker::make('join_date_formatted')
+                        TextInput::make('join_date_formatted')
                             ->label('Joined Date')
                             ->default(fn ($record) => $record->join_date)
-                            ->native(false)
-                            ->displayFormat('F j, Y'),
+                            ->native(false),
                     ])
                     ->action(function (array $data) {
                         $employee = Employee::create([
