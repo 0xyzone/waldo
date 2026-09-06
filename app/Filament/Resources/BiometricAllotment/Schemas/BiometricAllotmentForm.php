@@ -6,6 +6,7 @@ use App\Filament\Resources\BiometricAllotment\BiometricAllotmentResource;
 use App\Models\BiometricAllotment;
 use App\Models\MapUser;
 use App\Models\User;
+use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -100,6 +101,29 @@ class BiometricAllotmentForm
                                     ->firstDayOfWeek(0)
                                     ->label('Joined Date')
                                     ->native(false)
+                                    ->afterStateHydrated(function ($component, $state): void {
+                                        if (blank($state)) {
+                                            return;
+                                        }
+
+                                        try {
+                                            $parsed = Carbon::createFromFormat('d F, Y', $state);
+                                            $component->state($parsed->format('Y-m-d'));
+                                        } catch (\Throwable) {
+                                            // already Y-m-d or unparseable — leave as-is
+                                        }
+                                    })
+                                    ->dehydrateStateUsing(function ($state): ?string {
+                                        if (blank($state)) {
+                                            return null;
+                                        }
+
+                                        try {
+                                            return Carbon::parse($state)->format('d F, Y');
+                                        } catch (\Throwable) {
+                                            return $state;
+                                        }
+                                    })
                                     ->default(function (): string {
                                         $today = now();
 

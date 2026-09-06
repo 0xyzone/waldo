@@ -46,6 +46,7 @@ class BiometricAllotment extends Model
         'new_checkout',
         'shift',
         'remarks',
+        'join_date',
     ];
 
     /**

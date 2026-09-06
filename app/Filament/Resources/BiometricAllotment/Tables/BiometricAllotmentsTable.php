@@ -6,6 +6,7 @@ use App\Models\BiometricAllotment;
 use App\Models\DiscordSetting;
 use App\Models\Employee;
 use App\Services\DiscordService;
+use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
@@ -50,8 +51,7 @@ class BiometricAllotmentsTable
                 TextColumn::make('department.name')
                     ->label('Department'),
                 TextColumn::make('join_date')
-                    ->label('Joined Date')
-                    ->date(),
+                    ->label('Joined Date'),
                 TextColumn::make('enrolled_date')
                     ->date(),
                 TextColumn::make('set_by')
@@ -367,7 +367,9 @@ class BiometricAllotmentsTable
                                     'point_value' => 1,
                                     'publish_tips' => false,
                                     'tips_fixed' => true,
-                                    'join_date_formatted' => $record->join_date,
+                                    'join_date_formatted' => filled($record->join_date)
+                                        ? Carbon::parse($record->join_date)->format('d F, Y')
+                                        : null,
                                 ]);
 
                                 $converted++;
