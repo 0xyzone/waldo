@@ -50,13 +50,14 @@ class TipsAdjustmentsTable
                     ->label('Amount')
                     ->numeric()
                     ->copyable()
-                    ->copyableState(fn ($record) => $record->amount)
-                    ->copyMessage(fn($record) => $record->amount . ' copied!')
+                    ->copyableState(fn ($record) => (string) ($record->amount + 0))
+                    ->copyMessage(fn($record) => ($record->amount + 0) . ' copied!')
                     ->formatStateUsing(function ($record) {
-                        if ($record->type === 'add') {
-                            return '+ ' . $record->amount;
-                        }
-                        return '- ' . $record->amount;
+                        $cleanAmount = $record->amount + 0;
+
+                        return $record->type === 'add'
+                            ? '+ ' . $cleanAmount
+                            : '- ' . $cleanAmount;
                     })
                     ->color(fn($record) => $record->type === 'add' ? 'success' : 'danger')
                     ->badge()
@@ -74,7 +75,7 @@ class TipsAdjustmentsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('id', 'desc')
-            ->recordClasses(fn (TipsAdjustment $record) => match (strtolower((string) $record->status)) {
+            ->recordClasses(fn(TipsAdjustment $record) => match (strtolower((string) $record->status)) {
                 'updated' => 'bg-emerald-950 border-emerald-200 dark:border-emerald-900',
                 'cancelled' => 'bg-gray-500 border-gray-200 dark:border-gray-700',
                 default => null,
