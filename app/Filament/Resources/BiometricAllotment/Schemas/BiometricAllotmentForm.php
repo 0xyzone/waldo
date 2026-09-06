@@ -70,7 +70,7 @@ class BiometricAllotmentForm
 
                                 $livewire->redirect(BiometricAllotmentResource::getUrl('index'));
                             })
-                            ->hidden(fn (string $operation): bool => $operation === 'create')
+                            ->hidden(fn(string $operation): bool => $operation === 'create')
                             ->visible(function ($record, $operations) {
                                 return MapUser::where('user_id', Auth::id())->exists() && $record?->status != 'Done';
                             }),
@@ -78,12 +78,12 @@ class BiometricAllotmentForm
                             ->label('Call')
                             ->icon('heroicon-o-phone')
                             ->color('info')
-                            ->url(fn ($record) => $record?->phone ? 'tel:'.$record->phone : null)
+                            ->url(fn($record) => $record?->phone ? 'tel:' . $record->phone : null)
                             ->openUrlInNewTab(false)
-                            ->visible(fn ($record) => filled($record?->phone)),
+                            ->visible(fn($record) => filled($record?->phone)),
                     ])
                     ->schema([
-                        Grid::make(['default' => 1, 'sm' => 2])
+                        Grid::make(['default' => 1, 'sm' => 3])
                             ->schema([
                                 TextInput::make('name')
                                     ->label('Full Name')
@@ -96,6 +96,10 @@ class BiometricAllotmentForm
                                     ->searchable()
                                     ->preload()
                                     ->required(),
+                                DatePicker::make('join_date')
+                                    ->firstDayOfWeek(0)
+                                    ->label('Joined Date')
+                                    ->native(false),
                             ])
                             ->disabled($isIt),
                         Grid::make(['default' => 1, 'sm' => 3])
@@ -111,12 +115,12 @@ class BiometricAllotmentForm
                                     ->native(false)
                                     ->default('Not Done Yet')
                                     ->disabled($isIt)
-                                    ->hidden(fn (string $operation): bool => $operation === 'create'),
+                                    ->hidden(fn(string $operation): bool => $operation === 'create'),
                                 DatePicker::make('enrolled_date')
                                     ->label('Enrolled Date')
                                     ->native(false)
                                     ->disabled($isIt)
-                                    ->hidden(fn (string $operation): bool => $operation === 'create'),
+                                    ->hidden(fn(string $operation): bool => $operation === 'create'),
                                 Select::make('set_by')
                                     ->label('Set By')
                                     ->options([
@@ -128,7 +132,7 @@ class BiometricAllotmentForm
                                     ->searchable()
                                     ->preload()
                                     ->disabled($isIt)
-                                    ->hidden(fn (string $operation): bool => $operation === 'create'),
+                                    ->hidden(fn(string $operation): bool => $operation === 'create'),
                             ]),
                         Grid::make(['default' => 1, 'sm' => 3])
                             ->schema([
@@ -142,7 +146,7 @@ class BiometricAllotmentForm
                                     ->label('New CheckOut')
                                     ->disabled($isIt),
                             ])
-                            ->hidden(fn (string $operation): bool => $operation === 'create'),
+                            ->hidden(fn(string $operation): bool => $operation === 'create'),
                         Grid::make(['default' => 1, 'sm' => 2])
                             ->schema([
                                 Select::make('shift')

@@ -47,6 +47,9 @@ class BiometricAllotmentsTable
                     ->weight('bold'),
                 TextColumn::make('department.name')
                     ->label('Department'),
+                TextColumn::make('join_date')
+                    ->label('Joined Date')
+                    ->date(),
                 TextColumn::make('enrolled_date')
                     ->date(),
                 TextColumn::make('set_by')
@@ -178,7 +181,12 @@ class BiometricAllotmentsTable
                                 'Evening' => 'Evening',
                                 'Night' => 'Night',
                             ])
-                            ->default(fn ($record) => $record->shift),
+                            ->default(fn($record) => $record->shift),
+                        DatePicker::make('join_date_formatted')
+                            ->label('Joined Date')
+                            ->default(fn($record) => $record->join_date)
+                            ->native(false)
+                            ->displayFormat('F j, Y'),
                     ])
                     ->action(function (array $data) {
                         $employee = Employee::create([
@@ -192,6 +200,7 @@ class BiometricAllotmentsTable
                             'point_value' => 1,
                             'publish_tips' => false,
                             'tips_fixed' => true,
+                            'joined_date_formatted' => $data['join_date_formatted'],
                         ]);
                         Notification::make()
                             ->title('Employee Created')
