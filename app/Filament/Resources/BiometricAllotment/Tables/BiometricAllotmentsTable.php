@@ -202,7 +202,7 @@ class BiometricAllotmentsTable
                             'point_value' => 1,
                             'publish_tips' => false,
                             'tips_fixed' => true,
-                            'joined_date_formatted' => $data['join_date_formatted'],
+                            'join_date_formatted' => $data['join_date_formatted'],
                         ]);
                         Notification::make()
                             ->title('Employee Created')
@@ -367,7 +367,7 @@ class BiometricAllotmentsTable
                                     'point_value' => 1,
                                     'publish_tips' => false,
                                     'tips_fixed' => true,
-                                    'joined_date_formatted' => $record->join_date,
+                                    'join_date_formatted' => $record->join_date,
                                 ]);
 
                                 $converted++;
