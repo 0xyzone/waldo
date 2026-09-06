@@ -14,6 +14,10 @@ return new class extends Migration
     public function up(): void
     {
         // Convert existing date values to formatted string before changing column type
+
+        Schema::table('biometric_allotments', function (Blueprint $table) {
+            $table->string('join_date')->nullable()->change();
+        });
         DB::table('biometric_allotments')
             ->whereNotNull('join_date')
             ->get(['code', 'join_date'])
@@ -23,10 +27,6 @@ return new class extends Migration
                     ->where('code', $row->code)
                     ->update(['join_date' => $formatted]);
             });
-
-        Schema::table('biometric_allotments', function (Blueprint $table) {
-            $table->string('join_date')->nullable()->change();
-        });
     }
 
     /**
