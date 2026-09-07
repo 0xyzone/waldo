@@ -25,7 +25,7 @@ class LeaverForm
                                     ->relationship(
                                         name: 'employee',
                                         titleAttribute: 'name',
-                                        modifyQueryUsing: fn ($query) => $query->where('status', 'active'),
+                                        modifyQueryUsing: fn ($query) => $query->where('employee_status', 'active'),
                                     )
                                     ->getOptionLabelFromRecordUsing(fn ($record) => strtoupper($record->employee_code).' | '.$record->name)
                                     ->searchable(['name', 'employee_code'])
