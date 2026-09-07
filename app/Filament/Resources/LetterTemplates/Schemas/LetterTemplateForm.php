@@ -7,6 +7,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -78,6 +79,29 @@ class LetterTemplateForm
                                                     ->required()
                                                     ->default(20),
                                             ]),
+                                        Toggle::make('different_first_page_margins')
+                                            ->label('Different Margins for 1st Page')
+                                            ->live(),
+                                        Grid::make(4)
+                                            ->schema([
+                                                TextInput::make('first_page_margin_top')
+                                                    ->label('1st Page Top')
+                                                    ->numeric()
+                                                    ->integer(),
+                                                TextInput::make('first_page_margin_bottom')
+                                                    ->label('1st Page Bottom')
+                                                    ->numeric()
+                                                    ->integer(),
+                                                TextInput::make('first_page_margin_left')
+                                                    ->label('1st Page Left')
+                                                    ->numeric()
+                                                    ->integer(),
+                                                TextInput::make('first_page_margin_right')
+                                                    ->label('1st Page Right')
+                                                    ->numeric()
+                                                    ->integer(),
+                                            ])
+                                            ->visible(fn ($get) => (bool) $get('different_first_page_margins')),
                                     ]),
 
                                 Section::make('Custom Template Variables')

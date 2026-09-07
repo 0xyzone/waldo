@@ -35,6 +35,13 @@ if (!$employee) {
         left: 20,
         right: 20
     },
+    differentFirstPage: false,
+    firstPageMargins: {
+        top: 25,
+        bottom: 25,
+        left: 20,
+        right: 20
+    },
     
     init() {
         this.$watch('$wire.data.title', val => this.title = val || 'Untitled Template');
@@ -43,6 +50,11 @@ if (!$employee) {
         this.$watch('$wire.data.margin_bottom', val => this.margins.bottom = val || 25);
         this.$watch('$wire.data.margin_left', val => this.margins.left = val || 20);
         this.$watch('$wire.data.margin_right', val => this.margins.right = val || 20);
+        this.$watch('$wire.data.different_first_page_margins', val => this.differentFirstPage = Boolean(val));
+        this.$watch('$wire.data.first_page_margin_top', val => this.firstPageMargins.top = val || this.margins.top);
+        this.$watch('$wire.data.first_page_margin_bottom', val => this.firstPageMargins.bottom = val || this.margins.bottom);
+        this.$watch('$wire.data.first_page_margin_left', val => this.firstPageMargins.left = val || this.margins.left);
+        this.$watch('$wire.data.first_page_margin_right', val => this.firstPageMargins.right = val || this.margins.right);
         
         this.title = this.$wire.get('data.title') || 'Untitled Template';
         this.content = this.$wire.get('data.content') || '';
@@ -50,6 +62,11 @@ if (!$employee) {
         this.margins.bottom = this.$wire.get('data.margin_bottom') || 25;
         this.margins.left = this.$wire.get('data.margin_left') || 20;
         this.margins.right = this.$wire.get('data.margin_right') || 20;
+        this.differentFirstPage = Boolean(this.$wire.get('data.different_first_page_margins'));
+        this.firstPageMargins.top = this.$wire.get('data.first_page_margin_top') || this.margins.top;
+        this.firstPageMargins.bottom = this.$wire.get('data.first_page_margin_bottom') || this.margins.bottom;
+        this.firstPageMargins.left = this.$wire.get('data.first_page_margin_left') || this.margins.left;
+        this.firstPageMargins.right = this.$wire.get('data.first_page_margin_right') || this.margins.right;
     },
 
     jsonToHtml(node) {
@@ -170,12 +187,17 @@ if (!$employee) {
     },
 
     get marginStyles() {
+        const m = (this.differentFirstPage ? this.firstPageMargins : this.margins);
+        const top = m.top || this.margins.top || 25;
+        const bottom = m.bottom || this.margins.bottom || 25;
+        const left = m.left || this.margins.left || 20;
+        const right = m.right || this.margins.right || 20;
         return `
             .preview-a4-page {
-                padding-top: ${this.margins.top}mm !important;
-                padding-bottom: ${this.margins.bottom}mm !important;
-                padding-left: ${this.margins.left}mm !important;
-                padding-right: ${this.margins.right}mm !important;
+                padding-top: ${top}mm !important;
+                padding-bottom: ${bottom}mm !important;
+                padding-left: ${left}mm !important;
+                padding-right: ${right}mm !important;
             }
         `;
     }

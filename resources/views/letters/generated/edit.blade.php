@@ -90,6 +90,8 @@
 @section('content')
 @php
     $m = $letter->margins ?? ['top' => 25, 'bottom' => 25, 'left' => 20, 'right' => 20];
+    $hasDiff = !empty($m['different_first_page']);
+    $fp = $m['first_page'] ?? [];
     $emp = $letter->employee;
 @endphp
 <div x-data="editGeneratedLetterState()" class="flex-1 flex flex-col overflow-hidden">
@@ -247,10 +249,10 @@
             <div id="editor-scroll">
                 <div class="doc-page"
                      :style="`
-                         --mt: ${margins.top}mm;
-                         --mb: ${margins.bottom}mm;
-                         --ml: ${margins.left}mm;
-                         --mr: ${margins.right}mm;
+                         --mt: ${(differentFirstPageMargins ? firstPageMargins.top : margins.top)}mm;
+                         --mb: ${(differentFirstPageMargins ? firstPageMargins.bottom : margins.bottom)}mm;
+                         --ml: ${(differentFirstPageMargins ? firstPageMargins.left : margins.left)}mm;
+                         --mr: ${(differentFirstPageMargins ? firstPageMargins.right : margins.right)}mm;
                      `">
                     <div id="page-content-editor" contenteditable="true" class="doc-page-content">
                         {!! $letter->content !!}
@@ -295,27 +297,72 @@
 
                 <!-- Page Margins -->
                 <div class="p-4 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl space-y-3">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Page Margins (mm)</label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Top</label>
-                            <input type="number" name="margin_top" x-model.number="margins.top" min="0" max="100"
-                                   class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Page Margins (mm)</label>
+                        <label class="flex items-center gap-1.5 cursor-pointer select-none">
+                            <input type="hidden" name="different_first_page_margins" value="0">
+                            <input type="checkbox" name="different_first_page_margins" value="1"
+                                   x-model="differentFirstPageMargins"
+                                   class="rounded border-slate-300 dark:border-zinc-700 text-amber-500 focus:ring-amber-500 text-xs">
+                            <span class="text-[10px] font-semibold text-slate-600 dark:text-zinc-400">Diff 1st Page</span>
+                        </label>
+                    </div>
+
+                    <!-- Other / Global Pages Margins -->
+                    <div class="space-y-1.5">
+                        <span x-show="differentFirstPageMargins" class="block text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                            Other Pages Margins
+                        </span>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Top</label>
+                                <input type="number" name="margin_top" x-model.number="margins.top" min="0" max="100"
+                                       class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Bottom</label>
+                                <input type="number" name="margin_bottom" x-model.number="margins.bottom" min="0" max="100"
+                                       class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Left</label>
+                                <input type="number" name="margin_left" x-model.number="margins.left" min="0" max="100"
+                                       class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Right</label>
+                                <input type="number" name="margin_right" x-model.number="margins.right" min="0" max="100"
+                                       class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Bottom</label>
-                            <input type="number" name="margin_bottom" x-model.number="margins.bottom" min="0" max="100"
-                                   class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Left</label>
-                            <input type="number" name="margin_left" x-model.number="margins.left" min="0" max="100"
-                                   class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Right</label>
-                            <input type="number" name="margin_right" x-model.number="margins.right" min="0" max="100"
-                                   class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
+                    </div>
+
+                    <!-- First Page Margins -->
+                    <div x-show="differentFirstPageMargins" class="space-y-1.5 pt-2 border-t border-slate-200/60 dark:border-zinc-800/80">
+                        <span class="block text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                            1st Page Margins
+                        </span>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Top</label>
+                                <input type="number" name="first_page_margin_top" x-model.number="firstPageMargins.top" min="0" max="100"
+                                       class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Bottom</label>
+                                <input type="number" name="first_page_margin_bottom" x-model.number="firstPageMargins.bottom" min="0" max="100"
+                                       class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Left</label>
+                                <input type="number" name="first_page_margin_left" x-model.number="firstPageMargins.left" min="0" max="100"
+                                       class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Right</label>
+                                <input type="number" name="first_page_margin_right" x-model.number="firstPageMargins.right" min="0" max="100"
+                                       class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -456,11 +503,18 @@ function editGeneratedLetterState() {
     return {
         employee: @json($emp),
         customValues: @json($letter->custom_values ?? []),
+        differentFirstPageMargins: {{ $hasDiff ? 'true' : 'false' }},
         margins: {
             top: {{ $m['top'] ?? 25 }},
             bottom: {{ $m['bottom'] ?? 25 }},
             left: {{ $m['left'] ?? 20 }},
             right: {{ $m['right'] ?? 20 }}
+        },
+        firstPageMargins: {
+            top: {{ $fp['top'] ?? $m['top'] ?? 25 }},
+            bottom: {{ $fp['bottom'] ?? $m['bottom'] ?? 25 }},
+            left: {{ $fp['left'] ?? $m['left'] ?? 20 }},
+            right: {{ $fp['right'] ?? $m['right'] ?? 20 }}
         },
         varSearch: '',
         prebuiltVars: [

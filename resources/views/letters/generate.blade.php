@@ -314,28 +314,28 @@
                             <div class="page-sheet">
                                 <div class="a4-page"
                                      :style="`
-                                         padding-top: var(--page-margin-top);
-                                         padding-bottom: var(--page-margin-bottom);
-                                         padding-left: var(--page-margin-left);
-                                         padding-right: var(--page-margin-right);
+                                         padding-top: ${(pageIdx === 0 && differentFirstPageMargins) ? firstPageMargins.top : margins.top}mm;
+                                         padding-bottom: ${(pageIdx === 0 && differentFirstPageMargins) ? firstPageMargins.bottom : margins.bottom}mm;
+                                         padding-left: ${(pageIdx === 0 && differentFirstPageMargins) ? firstPageMargins.left : margins.left}mm;
+                                         padding-right: ${(pageIdx === 0 && differentFirstPageMargins) ? firstPageMargins.right : margins.right}mm;
                                      `"
                                      x-html="pageHtml">
                                 </div>
 
                                 <!-- Margin guides (not printed) -->
-                                <template x-if="showGuides && pageIdx === 0">
+                                <template x-if="showGuides">
                                     <div>
-                                        <div class="margin-guide guide-top no-print" :style="`height:${margins.top}mm`">
-                                            <span class="guide-label" style="left:6px;bottom:2px" x-text="`↑ ${margins.top}mm`"></span>
+                                        <div class="margin-guide guide-top no-print" :style="`height:${(pageIdx === 0 && differentFirstPageMargins) ? firstPageMargins.top : margins.top}mm`">
+                                            <span class="guide-label" style="left:6px;bottom:2px" x-text="`↑ ${(pageIdx === 0 && differentFirstPageMargins) ? firstPageMargins.top : margins.top}mm`"></span>
                                         </div>
-                                        <div class="margin-guide guide-bottom no-print" :style="`height:${margins.bottom}mm`">
-                                            <span class="guide-label" style="left:6px;top:2px" x-text="`↓ ${margins.bottom}mm`"></span>
+                                        <div class="margin-guide guide-bottom no-print" :style="`height:${(pageIdx === 0 && differentFirstPageMargins) ? firstPageMargins.bottom : margins.bottom}mm`">
+                                            <span class="guide-label" style="left:6px;top:2px" x-text="`↓ ${(pageIdx === 0 && differentFirstPageMargins) ? firstPageMargins.bottom : margins.bottom}mm`"></span>
                                         </div>
-                                        <div class="margin-guide guide-left no-print" :style="`width:${margins.left}mm`">
-                                            <span class="guide-label" style="top:6px;right:2px" x-text="`← ${margins.left}mm`"></span>
+                                        <div class="margin-guide guide-left no-print" :style="`width:${(pageIdx === 0 && differentFirstPageMargins) ? firstPageMargins.left : margins.left}mm`">
+                                            <span class="guide-label" style="top:6px;right:2px" x-text="`← ${(pageIdx === 0 && differentFirstPageMargins) ? firstPageMargins.left : margins.left}mm`"></span>
                                         </div>
-                                        <div class="margin-guide guide-right no-print" :style="`width:${margins.right}mm`">
-                                            <span class="guide-label" style="top:6px;left:2px" x-text="`→ ${margins.right}mm`"></span>
+                                        <div class="margin-guide guide-right no-print" :style="`width:${(pageIdx === 0 && differentFirstPageMargins) ? firstPageMargins.right : margins.right}mm`">
+                                            <span class="guide-label" style="top:6px;left:2px" x-text="`→ ${(pageIdx === 0 && differentFirstPageMargins) ? firstPageMargins.right : margins.right}mm`"></span>
                                         </div>
                                     </div>
                                 </template>
@@ -436,6 +436,8 @@ function generatorState() {
         search: '',
         showGuides: true,
         margins: { top: 25, bottom: 25, left: 20, right: 20 },
+        differentFirstPageMargins: false,
+        firstPageMargins: { top: 25, bottom: 25, left: 20, right: 20 },
         paginatedLetters: {},
         isSaving: false,
         saveMessage: '',
@@ -455,7 +457,19 @@ function generatorState() {
                     employee_name: emp ? emp.name : code,
                     content: this.renderLetter(code),
                     custom_values: this.customValues,
-                    margins: this.margins
+                    margins: {
+                        top: this.margins.top,
+                        bottom: this.margins.bottom,
+                        left: this.margins.left,
+                        right: this.margins.right,
+                        different_first_page: this.differentFirstPageMargins,
+                        first_page: {
+                            top: this.firstPageMargins.top,
+                            bottom: this.firstPageMargins.bottom,
+                            left: this.firstPageMargins.left,
+                            right: this.firstPageMargins.right,
+                        }
+                    }
                 };
             });
 
@@ -513,10 +527,15 @@ function generatorState() {
             this.customValues = {};
 
             if (this.selectedTemplate) {
+                this.differentFirstPageMargins = Boolean(this.selectedTemplate.different_first_page_margins);
                 this.margins.top    = this.selectedTemplate.margin_top    ?? 25;
                 this.margins.bottom = this.selectedTemplate.margin_bottom ?? 25;
                 this.margins.left   = this.selectedTemplate.margin_left   ?? 20;
                 this.margins.right  = this.selectedTemplate.margin_right  ?? 20;
+                this.firstPageMargins.top    = this.selectedTemplate.first_page_margin_top    ?? this.margins.top;
+                this.firstPageMargins.bottom = this.selectedTemplate.first_page_margin_bottom ?? this.margins.bottom;
+                this.firstPageMargins.left   = this.selectedTemplate.first_page_margin_left   ?? this.margins.left;
+                this.firstPageMargins.right  = this.selectedTemplate.first_page_margin_right  ?? this.margins.right;
 
                 (this.selectedTemplate.variables ?? []).forEach(v => {
                     const key  = typeof v === 'object' ? v.key : v;
@@ -683,7 +702,7 @@ function generatorState() {
                 let full = this.renderLetter(code);
                 if (!full) return;
 
-                const splitPages = full.split(/<!--\s*PAGE_BREAK\s*-->/gi)
+                const splitPages = full.split(/<!--\s*(?:MANUAL_)?PAGE_BREAK\s*-->/gi)
                     .map(p => p.trim())
                     .filter(p => p.length > 0);
 

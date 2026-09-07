@@ -764,17 +764,52 @@ body.is-col-resizing {
 
                 <!-- Page Margins -->
                 <div class="p-4 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl space-y-3">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Page Margins (mm)</label>
-                    <div class="grid grid-cols-2 gap-2">
-                        @foreach(['top' => 'Top', 'bottom' => 'Bottom', 'left' => 'Left', 'right' => 'Right'] as $side => $label)
-                        <div>
-                            <label class="block text-[9px] font-bold text-slate-400 mb-0.5">{{ $label }}</label>
-                            <input type="number" name="margin_{{ $side }}" x-model.number="margins.{{ $side }}"
-                                   min="0" max="100"
-                                   class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none"
-                                   @change="applyMarginsToAll()">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Page Margins (mm)</label>
+                        <label class="flex items-center gap-1.5 cursor-pointer select-none">
+                            <input type="hidden" name="different_first_page_margins" value="0">
+                            <input type="checkbox" name="different_first_page_margins" value="1"
+                                   x-model="differentFirstPageMargins"
+                                   @change="applyMarginsToAll()"
+                                   class="rounded border-slate-300 dark:border-zinc-700 text-amber-500 focus:ring-amber-500 text-xs">
+                            <span class="text-[10px] font-semibold text-slate-600 dark:text-zinc-400">Diff 1st Page</span>
+                        </label>
+                    </div>
+
+                    <!-- Other / Global Pages Margins -->
+                    <div class="space-y-1.5">
+                        <span x-show="differentFirstPageMargins" class="block text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                            Other Pages Margins
+                        </span>
+                        <div class="grid grid-cols-2 gap-2">
+                            @foreach(['top' => 'Top', 'bottom' => 'Bottom', 'left' => 'Left', 'right' => 'Right'] as $side => $label)
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 mb-0.5">{{ $label }}</label>
+                                <input type="number" name="margin_{{ $side }}" x-model.number="margins.{{ $side }}"
+                                       min="0" max="100"
+                                       class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none"
+                                       @change="applyMarginsToAll()">
+                            </div>
+                            @endforeach
                         </div>
-                        @endforeach
+                    </div>
+
+                    <!-- First Page Margins (shown when differentFirstPageMargins is true) -->
+                    <div x-show="differentFirstPageMargins" class="space-y-1.5 pt-2 border-t border-slate-200/60 dark:border-zinc-800/80">
+                        <span class="block text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                            1st Page Margins
+                        </span>
+                        <div class="grid grid-cols-2 gap-2">
+                            @foreach(['top' => 'Top', 'bottom' => 'Bottom', 'left' => 'Left', 'right' => 'Right'] as $side => $label)
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 mb-0.5">{{ $label }}</label>
+                                <input type="number" name="first_page_margin_{{ $side }}" x-model.number="firstPageMargins.{{ $side }}"
+                                       min="0" max="100"
+                                       class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none"
+                                       @change="applyMarginsToAll()">
+                            </div>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
 
@@ -1802,11 +1837,18 @@ document.addEventListener('selectionchange', () => {
 function editTemplateState() {
     return {
         title: @json($template->title),
+        differentFirstPageMargins: {{ $template->different_first_page_margins ? 'true' : 'false' }},
         margins: {
             top:    {{ $template->margin_top    ?? 25 }},
             bottom: {{ $template->margin_bottom ?? 25 }},
             left:   {{ $template->margin_left   ?? 20 }},
             right:  {{ $template->margin_right  ?? 20 }},
+        },
+        firstPageMargins: {
+            top:    {{ $template->first_page_margin_top    ?? $template->margin_top    ?? 25 }},
+            bottom: {{ $template->first_page_margin_bottom ?? $template->margin_bottom ?? 25 }},
+            left:   {{ $template->first_page_margin_left   ?? $template->margin_left   ?? 20 }},
+            right:  {{ $template->first_page_margin_right  ?? $template->margin_right  ?? 20 }},
         },
         variables: @json($template->variables ?? []),
         pages: 1,
@@ -1896,8 +1938,10 @@ function editTemplateState() {
         applyLetterSpacing(v) { if (v !== '') applyToCurrentBlock('letterSpacing', v); },
 
         applyMarginsToAll() {
-            const m = this.margins;
-            document.querySelectorAll('.doc-page').forEach(p => {
+            document.querySelectorAll('.doc-page').forEach((p, idx) => {
+                const pageNum = idx + 1;
+                const isFirst = (pageNum === 1 && this.differentFirstPageMargins);
+                const m = isFirst ? this.firstPageMargins : this.margins;
                 p.style.setProperty('--mt', m.top    + 'mm');
                 p.style.setProperty('--mb', m.bottom + 'mm');
                 p.style.setProperty('--ml', m.left   + 'mm');
@@ -1998,11 +2042,15 @@ function editTemplateState() {
             container.innerHTML = '';
 
             // 4. Distribute nodes node-by-node
-            let currentPage = this.createPage(1);
+            let currentPageNum = 1;
+            let currentPage = this.createPage(currentPageNum);
             let currentContent = currentPage.querySelector('.doc-page-content');
 
             let pageH = currentPage.clientHeight;
-            let marginB = this.margins.bottom * (96 / 25.4);
+            let curMarginB = (currentPageNum === 1 && this.differentFirstPageMargins) 
+                ? this.firstPageMargins.bottom 
+                : this.margins.bottom;
+            let marginB = curMarginB * (96 / 25.4);
             let usableBottom = pageH - marginB;
 
             const splitNode = (node, usableBottom, pageRect, forceFit = false) => {
@@ -2034,7 +2082,25 @@ function editTemplateState() {
                     if (bestSplit === node.length) {
                         return { fits: node, overflows: null };
                     } else {
-                        const secondPart = node.splitText(bestSplit);
+                        // Avoid cutting words in half across pages: backtrack to the nearest preceding whitespace
+                        const text = node.textContent;
+                        let finalSplit = bestSplit;
+                        const lastSpace = Math.max(text.lastIndexOf(' ', bestSplit), text.lastIndexOf('\u00a0', bestSplit));
+                        if (lastSpace > 0 && (bestSplit - lastSpace) < 40) {
+                            finalSplit = lastSpace + 1;
+                        } else if (lastSpace === 0 && !forceFit) {
+                            finalSplit = 0;
+                        }
+
+                        if (finalSplit === 0) {
+                            if (forceFit && node.length > 0) {
+                                finalSplit = 1;
+                            } else {
+                                return { fits: null, overflows: node };
+                            }
+                        }
+
+                        const secondPart = node.splitText(finalSplit);
                         return { fits: node, overflows: secondPart };
                     }
                 }
@@ -2118,11 +2184,15 @@ function editTemplateState() {
                 // Handle manual page break marker
                 if (node.nodeType === 1 && node.classList.contains('page-break-marker')) {
                     currentContent.appendChild(node);
-                    currentPage = this.createPage();
+                    currentPageNum++;
+                    currentPage = this.createPage(currentPageNum);
                     currentContent = currentPage.querySelector('.doc-page-content');
                     
                     const newPageH = currentPage.clientHeight;
-                    const newMarginB = this.margins.bottom * (96 / 25.4);
+                    const curNewMarginB = (currentPageNum === 1 && this.differentFirstPageMargins) 
+                        ? this.firstPageMargins.bottom 
+                        : this.margins.bottom;
+                    const newMarginB = curNewMarginB * (96 / 25.4);
                     usableBottom = newPageH - newMarginB;
                     continue;
                 }
@@ -2157,11 +2227,15 @@ function editTemplateState() {
                             }
                         }
 
-                        currentPage = this.createPage();
+                        currentPageNum++;
+                        currentPage = this.createPage(currentPageNum);
                         currentContent = currentPage.querySelector('.doc-page-content');
 
                         const newPageH = currentPage.clientHeight;
-                        const newMarginB = this.margins.bottom * (96 / 25.4);
+                        const curNewMarginB = (currentPageNum === 1 && this.differentFirstPageMargins) 
+                            ? this.firstPageMargins.bottom 
+                            : this.margins.bottom;
+                        const newMarginB = curNewMarginB * (96 / 25.4);
                         usableBottom = newPageH - newMarginB;
                     }
                 }
@@ -2212,8 +2286,9 @@ function editTemplateState() {
 
         createPage(explicitNum) {
             const container = document.getElementById('pages-container');
-            const m = this.margins;
             const num = explicitNum || (container.querySelectorAll('.doc-page').length + 1);
+            const isFirst = (num === 1 && this.differentFirstPageMargins);
+            const m = isFirst ? this.firstPageMargins : this.margins;
 
             // Gap label
             const gap = document.createElement('div');
@@ -2255,6 +2330,7 @@ function editTemplateState() {
             const marker = document.createElement('div');
             marker.className = 'page-break-marker';
             marker.contentEditable = 'false';
+            marker.title = 'Click to remove page break';
             
             const sel = window.getSelection();
             if (sel && sel.rangeCount > 0) {
@@ -2272,9 +2348,14 @@ function editTemplateState() {
         },
 
         syncContent() {
-            const pages = Array.from(document.querySelectorAll('.doc-page-content')).map(p => {
+            const rawPages = Array.from(document.querySelectorAll('.doc-page-content'));
+            const pages = rawPages.map(p => {
                 const clone = p.cloneNode(true);
-                clone.querySelectorAll('.page-break-marker').forEach(el => el.remove());
+                // Convert visual manual break markers to <!-- MANUAL_PAGE_BREAK --> comments
+                clone.querySelectorAll('.page-break-marker').forEach(el => {
+                    const comment = document.createComment(' MANUAL_PAGE_BREAK ');
+                    el.parentNode.replaceChild(comment, el);
+                });
                 const cms = clone.querySelector('#cursor-start-marker');
                 if (cms) cms.remove();
                 const cme = clone.querySelector('#cursor-end-marker');
@@ -2284,6 +2365,10 @@ function editTemplateState() {
                 // Trim trailing empty block nodes so no phantom blank page is created on reload
                 let last = clone.lastChild;
                 while (last) {
+                    if (last.nodeType === 8) {
+                        // Do not strip comment nodes (like MANUAL_PAGE_BREAK)
+                        break;
+                    }
                     if (last.nodeType === 3 && last.textContent.trim() === '') {
                         const prev = last.previousSibling;
                         clone.removeChild(last);
@@ -2303,8 +2388,19 @@ function editTemplateState() {
                 return clone.innerHTML.replace(/\u200B/g, '');
             });
             
-            const ob = '<!-- PAGE_BREAK -->';
-            const html = pages.join('\n' + ob + '\n');
+            let html = '';
+            pages.forEach((pageHtml, idx) => {
+                if (idx === 0) {
+                    html = pageHtml;
+                } else {
+                    const prevPageHadManual = rawPages[idx - 1].querySelector('.page-break-marker') !== null;
+                    if (prevPageHadManual) {
+                        html += '\n' + pageHtml;
+                    } else {
+                        html += '\n<!-- PAGE_BREAK -->\n' + pageHtml;
+                    }
+                }
+            });
             document.getElementById('content-hidden').value = html;
         },
 
@@ -2334,7 +2430,10 @@ function editTemplateState() {
         init() {
             this.$nextTick(() => {
                 const rawContent = @json($template->content ?? '');
-                const converted = rawContent.replace(/<!--\s*PAGE_BREAK\s*-->/gi, '<div class="page-break-marker" contenteditable="false"></div>');
+                // 1. Only convert deliberate MANUAL page breaks into visual break markers
+                let converted = rawContent.replace(/<!--\s*MANUAL_PAGE_BREAK\s*-->/gi, '<div class="page-break-marker" contenteditable="false" title="Click to remove page break"></div>');
+                // 2. Strip automatic soft page breaks completely so they never become markers or force extra pages
+                converted = converted.replace(/<!--\s*PAGE_BREAK\s*-->/gi, '');
                 
                 const page = this.createPage(1);
                 const content = page.querySelector('.doc-page-content');
@@ -2348,6 +2447,15 @@ function editTemplateState() {
                 // Register editing and boundary events at the root pages-container level
                 const container = document.getElementById('pages-container');
                 const self = this;
+
+                // Click to remove manual page break
+                container.addEventListener('click', (e) => {
+                    const marker = e.target.closest('.page-break-marker');
+                    if (marker) {
+                        marker.remove();
+                        self.reflowPages();
+                    }
+                });
 
                 container.addEventListener('keydown', (e) => {
                     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); self.insertPageBreak(); return; }

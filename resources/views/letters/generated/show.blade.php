@@ -156,15 +156,36 @@
             @endif
 
             <!-- Margins used -->
-            @php $m = $letter->margins ?? ['top' => 25, 'bottom' => 25, 'left' => 20, 'right' => 20]; @endphp
+            @php 
+                $m = $letter->margins ?? ['top' => 25, 'bottom' => 25, 'left' => 20, 'right' => 20];
+                $hasDiff = !empty($m['different_first_page']);
+                $fp = $m['first_page'] ?? [];
+            @endphp
             <div class="p-4 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl space-y-2">
                 <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Document Margins</span>
-                <div class="grid grid-cols-2 gap-2 text-xs font-semibold text-slate-700 dark:text-zinc-300">
-                    <div>Top: {{ $m['top'] ?? 25 }}mm</div>
-                    <div>Bottom: {{ $m['bottom'] ?? 25 }}mm</div>
-                    <div>Left: {{ $m['left'] ?? 20 }}mm</div>
-                    <div>Right: {{ $m['right'] ?? 20 }}mm</div>
-                </div>
+                @if($hasDiff)
+                    <div class="text-[10px] font-bold uppercase text-amber-600 dark:text-amber-400">1st Page</div>
+                    <div class="grid grid-cols-2 gap-1 text-xs font-semibold text-slate-700 dark:text-zinc-300">
+                        <div>Top: {{ $fp['top'] ?? $m['top'] ?? 25 }}mm</div>
+                        <div>Bottom: {{ $fp['bottom'] ?? $m['bottom'] ?? 25 }}mm</div>
+                        <div>Left: {{ $fp['left'] ?? $m['left'] ?? 20 }}mm</div>
+                        <div>Right: {{ $fp['right'] ?? $m['right'] ?? 20 }}mm</div>
+                    </div>
+                    <div class="text-[10px] font-bold uppercase text-amber-600 dark:text-amber-400 pt-1 border-t border-slate-200/50 dark:border-zinc-800">Other Pages</div>
+                    <div class="grid grid-cols-2 gap-1 text-xs font-semibold text-slate-700 dark:text-zinc-300">
+                        <div>Top: {{ $m['top'] ?? 25 }}mm</div>
+                        <div>Bottom: {{ $m['bottom'] ?? 25 }}mm</div>
+                        <div>Left: {{ $m['left'] ?? 20 }}mm</div>
+                        <div>Right: {{ $m['right'] ?? 20 }}mm</div>
+                    </div>
+                @else
+                    <div class="grid grid-cols-2 gap-2 text-xs font-semibold text-slate-700 dark:text-zinc-300">
+                        <div>Top: {{ $m['top'] ?? 25 }}mm</div>
+                        <div>Bottom: {{ $m['bottom'] ?? 25 }}mm</div>
+                        <div>Left: {{ $m['left'] ?? 20 }}mm</div>
+                        <div>Right: {{ $m['right'] ?? 20 }}mm</div>
+                    </div>
+                @endif
             </div>
 
             <!-- Delete Letter -->
@@ -183,17 +204,25 @@
     <!-- Center Workspace Page View -->
     <div class="preview-workspace flex-1">
         @php
-            $mt = ($letter->margins['top'] ?? 25) . 'mm';
-            $mb = ($letter->margins['bottom'] ?? 25) . 'mm';
-            $ml = ($letter->margins['left'] ?? 20) . 'mm';
-            $mr = ($letter->margins['right'] ?? 20) . 'mm';
+            $pages = preg_split('/<!--\s*(?:MANUAL_)?PAGE_BREAK\s*-->/i', $letter->content);
+            $pages = array_values(array_filter(array_map('trim', $pages), fn($p) => strlen($p) > 0));
+            if (empty($pages)) { $pages = [$letter->content]; }
         @endphp
 
-        <div class="page-sheet">
-            <div class="a4-page" style="padding-top: {{ $mt }}; padding-bottom: {{ $mb }}; padding-left: {{ $ml }}; padding-right: {{ $mr }};">
-                {!! $letter->content !!}
+        @foreach($pages as $idx => $pContent)
+            @php
+                $isFirst = ($idx === 0 && $hasDiff);
+                $curTop = $isFirst ? ($fp['top'] ?? $m['top'] ?? 25) : ($m['top'] ?? 25);
+                $curBottom = $isFirst ? ($fp['bottom'] ?? $m['bottom'] ?? 25) : ($m['bottom'] ?? 25);
+                $curLeft = $isFirst ? ($fp['left'] ?? $m['left'] ?? 20) : ($m['left'] ?? 20);
+                $curRight = $isFirst ? ($fp['right'] ?? $m['right'] ?? 20) : ($m['right'] ?? 20);
+            @endphp
+            <div class="page-sheet mb-8 last:mb-0">
+                <div class="a4-page" style="padding-top: {{ $curTop }}mm; padding-bottom: {{ $curBottom }}mm; padding-left: {{ $curLeft }}mm; padding-right: {{ $curRight }}mm;">
+                    {!! $pContent !!}
+                </div>
             </div>
-        </div>
+        @endforeach
     </div>
 
 </div>

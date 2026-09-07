@@ -103,7 +103,14 @@ class LetterController extends Controller
             'margin_bottom' => 'required|integer|min:0|max:100',
             'margin_left' => 'required|integer|min:0|max:100',
             'margin_right' => 'required|integer|min:0|max:100',
+            'different_first_page_margins' => 'nullable|boolean',
+            'first_page_margin_top' => 'nullable|integer|min:0|max:100',
+            'first_page_margin_bottom' => 'nullable|integer|min:0|max:100',
+            'first_page_margin_left' => 'nullable|integer|min:0|max:100',
+            'first_page_margin_right' => 'nullable|integer|min:0|max:100',
         ]);
+
+        $diffFirst = $request->boolean('different_first_page_margins');
 
         $letter->update([
             'template_title' => $validated['template_title'],
@@ -115,6 +122,13 @@ class LetterController extends Controller
                 'bottom' => (int) $validated['margin_bottom'],
                 'left' => (int) $validated['margin_left'],
                 'right' => (int) $validated['margin_right'],
+                'different_first_page' => $diffFirst,
+                'first_page' => [
+                    'top' => (int) ($validated['first_page_margin_top'] ?? $validated['margin_top']),
+                    'bottom' => (int) ($validated['first_page_margin_bottom'] ?? $validated['margin_bottom']),
+                    'left' => (int) ($validated['first_page_margin_left'] ?? $validated['margin_left']),
+                    'right' => (int) ($validated['first_page_margin_right'] ?? $validated['margin_right']),
+                ],
             ],
         ]);
 
@@ -148,6 +162,11 @@ class LetterController extends Controller
             'margin_bottom' => 'required|integer|min:0|max:100',
             'margin_left' => 'required|integer|min:0|max:100',
             'margin_right' => 'required|integer|min:0|max:100',
+            'different_first_page_margins' => 'nullable|boolean',
+            'first_page_margin_top' => 'nullable|integer|min:0|max:100',
+            'first_page_margin_bottom' => 'nullable|integer|min:0|max:100',
+            'first_page_margin_left' => 'nullable|integer|min:0|max:100',
+            'first_page_margin_right' => 'nullable|integer|min:0|max:100',
         ]);
 
         LetterTemplate::create([
@@ -158,6 +177,11 @@ class LetterController extends Controller
             'margin_bottom' => $validated['margin_bottom'],
             'margin_left' => $validated['margin_left'],
             'margin_right' => $validated['margin_right'],
+            'different_first_page_margins' => $request->boolean('different_first_page_margins'),
+            'first_page_margin_top' => $request->input('first_page_margin_top'),
+            'first_page_margin_bottom' => $request->input('first_page_margin_bottom'),
+            'first_page_margin_left' => $request->input('first_page_margin_left'),
+            'first_page_margin_right' => $request->input('first_page_margin_right'),
         ]);
 
         return redirect()->route('letters.index')->with('success', 'Template created successfully.');
@@ -186,6 +210,11 @@ class LetterController extends Controller
             'margin_bottom' => 'required|integer|min:0|max:100',
             'margin_left' => 'required|integer|min:0|max:100',
             'margin_right' => 'required|integer|min:0|max:100',
+            'different_first_page_margins' => 'nullable|boolean',
+            'first_page_margin_top' => 'nullable|integer|min:0|max:100',
+            'first_page_margin_bottom' => 'nullable|integer|min:0|max:100',
+            'first_page_margin_left' => 'nullable|integer|min:0|max:100',
+            'first_page_margin_right' => 'nullable|integer|min:0|max:100',
         ]);
 
         $template->update([
@@ -196,6 +225,11 @@ class LetterController extends Controller
             'margin_bottom' => $validated['margin_bottom'],
             'margin_left' => $validated['margin_left'],
             'margin_right' => $validated['margin_right'],
+            'different_first_page_margins' => $request->boolean('different_first_page_margins'),
+            'first_page_margin_top' => $request->input('first_page_margin_top'),
+            'first_page_margin_bottom' => $request->input('first_page_margin_bottom'),
+            'first_page_margin_left' => $request->input('first_page_margin_left'),
+            'first_page_margin_right' => $request->input('first_page_margin_right'),
         ]);
 
         return redirect()->route('letters.index')->with('success', 'Template updated successfully.');

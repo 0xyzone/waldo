@@ -55,6 +55,9 @@
                             <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-zinc-400 font-medium">
                                 <i class="fa-solid fa-crop text-slate-400"></i>
                                 Margins: {{ $template->margin_top }} • {{ $template->margin_bottom }} • {{ $template->margin_left }} • {{ $template->margin_right }} (mm)
+                                @if($template->different_first_page_margins)
+                                    <span class="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">(1st: {{ $template->first_page_margin_top ?? $template->margin_top }}•{{ $template->first_page_margin_bottom ?? $template->margin_bottom }}•{{ $template->first_page_margin_left ?? $template->margin_left }}•{{ $template->first_page_margin_right ?? $template->margin_right }})</span>
+                                @endif
                             </div>
 
                             <!-- Variables count and summary list -->
