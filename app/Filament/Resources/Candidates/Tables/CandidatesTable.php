@@ -23,8 +23,7 @@ class CandidatesTable
     {
         return $table
             ->columns([
-                TextColumn::make('#')
-                    ->rowIndex(),
+                TextColumn::make('id'),
                 TextColumn::make('name')
                     ->label('Name')
                     ->searchable()
