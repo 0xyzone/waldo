@@ -9,9 +9,21 @@ use Illuminate\Http\Request;
 
 class LetterController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $templates = LetterTemplate::orderBy('title')->get();
+        $query = LetterTemplate::query()->orderByDesc('id');
+
+        if ($search = trim((string) $request->input('search'))) {
+            $cleanSearch = ltrim($search, '#');
+            $query->where(function ($q) use ($search, $cleanSearch) {
+                $q->where('title', 'like', "%{$search}%");
+                if (is_numeric($cleanSearch)) {
+                    $q->orWhere('id', (int) $cleanSearch);
+                }
+            });
+        }
+
+        $templates = $query->get();
 
         return view('letters.index', compact('templates'));
     }

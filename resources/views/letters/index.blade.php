@@ -9,7 +9,12 @@
         <!-- Header dashboard summary card -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white dark:bg-zinc-900 p-8 rounded-2xl border border-slate-200/80 dark:border-zinc-800/80 shadow-sm transition-all duration-300">
             <div class="space-y-1.5">
-                <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-zinc-50">Document Templates</h1>
+                <div class="flex items-center gap-3">
+                    <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-zinc-50">Document Templates</h1>
+                    <span class="text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold px-2.5 py-1 rounded-full border border-amber-500/20">
+                        {{ $templates->count() }} {{ \Illuminate\Support\Str::plural('Template', $templates->count()) }}
+                    </span>
+                </div>
                 <p class="text-sm font-medium text-slate-500 dark:text-zinc-400">Design letter templates with placeholders and generate bulk letters with dynamic variable replacement.</p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
@@ -29,15 +34,46 @@
             </div>
         @endif
 
+        <!-- Search and Filter Bar -->
+        <div class="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-slate-200/80 dark:border-zinc-800/80 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
+            <form method="GET" action="{{ route('letters.index') }}" class="w-full flex flex-col md:flex-row gap-3 items-center">
+                <!-- Search Input -->
+                <div class="relative flex-1 w-full">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" name="search" value="{{ request('search') }}" 
+                           placeholder="Search templates by name or ID..." 
+                           class="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-200 text-xs rounded-xl focus:outline-none focus:border-amber-500 transition-colors">
+                </div>
+
+                <!-- Search / Reset Buttons -->
+                <div class="flex items-center gap-2 shrink-0">
+                    <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer">
+                        Search
+                    </button>
+                    @if(request('search'))
+                        <a href="{{ route('letters.index') }}" class="px-3 py-2 text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors">
+                            Reset
+                        </a>
+                    @endif
+                </div>
+            </form>
+        </div>
+
         <!-- Card Grid of Templates -->
         @if($templates->isEmpty())
             <div class="flex flex-col items-center justify-center p-20 text-center bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-3xl shadow-sm">
                 <div class="w-20 h-20 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-3xl text-slate-400 mb-6 shadow-inner">
                     <i class="fa-regular fa-file-lines text-slate-400"></i>
                 </div>
-                <h3 class="text-xl font-bold text-slate-850 dark:text-zinc-200">No Templates Found</h3>
-                <p class="text-sm text-slate-500 dark:text-zinc-400 max-w-sm mt-2 mb-8 leading-relaxed">Start by creating your first document template such as an Appointment letter, Promotion notice, or Certificate.</p>
-                <a href="{{ route('letters.create') }}" class="px-5 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl text-sm font-bold transition-all duration-200 shadow-md shadow-amber-500/10">Create Template</a>
+                @if(request('search'))
+                    <h3 class="text-xl font-bold text-slate-850 dark:text-zinc-200">No Matching Templates</h3>
+                    <p class="text-sm text-slate-500 dark:text-zinc-400 max-w-sm mt-2 mb-8 leading-relaxed">No templates found matching "{{ request('search') }}". Try searching for another name or keyword.</p>
+                    <a href="{{ route('letters.index') }}" class="px-5 py-3 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 rounded-xl text-sm font-bold transition-all">Clear Search</a>
+                @else
+                    <h3 class="text-xl font-bold text-slate-850 dark:text-zinc-200">No Templates Found</h3>
+                    <p class="text-sm text-slate-500 dark:text-zinc-400 max-w-sm mt-2 mb-8 leading-relaxed">Start by creating your first document template such as an Appointment letter, Promotion notice, or Certificate.</p>
+                    <a href="{{ route('letters.create') }}" class="px-5 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl text-sm font-bold transition-all duration-200 shadow-md shadow-amber-500/10">Create Template</a>
+                @endif
             </div>
         @else
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -46,9 +82,14 @@
                         
                         <!-- Top Details -->
                         <div class="space-y-4">
-                            <div class="flex items-start justify-between gap-4">
-                                <h3 class="font-bold text-slate-900 dark:text-zinc-50 group-hover:text-amber-500 dark:group-hover:text-amber-500 transition-colors text-lg line-clamp-2" title="{{ $template->title }}">{{ $template->title }}</h3>
-                                <span class="text-[11px] text-slate-400 dark:text-zinc-500 font-semibold whitespace-nowrap bg-slate-100 dark:bg-zinc-800 px-2 py-1 rounded-md">{{ $template->created_at->format('M d, Y') }}</span>
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="flex items-start gap-2.5 min-w-0">
+                                    <span class="text-xs font-mono font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/20 px-2 py-0.5 rounded-lg shrink-0 mt-0.5" title="Template ID: {{ $template->id }}">
+                                        #{{ $template->id }}
+                                    </span>
+                                    <h3 class="font-bold text-slate-900 dark:text-zinc-50 group-hover:text-amber-500 dark:group-hover:text-amber-500 transition-colors text-lg line-clamp-2" title="{{ $template->title }}">{{ $template->title }}</h3>
+                                </div>
+                                <span class="text-[11px] text-slate-400 dark:text-zinc-500 font-semibold whitespace-nowrap bg-slate-100 dark:bg-zinc-800 px-2 py-1 rounded-md shrink-0">{{ $template->created_at->format('M d, Y') }}</span>
                             </div>
                             
                             <!-- Margins config preview -->
