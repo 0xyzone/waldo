@@ -376,12 +376,55 @@ function execFont(name) {
 
 function execFontSize(pt) {
     restoreSelection();
-    document.execCommand('fontSize', false, '7');
-    const root = document.getElementById('page-content-editor');
-    if (root) root.querySelectorAll('[size="7"]').forEach(n => {
-        n.removeAttribute('size');
-        n.style.fontSize = pt + 'pt';
-    });
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+
+    const inp = document.getElementById('tb-size');
+    if (inp) inp.value = pt;
+
+    if (sel.isCollapsed) {
+        const range = sel.getRangeAt(0);
+        const span = document.createElement('span');
+        span.style.fontSize = pt + 'pt';
+        const zwsp = document.createTextNode('\u200B');
+        span.appendChild(zwsp);
+        range.insertNode(span);
+        const newRange = document.createRange();
+        newRange.setStart(zwsp, 1);
+        newRange.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(newRange);
+        saveSelection();
+        return;
+    }
+
+    const range = sel.getRangeAt(0);
+    const span = document.createElement('span');
+    span.style.fontSize = pt + 'pt';
+
+    try {
+        const extracted = range.extractContents();
+        span.appendChild(extracted);
+        range.insertNode(span);
+        const newRange = document.createRange();
+        newRange.selectNodeContents(span);
+        sel.removeAllRanges();
+        sel.addRange(newRange);
+        saveSelection();
+    } catch (e) {
+        document.execCommand('styleWithCSS', false, true);
+        document.execCommand('fontSize', false, '7');
+        const root = document.getElementById('page-content-editor');
+        if (root) {
+            root.querySelectorAll('[size="7"], font[size]').forEach(n => {
+                n.removeAttribute('size');
+                n.style.fontSize = pt + 'pt';
+            });
+            root.querySelectorAll('span[style*="-webkit-xxx-large"], span[style*="xx-large"]').forEach(n => {
+                n.style.fontSize = pt + 'pt';
+            });
+        }
+    }
 }
 
 function adjustSize(delta) {

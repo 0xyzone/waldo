@@ -26,7 +26,7 @@
         position: relative;
         background: #ffffff;
         width: 210mm;
-        height: 297mm;
+        min-height: 297mm;
         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         border: 1px solid #e2e8f0;
         box-sizing: border-box;
@@ -39,7 +39,7 @@
 
     .a4-page {
         width: 100%;
-        height: 100%;
+        min-height: 100%;
         box-sizing: border-box;
         color: #1e293b;
         font-family: 'Times New Roman', Times, serif;
@@ -47,7 +47,6 @@
         line-height: 1.6;
         word-break: break-word;
         overflow-wrap: break-word;
-        overflow: hidden;
     }
     .dark .a4-page {
         color: #f1f5f9;
@@ -279,24 +278,31 @@
     <div class="preview-workspace flex-1">
         
         <!-- Empty Preview State -->
-        <div x-show="selectedCodes.length === 0 || !selectedTemplateId" 
+        <div x-show="!selectedTemplateId" 
              class="flex flex-col items-center justify-center p-16 text-center max-w-sm my-auto space-y-6">
             <div class="w-20 h-20 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 flex items-center justify-center text-4xl shadow-sm">📄</div>
             <div class="space-y-1.5">
                 <h2 class="text-lg font-bold text-slate-800 dark:text-zinc-200">Letter Preview</h2>
-                <p class="text-xs text-slate-400 leading-relaxed">Select a template and choose one or more target employees from the sidebar to preview and print generated letters.</p>
+                <p class="text-xs text-slate-400 leading-relaxed">Select a template from the sidebar to preview and print generated letters.</p>
             </div>
         </div>
 
         <!-- Letters Preview Container -->
-        <div id="preview-container" x-show="selectedCodes.length > 0 && selectedTemplateId" class="space-y-8 flex flex-col items-center">
+        <div id="preview-container" x-show="selectedTemplateId" class="space-y-8 flex flex-col items-center">
             
-            <template x-for="code in selectedCodes" :key="code">
+            <template x-if="selectedCodes.length === 0 && selectedTemplateId">
+                <div class="no-print px-4 py-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl text-xs font-semibold text-amber-800 dark:text-amber-300 flex items-center gap-2">
+                    <i class="fa-solid fa-info-circle text-amber-500"></i>
+                    <span>Previewing sample letter. Check one or more employees in the sidebar to generate for specific staff.</span>
+                </div>
+            </template>
+
+            <template x-for="code in (selectedCodes.length > 0 ? selectedCodes : (employees.length > 0 ? [employees[0].employee_code] : []))" :key="code">
                 <div class="space-y-2">
                     <!-- Employee label tag -->
                     <div class="flex items-center gap-2 mb-2 no-print self-start bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-400 px-3 py-1.5 rounded-xl text-xs font-bold shadow-xs">
                         <i class="fa-solid fa-circle-user text-amber-500"></i>
-                        <span x-text="getEmployee(code)?.name + ' (' + code + ')'"></span>
+                        <span x-text="(getEmployee(code)?.name || code) + ' (' + code + ')' + (selectedCodes.length === 0 ? ' — Sample Preview' : '')"></span>
                     </div>
 
                     <!-- Rendering each letter page -->
@@ -482,6 +488,9 @@ function generatorState() {
         },
 
         init() {
+            if (!this.selectedTemplateId && this.templates && this.templates.length > 0) {
+                this.selectedTemplateId = String(this.templates[0].id);
+            }
             if (this.selectedTemplateId) {
                 this.onTemplateChange();
             }
@@ -519,6 +528,10 @@ function generatorState() {
                         this.customValues[key] = '';
                     }
                 });
+
+                if (this.selectedCodes.length === 0 && this.employees && this.employees.length > 0) {
+                    this.selectedCodes = [this.employees[0].employee_code];
+                }
             }
             this.updatePaginatedLetters();
         },
@@ -601,6 +614,7 @@ function generatorState() {
                     } else {
                         return { fits: null, overflows: node };
                     }
+                    
                 }
 
                 const clone = node.cloneNode(false);
@@ -642,106 +656,41 @@ function generatorState() {
                     fits: hasFits ? node : null,
                     overflows: hasOverflows ? clone : null
                 };
+
             }
 
             return { fits: node, overflows: null };
         },
 
         updatePaginatedLetters() {
-            if (!this.selectedTemplateId || this.selectedCodes.length === 0) {
+            if (!this.selectedTemplateId) {
                 this.paginatedLetters = {};
                 return;
             }
-            this.$nextTick(() => {
-                const pagesMap = {};
-                const sandbox = document.getElementById('sandbox-container');
-                if (!sandbox) return;
 
-                this.selectedCodes.forEach(code => {
-                    let full = this.renderLetter(code);
-                    
-                    full = full.replace(/<!--\s*PAGE_BREAK\s*-->/gi, '<div class="page-break-marker" contenteditable="false"></div>');
-                    
-                    const temp = document.createElement('div');
-                    temp.innerHTML = full;
-                    
-                    sandbox.innerHTML = '';
-                    
-                    let currentPage = this.createSandboxPage(sandbox);
-                    let currentContent = currentPage.querySelector('.a4-page');
-                    
-                    let pageH = currentPage.clientHeight;
-                    let marginB = this.margins.bottom * (96/25.4);
-                    let usableBottom = pageH - marginB;
-                    
-                    const pagesHTML = [];
-                    
-                    while (temp.firstChild) {
-                        const node = temp.firstChild;
-                        
-                        if (node.nodeType === 1 && node.classList.contains('page-break-marker')) {
-                            pagesHTML.push(currentContent.innerHTML);
-                            
-                            currentPage = this.createSandboxPage(sandbox);
-                            currentContent = currentPage.querySelector('.a4-page');
-                            
-                            const newPageH = currentPage.clientHeight;
-                            const newMarginB = this.margins.bottom * (96/25.4);
-                            usableBottom = newPageH - newMarginB;
-                            
-                            node.remove();
-                            continue;
-                        }
-                        
-                        currentContent.appendChild(node);
-                        
-                        let rect = null;
-                        if (node.nodeType === 1) {
-                            rect = node.getBoundingClientRect();
-                        } else if (node.nodeType === 3 && node.textContent.trim()) {
-                            const r = document.createRange();
-                            r.selectNode(node);
-                            rect = r.getBoundingClientRect();
-                        }
-                        
-                        if (rect) {
-                            const pageRect = currentPage.getBoundingClientRect();
-                            const nodeBottom = rect.bottom - pageRect.top;
-                            
-                            if (nodeBottom > usableBottom) {
-                                const isPageEmpty = (currentContent.childNodes.length === 1);
-                                const result = this.splitSandboxNode(node, usableBottom, pageRect, isPageEmpty);
-                                
-                                if (result.fits === null) {
-                                    node.remove();
-                                }
-                                if (result.overflows) {
-                                    if (temp.firstChild) {
-                                        temp.insertBefore(result.overflows, temp.firstChild);
-                                    } else {
-                                        temp.appendChild(result.overflows);
-                                    }
-                                }
-                                
-                                pagesHTML.push(currentContent.innerHTML);
-                                
-                                currentPage = this.createSandboxPage(sandbox);
-                                currentContent = currentPage.querySelector('.a4-page');
-                                
-                                const newPageH = currentPage.clientHeight;
-                                const newMarginB = this.margins.bottom * (96/25.4);
-                                usableBottom = newPageH - newMarginB;
-                            }
-                        }
-                    }
-                    
-                    pagesHTML.push(currentContent.innerHTML);
-                    pagesMap[code] = pagesHTML;
-                });
-                
-                this.paginatedLetters = pagesMap;
-                sandbox.innerHTML = '';
+            const codes = this.selectedCodes.length > 0 
+                ? this.selectedCodes 
+                : (this.employees.length > 0 ? [this.employees[0].employee_code] : []);
+
+            if (codes.length === 0) {
+                this.paginatedLetters = {};
+                return;
+            }
+
+            const pagesMap = {};
+
+            codes.forEach(code => {
+                let full = this.renderLetter(code);
+                if (!full) return;
+
+                const splitPages = full.split(/<!--\s*PAGE_BREAK\s*-->/gi)
+                    .map(p => p.trim())
+                    .filter(p => p.length > 0);
+
+                pagesMap[code] = splitPages.length > 0 ? splitPages : [full];
             });
+
+            this.paginatedLetters = pagesMap;
         },
 
         renderLetter(code) {
@@ -881,7 +830,7 @@ function generatorState() {
         },
 
         getEmployee(code) {
-            return this.employees.find(e => e.employee_code === code);
+            return this.employees.find(e => String(e.employee_code) === String(code));
         }
     };
 }
