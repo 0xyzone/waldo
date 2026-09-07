@@ -148,89 +148,158 @@ body.is-col-resizing {
     background-color: rgba(37, 99, 235, 0.15) !important;
 }
 
-/* ── Table context menu ── */
+/* ── Table floating icon toolbar ── */
 #table-ctx-menu {
     position: fixed;
     z-index: 9999;
     background: #fff;
     border: 1px solid #e2e8f0;
     border-radius: 10px;
-    box-shadow: 0 8px 32px rgba(0,0,0,.14), 0 0 0 1px rgba(0,0,0,.05);
-    padding: 6px;
-    min-width: 210px;
-    max-width: 250px;
+    box-shadow: 0 10px 30px -5px rgba(0,0,0,.15), 0 0 1px 1px rgba(0,0,0,.05);
+    padding: 5px;
+    min-width: 270px;
+    max-width: 330px;
     display: none;
     font-family: 'Plus Jakarta Sans', sans-serif;
+    user-select: none;
 }
 .dark #table-ctx-menu {
     background: #18181b;
     border-color: #27272a;
-    box-shadow: 0 8px 32px rgba(0,0,0,.5);
+    box-shadow: 0 12px 36px -5px rgba(0,0,0,.6);
 }
-#table-ctx-menu button {
+
+.ctx-tb-row {
     display: flex;
     align-items: center;
-    gap: 7px;
-    width: 100%;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #374151;
-    text-align: left;
-    cursor: pointer;
-    border: none;
-    background: none;
+    gap: 3px;
 }
-.dark #table-ctx-menu button { color: #d4d4d8; }
-#table-ctx-menu button:hover { background: #f1f5f9; }
-.dark #table-ctx-menu button:hover { background: #27272a; }
-#table-ctx-menu .ctx-sep { height: 1px; background: #e2e8f0; margin: 4px 0; }
-.dark #table-ctx-menu .ctx-sep { background: #27272a; }
-#table-ctx-menu button.ctx-danger { color: #ef4444; }
-.dark #table-ctx-menu button.ctx-danger { color: #f87171; }
+.ctx-tb-row + .ctx-tb-row {
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px solid #f1f5f9;
+}
+.dark .ctx-tb-row + .ctx-tb-row {
+    border-top-color: #27272a;
+}
 
-.ctx-section { padding: 4px 10px 6px; }
-.ctx-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between; }
-.ctx-side-btns { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; margin-bottom: 6px; }
+.ctx-tb-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #475569;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.12s ease;
+    padding: 0;
+}
+.ctx-tb-btn:hover:not(:disabled) {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+.dark .ctx-tb-btn { color: #a1a1aa; }
+.dark .ctx-tb-btn:hover:not(:disabled) {
+    background: #27272a;
+    color: #f4f4f5;
+}
+.ctx-tb-btn.ctx-danger { color: #ef4444; }
+.ctx-tb-btn.ctx-danger:hover:not(:disabled) {
+    background: #fef2f2;
+    color: #dc2626;
+}
+.dark .ctx-tb-btn.ctx-danger { color: #f87171; }
+.dark .ctx-tb-btn.ctx-danger:hover:not(:disabled) {
+    background: rgba(239,68,68,0.15);
+    color: #fca5a5;
+}
+
+.ctx-tb-divider {
+    width: 1px;
+    height: 18px;
+    background: #e2e8f0;
+    margin: 0 1px;
+    flex-shrink: 0;
+}
+.dark .ctx-tb-divider { background: #27272a; }
+
+.ctx-side-btns { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; flex: 1; }
 .ctx-side-btn {
-    padding: 3px 2px !important;
-    justify-content: center !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 1px !important;
     text-align: center !important;
     border: 1px solid #e2e8f0 !important;
     border-radius: 4px !important;
-    font-size: 10px !important;
+    font-size: 9.5px !important;
     font-weight: 600;
+    cursor: pointer;
+    background: #ffffff;
+    color: #64748b;
+    transition: all 0.12s ease;
 }
+.ctx-side-btn:hover { background: #f8fafc; color: #334155; }
 .ctx-side-btn.active {
     background: #fef3c7 !important;
     border-color: #f59e0b !important;
     color: #b45309 !important;
 }
-.dark .ctx-side-btn { border-color: #27272a !important; color: #a1a1aa !important; }
+.dark .ctx-side-btn { background: #18181b; border-color: #27272a !important; color: #a1a1aa !important; }
+.dark .ctx-side-btn:hover { background: #27272a; color: #f4f4f5; }
 .dark .ctx-side-btn.active { background: rgba(245,158,11,0.2) !important; border-color: #f59e0b !important; color: #fbbf24 !important; }
 
-.ctx-action-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 4px 10px; border-radius: 6px; cursor: pointer; }
-.ctx-action-row:hover { background: #f1f5f9; }
-.dark .ctx-action-row:hover { background: #27272a; }
-.ctx-action-row span { font-size: 11px; font-weight: 600; color: #374151; display: flex; align-items: center; gap: 6px; }
-.dark .ctx-action-row span { color: #d4d4d8; }
-
-.ctx-color-trigger {
-    display: flex;
+.ctx-color-btn {
+    display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 2px 5px;
-    border: 1px solid #cbd5e1;
-    border-radius: 5px;
-    background: #f8fafc;
+    gap: 4px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
     cursor: pointer;
-    font-size: 10px;
-    font-weight: bold;
+    font-size: 11px;
     color: #475569;
+    transition: all 0.12s ease;
+    height: 24px;
+    flex-shrink: 0;
 }
-.dark .ctx-color-trigger { background: #27272a; border-color: #3f3f46; color: #cbd5e1; }
-.ctx-swatch-preview { width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0,0,0,.2); flex-shrink: 0; }
+.ctx-color-btn:hover { background: #f1f5f9; }
+.dark .ctx-color-btn { background: #18181b; border-color: #27272a; color: #a1a1aa; }
+.dark .ctx-color-btn:hover { background: #27272a; }
+.ctx-swatch-dot { width: 12px; height: 12px; border-radius: 3px; border: 1px solid rgba(0,0,0,.15); flex-shrink: 0; }
+
+/* ── 2-Second Hover Delay Tooltip ── */
+#table-toolbar-tooltip {
+    position: fixed;
+    z-index: 100000;
+    pointer-events: none;
+    background: #0f172a;
+    color: #f8fafc;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 9px;
+    border-radius: 6px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    display: none;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+#table-toolbar-tooltip.visible {
+    display: block;
+    opacity: 1;
+}
+.dark #table-toolbar-tooltip {
+    background: #27272a;
+    color: #f4f4f5;
+    border: 1px solid #3f3f46;
+}
 
 /* ── Floating Swatch Palette Popover ── */
 #ctx-swatch-popover {
@@ -559,43 +628,57 @@ body.is-col-resizing {
         <button type="button" @mousedown.prevent="exec('removeFormat')" class="p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer" title="Clear Format"><i class="fa-solid fa-eraser text-sm"></i></button>
     </div>
 
-    <!-- ── TABLE CONTEXT MENU ── -->
+    <!-- ── TABLE FLOATING ICON TOOLBAR ── -->
     <div id="table-ctx-menu">
-        <button type="button" onclick="tableAction('addRowAbove')"><i class="fa-solid fa-arrow-up fa-xs"></i> Add Row Above</button>
-        <button type="button" onclick="tableAction('addRowBelow')"><i class="fa-solid fa-arrow-down fa-xs"></i> Add Row Below</button>
-        <button type="button" onclick="tableAction('deleteRow')" class="ctx-danger"><i class="fa-solid fa-trash fa-xs"></i> Delete Row</button>
-        <div class="ctx-sep"></div>
-        <button type="button" onclick="tableAction('addColLeft')"><i class="fa-solid fa-arrow-left fa-xs"></i> Add Column Left</button>
-        <button type="button" onclick="tableAction('addColRight')"><i class="fa-solid fa-arrow-right fa-xs"></i> Add Column Right</button>
-        <button type="button" onclick="tableAction('deleteCol')" class="ctx-danger"><i class="fa-solid fa-trash fa-xs"></i> Delete Column</button>
-        <div class="ctx-sep"></div>
-        <div class="ctx-section">
-            <div class="ctx-section-title">
-                <span>Border Sides</span>
-            </div>
+        <div class="ctx-tb-row">
+            <button type="button" class="ctx-tb-btn" data-tt="Add Row Above" onclick="tableAction('addRowAbove')">
+                <i class="fa-solid fa-arrow-up fa-xs"></i>
+            </button>
+            <button type="button" class="ctx-tb-btn" data-tt="Add Row Below" onclick="tableAction('addRowBelow')">
+                <i class="fa-solid fa-arrow-down fa-xs"></i>
+            </button>
+            <button type="button" class="ctx-tb-btn ctx-danger" data-tt="Delete Row" onclick="tableAction('deleteRow')">
+                <i class="fa-solid fa-trash fa-xs"></i>
+            </button>
+            <div class="ctx-tb-divider"></div>
+            <button type="button" class="ctx-tb-btn" data-tt="Add Column Left" onclick="tableAction('addColLeft')">
+                <i class="fa-solid fa-arrow-left fa-xs"></i>
+            </button>
+            <button type="button" class="ctx-tb-btn" data-tt="Add Column Right" onclick="tableAction('addColRight')">
+                <i class="fa-solid fa-arrow-right fa-xs"></i>
+            </button>
+            <button type="button" class="ctx-tb-btn ctx-danger" data-tt="Delete Column" onclick="tableAction('deleteCol')">
+                <i class="fa-solid fa-trash fa-xs"></i>
+            </button>
+            <div class="ctx-tb-divider"></div>
+            <button type="button" class="ctx-tb-btn" id="tb-btn-merge" data-tt="Merge Cells" onclick="tableAction('mergeCells')">
+                <i class="fa-solid fa-object-group fa-xs"></i>
+            </button>
+            <button type="button" class="ctx-tb-btn" id="tb-btn-unmerge" data-tt="Unmerge Cells" onclick="tableAction('unmergeCells')">
+                <i class="fa-solid fa-object-ungroup fa-xs"></i>
+            </button>
+        </div>
+        <div class="ctx-tb-row">
             <div class="ctx-side-btns">
-                <button type="button" class="ctx-side-btn active" id="side-all" onclick="toggleBorderSide('all')">All</button>
-                <button type="button" class="ctx-side-btn" id="side-top" onclick="toggleBorderSide('top')">Top</button>
-                <button type="button" class="ctx-side-btn" id="side-bottom" onclick="toggleBorderSide('bottom')">Bot</button>
-                <button type="button" class="ctx-side-btn" id="side-left" onclick="toggleBorderSide('left')">Left</button>
-                <button type="button" class="ctx-side-btn" id="side-right" onclick="toggleBorderSide('right')">Right</button>
+                <button type="button" class="ctx-side-btn active" id="side-all" data-tt="All Borders" onclick="toggleBorderSide('all')">All</button>
+                <button type="button" class="ctx-side-btn" id="side-inside" data-tt="Inside Borders" onclick="toggleBorderSide('inside')">Inside</button>
+                <button type="button" class="ctx-side-btn" id="side-top" data-tt="Top Border" onclick="toggleBorderSide('top')">Top</button>
+                <button type="button" class="ctx-side-btn" id="side-bottom" data-tt="Bottom Border" onclick="toggleBorderSide('bottom')">Bot</button>
+                <button type="button" class="ctx-side-btn" id="side-left" data-tt="Left Border" onclick="toggleBorderSide('left')">Left</button>
+                <button type="button" class="ctx-side-btn" id="side-right" data-tt="Right Border" onclick="toggleBorderSide('right')">Right</button>
             </div>
-            <div class="ctx-action-row" onclick="openSwatchPopover('border', this)">
-                <span><i class="fa-solid fa-border-all fa-xs"></i> Border Color</span>
-                <div class="ctx-color-trigger">
-                    <span class="ctx-swatch-preview" id="cell-border-swatch" style="background:#cbd5e1"></span>
-                    <i class="fa-solid fa-chevron-right text-[8px] text-slate-400"></i>
-                </div>
-            </div>
-            <div class="ctx-action-row mt-1" onclick="openSwatchPopover('bg', this)">
-                <span><i class="fa-solid fa-fill-drip fa-xs"></i> Background</span>
-                <div class="ctx-color-trigger">
-                    <span class="ctx-swatch-preview" id="cell-bg-swatch" style="background:#ffffff"></span>
-                    <i class="fa-solid fa-chevron-right text-[8px] text-slate-400"></i>
-                </div>
-            </div>
+            <div class="ctx-tb-divider"></div>
+            <button type="button" class="ctx-color-btn" data-tt="Border Color" onclick="openSwatchPopover('border', this)">
+                <i class="fa-solid fa-border-all fa-xs"></i>
+                <span class="ctx-swatch-dot" id="cell-border-swatch" style="background:#cbd5e1"></span>
+            </button>
+            <button type="button" class="ctx-color-btn" data-tt="Background Color" onclick="openSwatchPopover('bg', this)">
+                <i class="fa-solid fa-fill-drip fa-xs"></i>
+                <span class="ctx-swatch-dot" id="cell-bg-swatch" style="background:#ffffff"></span>
+            </button>
         </div>
     </div>
+    <div id="table-toolbar-tooltip"></div>
 
     <!-- ── Separate Floating Swatch Popover ── -->
     <div id="ctx-swatch-popover">
@@ -963,9 +1046,223 @@ let _activeCell = null;
 let _selectedCells = new Set();
 let _lastAnchorCell = null;
 let _isCellDragging = false;
+let _hasDragged = false;
 let _dragStartCell = null;
-let _borderSides = new Set(['all']); // 'all', 'top', 'bottom', 'left', 'right'
+let _ignoreNextClick = false;
+let _borderSides = new Set(['all']); // 'all', 'inside', 'top', 'bottom', 'left', 'right'
 let _popoverType = null; // 'border' or 'bg'
+
+function getSelectionBoundingRect(cells) {
+    if (!cells || cells.length === 0) return null;
+    let minLeft = Infinity, minTop = Infinity, maxRight = -Infinity, maxBottom = -Infinity;
+    cells.forEach(c => {
+        const r = c.getBoundingClientRect();
+        if (r.left < minLeft) minLeft = r.left;
+        if (r.top < minTop) minTop = r.top;
+        if (r.right > maxRight) maxRight = r.right;
+        if (r.bottom > maxBottom) maxBottom = r.bottom;
+    });
+    if (minLeft === Infinity) return null;
+    return {
+        left: minLeft,
+        top: minTop,
+        right: maxRight,
+        bottom: maxBottom,
+        width: maxRight - minLeft,
+        height: maxBottom - minTop
+    };
+}
+
+function getTableMatrix(table) {
+    const matrix = [];
+    const rows = Array.from(table.rows);
+    for (let r = 0; r < rows.length; r++) {
+        matrix[r] = [];
+    }
+    for (let r = 0; r < rows.length; r++) {
+        let col = 0;
+        const row = rows[r];
+        for (let c = 0; c < row.cells.length; c++) {
+            const cell = row.cells[c];
+            while (matrix[r][col]) {
+                col++;
+            }
+            const rSpan = cell.rowSpan || 1;
+            const cSpan = cell.colSpan || 1;
+            for (let dr = 0; dr < rSpan; dr++) {
+                for (let dc = 0; dc < cSpan; dc++) {
+                    if (!matrix[r + dr]) matrix[r + dr] = [];
+                    matrix[r + dr][col + dc] = {
+                        cell: cell,
+                        isOrigin: dr === 0 && dc === 0,
+                        gridRow: r,
+                        gridCol: col,
+                        rowSpan: rSpan,
+                        colSpan: cSpan
+                    };
+                }
+            }
+            col += cSpan;
+        }
+    }
+    return matrix;
+}
+
+function mergeSelectedCells() {
+    if (_selectedCells.size < 2) return;
+    const cells = Array.from(_selectedCells).filter(c => c.isConnected);
+    if (cells.length < 2) return;
+    const table = cells[0].closest('table');
+    if (!table) return;
+
+    const matrix = getTableMatrix(table);
+    let minR = Infinity, maxR = -Infinity, minC = Infinity, maxC = -Infinity;
+
+    for (let r = 0; r < matrix.length; r++) {
+        for (let c = 0; c < matrix[r].length; c++) {
+            const item = matrix[r][c];
+            if (item && _selectedCells.has(item.cell)) {
+                if (r < minR) minR = r;
+                if (r > maxR) maxR = r;
+                if (c < minC) minC = c;
+                if (c > maxC) maxC = c;
+            }
+        }
+    }
+
+    if (minR === Infinity) return;
+
+    const masterItem = matrix[minR][minC];
+    if (!masterItem) return;
+    const masterCell = masterItem.cell;
+
+    const targetRowSpan = maxR - minR + 1;
+    const targetColSpan = maxC - minC + 1;
+
+    const seenCells = new Set([masterCell]);
+    const extraContents = [];
+
+    for (let r = minR; r <= maxR; r++) {
+        for (let c = minC; c <= maxC; c++) {
+            const item = matrix[r] ? matrix[r][c] : null;
+            if (item && item.isOrigin && !seenCells.has(item.cell)) {
+                seenCells.add(item.cell);
+                const txt = item.cell.innerHTML.trim();
+                if (txt && txt !== '&nbsp;' && txt !== '<br>') {
+                    extraContents.push(txt);
+                }
+                item.cell.remove();
+            }
+        }
+    }
+
+    if (extraContents.length > 0) {
+        const masterTxt = masterCell.innerHTML.trim();
+        if (!masterTxt || masterTxt === '&nbsp;' || masterTxt === '<br>') {
+            masterCell.innerHTML = extraContents.join(' ');
+        } else {
+            masterCell.innerHTML = masterTxt + ' ' + extraContents.join(' ');
+        }
+    }
+
+    masterCell.rowSpan = targetRowSpan;
+    masterCell.colSpan = targetColSpan;
+
+    const totalCols = matrix[0] ? matrix[0].length : 1;
+    masterCell.style.width = ((targetColSpan / totalCols) * 100).toFixed(2) + '%';
+
+    clearCellSelection();
+    _selectedCells.add(masterCell);
+    masterCell.classList.add('cell-selected');
+    _lastAnchorCell = masterCell;
+    _activeCell = masterCell;
+
+    initTableResizeHandles();
+    showTableMenuForSelection();
+}
+
+function unmergeSelectedCells() {
+    const targets = getSelectedOrActiveCells();
+    const cell = targets[0] || _activeCell || getCurrentCell();
+    if (!cell || !cell.isConnected) return;
+    if ((cell.rowSpan || 1) <= 1 && (cell.colSpan || 1) <= 1) return;
+
+    const table = cell.closest('table');
+    if (!table) return;
+
+    const matrix = getTableMatrix(table);
+    let startR = -1, startC = -1;
+
+    for (let r = 0; r < matrix.length; r++) {
+        for (let c = 0; c < matrix[r].length; c++) {
+            if (matrix[r][c]?.cell === cell && matrix[r][c]?.isOrigin) {
+                startR = r;
+                startC = c;
+                break;
+            }
+        }
+        if (startR !== -1) break;
+    }
+
+    if (startR === -1) return;
+
+    const rSpan = cell.rowSpan || 1;
+    const cSpan = cell.colSpan || 1;
+    const totalCols = matrix[0] ? matrix[0].length : 1;
+    const singlePct = (100 / totalCols).toFixed(2) + '%';
+
+    cell.rowSpan = 1;
+    cell.colSpan = 1;
+    cell.style.width = singlePct;
+
+    let insertRef = cell;
+    for (let c = 1; c < cSpan; c++) {
+        const newTd = document.createElement(cell.tagName.toLowerCase());
+        newTd.innerHTML = '&nbsp;';
+        newTd.style.cssText = cell.style.cssText;
+        newTd.style.width = singlePct;
+        newTd.rowSpan = 1;
+        newTd.colSpan = 1;
+        insertRef.after(newTd);
+        insertRef = newTd;
+    }
+
+    for (let r = startR + 1; r < startR + rSpan; r++) {
+        const tr = table.rows[r];
+        if (!tr) continue;
+
+        let nextCellInRow = null;
+        for (let c = startC + cSpan; c < matrix[r].length; c++) {
+            if (matrix[r][c]?.isOrigin) {
+                nextCellInRow = matrix[r][c].cell;
+                break;
+            }
+        }
+
+        for (let dc = 0; dc < cSpan; dc++) {
+            const newTd = document.createElement(cell.tagName.toLowerCase());
+            newTd.innerHTML = '&nbsp;';
+            newTd.style.cssText = cell.style.cssText;
+            newTd.style.width = singlePct;
+            newTd.rowSpan = 1;
+            newTd.colSpan = 1;
+            if (nextCellInRow && nextCellInRow.parentNode === tr) {
+                tr.insertBefore(newTd, nextCellInRow);
+            } else {
+                tr.appendChild(newTd);
+            }
+        }
+    }
+
+    clearCellSelection();
+    _selectedCells.add(cell);
+    cell.classList.add('cell-selected');
+    _lastAnchorCell = cell;
+    _activeCell = cell;
+
+    initTableResizeHandles();
+    showTableMenuForSelection();
+}
 
 function selectCellRange(cellA, cellB) {
     const tableA = cellA ? cellA.closest('table') : null;
@@ -974,38 +1271,72 @@ function selectCellRange(cellA, cellB) {
 
     clearCellSelection();
 
-    const rowA = cellA.parentElement.rowIndex;
-    const rowB = cellB.parentElement.rowIndex;
-    const colA = cellA.cellIndex;
-    const colB = cellB.cellIndex;
+    const matrix = getTableMatrix(tableA);
+    let rA = -1, cA = -1, rB = -1, cB = -1;
 
-    const minRow = Math.min(rowA, rowB);
-    const maxRow = Math.max(rowA, rowB);
-    const minCol = Math.min(colA, colB);
-    const maxCol = Math.max(colA, colB);
+    for (let r = 0; r < matrix.length; r++) {
+        for (let c = 0; c < matrix[r].length; c++) {
+            if (matrix[r][c]?.cell === cellA) {
+                if (rA === -1 || r < rA) rA = r;
+                if (cA === -1 || c < cA) cA = c;
+            }
+            if (matrix[r][c]?.cell === cellB) {
+                if (rB === -1 || r > rB) rB = r;
+                if (cB === -1 || c > cB) cB = c;
+            }
+        }
+    }
 
-    const rows = tableA.rows;
+    if (rA === -1 || rB === -1) {
+        const rowA = cellA.parentElement ? cellA.parentElement.rowIndex : 0;
+        const rowB = cellB.parentElement ? cellB.parentElement.rowIndex : 0;
+        const colA = cellA.cellIndex;
+        const colB = cellB.cellIndex;
+        rA = rowA; rB = rowB; cA = colA; cB = colB;
+    }
+
+    const minRow = Math.min(rA, rB);
+    const maxRow = Math.max(rA, rB);
+    const minCol = Math.min(cA, cB);
+    const maxCol = Math.max(cA, cB);
+
     for (let r = minRow; r <= maxRow; r++) {
-        if (!rows[r]) continue;
+        if (!matrix[r]) continue;
         for (let c = minCol; c <= maxCol; c++) {
-            const cell = rows[r].cells[c];
-            if (cell) {
-                cell.classList.add('cell-selected');
-                _selectedCells.add(cell);
+            const item = matrix[r][c];
+            if (item && item.cell) {
+                item.cell.classList.add('cell-selected');
+                _selectedCells.add(item.cell);
             }
         }
     }
 }
 
 function getSelectedOrActiveCells() {
-    if (_selectedCells.size > 0) return Array.from(_selectedCells);
+    if (_selectedCells.size > 0) {
+        const connected = Array.from(_selectedCells).filter(c => c.isConnected);
+        if (connected.length > 0) return connected;
+    }
     const c = _activeCell || getCurrentCell();
-    return c ? [c] : [];
+    return (c && c.isConnected) ? [c] : [];
 }
 
 function clearCellSelection() {
     _selectedCells.forEach(cell => cell.classList.remove('cell-selected'));
     _selectedCells.clear();
+}
+
+function showTableMenuForSelection() {
+    const cells = getSelectedOrActiveCells();
+    if (cells.length === 0) {
+        hideTableMenu();
+        return;
+    }
+    const rect = getSelectionBoundingRect(cells);
+    const anchor = (_dragStartCell && _dragStartCell.isConnected) ? _dragStartCell : cells[0];
+    if (rect && anchor) {
+        showTableMenu(anchor, rect.left, rect.bottom + 4, rect.top);
+    }
 }
 
 function toggleBorderSide(side) {
@@ -1023,7 +1354,7 @@ function toggleBorderSide(side) {
         }
     }
     // Update button states
-    ['all', 'top', 'bottom', 'left', 'right'].forEach(s => {
+    ['all', 'inside', 'top', 'bottom', 'left', 'right'].forEach(s => {
         const b = document.getElementById('side-' + s);
         if (b) b.classList.toggle('active', _borderSides.has(s));
     });
@@ -1108,7 +1439,13 @@ function tableAction(action, value) {
     const cellIdx = cell.cellIndex;
     const rows    = Array.from(table.querySelectorAll('tr'));
 
-    if (action === 'addRowAbove' || action === 'addRowBelow') {
+    if (action === 'mergeCells') {
+        mergeSelectedCells();
+        return;
+    } else if (action === 'unmergeCells') {
+        unmergeSelectedCells();
+        return;
+    } else if (action === 'addRowAbove' || action === 'addRowBelow') {
         const newRow = document.createElement('tr');
         for (let i = 0; i < row.cells.length; i++) {
             const td = document.createElement('td');
@@ -1123,6 +1460,7 @@ function tableAction(action, value) {
     } else if (action === 'deleteRow') {
         if (rows.length > 1) row.remove();
         else table.remove();
+        clearCellSelection();
         hideTableMenu();
         return;
 
@@ -1151,23 +1489,67 @@ function tableAction(action, value) {
                 Array.from(r.cells).forEach(c => c.style.width = newPct);
             });
             initTableResizeHandles();
+            clearCellSelection();
+            hideTableMenu();
         } else {
             table.remove();
+            clearCellSelection();
+            hideTableMenu();
         }
-        hideTableMenu();
         return;
 
     } else if (action === 'cellBorder') {
-        targets.forEach(c => {
-            if (_borderSides.has('all')) {
+        if (_borderSides.has('all')) {
+            targets.forEach(c => {
                 c.style.border = '1px solid ' + value;
-            } else {
+            });
+        } else {
+            if (_borderSides.has('inside')) {
+                if (targets.length === 1) {
+                    const table = targets[0].closest('table');
+                    if (table) {
+                        const rows = table.rows;
+                        const totalRows = rows.length;
+                        const totalCols = rows[0] ? rows[0].cells.length : 0;
+                        for (let r = 0; r < totalRows; r++) {
+                            for (let c = 0; c < totalCols; c++) {
+                                const cell = rows[r].cells[c];
+                                if (!cell) continue;
+                                if (r < totalRows - 1) cell.style.borderBottom = '1px solid ' + value;
+                                if (r > 0) cell.style.borderTop = '1px solid ' + value;
+                                if (c < totalCols - 1) cell.style.borderRight = '1px solid ' + value;
+                                if (c > 0) cell.style.borderLeft = '1px solid ' + value;
+                            }
+                        }
+                    }
+                } else if (targets.length > 1) {
+                    let minR = Infinity, maxR = -Infinity, minC = Infinity, maxC = -Infinity;
+                    targets.forEach(c => {
+                        const r = c.parentElement.rowIndex;
+                        const col = c.cellIndex;
+                        if (r < minR) minR = r;
+                        if (r > maxR) maxR = r;
+                        if (col < minC) minC = col;
+                        if (col > maxC) maxC = col;
+                    });
+                    targets.forEach(c => {
+                        const r = c.parentElement.rowIndex;
+                        const col = c.cellIndex;
+                        if (r < maxR) c.style.borderBottom = '1px solid ' + value;
+                        if (r > minR) c.style.borderTop = '1px solid ' + value;
+                        if (col < maxC) c.style.borderRight = '1px solid ' + value;
+                        if (col > minC) c.style.borderLeft = '1px solid ' + value;
+                    });
+                }
+            }
+
+            targets.forEach(c => {
                 if (_borderSides.has('top'))    c.style.borderTop = '1px solid ' + value;
                 if (_borderSides.has('bottom')) c.style.borderBottom = '1px solid ' + value;
                 if (_borderSides.has('left'))   c.style.borderLeft = '1px solid ' + value;
                 if (_borderSides.has('right'))  c.style.borderRight = '1px solid ' + value;
-            }
-        });
+            });
+        }
         const sw = document.getElementById('cell-border-swatch');
         if (sw) sw.style.background = value;
 
@@ -1180,7 +1562,89 @@ function tableAction(action, value) {
     }
 }
 
-function showTableMenu(cell, x, y) {
+function updateMergeButtonsState() {
+    const btnMerge = document.getElementById('tb-btn-merge');
+    const btnUnmerge = document.getElementById('tb-btn-unmerge');
+    const targets = getSelectedOrActiveCells();
+    const canMerge = _selectedCells.size > 1;
+    const canUnmerge = targets.some(c => ((c.colSpan || 1) > 1 || (c.rowSpan || 1) > 1));
+
+    if (btnMerge) {
+        btnMerge.disabled = !canMerge;
+        btnMerge.style.opacity = canMerge ? '1' : '0.35';
+        btnMerge.style.pointerEvents = canMerge ? 'auto' : 'none';
+    }
+    if (btnUnmerge) {
+        btnUnmerge.disabled = !canUnmerge;
+        btnUnmerge.style.opacity = canUnmerge ? '1' : '0.35';
+        btnUnmerge.style.pointerEvents = canUnmerge ? 'auto' : 'none';
+    }
+}
+
+let _ttTimer = null;
+
+function showTableToolbarTooltip(el) {
+    const tt = document.getElementById('table-toolbar-tooltip');
+    if (!tt) return;
+    const text = el.getAttribute('data-tt');
+    if (!text) return;
+    tt.textContent = text;
+    tt.style.display = 'block';
+
+    const r = el.getBoundingClientRect();
+    const tr = tt.getBoundingClientRect();
+
+    let left = r.left + (r.width / 2) - (tr.width / 2);
+    left = Math.max(8, Math.min(left, window.innerWidth - tr.width - 8));
+    let top = r.top - tr.height - 6;
+    if (top < 8) {
+        top = r.bottom + 6;
+    }
+    tt.style.left = left + 'px';
+    tt.style.top = top + 'px';
+    tt.classList.add('visible');
+}
+
+function hideTableToolbarTooltip() {
+    clearTimeout(_ttTimer);
+    _ttTimer = null;
+    const tt = document.getElementById('table-toolbar-tooltip');
+    if (tt) {
+        tt.classList.remove('visible');
+        tt.style.display = 'none';
+    }
+}
+
+function initTableToolbarTooltips() {
+    const menu = document.getElementById('table-ctx-menu');
+    if (!menu) return;
+
+    menu.addEventListener('mouseover', (e) => {
+        const item = e.target.closest('[data-tt]');
+        if (!item || !menu.contains(item)) return;
+        if (item._ttHovered) return;
+        item._ttHovered = true;
+
+        clearTimeout(_ttTimer);
+        _ttTimer = setTimeout(() => {
+            showTableToolbarTooltip(item);
+        }, 2000);
+    });
+
+    menu.addEventListener('mouseout', (e) => {
+        const item = e.target.closest('[data-tt]');
+        if (item) {
+            item._ttHovered = false;
+        }
+        hideTableToolbarTooltip();
+    });
+
+    menu.addEventListener('click', () => {
+        hideTableToolbarTooltip();
+    });
+}
+
+function showTableMenu(cell, x, y, topY = null) {
     _activeCell = cell;
     const menu = document.getElementById('table-ctx-menu');
     if (!menu) return;
@@ -1194,6 +1658,8 @@ function showTableMenu(cell, x, y) {
     const gi = document.getElementById('cell-bg-inp');
     if (bi) bi.value = rgbToHex(bc) || '#cbd5e1';
     if (gi) gi.value = rgbToHex(bg) || '#ffffff';
+
+    updateMergeButtonsState();
     menu.style.display = 'block';
 
     const vw = window.innerWidth, vh = window.innerHeight;
@@ -1201,7 +1667,8 @@ function showTableMenu(cell, x, y) {
     let left = Math.max(8, Math.min(x, vw - mr.width - 12));
     let top = y + 4;
     if (top + mr.height > vh - 10) {
-        top = Math.max(10, y - mr.height - 8);
+        const altY = topY !== null ? topY : y;
+        top = Math.max(10, altY - mr.height - 8);
     }
     menu.style.left = left + 'px';
     menu.style.top  = top  + 'px';
@@ -1211,6 +1678,7 @@ function hideTableMenu() {
     const menu = document.getElementById('table-ctx-menu');
     if (menu) menu.style.display = 'none';
     closeSwatchPopover();
+    hideTableToolbarTooltip();
     _activeCell = null;
 }
 
@@ -1231,15 +1699,16 @@ function initTableResizeHandles() {
         table.style.width = '100%';
         table.style.maxWidth = '100%';
 
+        table.querySelectorAll('.col-resize-handle').forEach(h => h.remove());
+
         const rows = table.querySelectorAll('tr');
         if (rows.length === 0) return;
         const firstRow = rows[0];
         const cells = Array.from(firstRow.cells);
 
         cells.forEach((cell, idx) => {
-            let handle = cell.querySelector('.col-resize-handle');
-            if (!handle && idx < cells.length - 1) {
-                handle = document.createElement('div');
+            if (idx < cells.length - 1) {
+                const handle = document.createElement('div');
                 handle.className = 'col-resize-handle';
                 handle.contentEditable = 'false';
                 cell.appendChild(handle);
@@ -1979,6 +2448,7 @@ function createTemplateState() {
                 // Table resize listeners and handles
                 setupTableResizeListener(container);
                 initTableResizeHandles();
+                initTableToolbarTooltips();
 
                 // Table context menu & multi-cell selection
                 container.addEventListener('mousedown', (e) => {
@@ -1989,8 +2459,7 @@ function createTemplateState() {
                         if (e.shiftKey && _lastAnchorCell && _lastAnchorCell.closest('table') === cell.closest('table')) {
                             e.preventDefault();
                             selectCellRange(_lastAnchorCell, cell);
-                            const rect = cell.getBoundingClientRect();
-                            showTableMenu(cell, rect.left, rect.bottom + 4);
+                            showTableMenuForSelection();
                             return;
                         }
                         if (e.ctrlKey || e.metaKey) {
@@ -2003,54 +2472,87 @@ function createTemplateState() {
                                 _selectedCells.add(cell);
                                 _lastAnchorCell = cell;
                             }
-                            const rect = cell.getBoundingClientRect();
-                            showTableMenu(cell, rect.left, rect.bottom + 4);
+                            if (_selectedCells.size > 0) {
+                                showTableMenuForSelection();
+                            } else {
+                                hideTableMenu();
+                            }
                             return;
                         }
                         _isCellDragging = true;
+                        _hasDragged = false;
                         _dragStartCell = cell;
                         _lastAnchorCell = cell;
                     }
                 });
 
-                container.addEventListener('mouseover', (e) => {
-                    if (_isCellDragging && _dragStartCell) {
-                        const cell = e.target.closest('td, th');
-                        if (cell && cell.closest('table') === _dragStartCell.closest('table')) {
-                            if (cell !== _dragStartCell || _selectedCells.size > 1) {
-                                window.getSelection()?.removeAllRanges();
-                                selectCellRange(_dragStartCell, cell);
-                            }
+                const handleCellHover = (target) => {
+                    if (!_isCellDragging || !_dragStartCell) return;
+                    const cell = target ? target.closest('td, th') : null;
+                    if (cell && cell.closest('table') === _dragStartCell.closest('table')) {
+                        if (cell !== _dragStartCell || _hasDragged) {
+                            _hasDragged = true;
+                            document.body.style.userSelect = 'none';
+                            window.getSelection()?.removeAllRanges();
+                            selectCellRange(_dragStartCell, cell);
                         }
+                    }
+                };
+
+                container.addEventListener('mouseover', (e) => {
+                    handleCellHover(e.target);
+                });
+
+                document.addEventListener('mousemove', (e) => {
+                    if (_isCellDragging && _dragStartCell) {
+                        const el = document.elementFromPoint(e.clientX, e.clientY);
+                        handleCellHover(el);
                     }
                 });
 
                 document.addEventListener('mouseup', (e) => {
                     if (_isCellDragging) {
                         _isCellDragging = false;
-                        if (_dragStartCell && _selectedCells.size > 1) {
-                            const rect = _dragStartCell.getBoundingClientRect();
-                            showTableMenu(_dragStartCell, rect.left, rect.bottom + 4);
+                        document.body.style.userSelect = '';
+                        if (_hasDragged) {
+                            _ignoreNextClick = true;
+                            setTimeout(() => { _ignoreNextClick = false; }, 250);
+                            if (_selectedCells.size > 0) {
+                                showTableMenuForSelection();
+                            }
                         }
                     }
                 });
 
                 container.addEventListener('click', (e) => {
+                    if (_ignoreNextClick) {
+                        _ignoreNextClick = false;
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                    }
                     const cell = e.target.closest('td, th');
                     if (cell && container.contains(cell)) {
                         initTableResizeHandles();
-                        if (!e.ctrlKey && !e.metaKey && !e.shiftKey && _selectedCells.size <= 1) {
+                        if (!e.ctrlKey && !e.metaKey && !e.shiftKey) {
                             clearCellSelection();
                             cell.classList.add('cell-selected');
                             _selectedCells.add(cell);
                             _lastAnchorCell = cell;
-                            const rect = cell.getBoundingClientRect();
-                            showTableMenu(cell, rect.left, rect.bottom + 4);
+                            showTableMenuForSelection();
                         }
-                    } else if (!e.target.closest('#table-ctx-menu') && !e.target.closest('#ctx-swatch-popover')) {
+                    } else if (!e.target.closest('table') && !e.target.closest('#table-ctx-menu') && !e.target.closest('#ctx-swatch-popover')) {
                         clearCellSelection();
                         hideTableMenu();
                     }
+                });
+
+                document.addEventListener('mousedown', (e) => {
+                    if (e.target.closest('#pages-container') || e.target.closest('#table-ctx-menu') || e.target.closest('#ctx-swatch-popover') || e.target.closest('#toolbar') || e.target.closest('.color-picker-input')) {
+                        return;
+                    }
+                    clearCellSelection();
+                    hideTableMenu();
                 });
 
                 document.addEventListener('keydown', (e) => {
