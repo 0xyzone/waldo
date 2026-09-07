@@ -11,6 +11,12 @@ class LetterController extends Controller
 {
     public function index(Request $request)
     {
+        $allowedPerPage = [6, 12, 18, 24, 30, 36, 42, 48, 54, 60];
+        $perPage = (int) $request->input('per_page', 6);
+        if (! in_array($perPage, $allowedPerPage, true)) {
+            $perPage = 6;
+        }
+
         $query = LetterTemplate::query()->orderByDesc('id');
 
         if ($search = trim((string) $request->input('search'))) {
@@ -23,9 +29,9 @@ class LetterController extends Controller
             });
         }
 
-        $templates = $query->get();
+        $templates = $query->paginate($perPage)->withQueryString();
 
-        return view('letters.index', compact('templates'));
+        return view('letters.index', compact('templates', 'allowedPerPage'));
     }
 
     public function history(Request $request)
