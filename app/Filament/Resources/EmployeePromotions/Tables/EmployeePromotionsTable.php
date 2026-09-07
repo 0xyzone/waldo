@@ -4,6 +4,7 @@ namespace App\Filament\Resources\EmployeePromotions\Tables;
 
 use App\Models\Department;
 use App\Models\Designation;
+use App\Models\Employee;
 use App\Models\EmployeePromotion;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
