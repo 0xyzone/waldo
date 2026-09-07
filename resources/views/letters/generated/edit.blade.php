@@ -308,6 +308,35 @@
                         </label>
                     </div>
 
+                    <!-- First Page Margins -->
+                    <div x-show="differentFirstPageMargins" class="space-y-1.5 pb-2 border-b border-slate-200/60 dark:border-zinc-800/80">
+                        <span class="block text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                            1st Page Margins
+                        </span>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Top</label>
+                                <input type="number" name="first_page_margin_top" x-model.number="firstPageMargins.top" min="0" max="100"
+                                       class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Bottom</label>
+                                <input type="number" name="first_page_margin_bottom" x-model.number="firstPageMargins.bottom" min="0" max="100"
+                                       class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Left</label>
+                                <input type="number" name="first_page_margin_left" x-model.number="firstPageMargins.left" min="0" max="100"
+                                       class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Right</label>
+                                <input type="number" name="first_page_margin_right" x-model.number="firstPageMargins.right" min="0" max="100"
+                                       class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Other / Global Pages Margins -->
                     <div class="space-y-1.5">
                         <span x-show="differentFirstPageMargins" class="block text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
@@ -332,35 +361,6 @@
                             <div>
                                 <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Right</label>
                                 <input type="number" name="margin_right" x-model.number="margins.right" min="0" max="100"
-                                       class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- First Page Margins -->
-                    <div x-show="differentFirstPageMargins" class="space-y-1.5 pt-2 border-t border-slate-200/60 dark:border-zinc-800/80">
-                        <span class="block text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                            1st Page Margins
-                        </span>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Top</label>
-                                <input type="number" name="first_page_margin_top" x-model.number="firstPageMargins.top" min="0" max="100"
-                                       class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Bottom</label>
-                                <input type="number" name="first_page_margin_bottom" x-model.number="firstPageMargins.bottom" min="0" max="100"
-                                       class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Left</label>
-                                <input type="number" name="first_page_margin_left" x-model.number="firstPageMargins.left" min="0" max="100"
-                                       class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-[9px] font-bold text-slate-400 mb-0.5">Right</label>
-                                <input type="number" name="first_page_margin_right" x-model.number="firstPageMargins.right" min="0" max="100"
                                        class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
                             </div>
                         </div>

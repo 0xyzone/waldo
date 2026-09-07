@@ -234,10 +234,10 @@
             </div>
         </div>
 
-        <div class="flex-1 flex flex-col overflow-hidden p-6 space-y-4">
+        <div class="flex-1 flex flex-col overflow-y-auto p-6 space-y-4">
             
             <!-- Employee Selector -->
-            <div class="flex-1 flex flex-col min-h-0 space-y-3">
+            <div class="flex flex-col min-h-0 space-y-3 shrink-0">
                 <div class="flex items-center justify-between shrink-0">
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">Target Employees</label>
                     <span class="text-[10px] bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 px-2 py-0.5 rounded font-bold" 
@@ -249,17 +249,64 @@
                        class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500 transition-all shrink-0">
                 
                 <!-- Checkboxes list -->
-                <div class="flex-1 overflow-y-auto border border-slate-200 dark:border-zinc-800 rounded-xl divide-y divide-slate-100 dark:divide-zinc-800/80 bg-slate-50 dark:bg-zinc-950 shadow-inner min-h-0">
+                <div class="h-44 overflow-y-auto border border-slate-200 dark:border-zinc-800 rounded-xl divide-y divide-slate-100 dark:divide-zinc-800/80 bg-slate-50 dark:bg-zinc-950 shadow-inner shrink-0">
                     <template x-for="e in filteredEmployees" :key="e.employee_code">
                         <label class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-zinc-800/50 cursor-pointer transition-colors">
                             <input type="checkbox" :value="e.employee_code" x-model="selectedCodes" 
-                                   class="rounded border-slate-300 text-amber-500 focus:ring-amber-500">
+                                    class="rounded border-slate-300 text-amber-500 focus:ring-amber-500">
                             <div class="flex flex-col">
                                 <span class="text-xs font-bold text-slate-800 dark:text-zinc-200" x-text="e.employee_code + ' | ' + e.name"></span>
                                 <span class="text-[10px] text-slate-400 dark:text-zinc-500" x-text="(e.designation ? (e.designation.name || e.designation) : 'Staff') + ' · ' + (e.department ? (e.department.name || e.department) : 'N/A')"></span>
                             </div>
                         </label>
                     </template>
+                </div>
+            </div>
+
+            <!-- Page Margins (Editable on the go) -->
+            <div x-show="selectedTemplateId" class="p-4 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl space-y-3 shrink-0">
+                <div class="flex items-center justify-between">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Page Margins (mm)</label>
+                    <label class="flex items-center gap-1.5 cursor-pointer select-none">
+                        <input type="checkbox"
+                               x-model="differentFirstPageMargins"
+                               class="rounded border-slate-300 dark:border-zinc-700 text-amber-500 focus:ring-amber-500 text-xs">
+                        <span class="text-[10px] font-semibold text-slate-600 dark:text-zinc-400">Diff 1st Page</span>
+                    </label>
+                </div>
+
+                <!-- First Page Margins (shown when differentFirstPageMargins is true) -->
+                <div x-show="differentFirstPageMargins" class="space-y-1.5 pb-2 border-b border-slate-200/60 dark:border-zinc-800/80">
+                    <span class="block text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                        1st Page Margins
+                    </span>
+                    <div class="grid grid-cols-2 gap-2">
+                        @foreach(['top' => 'Top', 'bottom' => 'Bottom', 'left' => 'Left', 'right' => 'Right'] as $side => $label)
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-400 mb-0.5">{{ $label }}</label>
+                            <input type="number" x-model.number="firstPageMargins.{{ $side }}"
+                                   min="0" max="100"
+                                   class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <!-- Other / Global Pages Margins -->
+                <div class="space-y-1.5">
+                    <span x-show="differentFirstPageMargins" class="block text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                        Other Pages Margins
+                    </span>
+                    <div class="grid grid-cols-2 gap-2">
+                        @foreach(['top' => 'Top', 'bottom' => 'Bottom', 'left' => 'Left', 'right' => 'Right'] as $side => $label)
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-400 mb-0.5">{{ $label }}</label>
+                            <input type="number" x-model.number="margins.{{ $side }}"
+                                   min="0" max="100"
+                                   class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
+                        </div>
+                        @endforeach
+                    </div>
                 </div>
             </div>
             
@@ -513,6 +560,8 @@ function generatorState() {
             this.$watch('selectedCodes', () => this.updatePaginatedLetters());
             this.$watch('customValues', () => this.updatePaginatedLetters(), { deep: true });
             this.$watch('margins', () => this.updatePaginatedLetters(), { deep: true });
+            this.$watch('firstPageMargins', () => this.updatePaginatedLetters(), { deep: true });
+            this.$watch('differentFirstPageMargins', () => this.updatePaginatedLetters());
             this.$watch('search', () => this.updatePaginatedLetters());
 
             if (document.fonts) {

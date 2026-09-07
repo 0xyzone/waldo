@@ -776,6 +776,24 @@ body.is-col-resizing {
                         </label>
                     </div>
 
+                    <!-- First Page Margins (shown when differentFirstPageMargins is true) -->
+                    <div x-show="differentFirstPageMargins" class="space-y-1.5 pb-2 border-b border-slate-200/60 dark:border-zinc-800/80">
+                        <span class="block text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                            1st Page Margins
+                        </span>
+                        <div class="grid grid-cols-2 gap-2">
+                            @foreach(['top' => 'Top', 'bottom' => 'Bottom', 'left' => 'Left', 'right' => 'Right'] as $side => $label)
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-400 mb-0.5">{{ $label }}</label>
+                                <input type="number" name="first_page_margin_{{ $side }}" x-model.number="firstPageMargins.{{ $side }}"
+                                       min="0" max="100"
+                                       class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none"
+                                       @change="applyMarginsToAll()">
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+
                     <!-- Other / Global Pages Margins -->
                     <div class="space-y-1.5">
                         <span x-show="differentFirstPageMargins" class="block text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
@@ -786,24 +804,6 @@ body.is-col-resizing {
                             <div>
                                 <label class="block text-[9px] font-bold text-slate-400 mb-0.5">{{ $label }}</label>
                                 <input type="number" name="margin_{{ $side }}" x-model.number="margins.{{ $side }}"
-                                       min="0" max="100"
-                                       class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none"
-                                       @change="applyMarginsToAll()">
-                            </div>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    <!-- First Page Margins (shown when differentFirstPageMargins is true) -->
-                    <div x-show="differentFirstPageMargins" class="space-y-1.5 pt-2 border-t border-slate-200/60 dark:border-zinc-800/80">
-                        <span class="block text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                            1st Page Margins
-                        </span>
-                        <div class="grid grid-cols-2 gap-2">
-                            @foreach(['top' => 'Top', 'bottom' => 'Bottom', 'left' => 'Left', 'right' => 'Right'] as $side => $label)
-                            <div>
-                                <label class="block text-[9px] font-bold text-slate-400 mb-0.5">{{ $label }}</label>
-                                <input type="number" name="first_page_margin_{{ $side }}" x-model.number="firstPageMargins.{{ $side }}"
                                        min="0" max="100"
                                        class="w-full p-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-center text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none"
                                        @change="applyMarginsToAll()">
