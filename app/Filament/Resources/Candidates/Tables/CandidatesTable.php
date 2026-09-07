@@ -119,7 +119,7 @@ class CandidatesTable
             ])
             ->recordActions([
                 Action::make('print')
-                    ->label('Print')
+                    ->hiddenLabel()
                     ->icon('heroicon-o-printer')
                     ->color('info')
                     ->tooltip('Print Preview & CV Images')
@@ -130,12 +130,17 @@ class CandidatesTable
                     ->modalContent(fn(Candidate $record) => view('filament.resources.candidates.print-preview-modal', [
                         'candidate' => $record,
                     ])),
-                EditAction::make(),
+                EditAction::make()
+                    ->slideover()
+                    ->icon('heroicon-o-pencil')
+                    ->color('primary')
+                    ->hiddenLabel()
+                    ->tooltip('Edit Candidate'),
             ])
             ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+                // BulkActionGroup::make([
+                //     DeleteBulkAction::make(),
+                // ]),
             ]);
     }
 }
