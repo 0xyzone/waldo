@@ -139,6 +139,18 @@ class EmployeePromotionsTable
                             'hrms_synced' => $isSyncing,
                             'hrms_synced_at' => $isSyncing ? now() : null,
                         ]);
+                        $employee = Employee::find($record->employee_id);
+                        if($isSyncing){
+                            $employee->update([
+                                'department_id' => $record->to_department_id,
+                                'designation_id' => $record->to_designation_id,
+                            ]);
+                        }else{
+                            $employee->update([
+                                'department_id' => $record->from_department_id,
+                                'designation_id' => $record->from_designation_id,
+                            ]);
+                        }
 
                         Notification::make()
                             ->title($isSyncing ? 'Marked as HRMS Synced' : 'HRMS Sync Unmarked')
