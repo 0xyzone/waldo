@@ -21,6 +21,7 @@ class Candidate extends Model
         'cv_image',
         'reference',
         'department_id',
+        'designation_id',
         'status',
         'notes',
     ];
@@ -34,6 +35,7 @@ class Candidate extends Model
             'dob_ad' => 'date',
             'cv_image' => 'array',
             'department_id' => 'integer',
+            'designation_id' => 'integer',
         ];
     }
 
@@ -43,6 +45,14 @@ class Candidate extends Model
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class);
+    }
+
+    /**
+     * Get the designation that the Candidate applied for.
+     */
+    public function designation(): BelongsTo
+    {
+        return $this->belongsTo(Designation::class);
     }
 
     /**

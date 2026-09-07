@@ -42,7 +42,14 @@ class CandidatesTable
                     ->remainingTextBadge(true),
                 TextColumn::make('department.name')
                     ->label('Department')
-                    ->badge(),
+                    ->badge()
+                    ->formatStateUsing(function ($state, $record) {
+                        if ($record->designation) {
+                            return $state.' | '.$record->designation->name;
+                        }
+
+                        return $state;
+                    }),
                 SelectColumn::make('status')
                     ->label('Status')
                     ->options([
