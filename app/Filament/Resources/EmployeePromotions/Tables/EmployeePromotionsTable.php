@@ -26,11 +26,13 @@ class EmployeePromotionsTable
             ->columns([
                 TextColumn::make('employee_id')
                     ->label('Employee Code')
+                    ->copyable()
                     ->fontFamily('mono')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('employee.name')
                     ->label('Name')
+                    ->copyable()
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
