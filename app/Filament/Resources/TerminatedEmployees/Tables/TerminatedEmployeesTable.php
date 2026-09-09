@@ -55,8 +55,8 @@ class TerminatedEmployeesTable
                     ->sortable(),
                 TextColumn::make('reason')
                     ->label('Reason')
-                    ->limit(30)
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->limit(15)
+                    ->tooltip(fn ($record) => $record->reason),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

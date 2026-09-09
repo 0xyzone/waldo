@@ -43,6 +43,7 @@ class EmployeesTable
                     Split::make([
                         TextColumn::make('employee_code')
                             ->fontFamily('mono')
+                            ->copyable()
                             ->searchable()
                             ->sortable(query: function (Builder $query, string $direction): Builder {
                                 $driver = $query->getConnection()->getDriverName();
