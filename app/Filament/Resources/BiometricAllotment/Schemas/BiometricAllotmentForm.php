@@ -88,6 +88,7 @@ class BiometricAllotmentForm
                             ->schema([
                                 TextInput::make('name')
                                     ->label('Full Name')
+                                    ->autofocus()
                                     ->required(),
                                 Select::make('department_id')
                                     ->relationship(
