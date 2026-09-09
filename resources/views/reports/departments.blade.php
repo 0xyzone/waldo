@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Active Employee Counts by Department & Designation</title>
+    <x-favicon />
     <style>
         body {
             font-family: Arial, sans-serif;

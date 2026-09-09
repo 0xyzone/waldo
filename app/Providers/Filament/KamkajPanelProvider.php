@@ -36,7 +36,18 @@ class KamkajPanelProvider extends PanelProvider
             ->emailVerification()
             ->emailChangeVerification()
             ->profile()
-            ->favicon(asset('img/logo.ico'))
+            ->favicon(fn () => request()->isSecure() ? asset('img/logo.ico') : asset('img/logo-http.ico'))
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn () => new HtmlString('<script>
+                    (function() {
+                        var isHttps = window.location.protocol === "https:";
+                        var target = isHttps ? "'.asset('img/logo.ico').'" : "'.asset('img/logo-http.ico').'";
+                        var links = document.querySelectorAll("link[rel*=\'icon\']");
+                        links.forEach(function(l) { if (l.href !== target) l.href = target; });
+                    })();
+                </script>')
+            )
             ->globalSearch(false)
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')
@@ -52,14 +63,14 @@ class KamkajPanelProvider extends PanelProvider
                     ->activeIcon('heroicon-s-document-text')
                     ->sort(9)
                     ->group('HR & Admin')
-                    ->visible(fn () => auth()->user()->hasRole(['super_admin','HR'])),
+                    ->visible(fn () => auth()->user()->hasRole(['super_admin', 'HR'])),
                 NavigationItem::make('Employee SSF IDs')
                     ->url('/employee-ssids')
                     ->icon('heroicon-o-arrow-top-right-on-square')
                     ->activeIcon('heroicon-s-document-text')
                     ->sort(10)
                     ->group('HR & Admin')
-                    ->visible(fn () => auth()->user()->hasRole(['super_admin','HR'])),
+                    ->visible(fn () => auth()->user()->hasRole(['super_admin', 'HR'])),
             ])
             ->navigationGroups([
                 'HR & Admin',

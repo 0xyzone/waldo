@@ -18,6 +18,7 @@
     <title>Kamkaj | Waldo HQ Operations</title>
     <meta name="description"
         content="Kamkaj — the internal command center for Waldo. Where employees are managed, fingers are scanned, and letters get written.">
+    <x-favicon />
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
