@@ -7,6 +7,7 @@ use App\Models\Leaver;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
+use Illuminate\Database\Eloquent\Builder;
 
 class ListLeavers extends ListRecords
 {
