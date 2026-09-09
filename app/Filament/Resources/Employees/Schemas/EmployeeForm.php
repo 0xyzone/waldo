@@ -67,6 +67,7 @@ class EmployeeForm
                                             ])
                                             ->searchable()
                                             ->preload()
+                                            ->default('Single')
                                             ->native(false),
                                     ]),
                                 Grid::make(['default' => 1, 'sm' => 2])
