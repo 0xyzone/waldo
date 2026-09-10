@@ -2448,12 +2448,11 @@ function createTemplateState() {
 
         init() {
             this.$nextTick(() => {
-                // Create first page
-                this.createPage(1);
-                // Rename gap label to hide for first page
-                const container = document.getElementById('pages-container');
-                const firstGap = container.firstElementChild;
-                if (firstGap && !firstGap.classList.contains('doc-page')) firstGap.remove();
+                const page = this.createPage(1);
+                const content = page.querySelector('.doc-page-content');
+                content.innerHTML = '<p><br></p>';
+
+                this.reflowPages();
 
                 const root = getEditorRoot();
                 if (root) root.focus();
