@@ -72,7 +72,7 @@ class LeaversTable
                     ->boolean(),
                 TextColumn::make('remarks')
                     ->limit(20)
-                    ->tooltip(fn($state) => $state)
+                    ->tooltip(fn ($state) => $state)
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()

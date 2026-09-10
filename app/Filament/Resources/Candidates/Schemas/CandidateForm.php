@@ -50,11 +50,11 @@ class CandidateForm
                     ->live(onBlur: true)
                     ->firstDayOfWeek(0)
                     ->hint(function ($state) {
-                        if (!empty($state)) {
+                        if (! empty($state)) {
                             try {
                                 $age = Carbon::parse($state)->age;
 
-                                return $age . ' years old';
+                                return $age.' years old';
                             } catch (\Exception $e) {
                                 // ignore
                             }
@@ -72,7 +72,7 @@ class CandidateForm
                             $date = Carbon::parse($state);
                             $converter = new NepaliDate;
                             $converted = $converter->convertAdToBs($date->year, $date->month, $date->day);
-                            if (!empty($converted)) {
+                            if (! empty($converted)) {
                                 $set('dob_bs', sprintf('%04d.%02d.%02d', $converted['year'], $converted['month'], $converted['day']));
                             }
                         } catch (\Exception $e) {
@@ -93,15 +93,15 @@ class CandidateForm
                             ->native(false)
                             ->searchable()
                             ->live()
-                            ->afterStateUpdated(fn(callable $set) => $set('designation_id', null))
+                            ->afterStateUpdated(fn (callable $set) => $set('designation_id', null))
                             ->disablePlaceholderSelection(),
                         Select::make('designation_id')
                             ->label('Designation')
                             ->native(false)
                             ->searchable()
                             ->nullable()
-                            ->hidden(fn(callable $get) => blank($get('department_id')))
-                            ->options(fn(callable $get) => Designation::where('department_id', $get('department_id'))
+                            ->hidden(fn (callable $get) => blank($get('department_id')))
+                            ->options(fn (callable $get) => Designation::where('department_id', $get('department_id'))
                                 ->where('is_active', true)
                                 ->orderBy('rank')
                                 ->pluck('name', 'id')

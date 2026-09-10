@@ -51,20 +51,20 @@ class TipsAdjustmentsTable
                     ->numeric()
                     ->copyable()
                     ->copyableState(fn ($record) => (string) ($record->amount + 0))
-                    ->copyMessage(fn($record) => ($record->amount + 0) . ' copied!')
+                    ->copyMessage(fn ($record) => ($record->amount + 0).' copied!')
                     ->formatStateUsing(function ($record) {
                         $cleanAmount = $record->amount + 0;
 
                         return $record->type === 'add'
-                            ? '+ ' . $cleanAmount
-                            : '- ' . $cleanAmount;
+                            ? '+ '.$cleanAmount
+                            : '- '.$cleanAmount;
                     })
-                    ->color(fn($record) => $record->type === 'add' ? 'success' : 'danger')
+                    ->color(fn ($record) => $record->type === 'add' ? 'success' : 'danger')
                     ->badge()
                     ->sortable(),
                 TextColumn::make('remarks')
                     ->limit(20)
-                    ->tooltip(fn(TipsAdjustment $record) => $record->remarks),
+                    ->tooltip(fn (TipsAdjustment $record) => $record->remarks),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -75,7 +75,7 @@ class TipsAdjustmentsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('id', 'desc')
-            ->recordClasses(fn(TipsAdjustment $record) => match (strtolower((string) $record->status)) {
+            ->recordClasses(fn (TipsAdjustment $record) => match (strtolower((string) $record->status)) {
                 'updated' => 'bg-emerald-950 border-emerald-200 dark:border-emerald-900',
                 'cancelled' => 'bg-gray-500 border-gray-200 dark:border-gray-700',
                 default => null,
@@ -83,22 +83,22 @@ class TipsAdjustmentsTable
             ->filters([
                 SelectFilter::make('department_id')
                     ->label('Department')
-                    ->options(fn() => Department::pluck('name', 'id')->toArray())
+                    ->options(fn () => Department::pluck('name', 'id')->toArray())
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
                             $data['value'],
-                            fn(Builder $query, $deptId) => $query->whereHas('employee', fn(Builder $q) => $q->where('department_id', $deptId))
+                            fn (Builder $query, $deptId) => $query->whereHas('employee', fn (Builder $q) => $q->where('department_id', $deptId))
                         );
                     })
                     ->searchable()
                     ->preload(),
                 SelectFilter::make('designation_id')
                     ->label('Designation')
-                    ->options(fn() => Designation::pluck('name', 'id')->toArray())
+                    ->options(fn () => Designation::pluck('name', 'id')->toArray())
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
                             $data['value'],
-                            fn(Builder $query, $desigId) => $query->whereHas('employee', fn(Builder $q) => $q->where('designation_id', $desigId))
+                            fn (Builder $query, $desigId) => $query->whereHas('employee', fn (Builder $q) => $q->where('designation_id', $desigId))
                         );
                     })
                     ->searchable()
@@ -116,11 +116,11 @@ class TipsAdjustmentsTable
                         return $query
                             ->when(
                                 $data['created_from'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date)
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date)
                             )
                             ->when(
                                 $data['created_to'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date)
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date)
                             );
                     }),
             ])

@@ -34,7 +34,7 @@ class BiometricAllotmentsTable
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn($state) => match ($state) {
+                    ->color(fn ($state) => match ($state) {
                         'Done' => 'success',
                         'Left Job' => 'danger',
                         'Not Done Yet' => 'warning',
@@ -58,7 +58,7 @@ class BiometricAllotmentsTable
                     ->label('Set By')
                     ->limit(10)
                     ->badge()
-                    ->color(fn($state) => match ($state) {
+                    ->color(fn ($state) => match ($state) {
                         'Shuraz' => 'info',
                         'Saugat' => 'danger',
                         'Suraj Raj Karmacharya' => 'warning',
@@ -82,7 +82,7 @@ class BiometricAllotmentsTable
                 TextColumn::make('remarks')
                     ->label('Remarks')
                     ->limit(20)
-                    ->tooltip(fn($state) => $state),
+                    ->tooltip(fn ($state) => $state),
                 TextColumn::make('phone')
                     ->label('Phone')
                     ->icon('heroicon-o-phone')
@@ -100,7 +100,7 @@ class BiometricAllotmentsTable
                     ->dateTime('M d, Y H:i A')
                     ->toggleable(isToggledHiddenByDefault: false),
             ])
-            ->modifyQueryUsing(fn(Builder $query) => $query->orderByRaw('CAST(REGEXP_REPLACE(code, "[^0-9]", "") AS UNSIGNED) DESC'))
+            ->modifyQueryUsing(fn (Builder $query) => $query->orderByRaw('CAST(REGEXP_REPLACE(code, "[^0-9]", "") AS UNSIGNED) DESC'))
             ->filters([
                 SelectFilter::make('department_id')
                     ->label('Department')
@@ -128,11 +128,11 @@ class BiometricAllotmentsTable
                         return $query
                             ->when(
                                 $data['enrolled_from'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('enrolled_date', '>=', $date)
+                                fn (Builder $query, $date): Builder => $query->whereDate('enrolled_date', '>=', $date)
                             )
                             ->when(
                                 $data['enrolled_to'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('enrolled_date', '<=', $date)
+                                fn (Builder $query, $date): Builder => $query->whereDate('enrolled_date', '<=', $date)
                             );
                     }),
             ])
@@ -142,10 +142,10 @@ class BiometricAllotmentsTable
                     ->icon('heroicon-o-phone')
                     ->color('info')
                     ->iconButton()
-                    ->url(fn($record) => $record->phone ? 'tel:' . $record->phone : null)
+                    ->url(fn ($record) => $record->phone ? 'tel:'.$record->phone : null)
                     ->openUrlInNewTab(false)
                     ->requiresConfirmation()
-                    ->visible(fn($record) => filled($record->phone)),
+                    ->visible(fn ($record) => filled($record->phone)),
                 Action::make('add to employee')
                     ->label('Convert')
                     ->button()
@@ -154,7 +154,7 @@ class BiometricAllotmentsTable
                         if ($auth->hasRole('HR')) {
                             $employee = Employee::where('employee_code', $record->code)->first();
 
-                            return !$employee && $record?->status !== 'Bio Not Required';
+                            return ! $employee && $record?->status !== 'Bio Not Required';
                         }
 
                         return false;
@@ -164,18 +164,18 @@ class BiometricAllotmentsTable
                             ->label('Employee Code')
                             ->required()
                             ->unique(ignoreRecord: true)
-                            ->default(fn($record) => $record->code),
+                            ->default(fn ($record) => $record->code),
                         TextInput::make('name')
                             ->label('Employee Name')
                             ->required()
-                            ->default(fn($record) => $record->name),
+                            ->default(fn ($record) => $record->name),
                         TextInput::make('phone_number')
-                            ->default(fn($record) => $record?->phone),
+                            ->default(fn ($record) => $record?->phone),
                         Select::make('department_id')
                             ->relationship('department', 'name')
                             ->label('Department')
                             ->required()
-                            ->default(fn($record) => $record->department_id),
+                            ->default(fn ($record) => $record->department_id),
                         Select::make('shift')
                             ->label('Shift')
                             ->options([
@@ -183,12 +183,12 @@ class BiometricAllotmentsTable
                                 'Evening' => 'Evening',
                                 'Night' => 'Night',
                             ])
-                            ->default(fn($record) => $record->shift),
+                            ->default(fn ($record) => $record->shift),
                         TextInput::make('join_date_formatted')
                             ->label('Joined Date')
-                            ->default(fn($record) => $record->join_date),
+                            ->default(fn ($record) => $record->join_date),
                         TextInput::make('marital_status')
-                            ->default('Single')
+                            ->default('Single'),
                     ])
                     ->action(function (array $data) {
                         $employee = Employee::create([
@@ -203,7 +203,7 @@ class BiometricAllotmentsTable
                             'publish_tips' => false,
                             'tips_fixed' => true,
                             'join_date_formatted' => $data['join_date_formatted'],
-                            'marital_status' => $data['marital_status']
+                            'marital_status' => $data['marital_status'],
                         ]);
                         Notification::make()
                             ->title('Employee Created')
@@ -221,33 +221,33 @@ class BiometricAllotmentsTable
                     ->form([
                         Select::make('setting_id')
                             ->label('Bot Configuration')
-                            ->options(fn() => DiscordSetting::whereNotNull('name')->pluck('name', 'id'))
+                            ->options(fn () => DiscordSetting::whereNotNull('name')->pluck('name', 'id'))
                             ->searchable()
                             ->placeholder('Select a bot')
                             ->required()
                             ->live(),
                         Select::make('channel_id')
                             ->label('Target Discord Channel')
-                            ->options(fn(Get $get) => $get('setting_id')
+                            ->options(fn (Get $get) => $get('setting_id')
                                 ? DiscordService::getChannelsGroupedByCategoryForSetting($get('setting_id'))
                                 : [])
                             ->searchable()
                             ->placeholder('Select a channel')
                             ->required()
-                            ->disabled(fn(Get $get) => !$get('setting_id')),
+                            ->disabled(fn (Get $get) => ! $get('setting_id')),
                         Select::make('role_ids')
                             ->label('Mention Roles (Optional)')
                             ->multiple()
-                            ->options(fn(Get $get) => $get('setting_id')
+                            ->options(fn (Get $get) => $get('setting_id')
                                 ? DiscordService::getRolesForSetting($get('setting_id'))
                                 : [])
-                            ->default(fn(Get $get) => $get('setting_id')
+                            ->default(fn (Get $get) => $get('setting_id')
                                 ? DiscordService::getDefaultRoleIdsForSetting($get('setting_id'))
                                 : [])
                             ->searchable()
                             ->preload()
                             ->placeholder('Select role(s) to ping')
-                            ->disabled(fn(Get $get) => !$get('setting_id')),
+                            ->disabled(fn (Get $get) => ! $get('setting_id')),
                     ])
                     ->modalHeading('Send Biometric Requests to Discord')
                     ->modalDescription('Select the bot, target channel, and optional roles to ping about pending biometric allotment requests.')
@@ -265,7 +265,7 @@ class BiometricAllotmentsTable
                         }
 
                         $setting = DiscordSetting::find($data['setting_id']);
-                        if (!$setting || !$setting->bot_token || !$setting->guild_id) {
+                        if (! $setting || ! $setting->bot_token || ! $setting->guild_id) {
                             Notification::make()
                                 ->title('Discord Setup Incomplete')
                                 ->body('Please configure the Discord bot settings first in the Discord Setup page.')
@@ -276,8 +276,8 @@ class BiometricAllotmentsTable
                         }
 
                         $selectedRoleIds = array_filter((array) ($data['role_ids'] ?? []));
-                        if (!empty($selectedRoleIds)) {
-                            $roleMentions = implode(' ', array_map(fn($roleId) => "<@&{$roleId}>", $selectedRoleIds));
+                        if (! empty($selectedRoleIds)) {
+                            $roleMentions = implode(' ', array_map(fn ($roleId) => "<@&{$roleId}>", $selectedRoleIds));
                         } else {
                             $roleMentions = DiscordService::getItRoleMentionForSetting($setting);
                         }
@@ -337,7 +337,7 @@ class BiometricAllotmentsTable
                             return $user->hasRole('super_admin') || $user->hasRole('HR');
                         })
                         ->action(function (Collection $records): void {
-                            $sorted = $records->sortBy(fn($record) => (int) preg_replace('/[^0-9]/', '', $record->code));
+                            $sorted = $records->sortBy(fn ($record) => (int) preg_replace('/[^0-9]/', '', $record->code));
 
                             $converted = 0;
                             $skipped = 0;

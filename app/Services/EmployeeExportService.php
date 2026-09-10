@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Employee;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use OpenSpout\Common\Entity\Row;
@@ -281,6 +282,116 @@ class EmployeeExportService
                     $employee->tips_status ?? '-',
                     $employee->contact_number ?? '-',
                     $employee->employee_status ?? '-',
+                ];
+
+                $rowStyle = ($format === 'csv')
+                    ? null
+                    : static::getStyleForStatus((string) $employee->employee_status, true);
+
+                $writer->addRow(Row::fromValues($rowValues, $rowStyle));
+            }
+
+            $writer->close();
+        }, $fileName, [
+            'Content-Type' => $format === 'csv' ? 'text/csv' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
+    /**
+     * Export total days worked report for employees up to a specified ending date.
+     */
+    public function exportDaysWorked(Collection $employees, string $endDate, string $format = 'xlsx'): StreamedResponse
+    {
+        $endCarbon = Carbon::parse($endDate)->endOfDay();
+        $formattedEndDate = Carbon::parse($endDate)->format('d F, Y');
+
+        $columns = [
+            'employee_code' => 'Employee Code',
+            'name' => 'Full Name',
+            'department' => 'Department',
+            'designation' => 'Designation',
+            'employee_status' => 'Status',
+            'join_date' => 'Date of Joining',
+            'cutoff_date' => 'Calculation Date',
+            'days_worked' => 'Total Days Worked',
+            'tenure_breakdown' => 'Tenure Breakdown',
+        ];
+
+        // Sort employees by Department Rank (dp_rank), then Overall Rank (rank), then Name
+        $employees = $employees->sortBy([
+            ['dp_rank', 'asc'],
+            ['rank', 'asc'],
+            ['name', 'asc'],
+        ]);
+
+        $extension = $format === 'csv' ? 'csv' : 'xlsx';
+        $safeDateStr = Carbon::parse($endDate)->format('Y_m_d');
+        $fileName = 'employees_days_worked_up_to_'.$safeDateStr.'_'.now()->format('His').'.'.$extension;
+
+        return response()->streamDownload(function () use ($employees, $columns, $endCarbon, $formattedEndDate, $format) {
+            $writer = $format === 'csv' ? new CsvWriter : new XlsxWriter;
+            $writer->openToFile('php://output');
+
+            // Header styling
+            $headerStyle = $format === 'csv' ? null : (new Style)
+                ->setFontBold()
+                ->setFontColor('FFFFFF')
+                ->setBackgroundColor('1E293B');
+
+            $writer->addRow(Row::fromValues(array_values($columns), $headerStyle));
+
+            foreach ($employees as $employee) {
+                $daysWorked = 'N/A';
+                $tenureBreakdown = 'N/A';
+                $joinDateDisplay = $employee->join_date_formatted ?? '-';
+
+                if (! empty($employee->join_date_formatted)) {
+                    try {
+                        $cleanedDate = str_replace(',', '', $employee->join_date_formatted);
+                        $joinCarbon = Carbon::parse($cleanedDate)->startOfDay();
+
+                        if ($joinCarbon->greaterThan($endCarbon)) {
+                            $daysWorked = 0;
+                            $tenureBreakdown = 'Joined after calculation date';
+                        } else {
+                            // Inclusive days worked
+                            $diffDays = $joinCarbon->diffInDays($endCarbon) + 1;
+                            // If days count is equal to or more than a year (>= 365), cap at 365; otherwise exact days
+                            $daysWorked = $diffDays >= 365 ? 365 : $diffDays;
+
+                            // Calculate years, months, days human breakdown
+                            $diff = $joinCarbon->diff($endCarbon->copy()->addDay());
+                            $parts = [];
+                            if ($diff->y > 0) {
+                                $parts[] = $diff->y.' yr'.($diff->y > 1 ? 's' : '');
+                            }
+                            if ($diff->m > 0) {
+                                $parts[] = $diff->m.' mo'.($diff->m > 1 ? 's' : '');
+                            }
+                            if ($diff->d > 0 || empty($parts)) {
+                                $parts[] = $diff->d.' day'.($diff->d > 1 ? 's' : '');
+                            }
+                            $tenureBreakdown = implode(', ', $parts);
+                        }
+                    } catch (\Throwable) {
+                        $daysWorked = 'Invalid Date';
+                        $tenureBreakdown = 'Unparseable join date';
+                    }
+                } else {
+                    $joinDateDisplay = 'Missing Join Date';
+                    $tenureBreakdown = 'No join date recorded';
+                }
+
+                $rowValues = [
+                    $employee->employee_code,
+                    $employee->name ?? '-',
+                    $employee->department?->name ?? '-',
+                    $employee->designation?->name ?? '-',
+                    $employee->employee_status ?? '-',
+                    $joinDateDisplay,
+                    $formattedEndDate,
+                    $daysWorked,
+                    $tenureBreakdown,
                 ];
 
                 $rowStyle = ($format === 'csv')

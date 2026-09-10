@@ -19,15 +19,15 @@ class ListTipsAdjustments extends ListRecords
             'all' => Tab::make('All')
                 ->badge(TipsAdjustment::count()),
             'pending' => Tab::make('Pending')
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('status', 'pending'))
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'pending'))
                 ->badge(TipsAdjustment::where('status', 'pending')->count())
                 ->badgeColor('warning'),
             'updated' => Tab::make('Updated')
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('status', 'updated'))
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'updated'))
                 ->badge(TipsAdjustment::where('status', 'updated')->count())
                 ->badgeColor('success'),
             'cancelled' => Tab::make('Cancelled')
-                ->modifyQueryUsing(fn(Builder $query) => $query->where('status', 'cancelled'))
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'cancelled'))
                 ->badge(TipsAdjustment::where('status', 'cancelled')->count())
                 ->badgeColor('gray'),
         ];

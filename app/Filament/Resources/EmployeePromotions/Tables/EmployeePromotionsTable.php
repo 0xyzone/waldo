@@ -45,27 +45,28 @@ class EmployeePromotionsTable
                     ->getStateUsing(function (EmployeePromotion $record): string {
                         $changes = [];
                         if ($record->from_department_id !== $record->to_department_id) {
-                            $changes[] = '<span>' . $record->fromDepartment?->name . '</span> <span class="text-gray-500"> -> </span> <span class="text-green-500">' . $record->toDepartment?->name . '</span>';
+                            $changes[] = '<span>'.$record->fromDepartment?->name.'</span> <span class="text-gray-500"> -> </span> <span class="text-green-500">'.$record->toDepartment?->name.'</span>';
                         }
                         if ($record->from_designation_id !== $record->to_designation_id) {
-                            $changes[] = '<span>' . $record->fromDesignation?->name . '</span> <span class="text-gray-500"> -> </span> <span class="text-green-500">' . $record->toDesignation?->name . '</span>';
+                            $changes[] = '<span>'.$record->fromDesignation?->name.'</span> <span class="text-gray-500"> -> </span> <span class="text-green-500">'.$record->toDesignation?->name.'</span>';
                         }
+
                         return implode(' | ', $changes);
                     })
                     ->html(),
                 IconColumn::make('acknowledged')
                     ->label('Acknowledged')
                     ->boolean()
-                    ->tooltip(fn(EmployeePromotion $record) => $record->acknowledged_at ? $record->acknowledged_at->format('d-M-Y h:i A') : 'Not Acknowledged')
-                    ->color(fn(EmployeePromotion $record) => $record->acknowledged ? 'success' : 'gray'),
+                    ->tooltip(fn (EmployeePromotion $record) => $record->acknowledged_at ? $record->acknowledged_at->format('d-M-Y h:i A') : 'Not Acknowledged')
+                    ->color(fn (EmployeePromotion $record) => $record->acknowledged ? 'success' : 'gray'),
                 IconColumn::make('hrms_synced')
                     ->label('HRMS Synced')
                     ->boolean()
-                    ->tooltip(fn(EmployeePromotion $record) => $record->hrms_synced_at ? $record->hrms_synced_at->format('d-M-Y h:i A') : 'Not Synced')
-                    ->color(fn(EmployeePromotion $record) => $record->hrms_synced ? 'info' : 'gray'),
+                    ->tooltip(fn (EmployeePromotion $record) => $record->hrms_synced_at ? $record->hrms_synced_at->format('d-M-Y h:i A') : 'Not Synced')
+                    ->color(fn (EmployeePromotion $record) => $record->hrms_synced ? 'info' : 'gray'),
                 TextColumn::make('remarks')
                     ->limit(30)
-                    ->tooltip(fn(EmployeePromotion $record) => $record->remarks)
+                    ->tooltip(fn (EmployeePromotion $record) => $record->remarks)
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
@@ -73,7 +74,7 @@ class EmployeePromotionsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('id', 'desc')
-            ->recordClasses(fn(EmployeePromotion $record) => match (true) {
+            ->recordClasses(fn (EmployeePromotion $record) => match (true) {
                 $record->acknowledged && $record->hrms_synced => 'bg-emerald-950 border-emerald-200 dark:border-emerald-900',
                 $record->acknowledged => 'bg-amber-950 border-amber-200 dark:border-amber-900',
                 default => null,
@@ -81,12 +82,12 @@ class EmployeePromotionsTable
             ->filters([
                 SelectFilter::make('to_department_id')
                     ->label('New Department')
-                    ->options(fn() => Department::pluck('name', 'id')->toArray())
+                    ->options(fn () => Department::pluck('name', 'id')->toArray())
                     ->searchable()
                     ->preload(),
                 SelectFilter::make('to_designation_id')
                     ->label('New Designation')
-                    ->options(fn() => Designation::pluck('name', 'id')->toArray())
+                    ->options(fn () => Designation::pluck('name', 'id')->toArray())
                     ->searchable()
                     ->preload(),
                 TernaryFilter::make('acknowledged')
@@ -110,9 +111,9 @@ class EmployeePromotionsTable
                     ->button()
                     ->requiresConfirmation()
                     ->modalHeading('Acknowledge Promotion')
-                    ->modalDescription(fn(EmployeePromotion $record) => "Confirm acknowledgement of the promotion for {$record->employee?->name} ({$record->employee_id}).")
+                    ->modalDescription(fn (EmployeePromotion $record) => "Confirm acknowledgement of the promotion for {$record->employee?->name} ({$record->employee_id}).")
                     ->modalSubmitActionLabel('Acknowledge')
-                    ->visible(fn(EmployeePromotion $record): bool => !$record->acknowledged)
+                    ->visible(fn (EmployeePromotion $record): bool => ! $record->acknowledged)
                     ->action(function (EmployeePromotion $record): void {
                         $record->update([
                             'acknowledged' => true,
@@ -126,29 +127,29 @@ class EmployeePromotionsTable
                             ->send();
                     }),
                 Action::make('markHrmsSynced')
-                    ->label(fn(EmployeePromotion $record) => $record->hrms_synced ? 'Mark HRMS Unsynced' : 'Mark HRMS Synced')
-                    ->icon(fn(EmployeePromotion $record) => $record->hrms_synced ? 'heroicon-o-arrow-uturn-left' : 'heroicon-o-computer-desktop')
-                    ->color(fn(EmployeePromotion $record) => $record->hrms_synced ? 'gray' : 'info')
+                    ->label(fn (EmployeePromotion $record) => $record->hrms_synced ? 'Mark HRMS Unsynced' : 'Mark HRMS Synced')
+                    ->icon(fn (EmployeePromotion $record) => $record->hrms_synced ? 'heroicon-o-arrow-uturn-left' : 'heroicon-o-computer-desktop')
+                    ->color(fn (EmployeePromotion $record) => $record->hrms_synced ? 'gray' : 'info')
                     ->button()
-                    ->visible(fn() => Auth::user()->hasRole(['super_admin', 'HR']))
+                    ->visible(fn () => Auth::user()->hasRole(['super_admin', 'HR']))
                     ->requiresConfirmation()
-                    ->modalHeading(fn(EmployeePromotion $record) => $record->hrms_synced ? 'Unmark HRMS Sync' : 'Mark as HRMS Synced')
-                    ->modalDescription(fn(EmployeePromotion $record) => $record->hrms_synced
+                    ->modalHeading(fn (EmployeePromotion $record) => $record->hrms_synced ? 'Unmark HRMS Sync' : 'Mark as HRMS Synced')
+                    ->modalDescription(fn (EmployeePromotion $record) => $record->hrms_synced
                         ? "This will mark the HRMS sync as incomplete for {$record->employee_id}."
                         : "Confirm that you have manually updated HRMS for {$record->employee_id}.")
                     ->action(function (EmployeePromotion $record): void {
-                        $isSyncing = !$record->hrms_synced;
+                        $isSyncing = ! $record->hrms_synced;
                         $record->update([
                             'hrms_synced' => $isSyncing,
                             'hrms_synced_at' => $isSyncing ? now() : null,
                         ]);
                         $employee = Employee::find($record->employee_id);
-                        if($isSyncing){
+                        if ($isSyncing) {
                             $employee->update([
                                 'department_id' => $record->to_department_id,
                                 'designation_id' => $record->to_designation_id,
                             ]);
-                        }else{
+                        } else {
                             $employee->update([
                                 'department_id' => $record->from_department_id,
                                 'designation_id' => $record->from_designation_id,

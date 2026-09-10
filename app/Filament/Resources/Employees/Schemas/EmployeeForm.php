@@ -12,7 +12,6 @@ use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
@@ -81,11 +80,13 @@ class EmployeeForm
                                                 if (! empty($state)) {
                                                     try {
                                                         $age = Carbon::parse($state)->age;
-                                                        return $age . ' years old';
+
+                                                        return $age.' years old';
                                                     } catch (\Exception $e) {
                                                         // ignore
                                                     }
                                                 }
+
                                                 return null;
                                             })
                                             ->afterStateUpdated(function ($state, callable $set) {
