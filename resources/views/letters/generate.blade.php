@@ -211,7 +211,7 @@
                             title="Save generated letters to history">
                         <i class="fa-solid fa-floppy-disk text-amber-500"></i> Save
                     </button>
-                    <button type="button" @click="saveToHistory(true)" :disabled="selectedCodes.length === 0 || !selectedTemplateId || isSaving"
+                    <button type="button" @click="window.print()" :disabled="selectedCodes.length === 0 || !selectedTemplateId"
                             class="px-3.5 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 disabled:from-slate-300 disabled:to-slate-400 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl shadow-md tracking-wide transition-all active:scale-95 cursor-pointer flex items-center gap-1.5">
                         <i class="fa-solid fa-print"></i> Print
                     </button>
@@ -489,7 +489,7 @@ function generatorState() {
         isSaving: false,
         saveMessage: '',
 
-        async saveToHistory(andPrint = false) {
+        async saveToHistory() {
             if (this.selectedCodes.length === 0 || !this.selectedTemplateId || this.isSaving) return;
 
             this.isSaving = true;
@@ -535,9 +535,6 @@ function generatorState() {
                 if (data.success) {
                     this.saveMessage = 'Saved to history!';
                     setTimeout(() => { this.saveMessage = ''; }, 3000);
-                    if (andPrint) {
-                        window.print();
-                    }
                 } else {
                     alert(data.message || 'Failed to save letters to history.');
                 }
@@ -596,10 +593,6 @@ function generatorState() {
                         this.customValues[key] = '';
                     }
                 });
-
-                if (this.selectedCodes.length === 0 && this.employees && this.employees.length > 0) {
-                    this.selectedCodes = [this.employees[0].employee_code];
-                }
             }
             this.updatePaginatedLetters();
         },
