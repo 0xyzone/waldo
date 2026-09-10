@@ -27,9 +27,9 @@
         box-sizing: border-box;
     }
     .dark .page-sheet {
-        background: #18181b;
-        border-color: #27272a;
-        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        background: #ffffff;
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 12px 36px -8px rgba(0, 0, 0, 0.75);
     }
 
     .a4-page {
@@ -44,7 +44,7 @@
         overflow-wrap: break-word;
     }
     .dark .a4-page {
-        color: #f1f5f9;
+        color: #1e293b;
     }
 
     .a4-page p { margin-top: 0; margin-bottom: 8pt; }
@@ -55,7 +55,7 @@
     .a4-page ol { list-style-type: decimal; padding-left: 24pt; margin-bottom: 8pt; }
     .a4-page table { width: 100%; border-collapse: collapse; margin: 12pt 0; }
     .a4-page td, .a4-page th { border: 1px solid #cbd5e1; padding: 8px 12px; }
-    .dark .a4-page td, .dark .a4-page th { border-color: #3f3f46; }
+    .dark .a4-page td, .dark .a4-page th { border-color: #cbd5e1; }
 
     @media print {
         @page {

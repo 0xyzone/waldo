@@ -32,8 +32,8 @@
     overflow: hidden;
 }
 .dark .doc-page {
-    background: #1c1c1e;
-    box-shadow: 0 4px 24px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.06);
+    background: #ffffff;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.08);
 }
 
 .doc-page-content {
@@ -48,7 +48,7 @@
     overflow-wrap: break-word;
     caret-color: #1d4ed8;
 }
-.dark .doc-page-content { color: #e4e4e7; }
+.dark .doc-page-content { color: #1e293b; }
 .doc-page-content:focus { outline: none; }
 
 .doc-page-content p  { margin: 0 0 8pt; }
@@ -64,7 +64,7 @@
     min-width: 30px;
     vertical-align: top;
 }
-.dark .doc-page-content td, .dark .doc-page-content th { border-color: #3f3f46; }
+.dark .doc-page-content td, .dark .doc-page-content th { border-color: #cbd5e1; }
 
 .doc-page::before {
     content: '';

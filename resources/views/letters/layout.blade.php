@@ -13,6 +13,18 @@
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
+    <script>
+        (function() {
+            try {
+                if (localStorage.getItem('darkMode') === 'true' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            } catch (_) {}
+        })();
+    </script>
+    
     <!-- AlpineJS -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
@@ -47,14 +59,19 @@
     </style>
     @yield('styles')
 </head>
-<body x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }" 
-      x-init="if (darkMode) document.documentElement.classList.add('dark');
-              $watch('darkMode', val => {
-                  localStorage.setItem('darkMode', val);
-                  val ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark');
-              })" 
-      :class="{ 'dark': darkMode }"
-      class="h-full flex flex-col bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 transition-colors duration-300">
+<body x-data="{ 
+          darkMode: document.documentElement.classList.contains('dark'),
+          toggleTheme() {
+              this.darkMode = !this.darkMode;
+              localStorage.setItem('darkMode', this.darkMode);
+              if (this.darkMode) {
+                  document.documentElement.classList.add('dark');
+              } else {
+                  document.documentElement.classList.remove('dark');
+              }
+          }
+      }" 
+      class="h-full flex flex-col bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 transition-colors duration-200">
 
     <!-- Header bar -->
     <header class="no-print bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border-b border-slate-200 dark:border-zinc-800 px-8 flex items-center justify-between h-[64px] shrink-0 z-30 transition-colors duration-300 shadow-sm">
@@ -95,7 +112,7 @@
 
         <div class="flex items-center gap-3">
             <!-- Theme Toggle -->
-            <button @click="darkMode = !darkMode" 
+            <button @click="toggleTheme()" 
                     class="p-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 transition-all shadow-sm active:scale-95 cursor-pointer">
                 <i x-show="!darkMode" class="fa-solid fa-sun text-base"></i>
                 <i x-show="darkMode" class="fa-solid fa-moon text-base" style="display:none"></i>
