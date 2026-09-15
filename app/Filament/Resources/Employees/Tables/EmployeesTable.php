@@ -548,6 +548,23 @@ class EmployeesTable
                     }),
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    BulkAction::make('publish_tips')
+                        ->label('Publish Tips')
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Publish Tips for Selected Employees')
+                        ->modalDescription('Are you sure you want to publish tips for all selected employees?')
+                        ->modalSubmitActionLabel('Confirm Publish')
+                        ->action(function (Collection $records): void {
+                            $records->each(fn(Employee $record) => $record->update(['publish_tips' => true]));
+
+                            Notification::make()
+                                ->title('Tips Published')
+                                ->body("Tips have been published for {$records->count()} employee(s).")
+                                ->success()
+                                ->send();
+                        }),
                     BulkAction::make('onboarded')
                         ->label('Onboard Selected')
                         ->icon('heroicon-o-check')
