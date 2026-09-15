@@ -46,8 +46,9 @@ Route::prefix('/letters')->middleware('role:super_admin|HR')->group(function () 
     Route::delete('/{id}', [LetterController::class, 'destroy'])->name('letters.destroy');
 });
 
-// Department Reports
+// Department & Birthday Reports
 Route::prefix('/reports')->group(function () {
+    Route::get('/birthdays', [ReportController::class, 'birthdays'])->name('reports.birthdays');
     Route::get('/departments', [ReportController::class, 'departments'])->name('reports.departments');
     Route::get('/departments/view', [ReportController::class, 'viewDepartments'])->name('reports.departments.view');
     Route::get('/departments/{department}/print', [ReportController::class, 'printDepartmentEmployees'])->name('reports.departments.print');
