@@ -9,6 +9,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -45,6 +46,13 @@ class TipsAdjustmentsTable
                     ->sortable(),
                 TextColumn::make('employee.designation.name')
                     ->label('Designation')
+                    ->sortable(),
+                TextColumn::make('for_month')
+                    ->label('For Month')
+                    ->formatStateUsing(fn ($state) => ucfirst((string) $state))
+                    ->sortable(),
+                TextColumn::make('year')
+                    ->label('Year')
                     ->sortable(),
                 TextColumn::make('amount')
                     ->label('Amount')
@@ -103,6 +111,37 @@ class TipsAdjustmentsTable
                     })
                     ->searchable()
                     ->preload(),
+                SelectFilter::make('for_month')
+                    ->label('For Month')
+                    ->options([
+                        'january' => 'January',
+                        'february' => 'February',
+                        'march' => 'March',
+                        'april' => 'April',
+                        'may' => 'May',
+                        'june' => 'June',
+                        'july' => 'July',
+                        'august' => 'August',
+                        'september' => 'September',
+                        'october' => 'October',
+                        'november' => 'November',
+                        'december' => 'December',
+                    ])
+                    ->native(false),
+                Filter::make('year')
+                    ->label('Year')
+                    ->form([
+                        Select::make('year')
+                            ->label('Year')
+                            ->options(array_combine(range(now()->year + 1, 2020), range(now()->year + 1, 2020)))
+                            ->native(false),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['year'] ?? null,
+                            fn (Builder $query, $year): Builder => $query->where('year', $year)
+                        );
+                    }),
                 Filter::make('created_at')
                     ->form([
                         DatePicker::make('created_from')

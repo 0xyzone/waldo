@@ -27,6 +27,29 @@ class TipsAdjustmentForm
                     ])
                     ->native(false)
                     ->required(),
+                Select::make('for_month')
+                    ->label('For Month')
+                    ->options([
+                        'january' => 'January',
+                        'february' => 'February',
+                        'march' => 'March',
+                        'april' => 'April',
+                        'may' => 'May',
+                        'june' => 'June',
+                        'july' => 'July',
+                        'august' => 'August',
+                        'september' => 'September',
+                        'october' => 'October',
+                        'november' => 'November',
+                        'december' => 'December',
+                    ])
+                    ->default(strtolower(now()->format('F')))
+                    ->native(false)
+                    ->required(),
+                TextInput::make('year')
+                    ->label('Year')
+                    ->default(now()->format('Y'))
+                    ->required(),
                 TextInput::make('amount')
                     ->required()
                     ->numeric(),
