@@ -37,6 +37,7 @@ class LeaversTable
                     ->rowIndex(),
                 TextColumn::make('employee_id')
                     ->label('Employee Code')
+                    ->copyable()
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('employee.name')
