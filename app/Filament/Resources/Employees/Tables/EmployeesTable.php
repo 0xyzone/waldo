@@ -148,6 +148,8 @@ class EmployeesTable
                         ->copyMessage('SSID copied')
                         ->extraAttributes(['class' => 'mt-1 block']),
                     Split::make([
+                        TextColumn::make('tips_label')
+                            ->default('Tips:'),
                         TextColumn::make('tips_status')
                             ->label('Tips Status')
                             ->badge()
@@ -160,7 +162,7 @@ class EmployeesTable
                             ->color(fn($state) => $state === true ? 'success' : 'danger')
                             ->formatStateUsing(fn($state) => $state ? 'Published' : 'Not Published')
                             ->extraAttributes(['class' => 'mt-1 block']),
-                    ]),
+                    ])->extraAttributes(['class' => 'flex gap-2 justify-start'])->grow(false),
                     TextColumn::make('join_date_formatted')
                         ->icon('heroicon-m-calendar')
                         ->color('gray')
