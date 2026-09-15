@@ -30,18 +30,18 @@ class TipsAdjustmentForm
                 Select::make('for_month')
                     ->label('For Month')
                     ->options([
-                        'january' => 'January',
-                        'february' => 'February',
-                        'march' => 'March',
-                        'april' => 'April',
-                        'may' => 'May',
-                        'june' => 'June',
-                        'july' => 'July',
-                        'august' => 'August',
-                        'september' => 'September',
-                        'october' => 'October',
-                        'november' => 'November',
-                        'december' => 'December',
+                        'january' => 'January Release',
+                        'february' => 'February Release',
+                        'march' => 'March Release',
+                        'april' => 'April Release',
+                        'may' => 'May Release',
+                        'june' => 'June Release',
+                        'july' => 'July Release',
+                        'august' => 'August Release',
+                        'september' => 'September Release',
+                        'october' => 'October Release',
+                        'november' => 'November Release',
+                        'december' => 'December Release',
                     ])
                     ->default(strtolower(now()->format('F')))
                     ->native(false)
