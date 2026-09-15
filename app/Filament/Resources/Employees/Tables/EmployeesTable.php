@@ -147,6 +147,12 @@ class EmployeesTable
                         ->copyable()
                         ->copyMessage('SSID copied')
                         ->extraAttributes(['class' => 'mt-1 block']),
+                    TextColumn::make('tips_status')
+                        ->label('Tips Status')
+                        ->badge()
+                        ->color(fn ($state) => $state === 'Release' ? 'success' : 'danger')
+                        ->formatStateUsing(fn ($state) => ucfirst((string) $state))
+                        ->extraAttributes(['class' => 'mt-1 block']),
                     TextColumn::make('join_date_formatted')
                         ->icon('heroicon-m-calendar')
                         ->color('gray')
