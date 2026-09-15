@@ -44,8 +44,8 @@ class ListEmployees extends ListRecords
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('employee_status', 'Terminated'))
                 ->badge(Employee::where('employee_status', 'Terminated')->count()),
             'not_boarded' => Tab::make('Not Boarded')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('onboarded', 'no'))
-                ->badge(Employee::where('onboarded', 'no')->count()),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('onboarded', 'no')->where('employee_status', 'Active'))
+                ->badge(Employee::where('onboarded', 'no')->where('employee_status', 'Active')->count()),
         ];
     }
 
