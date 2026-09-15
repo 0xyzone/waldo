@@ -48,10 +48,10 @@ class EmployeesTable
                             ->sortable(query: function (Builder $query, string $direction): Builder {
                                 $driver = $query->getConnection()->getDriverName();
                                 if ($driver === 'sqlite') {
-                                    return $query->orderByRaw('CAST(SUBSTR(employee_code, 4) AS INTEGER) '.$direction);
+                                    return $query->orderByRaw('CAST(SUBSTR(employee_code, 4) AS INTEGER) ' . $direction);
                                 }
 
-                                return $query->orderByRaw('CAST(SUBSTR(employee_code, 4) AS UNSIGNED) '.$direction);
+                                return $query->orderByRaw('CAST(SUBSTR(employee_code, 4) AS UNSIGNED) ' . $direction);
                             })
                             ->color('primary')
                             ->badge()
@@ -59,7 +59,7 @@ class EmployeesTable
                         Split::make([
                             TextColumn::make('employee_status')
                                 ->badge()
-                                ->color(fn (string $state): string => match ($state) {
+                                ->color(fn(string $state): string => match ($state) {
                                     'Active' => 'success',
                                     'Inactive' => 'gray',
                                     'Suspended' => 'warning',
@@ -69,12 +69,12 @@ class EmployeesTable
                                     default => 'gray',
                                 }),
                             TextColumn::make('onboarded')
-                                ->formatStateUsing(fn (string $state) => $state === 'yes' ? '✅' : '❌'),
+                                ->formatStateUsing(fn(string $state) => $state === 'yes' ? '✅' : '❌'),
                             TextColumn::make('isIncomplete')
                                 ->getStateUsing(function ($record) {
                                     return $record->isIncomplete() ? '⏳' : '☑️';
                                 })
-                                ->color(fn (string $state): string => match ($state) {
+                                ->color(fn(string $state): string => match ($state) {
                                     '☑️' => 'success',
                                     '⏳' => 'gray',
                                 })
@@ -95,10 +95,10 @@ class EmployeesTable
                                         'point_value',
                                     ];
 
-                                    $missing = collect($fields)->filter(fn ($field) => empty($record->$field));
+                                    $missing = collect($fields)->filter(fn($field) => empty($record->$field));
 
                                     if ($missing->count() > 0) {
-                                        return 'Missing fields: '.$missing->implode(', ');
+                                        return 'Missing fields: ' . $missing->implode(', ');
                                     }
 
                                     return 'All fields complete';
@@ -107,7 +107,7 @@ class EmployeesTable
                     ])->extraAttributes(['class' => 'justify-between items-center']),
                     Split::make([
                         TextColumn::make('is_manager')
-                            ->getStateUsing(fn (Employee $record) => $record->is_manager ? '(M)' : '')
+                            ->getStateUsing(fn(Employee $record) => $record->is_manager ? '(M)' : '')
                             ->color('primary')
                             ->size('lg')
                             ->weight('bold')
@@ -133,7 +133,7 @@ class EmployeesTable
                         ->extraAttributes(['class' => 'mt-1 block']),
                     TextColumn::make('dob_ad')
                         ->icon('heroicon-m-cake')
-                        ->getStateUsing(fn (Employee $record) => $record->dob_ad ? Carbon::parse($record->dob_ad)->format('d F, Y').' ('.Carbon::parse($record->dob_ad)->age.')' : null)
+                        ->getStateUsing(fn(Employee $record) => $record->dob_ad ? Carbon::parse($record->dob_ad)->format('d F, Y') . ' (' . Carbon::parse($record->dob_ad)->age . ')' : null)
                         ->iconColor('primary')
                         ->color('gray')
                         ->size('sm')
@@ -147,12 +147,20 @@ class EmployeesTable
                         ->copyable()
                         ->copyMessage('SSID copied')
                         ->extraAttributes(['class' => 'mt-1 block']),
-                    TextColumn::make('tips_status')
-                        ->label('Tips Status')
-                        ->badge()
-                        ->color(fn ($state) => $state === 'Release' ? 'success' : 'danger')
-                        ->formatStateUsing(fn ($state) => ucfirst((string) $state))
-                        ->extraAttributes(['class' => 'mt-1 block']),
+                    Split::make([
+                        TextColumn::make('tips_status')
+                            ->label('Tips Status')
+                            ->badge()
+                            ->color(fn($state) => $state === 'Release' ? 'success' : 'danger')
+                            ->formatStateUsing(fn($state) => ucfirst((string) $state))
+                            ->extraAttributes(['class' => 'mt-1 block']),
+                        TextColumn::make('publish_tips')
+                            ->label('Tips Published')
+                            ->badge()
+                            ->color(fn($state) => $state === true ? 'success' : 'danger')
+                            ->formatStateUsing(fn($state) => $state ? 'Published' : 'Not Published')
+                            ->extraAttributes(['class' => 'mt-1 block']),
+                    ]),
                     TextColumn::make('join_date_formatted')
                         ->icon('heroicon-m-calendar')
                         ->color('gray')
@@ -166,7 +174,7 @@ class EmployeesTable
                 'md' => 3,
                 'lg' => 4,
             ])
-            ->recordClasses(fn (Employee $record) => match ($record->employee_status) {
+            ->recordClasses(fn(Employee $record) => match ($record->employee_status) {
                 'Active' => null,
                 'Inactive' => 'bg-gray-row border-gray-200 dark:border-gray-700',
                 'Suspended' => 'bg-amber-row border-amber-200 dark:border-amber-900',
@@ -276,8 +284,8 @@ class EmployeesTable
                     ->trueLabel('Incomplete Profiles Only')
                     ->falseLabel('Complete Profiles Only')
                     ->queries(
-                        true: fn (Builder $query) => $query->isIncomplete(),
-                        false: fn (Builder $query) => $query->where(function (Builder $q) {
+                        true: fn(Builder $query) => $query->isIncomplete(),
+                        false: fn(Builder $query) => $query->where(function (Builder $q) {
                             $q
                                 ->whereNotNull('designation_id')
                                 ->whereNotNull('name')
@@ -307,9 +315,9 @@ class EmployeesTable
                             ->color('success')
                             ->requiresConfirmation()
                             ->modalHeading('Onboard Employee')
-                            ->modalDescription(fn (Employee $record) => "Are you sure you want to mark {$record->name} ({$record->employee_code}) as Onboarded?")
+                            ->modalDescription(fn(Employee $record) => "Are you sure you want to mark {$record->name} ({$record->employee_code}) as Onboarded?")
                             ->modalSubmitActionLabel('Confirm Onboard')
-                            ->visible(fn (Employee $record): bool => Auth::user()->hasRole(['super_admin', 'HR']) && strtolower($record->onboarded ?? '') !== 'yes')
+                            ->visible(fn(Employee $record): bool => Auth::user()->hasRole(['super_admin', 'HR']) && strtolower($record->onboarded ?? '') !== 'yes')
                             ->action(function (Employee $record): void {
                                 $record->update(['onboarded' => 'yes']);
 
@@ -328,9 +336,9 @@ class EmployeesTable
                         ->color('success')
                         ->requiresConfirmation()
                         ->modalHeading('Onboard Employee')
-                        ->modalDescription(fn (Employee $record) => "Are you sure you want to mark {$record->name} ({$record->employee_code}) as Onboarded?")
+                        ->modalDescription(fn(Employee $record) => "Are you sure you want to mark {$record->name} ({$record->employee_code}) as Onboarded?")
                         ->modalSubmitActionLabel('Confirm Onboard')
-                        ->visible(fn (Employee $record): bool => Auth::user()->hasRole(['super_admin', 'HR']) && strtolower($record->onboarded ?? '') !== 'yes')
+                        ->visible(fn(Employee $record): bool => Auth::user()->hasRole(['super_admin', 'HR']) && strtolower($record->onboarded ?? '') !== 'yes')
                         ->action(function (Employee $record): void {
                             $record->update(['onboarded' => 'yes']);
 
@@ -346,7 +354,7 @@ class EmployeesTable
                         ->color('warning')
                         ->requiresConfirmation()
                         ->modalHeading('Suspend Employee')
-                        ->modalDescription(fn (Employee $record) => "Are you sure you want to suspend {$record->name} ({$record->employee_code})? This will update their status to Suspended and tips status to Hold.")
+                        ->modalDescription(fn(Employee $record) => "Are you sure you want to suspend {$record->name} ({$record->employee_code})? This will update their status to Suspended and tips status to Hold.")
                         ->modalSubmitActionLabel('Confirm Suspension')
                         ->form([
                             DatePicker::make('start_date')
@@ -372,7 +380,7 @@ class EmployeesTable
                                 ->disk('public')
                                 ->maxSize(10240),
                         ])
-                        ->visible(fn (Employee $record): bool => Auth::user()->hasRole(['super_admin', 'HR']) && $record->employee_status !== 'Suspended')
+                        ->visible(fn(Employee $record): bool => Auth::user()->hasRole(['super_admin', 'HR']) && $record->employee_status !== 'Suspended')
                         ->action(function (Employee $record, array $data): void {
                             EmployeeSuspension::create([
                                 'employee_id' => $record->employee_code,
@@ -395,7 +403,7 @@ class EmployeesTable
                         ->color('danger')
                         ->requiresConfirmation()
                         ->modalHeading('Terminate Employee')
-                        ->modalDescription(fn (Employee $record) => "Are you sure you want to terminate {$record->name} ({$record->employee_code})? This will set their status to Terminated.")
+                        ->modalDescription(fn(Employee $record) => "Are you sure you want to terminate {$record->name} ({$record->employee_code})? This will set their status to Terminated.")
                         ->modalSubmitActionLabel('Confirm Termination')
                         ->form([
                             DatePicker::make('last_working_date')
@@ -412,7 +420,7 @@ class EmployeesTable
                                 ->label('Reason for Termination')
                                 ->rows(3),
                         ])
-                        ->visible(fn (): bool => Auth::user()->hasRole(['super_admin', 'HR']))
+                        ->visible(fn(): bool => Auth::user()->hasRole(['super_admin', 'HR']))
                         ->action(function (Employee $record, array $data): void {
                             TerminatedEmployee::create([
                                 'employee_id' => $record->employee_code,
@@ -433,9 +441,9 @@ class EmployeesTable
                         ->color('success')
                         ->requiresConfirmation()
                         ->modalHeading('Onboard Employee')
-                        ->modalDescription(fn (Employee $record) => "Are you sure you want to onboard {$record->name} ({$record->employee_code})?")
+                        ->modalDescription(fn(Employee $record) => "Are you sure you want to onboard {$record->name} ({$record->employee_code})?")
                         ->modalSubmitActionLabel('Confirm Onboarding')
-                        ->visible(fn (Employee $record): bool => Auth::user()->hasRole(['super_admin', 'HR']) && $record->onboarded === 'no')
+                        ->visible(fn(Employee $record): bool => Auth::user()->hasRole(['super_admin', 'HR']) && $record->onboarded === 'no')
                         ->action(function (Employee $record): void {
                             $record->update(['onboarded' => 'yes']);
 
@@ -451,9 +459,9 @@ class EmployeesTable
                         ->color('success')
                         ->requiresConfirmation()
                         ->modalHeading('Mark as Manager')
-                        ->modalDescription(fn (Employee $record) => "Are you sure you want to mark {$record->name} ({$record->employee_code}) as Manager? This will replace any currently assigned manager for this department.")
+                        ->modalDescription(fn(Employee $record) => "Are you sure you want to mark {$record->name} ({$record->employee_code}) as Manager? This will replace any currently assigned manager for this department.")
                         ->modalSubmitActionLabel('Confirm Manager')
-                        ->visible(fn (Employee $record): bool => Auth::user()->hasRole(['super_admin', 'HR']) && ! $record->is_manager)
+                        ->visible(fn(Employee $record): bool => Auth::user()->hasRole(['super_admin', 'HR']) && !$record->is_manager)
                         ->action(function (Employee $record): void {
                             if ($record->department_id) {
                                 Employee::where('department_id', $record->department_id)
@@ -476,9 +484,9 @@ class EmployeesTable
                         ->color('danger')
                         ->requiresConfirmation()
                         ->modalHeading('Remove Manager')
-                        ->modalDescription(fn (Employee $record) => "Are you sure you want to remove {$record->name} ({$record->employee_code}) as Manager?")
+                        ->modalDescription(fn(Employee $record) => "Are you sure you want to remove {$record->name} ({$record->employee_code}) as Manager?")
                         ->modalSubmitActionLabel('Confirm Removal')
-                        ->visible(fn (Employee $record): bool => Auth::user()->hasRole(['super_admin', 'HR']) && (bool) $record->is_manager)
+                        ->visible(fn(Employee $record): bool => Auth::user()->hasRole(['super_admin', 'HR']) && (bool) $record->is_manager)
                         ->action(function (Employee $record): void {
                             $record->update(['is_manager' => false]);
 
@@ -547,7 +555,7 @@ class EmployeesTable
                         ->modalDescription('Are you sure you want to mark all selected employees as Onboarded?')
                         ->modalSubmitActionLabel('Confirm Onboarding')
                         ->action(function (Collection $records): void {
-                            $records->each(fn (Employee $record) => $record->update(['onboarded' => 'yes']));
+                            $records->each(fn(Employee $record) => $record->update(['onboarded' => 'yes']));
 
                             Notification::make()
                                 ->title('Employees Onboarded')
