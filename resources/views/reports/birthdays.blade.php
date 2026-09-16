@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,7 +21,7 @@
             margin: 0 auto;
             padding: 20px;
             box-sizing: border-box;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         table {
@@ -30,7 +31,8 @@
             border: 2px solid #000;
         }
 
-        th, td {
+        th,
+        td {
             border: 1px solid #000;
             padding: 10px 6px;
             text-align: left;
@@ -51,13 +53,45 @@
         }
 
         /* Specific column widths and alignments */
-        th:nth-child(1), td:nth-child(1) { width: 5%; white-space: nowrap; text-align: center; }
-        th:nth-child(2), td:nth-child(2) { width: 8%; text-align: center; }
-        th:nth-child(3), td:nth-child(3) { width: 20%; }
-        th:nth-child(4), td:nth-child(4) { width: 10%; text-align: center; }
-        th:nth-child(5), td:nth-child(5) { width: 15%; }
-        th:nth-child(6), td:nth-child(6) { width: 17%; }
-        th:nth-child(7), td:nth-child(7) { width: 25%; }
+        th:nth-child(1),
+        td:nth-child(1) {
+            width: 2%;
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        th:nth-child(2),
+        td:nth-child(2) {
+            width: 2%;
+            text-align: center;
+        }
+
+        th:nth-child(3),
+        td:nth-child(3) {
+            width: 20%;
+        }
+
+        th:nth-child(4),
+        td:nth-child(4) {
+            width: 16%;
+            text-align: center;
+        }
+
+        th:nth-child(5),
+        td:nth-child(5) {
+            width: 10%;
+        }
+
+        th:nth-child(6),
+        td:nth-child(6) {
+            width: 20%;
+        }
+
+        th:nth-child(7),
+        td:nth-child(7) {
+            width: 30%;
+            text-align: center;
+        }
 
         /* Header row formatting */
         .title-row th {
@@ -65,12 +99,13 @@
             font-size: 15px;
             text-transform: uppercase;
         }
-        
+
         .title-row .main-title {
             font-weight: 800;
         }
-        
-        .title-row .month-cell, .title-row .year-cell {
+
+        .title-row .month-cell,
+        .title-row .year-cell {
             font-weight: 700;
             text-align: center;
         }
@@ -89,6 +124,7 @@
                 padding: 0;
                 margin: 0;
             }
+
             .a4-page {
                 box-shadow: none;
                 margin: 0;
@@ -96,11 +132,12 @@
                 min-height: auto;
                 padding: 0;
             }
+
             @page {
                 size: A4 portrait;
                 margin: 10mm;
             }
-            
+
             /* Prevent the header from repeating on every printed page */
             thead {
                 display: table-row-group;
@@ -108,12 +145,13 @@
         }
     </style>
 </head>
+
 <body>
     <div class="a4-page">
         <table>
             <thead>
                 <tr class="title-row">
-                    <th colspan="4" class="main-title">Casino Staff - Birthday List for the month:</th>
+                    <th colspan="4" class="main-title">Birthday List for the month:</th>
                     <th colspan="2" class="month-cell">{{ $monthName }}</th>
                     <th class="year-cell">{{ $year }}</th>
                 </tr>
@@ -128,22 +166,23 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($employees as $employee)
-                <tr>
-                    <td>{{ $loop->iteration }}</td>
-                    <td>{{ $employee->employee_code }}</td>
-                    <td>{{ $employee->name }}</td>
-                    <td>{{ $employee->dob_ad ? $employee->dob_ad->format('d F') : '' }}</td>
-                    <td>{{ $employee->department ? $employee->department->name : '' }}</td>
-                    <td>{{ $employee->designation ? $employee->designation->name : '' }}</td>
-                    <td></td>
-                </tr>
+                @foreach ($employees as $employee)
+                    <tr>
+                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ $employee->employee_code }}</td>
+                        <td>{{ $employee->name }}</td>
+                        <td>{{ $employee->dob_ad ? $employee->dob_ad->format('d F') : '' }}</td>
+                        <td>{{ $employee->department ? $employee->department->name : '' }}</td>
+                        <td>{{ $employee->designation ? $employee->designation->name : '' }}</td>
+                        <td></td>
+                    </tr>
                 @endforeach
-                
-                @if($employees->isEmpty())
-                <tr>
-                    <td colspan="7" style="text-align: center; padding: 20px;">No active employees found with birthdays in this month matching the criteria.</td>
-                </tr>
+
+                @if ($employees->isEmpty())
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 20px;">No active employees found with
+                            birthdays in this month matching the criteria.</td>
+                    </tr>
                 @endif
             </tbody>
         </table>
@@ -156,4 +195,5 @@
         }
     </script>
 </body>
+
 </html>
