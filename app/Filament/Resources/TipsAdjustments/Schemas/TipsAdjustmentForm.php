@@ -43,7 +43,7 @@ class TipsAdjustmentForm
                         'november' => 'November Release',
                         'december' => 'December Release',
                     ])
-                    ->default(strtolower(now()->format('F')))
+                    ->default(strtolower(now()->addMonth()->format('F')))
                     ->native(false)
                     ->required(),
                 TextInput::make('year')
