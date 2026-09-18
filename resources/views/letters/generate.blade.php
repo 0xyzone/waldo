@@ -560,6 +560,33 @@
                             </div>
                         </div>
                     </template>
+
+                    <!-- Calculated Field (number input + live formula results) -->
+                    <template x-if="v.type === 'calculated'">
+                        <div class="space-y-2">
+                            <input type="number"
+                                   :placeholder="'Enter ' + formatLabel(v.key || v)"
+                                   :value="customValues[v.key || v]"
+                                   @input="customValues[v.key || v] = $event.target.value; computeFormulas(v)"
+                                   class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-indigo-400 transition-all">
+                            <!-- Formula results preview -->
+                            <template x-if="v.formulas && v.formulas.length">
+                                <div class="rounded-xl border border-indigo-100 dark:border-indigo-900/50 overflow-hidden">
+                                    <div class="px-2.5 py-1.5 bg-indigo-50 dark:bg-indigo-950/30 border-b border-indigo-100 dark:border-indigo-900/50">
+                                        <span class="text-[9px] font-bold uppercase tracking-wider text-indigo-500 dark:text-indigo-400">Computed Values</span>
+                                    </div>
+                                    <table class="w-full text-[10px]">
+                                        <template x-for="f in (v.formulas || [])" :key="f.key">
+                                            <tr class="border-b border-indigo-50 dark:border-indigo-900/30 last:border-0">
+                                                <td class="px-2.5 py-1.5 font-semibold text-slate-500 dark:text-zinc-400" x-text="f.label || f.key"></td>
+                                                <td class="px-2.5 py-1.5 font-mono font-bold text-right text-indigo-600 dark:text-indigo-400" x-text="formatFormulaResult(customValues[f.key])"></td>
+                                            </tr>
+                                        </template>
+                                    </table>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
                 </div>
             </template>
         </div>
@@ -703,9 +730,54 @@ function generatorState() {
                     } else {
                         this.customValues[key] = '';
                     }
+                    // Initialize all formula child keys too
+                    if (type === 'calculated' && Array.isArray(v.formulas)) {
+                        v.formulas.forEach(f => {
+                            if (f.key) this.customValues[f.key] = '';
+                        });
+                    }
                 });
             }
             this.updatePaginatedLetters();
+        },
+
+        // Evaluate formula expressions for a 'calculated' variable
+        computeFormulas(v) {
+            const parentKey = v.key;
+            const formulas  = Array.isArray(v.formulas) ? v.formulas : [];
+            if (!formulas.length) return;
+
+            formulas.forEach(f => {
+                if (!f.key || !f.expression) return;
+                try {
+                    // Build scope from all current customValues
+                    const keys = Object.keys(this.customValues);
+                    const vals = keys.map(k => {
+                        const n = parseFloat(this.customValues[k]);
+                        return isNaN(n) ? 0 : n;
+                    });
+                    const fn = new Function(...keys, 'return (' + f.expression + ')');
+                    const result = fn(...vals);
+                    // Format: no decimals if whole number, 2 dp otherwise
+                    const num = parseFloat(result);
+                    this.customValues[f.key] = isNaN(num) ? '' : (num % 1 === 0 ? String(num) : num.toFixed(2));
+                } catch (e) {
+                    this.customValues[f.key] = '';
+                }
+            });
+
+            // Re-render letters reactively (customValues watcher fires automatically)
+        },
+
+        // Format a formula result value for the preview table
+        formatFormulaResult(val) {
+            if (val === '' || val === null || val === undefined) return '—';
+            const n = parseFloat(val);
+            if (isNaN(n)) return val;
+            // Add thousands separator
+            return n % 1 === 0
+                ? n.toLocaleString('en-US', { maximumFractionDigits: 0 })
+                : n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         },
 
         createSandboxPage(sandbox) {
@@ -927,6 +999,16 @@ function generatorState() {
 
                 const rx = new RegExp('[{]{2}\\s*' + key + '\\s*[}]{2}', 'g');
                 html = html.replace(rx, val);
+
+                // Also substitute formula child keys for 'calculated' variables
+                if (type === 'calculated' && Array.isArray(v.formulas)) {
+                    v.formulas.forEach(f => {
+                        if (!f.key) return;
+                        const fVal = this.customValues[f.key] || '';
+                        const frx = new RegExp('[{]{2}\\s*' + f.key + '\\s*[}]{2}', 'g');
+                        html = html.replace(frx, fVal);
+                    });
+                }
             });
 
             return html;

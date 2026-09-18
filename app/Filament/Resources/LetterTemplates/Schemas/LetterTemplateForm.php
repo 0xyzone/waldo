@@ -125,6 +125,7 @@ class LetterTemplateForm
                                                         'boolean' => 'Boolean (Yes/No)',
                                                         'dropdown' => 'Dropdown',
                                                         'richtext' => 'Rich Text',
+                                                        'calculated' => 'Calculated (with Formulas)',
                                                     ])
                                                     ->live()
                                                     ->required()
@@ -135,6 +136,29 @@ class LetterTemplateForm
                                                     ->helperText('Comma-separated list')
                                                     ->visible(fn ($get) => $get('type') === 'dropdown')
                                                     ->required(fn ($get) => $get('type') === 'dropdown'),
+
+                                                Repeater::make('formulas')
+                                                    ->label('Formula Variables')
+                                                    ->helperText('Each formula key becomes a {{ placeholder }}. Expressions can reference the parent key and any other custom variable key.')
+                                                    ->schema([
+                                                        TextInput::make('key')
+                                                            ->label('Key')
+                                                            ->required()
+                                                            ->placeholder('e.g., basic_salary')
+                                                            ->rules(['regex:/^[a-zA-Z0-9_]+$/']),
+                                                        TextInput::make('label')
+                                                            ->label('Label')
+                                                            ->placeholder('e.g., Basic Salary'),
+                                                        TextInput::make('expression')
+                                                            ->label('Expression')
+                                                            ->required()
+                                                            ->placeholder('e.g., gross_salary * 0.6')
+                                                            ->helperText('JS math. Reference any variable key directly.'),
+                                                    ])
+                                                    ->columns(3)
+                                                    ->default([])
+                                                    ->visible(fn ($get) => $get('type') === 'calculated')
+                                                    ->columnSpanFull(),
 
                                             ])
                                             ->columns(3)

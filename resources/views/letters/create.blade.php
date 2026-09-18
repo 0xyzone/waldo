@@ -851,6 +851,7 @@ body.is-col-resizing {
                                             <option value="boolean">Yes/No</option>
                                             <option value="dropdown">Dropdown</option>
                                             <option value="richtext">Rich Text</option>
+                                            <option value="calculated">Calculated</option>
                                         </select>
                                     </div>
                                 </div>
@@ -858,6 +859,56 @@ body.is-col-resizing {
                                     <label class="block text-[9px] font-bold uppercase text-slate-400 mb-0.5">Options</label>
                                     <input type="text" x-model="v.options" placeholder="Option 1, Option 2" class="w-full px-2 py-1 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs focus:border-amber-500 outline-none">
                                 </div>
+
+                                <!-- Formula sub-editor (only for 'calculated' type) -->
+                                <div x-show="v.type === 'calculated'" class="space-y-2 pt-1">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[9px] font-bold uppercase text-slate-400">Formula Variables</span>
+                                        <button type="button" @mousedown.prevent="addFormula(v)"
+                                                class="px-1.5 py-0.5 bg-indigo-500 text-white text-[9px] font-bold rounded hover:bg-indigo-600 cursor-pointer">
+                                            <i class="fa-solid fa-plus mr-0.5"></i> Add Formula
+                                        </button>
+                                    </div>
+                                    <p class="text-[9px] text-slate-400 leading-relaxed">Expressions use JS math. Reference <code class="font-mono bg-slate-100 dark:bg-zinc-800 px-0.5 rounded" x-text="v.key || 'parent_key'"></code> or any formula key (e.g., <code class="font-mono bg-slate-100 dark:bg-zinc-800 px-0.5 rounded">gross_salary * 0.6</code>).</p>
+                                    <div class="space-y-1.5">
+                                        <template x-for="(f, fi) in (v.formulas || [])"
+                                                  :key="fi">
+                                            <div class="relative grid grid-cols-2 gap-1.5 p-2 bg-white dark:bg-zinc-900 border border-indigo-100 dark:border-indigo-900/50 rounded-lg pr-6">
+                                                <button type="button" @mousedown.prevent="removeFormula(v, fi)"
+                                                        class="absolute top-1.5 right-1.5 text-slate-400 hover:text-rose-500 cursor-pointer">
+                                                    <i class="fa-solid fa-xmark text-[10px]"></i>
+                                                </button>
+                                                <div>
+                                                    <label class="block text-[8px] font-bold uppercase text-indigo-400 mb-0.5">Key</label>
+                                                    <input type="text" x-model="f.key" placeholder="basic_salary"
+                                                           class="w-full px-1.5 py-1 border border-slate-200 dark:border-zinc-700 rounded bg-slate-50 dark:bg-zinc-950 text-xs font-mono focus:border-indigo-400 outline-none">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-[8px] font-bold uppercase text-indigo-400 mb-0.5">Label <span class="font-normal text-slate-400">(optional)</span></label>
+                                                    <input type="text" x-model="f.label" placeholder="Basic Salary"
+                                                           class="w-full px-1.5 py-1 border border-slate-200 dark:border-zinc-700 rounded bg-slate-50 dark:bg-zinc-950 text-xs font-mono focus:border-indigo-400 outline-none">
+                                                </div>
+                                                <div class="col-span-2">
+                                                    <label class="block text-[8px] font-bold uppercase text-indigo-400 mb-0.5">Expression</label>
+                                                    <input type="text" x-model="f.expression" placeholder="gross_salary * 0.6"
+                                                           class="w-full px-1.5 py-1 border border-slate-200 dark:border-zinc-700 rounded bg-slate-50 dark:bg-zinc-950 text-xs font-mono focus:border-indigo-400 outline-none">
+                                                </div>
+                                                <!-- Insert button for formula key -->
+                                                <div x-show="f.key" class="col-span-2 flex items-center justify-between pt-0.5">
+                                                    <span class="text-[9px] text-slate-400">Insert:</span>
+                                                    <button type="button" @mousedown.prevent="insertVar(f.key)"
+                                                            class="text-xs font-bold font-mono text-indigo-500 dark:text-indigo-400 hover:underline cursor-pointer">
+                                                        @{{ <span x-text="f.key"></span> }}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <div x-show="!(v.formulas && v.formulas.length)" class="py-3 text-center text-[10px] text-slate-400 italic border border-dashed border-indigo-200 dark:border-indigo-900/50 rounded-lg">
+                                            No formula variables yet.
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div x-show="v.key" class="flex items-center justify-between pt-1">
                                     <span class="text-[10px] text-slate-400">Insert:</span>
                                     <button type="button" @mousedown.prevent="insertVar(v.key)" class="text-xs font-bold font-mono text-amber-600 dark:text-amber-400 hover:underline cursor-pointer">@{{ <span x-text="v.key"></span> }}</button>
@@ -1912,8 +1963,10 @@ function createTemplateState() {
             );
         },
 
-        addVariable()     { this.variables.push({ key: '', type: 'text', dummy: '', options: '' }); },
+        addVariable()     { this.variables.push({ key: '', type: 'text', dummy: '', options: '', formulas: [] }); },
         removeVariable(i) { this.variables.splice(i, 1); },
+        addFormula(v)     { if (!v.formulas) v.formulas = []; v.formulas.push({ key: '', label: '', expression: '' }); },
+        removeFormula(v, i) { v.formulas.splice(i, 1); },
 
         isCursorAtStartOfEditable(editable, range) {
             const preRange = document.createRange();
@@ -2443,6 +2496,19 @@ function createTemplateState() {
                     inp.value = fVal;
                     form.appendChild(inp);
                 });
+                // Serialize formula rows for calculated type
+                if (v.type === 'calculated' && Array.isArray(v.formulas)) {
+                    v.formulas.forEach((f, fi) => {
+                        ['key', 'label', 'expression'].forEach(fName => {
+                            const inp = document.createElement('input');
+                            inp.type = 'hidden';
+                            inp.className = 'dynamic-var-input';
+                            inp.name = `variables[${idx}][formulas][${fi}][${fName}]`;
+                            inp.value = f[fName] ?? '';
+                            form.appendChild(inp);
+                        });
+                    });
+                }
             });
             form.submit();
         },

@@ -122,11 +122,21 @@
     $fp = $m['first_page'] ?? [];
     $emp = $letter->employee;
     // Build a key => type map from the original template variables
-    $customMeta = [];
+    $customMeta    = [];
+    $customFormulas = []; // key => [{key, label, expression}] for 'calculated' parent keys
     if ($letter->template && is_array($letter->template->variables)) {
         foreach ($letter->template->variables as $tVar) {
             if (!empty($tVar['key'])) {
                 $customMeta[$tVar['key']] = $tVar['type'] ?? 'text';
+                if (($tVar['type'] ?? '') === 'calculated' && !empty($tVar['formulas'])) {
+                    $customFormulas[$tVar['key']] = $tVar['formulas'];
+                    // Mark formula child keys so we can hide them from the main list
+                    foreach ($tVar['formulas'] as $f) {
+                        if (!empty($f['key'])) {
+                            $customMeta[$f['key']] = 'formula_result';
+                        }
+                    }
+                }
             }
         }
     }
@@ -272,7 +282,40 @@
                                     </button>
                                 </div>
                                 <!-- Type-aware input -->
-                                <template x-if="(customMeta[key] || 'text') !== 'richtext'">
+                                <!-- Skip formula_result keys — they are auto-computed from calculated inputs -->
+                                <template x-if="(customMeta[key] || 'text') === 'formula_result'"></template>
+
+                                <!-- Calculated Field (parent number input + formula results) -->
+                                <template x-if="(customMeta[key] || 'text') === 'calculated'">
+                                    <div class="space-y-2">
+                                        <input type="number" :name="`custom_values[${key}]`"
+                                               :value="customValues[key]"
+                                               @input="customValues[key] = $event.target.value; computeFormulas(key)"
+                                               class="w-full px-2.5 py-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs focus:border-indigo-400 outline-none">
+                                        <!-- Hidden inputs for formula child values (so they are submitted with the form) -->
+                                        <template x-for="f in (calculatedFormulas[key] || [])" :key="f.key">
+                                            <input type="hidden" :name="`custom_values[${f.key}]`" :value="customValues[f.key]">
+                                        </template>
+                                        <!-- Formula results preview -->
+                                        <template x-if="calculatedFormulas[key] && calculatedFormulas[key].length">
+                                            <div class="rounded-xl border border-indigo-100 dark:border-indigo-900/50 overflow-hidden">
+                                                <div class="px-2.5 py-1.5 bg-indigo-50 dark:bg-indigo-950/30 border-b border-indigo-100 dark:border-indigo-900/50">
+                                                    <span class="text-[9px] font-bold uppercase tracking-wider text-indigo-500 dark:text-indigo-400">Computed Values</span>
+                                                </div>
+                                                <table class="w-full text-[10px]">
+                                                    <template x-for="f in (calculatedFormulas[key] || [])" :key="f.key">
+                                                        <tr class="border-b border-indigo-50 dark:border-indigo-900/30 last:border-0">
+                                                            <td class="px-2.5 py-1.5 font-semibold text-slate-500 dark:text-zinc-400" x-text="f.label || f.key"></td>
+                                                            <td class="px-2.5 py-1.5 font-mono font-bold text-right text-indigo-600 dark:text-indigo-400" x-text="formatFormulaResult(customValues[f.key])"></td>
+                                                        </tr>
+                                                    </template>
+                                                </table>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                <template x-if="(customMeta[key] || 'text') !== 'richtext' && (customMeta[key] || 'text') !== 'calculated' && (customMeta[key] || 'text') !== 'formula_result'">
                                     <input type="text" :name="`custom_values[${key}]`" x-model="customValues[key]" 
                                            class="w-full px-2.5 py-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
                                 </template>
@@ -641,6 +684,41 @@ function editGeneratedLetterState() {
             return this.prebuiltVars.filter(v => 
                 v.key.toLowerCase().includes(q) || v.label.toLowerCase().includes(q)
             );
+        },
+
+        // Formulas metadata injected from PHP: { parent_key: [{key, label, expression}] }
+        calculatedFormulas: @json($customFormulas ?? []),
+
+        // Re-evaluate formula expressions when a 'calculated' parent value changes
+        computeFormulas(parentKey) {
+            const formulas = this.calculatedFormulas[parentKey] || [];
+            if (!formulas.length) return;
+
+            formulas.forEach(f => {
+                if (!f.key || !f.expression) return;
+                try {
+                    const keys = Object.keys(this.customValues);
+                    const vals = keys.map(k => {
+                        const n = parseFloat(this.customValues[k]);
+                        return isNaN(n) ? 0 : n;
+                    });
+                    const fn = new Function(...keys, 'return (' + f.expression + ')');
+                    const result = fn(...vals);
+                    const num = parseFloat(result);
+                    this.customValues[f.key] = isNaN(num) ? '' : (num % 1 === 0 ? String(num) : num.toFixed(2));
+                } catch (e) {
+                    this.customValues[f.key] = '';
+                }
+            });
+        },
+
+        formatFormulaResult(val) {
+            if (val === '' || val === null || val === undefined) return '—';
+            const n = parseFloat(val);
+            if (isNaN(n)) return val;
+            return n % 1 === 0
+                ? n.toLocaleString('en-US', { maximumFractionDigits: 0 })
+                : n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         },
 
         getGenderPrefix(gender) {
