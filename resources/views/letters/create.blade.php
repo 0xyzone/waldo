@@ -850,6 +850,7 @@ body.is-col-resizing {
                                             <option value="number">Number</option>
                                             <option value="boolean">Yes/No</option>
                                             <option value="dropdown">Dropdown</option>
+                                            <option value="richtext">Rich Text</option>
                                         </select>
                                     </div>
                                 </div>

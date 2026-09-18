@@ -124,6 +124,7 @@ class LetterTemplateForm
                                                         'number' => 'Number',
                                                         'boolean' => 'Boolean (Yes/No)',
                                                         'dropdown' => 'Dropdown',
+                                                        'richtext' => 'Rich Text',
                                                     ])
                                                     ->live()
                                                     ->required()

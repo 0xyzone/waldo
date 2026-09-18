@@ -84,6 +84,34 @@
     background: rgba(245,158,11,.18) !important;
     color: #fbbf24 !important;
 }
+
+/* Mini Rich Text Variable Editor */
+.rtv-tb-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 4px;
+    font-size: 11px;
+    border-radius: 4px;
+    color: #475569;
+    cursor: pointer;
+    transition: background 0.1s;
+}
+.rtv-tb-btn:hover { background: #e2e8f0; }
+.dark .rtv-tb-btn { color: #a1a1aa; }
+.dark .rtv-tb-btn:hover { background: #3f3f46; }
+.rtv-editor-content:focus { outline: none; }
+.rtv-editor-content p { margin: 0 0 4px 0; }
+.rtv-editor-content ul { list-style: disc;    padding-left: 18px; margin: 2px 0; }
+.rtv-editor-content ol { list-style: decimal; padding-left: 18px; margin: 2px 0; }
+.rtv-size-select {
+    height: 22px; padding: 0 4px; font-size: 10px;
+    border-radius: 4px; border: 1px solid #e2e8f0;
+    background: #f8fafc; color: #334155; cursor: pointer; outline: none;
+}
+.dark .rtv-size-select { border-color: #52525b; color: #e4e4e7; background: #27272a; }
 </style>
 @endsection
 
@@ -93,6 +121,15 @@
     $hasDiff = !empty($m['different_first_page']);
     $fp = $m['first_page'] ?? [];
     $emp = $letter->employee;
+    // Build a key => type map from the original template variables
+    $customMeta = [];
+    if ($letter->template && is_array($letter->template->variables)) {
+        foreach ($letter->template->variables as $tVar) {
+            if (!empty($tVar['key'])) {
+                $customMeta[$tVar['key']] = $tVar['type'] ?? 'text';
+            }
+        }
+    }
 @endphp
 <div x-data="editGeneratedLetterState()" class="flex-1 flex flex-col overflow-hidden">
 
@@ -234,8 +271,54 @@
                                         <i class="fa-solid fa-plus mr-0.5"></i> Insert Value
                                     </button>
                                 </div>
-                                <input type="text" :name="`custom_values[${key}]`" x-model="customValues[key]" 
-                                       class="w-full px-2.5 py-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
+                                <!-- Type-aware input -->
+                                <template x-if="(customMeta[key] || 'text') !== 'richtext'">
+                                    <input type="text" :name="`custom_values[${key}]`" x-model="customValues[key]" 
+                                           class="w-full px-2.5 py-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
+                                </template>
+                                <!-- Rich Text input -->
+                                <template x-if="(customMeta[key] || 'text') === 'richtext'">
+                                    <div class="rtv-editor-wrap border border-slate-200 dark:border-zinc-700 rounded-xl overflow-hidden bg-white dark:bg-zinc-950">
+                                        <input type="hidden" :name="`custom_values[${key}]`" :value="customValues[key]">
+                                        <div class="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b border-slate-100 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900">
+                                            <button type="button" @mousedown.prevent="document.execCommand('bold')"          class="rtv-tb-btn font-bold" title="Bold">B</button>
+                                            <button type="button" @mousedown.prevent="document.execCommand('italic')"        class="rtv-tb-btn italic" title="Italic">I</button>
+                                            <button type="button" @mousedown.prevent="document.execCommand('underline')"     class="rtv-tb-btn underline" title="Underline">U</button>
+                                            <button type="button" @mousedown.prevent="document.execCommand('strikeThrough')" class="rtv-tb-btn line-through" title="Strikethrough">S</button>
+                                            <div class="w-px h-3 bg-slate-200 dark:bg-zinc-700 mx-0.5"></div>
+                                            <button type="button" @mousedown.prevent="document.execCommand('insertUnorderedList')" class="rtv-tb-btn" title="Bullet List"><i class="fa-solid fa-list-ul fa-xs"></i></button>
+                                            <button type="button" @mousedown.prevent="document.execCommand('insertOrderedList')"   class="rtv-tb-btn" title="Numbered List"><i class="fa-solid fa-list-ol fa-xs"></i></button>
+                                            <div class="w-px h-3 bg-slate-200 dark:bg-zinc-700 mx-0.5"></div>
+                                            <button type="button" @mousedown.prevent="document.execCommand('outdent')" class="rtv-tb-btn" title="Outdent">⇤</button>
+                                            <button type="button" @mousedown.prevent="document.execCommand('indent')"  class="rtv-tb-btn" title="Indent">⇥</button>
+                                            <div class="w-px h-3 bg-slate-200 dark:bg-zinc-700 mx-0.5"></div>
+                                            <button type="button" @mousedown.prevent="document.execCommand('justifyLeft')"   class="rtv-tb-btn" title="Align Left"><i class="fa-solid fa-align-left fa-xs"></i></button>
+                                            <button type="button" @mousedown.prevent="document.execCommand('justifyCenter')" class="rtv-tb-btn" title="Align Center"><i class="fa-solid fa-align-center fa-xs"></i></button>
+                                            <button type="button" @mousedown.prevent="document.execCommand('justifyRight')"  class="rtv-tb-btn" title="Align Right"><i class="fa-solid fa-align-right fa-xs"></i></button>
+                                            <div class="w-px h-3 bg-slate-200 dark:bg-zinc-700 mx-0.5"></div>
+                                            <select @mousedown.stop
+                                                    @change="document.execCommand('fontSize', false, $event.target.value)"
+                                                    class="rtv-size-select" title="Font Size">
+                                                <option value="">px</option>
+                                                <option value="1">8</option>
+                                                <option value="2">10</option>
+                                                <option value="3">12</option>
+                                                <option value="4">14</option>
+                                                <option value="5">18</option>
+                                                <option value="6">24</option>
+                                                <option value="7">36</option>
+                                            </select>
+                                            <div class="w-px h-3 bg-slate-200 dark:bg-zinc-700 mx-0.5"></div>
+                                            <button type="button" @mousedown.prevent="document.execCommand('removeFormat')" class="rtv-tb-btn text-rose-400" title="Clear Format"><i class="fa-solid fa-eraser fa-xs"></i></button>
+                                        </div>
+                                        <div contenteditable="true"
+                                             :id="'rtv-gen-' + key"
+                                             x-init="$el.innerHTML = customValues[key] || ''"
+                                             @input="customValues[key] = $el.innerHTML"
+                                             class="rtv-editor-content min-h-[60px] px-2.5 py-1.5 text-xs text-slate-800 dark:text-zinc-200 focus:outline-none">
+                                        </div>
+                                    </div>
+                                </template>
                             </div>
                         </template>
                     </div>
@@ -503,6 +586,7 @@ function editGeneratedLetterState() {
     return {
         employee: @json($emp),
         customValues: @json($letter->custom_values ?? []),
+        customMeta: @json($customMeta),
         differentFirstPageMargins: {{ $hasDiff ? 'true' : 'false' }},
         margins: {
             top: {{ $m['top'] ?? 25 }},

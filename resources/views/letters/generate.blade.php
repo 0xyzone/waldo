@@ -186,6 +186,62 @@
             overflow: hidden !important;
         }
     }
+
+    /* Mini Rich Text Variable Editor */
+    .rtv-tb-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 22px;
+        height: 22px;
+        padding: 0 4px;
+        font-size: 11px;
+        border-radius: 4px;
+        color: #475569;
+        cursor: pointer;
+        transition: background 0.1s;
+    }
+    .rtv-tb-btn:hover {
+        background: #e2e8f0;
+    }
+    .dark .rtv-tb-btn {
+        color: #a1a1aa;
+    }
+    .dark .rtv-tb-btn:hover {
+        background: #3f3f46;
+    }
+    .rtv-editor-content:focus {
+        outline: none;
+    }
+    .rtv-editor-content p {
+        margin: 0 0 4px 0;
+    }
+    .rtv-editor-content ul {
+        list-style: disc;
+        padding-left: 18px;
+        margin: 2px 0;
+    }
+    .rtv-editor-content ol {
+        list-style: decimal;
+        padding-left: 18px;
+        margin: 2px 0;
+    }
+    .rtv-size-select {
+        height: 22px;
+        padding: 0 4px;
+        font-size: 10px;
+        border-radius: 4px;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+        color: #334155;
+        cursor: pointer;
+        outline: none;
+    }
+    .dark .rtv-size-select {
+        border-color: #52525b;
+        color: #e4e4e7;
+        background: #27272a;
+    }
 </style>
 @endsection
 
@@ -448,6 +504,52 @@
                     <template x-if="!v.type || v.type === 'text'">
                         <input type="text" x-model="customValues[v.key || v]" :placeholder="'Enter ' + formatLabel(v.key || v)" 
                                class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
+                    </template>
+
+                    <!-- Rich Text Field -->
+                    <template x-if="v.type === 'richtext'">
+                        <div class="rtv-editor-wrap border border-slate-200 dark:border-zinc-700 rounded-xl overflow-hidden bg-white dark:bg-zinc-950">
+                            <!-- Mini toolbar row 1: text styles -->
+                            <div class="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b border-slate-100 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900">
+                                <button type="button" @mousedown.prevent="document.execCommand('bold')"          class="rtv-tb-btn font-bold" title="Bold">B</button>
+                                <button type="button" @mousedown.prevent="document.execCommand('italic')"        class="rtv-tb-btn italic" title="Italic">I</button>
+                                <button type="button" @mousedown.prevent="document.execCommand('underline')"     class="rtv-tb-btn underline" title="Underline">U</button>
+                                <button type="button" @mousedown.prevent="document.execCommand('strikeThrough')" class="rtv-tb-btn line-through" title="Strikethrough">S</button>
+                                <div class="w-px h-3 bg-slate-200 dark:bg-zinc-700 mx-0.5"></div>
+                                <button type="button" @mousedown.prevent="document.execCommand('insertUnorderedList')" class="rtv-tb-btn" title="Bullet List"><i class="fa-solid fa-list-ul fa-xs"></i></button>
+                                <button type="button" @mousedown.prevent="document.execCommand('insertOrderedList')"   class="rtv-tb-btn" title="Numbered List"><i class="fa-solid fa-list-ol fa-xs"></i></button>
+                                <div class="w-px h-3 bg-slate-200 dark:bg-zinc-700 mx-0.5"></div>
+                                <button type="button" @mousedown.prevent="document.execCommand('outdent')" class="rtv-tb-btn" title="Outdent">⇤</button>
+                                <button type="button" @mousedown.prevent="document.execCommand('indent')"  class="rtv-tb-btn" title="Indent">⇥</button>
+                                <div class="w-px h-3 bg-slate-200 dark:bg-zinc-700 mx-0.5"></div>
+                                <button type="button" @mousedown.prevent="document.execCommand('justifyLeft')"   class="rtv-tb-btn" title="Align Left"><i class="fa-solid fa-align-left fa-xs"></i></button>
+                                <button type="button" @mousedown.prevent="document.execCommand('justifyCenter')" class="rtv-tb-btn" title="Align Center"><i class="fa-solid fa-align-center fa-xs"></i></button>
+                                <button type="button" @mousedown.prevent="document.execCommand('justifyRight')"  class="rtv-tb-btn" title="Align Right"><i class="fa-solid fa-align-right fa-xs"></i></button>
+                                <div class="w-px h-3 bg-slate-200 dark:bg-zinc-700 mx-0.5"></div>
+                                <!-- Font size picker -->
+                                <select @mousedown.stop
+                                        @change="document.execCommand('fontSize', false, $event.target.value)"
+                                        class="rtv-size-select" title="Font Size">
+                                    <option value="">px</option>
+                                    <option value="1">8</option>
+                                    <option value="2">10</option>
+                                    <option value="3">12</option>
+                                    <option value="4">14</option>
+                                    <option value="5">18</option>
+                                    <option value="6">24</option>
+                                    <option value="7">36</option>
+                                </select>
+                                <div class="w-px h-3 bg-slate-200 dark:bg-zinc-700 mx-0.5"></div>
+                                <button type="button" @mousedown.prevent="document.execCommand('removeFormat')" class="rtv-tb-btn text-rose-400" title="Clear Format"><i class="fa-solid fa-eraser fa-xs"></i></button>
+                            </div>
+                            <!-- Editable area -->
+                            <div contenteditable="true"
+                                 :id="'rtv-' + (v.key || v)"
+                                 x-init="$el.innerHTML = customValues[v.key || v] || ''"
+                                 @input="customValues[v.key || v] = $el.innerHTML"
+                                 class="rtv-editor-content min-h-[80px] px-3 py-2 text-xs text-slate-800 dark:text-zinc-200 focus:outline-none">
+                            </div>
+                        </div>
                     </template>
                 </div>
             </template>
