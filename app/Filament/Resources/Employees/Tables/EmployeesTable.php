@@ -150,6 +150,8 @@ class EmployeesTable
                     Split::make([
                         TextColumn::make('tips_label')
                             ->default('Tips:'),
+                        TextColumn::make('tips_amount')
+                        ->formatStateUsing(fn ($state) => $state == (int) $state ? number_format($state, 0) : number_format($state, 2)),
                         TextColumn::make('tips_status')
                             ->label('Tips Status')
                             ->badge()
