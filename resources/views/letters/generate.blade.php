@@ -280,13 +280,22 @@
             <!-- Select Template -->
             <div class="space-y-1.5">
                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">Select Template</label>
-                <select x-model="selectedTemplateId" 
-                        class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-sm font-semibold text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500 transition-all">
-                    <option value="">— Select Template —</option>
-                    @foreach($templates as $t)
-                        <option value="{{ $t->id }}">{{ $t->title }}</option>
-                    @endforeach
-                </select>
+                <div class="flex items-center gap-2">
+                    <select x-model="selectedTemplateId" 
+                            class="flex-1 min-w-0 px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-sm font-semibold text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500 transition-all">
+                        <option value="">— Select Template —</option>
+                        @foreach($templates as $t)
+                            <option value="{{ $t->id }}">{{ $t->title }}</option>
+                        @endforeach
+                    </select>
+                    <a x-show="selectedTemplateId"
+                       :href="selectedTemplateId ? '{{ url('letters') }}/' + selectedTemplateId + '/edit' : '#'"
+                       target="_blank"
+                       class="shrink-0 flex items-center gap-1.5 px-2.5 py-2 bg-slate-100 dark:bg-zinc-800 hover:bg-amber-50 dark:hover:bg-amber-950/40 border border-slate-200 dark:border-zinc-700 hover:border-amber-400 dark:hover:border-amber-600 text-slate-500 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-amber-400 rounded-xl text-xs font-bold transition-all"
+                       title="Edit this template">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </a>
+                </div>
             </div>
         </div>
 
