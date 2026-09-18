@@ -1927,6 +1927,7 @@ function createTemplateState() {
             { key: 'employee_employee_code', label: 'Code' },
             { key: 'employee_department', label: 'Department' },
             { key: 'employee_designation', label: 'Designation' },
+            { key: 'employee_job_description', label: 'Job Description' },
             { key: 'employee_gender', label: 'Gender' },
             { key: 'employee_join_date', label: 'Join Date' },
             // { key: 'employee_join_date_formatted', label: 'Join Date Formatted' },

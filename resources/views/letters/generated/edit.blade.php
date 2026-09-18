@@ -290,7 +290,7 @@
                                     <div class="space-y-2">
                                         <input type="number" :name="`custom_values[${key}]`"
                                                :value="customValues[key]"
-                                               @input="customValues[key] = $event.target.value; computeFormulas(key)"
+                                               @input="customValues[key] = $event.target.value; computeFormulas()"
                                                class="w-full px-2.5 py-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs focus:border-indigo-400 outline-none">
                                         <!-- Hidden inputs for formula child values (so they are submitted with the form) -->
                                         <template x-for="f in (calculatedFormulas[key] || [])" :key="f.key">
@@ -652,6 +652,7 @@ function editGeneratedLetterState() {
             { key: 'employee_employee_code', label: 'Code' },
             { key: 'employee_department', label: 'Department' },
             { key: 'employee_designation', label: 'Designation' },
+            { key: 'employee_job_description', label: 'Job Description' },
             { key: 'employee_gender', label: 'Gender' },
             { key: 'employee_join_date', label: 'Join Date' },
             { key: 'employee_join_date_formatted', label: 'Join Date Formatted' },
@@ -689,27 +690,46 @@ function editGeneratedLetterState() {
         // Formulas metadata injected from PHP: { parent_key: [{key, label, expression}] }
         calculatedFormulas: @json($customFormulas ?? []),
 
-        // Re-evaluate formula expressions when a 'calculated' parent value changes
-        computeFormulas(parentKey) {
-            const formulas = this.calculatedFormulas[parentKey] || [];
-            if (!formulas.length) return;
+        // Re-evaluate formula expressions with multi-pass dependency resolution
+        computeFormulas() {
+            if (!this.calculatedFormulas) return;
 
-            formulas.forEach(f => {
-                if (!f.key || !f.expression) return;
-                try {
-                    const keys = Object.keys(this.customValues);
-                    const vals = keys.map(k => {
-                        const n = parseFloat(this.customValues[k]);
-                        return isNaN(n) ? 0 : n;
+            for (let pass = 0; pass < 5; pass++) {
+                let changed = false;
+
+                const keys = Object.keys(this.customValues);
+                const vals = keys.map(k => {
+                    const raw = this.customValues[k];
+                    if (raw === '' || raw === null || raw === undefined) return 0;
+                    const n = parseFloat(String(raw).replace(/,/g, ''));
+                    return isNaN(n) ? 0 : n;
+                });
+
+                Object.values(this.calculatedFormulas).forEach(formulas => {
+                    if (!Array.isArray(formulas)) return;
+                    formulas.forEach(f => {
+                        if (!f.key || !f.expression) return;
+                        try {
+                            const fn = new Function(...keys, 'return (' + f.expression + ')');
+                            const result = fn(...vals);
+                            const num = parseFloat(result);
+                            const formatted = isNaN(num) ? '' : (num % 1 === 0 ? String(num) : num.toFixed(2));
+
+                            if (this.customValues[f.key] !== formatted) {
+                                this.customValues[f.key] = formatted;
+                                changed = true;
+                            }
+                        } catch (e) {
+                            if (this.customValues[f.key] !== '') {
+                                this.customValues[f.key] = '';
+                                changed = true;
+                            }
+                        }
                     });
-                    const fn = new Function(...keys, 'return (' + f.expression + ')');
-                    const result = fn(...vals);
-                    const num = parseFloat(result);
-                    this.customValues[f.key] = isNaN(num) ? '' : (num % 1 === 0 ? String(num) : num.toFixed(2));
-                } catch (e) {
-                    this.customValues[f.key] = '';
-                }
-            });
+                });
+
+                if (!changed) break;
+            }
         },
 
         formatFormulaResult(val) {
@@ -801,6 +821,8 @@ function editGeneratedLetterState() {
                     return emp.department ? (emp.department.name || emp.department) : '';
                 case 'employee_designation':
                     return emp.designation ? (emp.designation.name || emp.designation) : '';
+                case 'employee_job_description':
+                    return emp.designation ? (emp.designation.job_description || '') : '';
                 case 'employee_gender':
                     return emp.gender || '';
                 case 'employee_join_date':

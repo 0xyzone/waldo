@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Designations\Schemas;
 
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
@@ -32,6 +33,13 @@ class DesignationForm
                             ->required()
                             ->maxLength(255)
                             ->placeholder('e.g. Shift Manager, HR Admin')
+                            ->columnSpanFull(),
+
+                        Textarea::make('job_description')
+                            ->label('Job Description')
+                            ->rows(4)
+                            ->placeholder('Enter the job description, key responsibilities, and duties for this designation...')
+                            ->helperText('This job description will be available as pre-built variable {{ employee_job_description }} when generating letters.')
                             ->columnSpanFull(),
 
                         TextInput::make('rank')

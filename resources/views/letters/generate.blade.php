@@ -478,13 +478,13 @@
                     
                     <!-- Date Field -->
                     <template x-if="(v.type || 'text') === 'date'">
-                        <input type="date" x-model="customValues[v.key || v]" 
+                        <input type="date" x-model="customValues[v.key || v]" @change="computeFormulas()"
                                class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
                     </template>
 
                     <!-- Number Field -->
                     <template x-if="(v.type || 'text') === 'number'">
-                        <input type="number" x-model="customValues[v.key || v]" :placeholder="'Enter ' + formatLabel(v.key || v)" 
+                        <input type="number" x-model="customValues[v.key || v]" @input="computeFormulas()" :placeholder="'Enter ' + formatLabel(v.key || v)" 
                                class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
                     </template>
 
@@ -566,8 +566,8 @@
                         <div class="space-y-2">
                             <input type="number"
                                    :placeholder="'Enter ' + formatLabel(v.key || v)"
-                                   :value="customValues[v.key || v]"
-                                   @input="customValues[v.key || v] = $event.target.value; computeFormulas(v)"
+                                   x-model.number="customValues[v.key || v]"
+                                   @input="computeFormulas()"
                                    class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-indigo-400 transition-all">
                             <!-- Formula results preview -->
                             <template x-if="v.formulas && v.formulas.length">
@@ -737,36 +737,94 @@ function generatorState() {
                         });
                     }
                 });
+                this.computeFormulas();
             }
             this.updatePaginatedLetters();
         },
 
-        // Evaluate formula expressions for a 'calculated' variable
-        computeFormulas(v) {
-            const parentKey = v.key;
-            const formulas  = Array.isArray(v.formulas) ? v.formulas : [];
-            if (!formulas.length) return;
+        // Evaluate formula expressions for all 'calculated' variables in sequence
+        computeFormulas() {
+            if (!this.selectedTemplate || !Array.isArray(this.selectedTemplate.variables)) return;
 
-            formulas.forEach(f => {
-                if (!f.key || !f.expression) return;
-                try {
-                    // Build scope from all current customValues
-                    const keys = Object.keys(this.customValues);
-                    const vals = keys.map(k => {
-                        const n = parseFloat(this.customValues[k]);
-                        return isNaN(n) ? 0 : n;
-                    });
-                    const fn = new Function(...keys, 'return (' + f.expression + ')');
-                    const result = fn(...vals);
-                    // Format: no decimals if whole number, 2 dp otherwise
-                    const num = parseFloat(result);
-                    this.customValues[f.key] = isNaN(num) ? '' : (num % 1 === 0 ? String(num) : num.toFixed(2));
-                } catch (e) {
-                    this.customValues[f.key] = '';
-                }
-            });
+            for (let pass = 0; pass < 5; pass++) {
+                let changed = false;
 
-            // Re-render letters reactively (customValues watcher fires automatically)
+                // 1. Build a clean JS dictionary object of all known variable values
+                const scopeObj = {};
+
+                // Include all customValues (numerical conversion)
+                Object.keys(this.customValues).forEach(k => {
+                    const raw = this.customValues[k];
+                    const n = (raw === '' || raw === null || raw === undefined) ? 0 : parseFloat(String(raw).replace(/,/g, ''));
+                    const val = isNaN(n) ? 0 : n;
+                    scopeObj[k] = val;
+                    // Also alias normalized keys (lowercase, no spaces/special chars)
+                    const norm = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    if (norm) scopeObj[norm] = val;
+                });
+
+                // Include template variable keys & labels
+                this.selectedTemplate.variables.forEach(v => {
+                    if (typeof v === 'object') {
+                        const raw = this.customValues[v.key];
+                        const n = (raw === '' || raw === null || raw === undefined) ? 0 : parseFloat(String(raw).replace(/,/g, ''));
+                        const val = isNaN(n) ? 0 : n;
+                        if (v.key) {
+                            scopeObj[v.key] = val;
+                            const normKey = v.key.toLowerCase().replace(/[^a-z0-9]/g, '');
+                            if (normKey) scopeObj[normKey] = val;
+                        }
+                    }
+                });
+
+                // 2. Evaluate formulas using scopeObj
+                this.selectedTemplate.variables.forEach(v => {
+                    if (typeof v === 'object' && v.type === 'calculated' && Array.isArray(v.formulas)) {
+                        v.formulas.forEach(f => {
+                            if (!f.key || !f.expression) return;
+                            try {
+                                const rawExpr = String(f.expression).trim();
+                                if (!rawExpr) return;
+
+                                // Transform user expression: replace text identifiers with scope lookup
+                                // Example: "gross * 0.5" or "GROSS * 0.5" or "gross_salary * 0.5" -> "scope['gross'] * 0.5"
+                                const transformedExpr = rawExpr.replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)\b/g, (match) => {
+                                    // If match is a JS math operator/keyword, preserve it
+                                    if (['Math', 'abs', 'round', 'ceil', 'floor', 'min', 'max', 'pow', 'sqrt', 'return', 'true', 'false'].includes(match)) {
+                                        return match;
+                                    }
+                                    const exactMatch = Object.keys(scopeObj).find(k => k === match);
+                                    if (exactMatch) return `scope['${exactMatch}']`;
+                                    const normMatch = match.toLowerCase().replace(/[^a-z0-9]/g, '');
+                                    const foundKey = Object.keys(scopeObj).find(k => k.toLowerCase().replace(/[^a-z0-9]/g, '') === normMatch);
+                                    if (foundKey) return `scope['${foundKey}']`;
+                                    return `(scope['${match}'] || 0)`;
+                                });
+
+                                const fn = new Function('scope', 'return (' + transformedExpr + ')');
+                                const result = fn(scopeObj);
+                                const num = parseFloat(result);
+                                const formatted = isNaN(num) ? '' : (num % 1 === 0 ? String(num) : num.toFixed(2));
+
+                                if (this.customValues[f.key] !== formatted) {
+                                    this.customValues[f.key] = formatted;
+                                    scopeObj[f.key] = isNaN(num) ? 0 : num;
+                                    const normFKey = f.key.toLowerCase().replace(/[^a-z0-9]/g, '');
+                                    if (normFKey) scopeObj[normFKey] = isNaN(num) ? 0 : num;
+                                    changed = true;
+                                }
+                            } catch (e) {
+                                if (this.customValues[f.key] !== '') {
+                                    this.customValues[f.key] = '';
+                                    changed = true;
+                                }
+                            }
+                        });
+                    }
+                });
+
+                if (!changed) break;
+            }
         },
 
         // Format a formula result value for the preview table
@@ -953,6 +1011,7 @@ function generatorState() {
                 employee_employee_code:            emp.employee_code || '',
                 employee_department:               emp.department ? (emp.department.name || '') : '',
                 employee_designation:              emp.designation ? (emp.designation.name || '') : '',
+                employee_job_description:          emp.designation ? (emp.designation.job_description || '') : '',
                 employee_gender:                   emp.gender || '',
                 employee_join_date:      this.formatDate(emp.join_date_formatted),
                 // employee_join_date_formatted:      emp.join_date_formatted || '',
