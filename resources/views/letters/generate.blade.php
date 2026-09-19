@@ -780,8 +780,24 @@ function generatorState() {
                 // 2. Evaluate formulas using scopeObj
                 this.selectedTemplate.variables.forEach(v => {
                     if (typeof v === 'object' && v.type === 'calculated' && Array.isArray(v.formulas)) {
+                        const parentVal = this.customValues[v.key];
+                        const isParentEmpty = parentVal === '' || parentVal === null || parentVal === undefined;
+
                         v.formulas.forEach(f => {
                             if (!f.key || !f.expression) return;
+
+                            // If parent calculated variable has no value set, keep formula result blank
+                            if (isParentEmpty) {
+                                if (this.customValues[f.key] !== '') {
+                                    this.customValues[f.key] = '';
+                                    delete scopeObj[f.key];
+                                    const normFKey = f.key.toLowerCase().replace(/[^a-z0-9]/g, '');
+                                    if (normFKey) delete scopeObj[normFKey];
+                                    changed = true;
+                                }
+                                return;
+                            }
+
                             try {
                                 const rawExpr = String(f.expression).trim();
                                 if (!rawExpr) return;

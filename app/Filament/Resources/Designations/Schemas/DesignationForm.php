@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Designations\Schemas;
 
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
@@ -19,6 +19,7 @@ class DesignationForm
                     ->description('Assign a designation to a department with a sort rank.')
                     ->icon('heroicon-o-briefcase')
                     ->columns(2)
+                    ->columnSpanFull()
                     ->schema([
                         Select::make('department_id')
                             ->label('Department')
@@ -35,11 +36,26 @@ class DesignationForm
                             ->placeholder('e.g. Shift Manager, HR Admin')
                             ->columnSpanFull(),
 
-                        Textarea::make('job_description')
+                        RichEditor::make('job_description')
                             ->label('Job Description')
-                            ->rows(4)
                             ->placeholder('Enter the job description, key responsibilities, and duties for this designation...')
                             ->helperText('This job description will be available as pre-built variable {{ employee_job_description }} when generating letters.')
+                            ->toolbarButtons([
+                                'attachFiles',
+                                'blockquote',
+                                'bold',
+                                'bulletList',
+                                'codeBlock',
+                                'h2',
+                                'h3',
+                                'italic',
+                                'link',
+                                'orderedList',
+                                'redo',
+                                'strike',
+                                'underline',
+                                'undo',
+                            ])
                             ->columnSpanFull(),
 
                         TextInput::make('rank')

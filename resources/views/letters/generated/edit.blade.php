@@ -705,10 +705,22 @@ function editGeneratedLetterState() {
                     return isNaN(n) ? 0 : n;
                 });
 
-                Object.values(this.calculatedFormulas).forEach(formulas => {
+                Object.entries(this.calculatedFormulas).forEach(([parentKey, formulas]) => {
                     if (!Array.isArray(formulas)) return;
+                    const parentVal = this.customValues[parentKey];
+                    const isParentEmpty = parentVal === '' || parentVal === null || parentVal === undefined;
+
                     formulas.forEach(f => {
                         if (!f.key || !f.expression) return;
+
+                        if (isParentEmpty) {
+                            if (this.customValues[f.key] !== '') {
+                                this.customValues[f.key] = '';
+                                changed = true;
+                            }
+                            return;
+                        }
+
                         try {
                             const fn = new Function(...keys, 'return (' + f.expression + ')');
                             const result = fn(...vals);
