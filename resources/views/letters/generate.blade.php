@@ -305,13 +305,108 @@
             <div class="flex flex-col min-h-0 space-y-3 shrink-0">
                 <div class="flex items-center justify-between shrink-0">
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">Target Employees</label>
-                    <span class="text-[10px] bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 px-2 py-0.5 rounded font-bold" 
-                          x-text="selectedCodes.length + ' selected'"></span>
+                    <div class="flex items-center gap-2">
+                        <button type="button"
+                                x-show="selectedCodes.length > 0"
+                                @click="deselectAll()"
+                                class="text-[10px] text-rose-500 hover:text-rose-700 dark:hover:text-rose-400 font-bold hover:underline cursor-pointer flex items-center gap-1 transition-colors">
+                            <i class="fa-solid fa-xmark text-[9px]"></i> Deselect All
+                        </button>
+                        <button type="button"
+                                x-show="filteredEmployees.length > 0 && selectedCodes.length < filteredEmployees.length"
+                                @click="selectAllFiltered()"
+                                class="text-[10px] text-amber-600 dark:text-amber-400 hover:underline font-bold cursor-pointer transition-colors">
+                            Select All
+                        </button>
+                        <span class="text-[10px] bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 px-2 py-0.5 rounded font-bold" 
+                              x-text="selectedCodes.length + ' selected'"></span>
+                    </div>
                 </div>
                 
-                <!-- Search bar -->
-                <input type="text" x-model="search" placeholder="Search by name or employee code..." 
-                       class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500 transition-all shrink-0">
+                <!-- Search bar & Filter Toggle -->
+                <div class="space-y-2 shrink-0">
+                    <div class="flex items-center gap-1.5">
+                        <div class="relative flex-1">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+                            <input type="text" x-model="search" placeholder="Search name or code..." 
+                                   class="w-full pl-8 pr-7 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500 transition-all">
+                            <button type="button" x-show="search" @click="search = ''"
+                                    class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 cursor-pointer text-xs">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                        <button type="button" @click="showFilters = !showFilters"
+                                :class="{'bg-amber-500 text-white border-amber-500': showFilters || hasActiveFilters, 'bg-slate-50 dark:bg-zinc-950 text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-700': !showFilters && !hasActiveFilters}"
+                                class="px-2.5 py-2 border rounded-xl text-xs font-semibold hover:border-amber-400 flex items-center gap-1.5 transition-all cursor-pointer relative"
+                                title="Filter options">
+                            <i class="fa-solid fa-filter text-xs"></i>
+                            <span x-show="activeFilterCount > 0" class="w-1.5 h-1.5 rounded-full bg-amber-400 absolute top-1 right-1" :class="{'bg-white': showFilters || hasActiveFilters}"></span>
+                        </button>
+                    </div>
+
+                    <!-- Filter Dropdowns Tray -->
+                    <div x-show="showFilters" x-transition class="p-3 bg-slate-100/70 dark:bg-zinc-950/70 border border-slate-200 dark:border-zinc-800 rounded-xl space-y-2 text-xs">
+                        <div class="flex items-center justify-between pb-1 border-b border-slate-200/50 dark:border-zinc-800">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Filter By</span>
+                            <button type="button" x-show="hasActiveFilters" @click="resetFilters()"
+                                    class="text-[10px] text-rose-500 hover:underline font-bold cursor-pointer">
+                                Reset Filters
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 gap-2">
+                            <!-- Department Filter -->
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-500 dark:text-zinc-400 uppercase mb-0.5">Department</label>
+                                <select x-model="filterDepartment"
+                                        class="w-full px-2 py-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
+                                    <option value="">All Departments</option>
+                                    <template x-for="dept in departmentOptions" :key="dept">
+                                        <option :value="dept" x-text="dept"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <!-- Designation Filter -->
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-500 dark:text-zinc-400 uppercase mb-0.5">Designation</label>
+                                <select x-model="filterDesignation"
+                                        class="w-full px-2 py-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
+                                    <option value="">All Designations</option>
+                                    <template x-for="desig in designationOptions" :key="desig">
+                                        <option :value="desig" x-text="desig"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <!-- Status & Gender Filter in 2 cols -->
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 dark:text-zinc-400 uppercase mb-0.5">Status</label>
+                                    <select x-model="filterStatus"
+                                            class="w-full px-2 py-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
+                                        <option value="">All Statuses</option>
+                                        <template x-for="st in statusOptions" :key="st">
+                                            <option :value="st" x-text="st"></option>
+                                        </template>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[9px] font-bold text-slate-500 dark:text-zinc-400 uppercase mb-0.5">Gender</label>
+                                    <select x-model="filterGender"
+                                            class="w-full px-2 py-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-slate-850 dark:text-zinc-200 focus:border-amber-500 outline-none">
+                                        <option value="">All Genders</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Count Info -->
+                <div class="flex items-center justify-between text-[10px] text-slate-400 px-0.5">
+                    <span x-text="'Showing ' + filteredEmployees.length + ' of ' + employees.length + ' employees'"></span>
+                    <span x-show="hasActiveFilters" class="text-amber-600 dark:text-amber-400 font-semibold">• Filters active</span>
+                </div>
                 
                 <!-- Checkboxes list -->
                 <div class="h-44 overflow-y-auto border border-slate-200 dark:border-zinc-800 rounded-xl divide-y divide-slate-100 dark:divide-zinc-800/80 bg-slate-50 dark:bg-zinc-950 shadow-inner shrink-0">
@@ -319,12 +414,24 @@
                         <label class="flex items-center gap-3 px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-zinc-800/50 cursor-pointer transition-colors">
                             <input type="checkbox" :value="e.employee_code" x-model="selectedCodes" 
                                     class="rounded border-slate-300 text-amber-500 focus:ring-amber-500">
-                            <div class="flex flex-col">
-                                <span class="text-xs font-bold text-slate-800 dark:text-zinc-200" x-text="e.employee_code + ' | ' + e.name"></span>
-                                <span class="text-[10px] text-slate-400 dark:text-zinc-500" x-text="(e.designation ? (e.designation.name || e.designation) : 'Staff') + ' · ' + (e.department ? (e.department.name || e.department) : 'N/A')"></span>
+                            <div class="flex flex-col min-w-0 flex-1">
+                                <div class="flex items-center justify-between gap-1">
+                                    <span class="text-xs font-bold text-slate-800 dark:text-zinc-200 truncate" x-text="e.employee_code + ' | ' + e.name"></span>
+                                    <span x-show="e.employee_status"
+                                          :class="{
+                                              'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10': (e.employee_status || '').toLowerCase() === 'active',
+                                              'text-slate-400 bg-slate-200/50': (e.employee_status || '').toLowerCase() !== 'active'
+                                          }"
+                                          class="text-[9px] font-bold px-1.5 py-0.2 rounded shrink-0"
+                                          x-text="e.employee_status"></span>
+                                </div>
+                                <span class="text-[10px] text-slate-400 dark:text-zinc-500 truncate" x-text="(e.designation ? (e.designation.name || e.designation) : 'Staff') + ' · ' + (e.department ? (e.department.name || e.department) : 'N/A')"></span>
                             </div>
                         </label>
                     </template>
+                    <div x-show="filteredEmployees.length === 0" class="py-8 text-center text-xs text-slate-400 italic">
+                        No matching employees found.
+                    </div>
                 </div>
             </div>
 
@@ -619,6 +726,11 @@ function generatorState() {
         selectedCodes: [],
         customValues: {},
         search: '',
+        showFilters: false,
+        filterDepartment: '',
+        filterDesignation: '',
+        filterStatus: '',
+        filterGender: '',
         showGuides: true,
         margins: { top: 25, bottom: 25, left: 20, right: 20 },
         differentFirstPageMargins: false,
@@ -626,6 +738,64 @@ function generatorState() {
         paginatedLetters: {},
         isSaving: false,
         saveMessage: '',
+
+        deselectAll() {
+            this.selectedCodes = [];
+        },
+
+        selectAllFiltered() {
+            const codes = this.filteredEmployees.map(e => e.employee_code);
+            // Union with existing selection to not lose others
+            const set = new Set([...this.selectedCodes, ...codes]);
+            this.selectedCodes = Array.from(set);
+        },
+
+        resetFilters() {
+            this.filterDepartment = '';
+            this.filterDesignation = '';
+            this.filterStatus = '';
+            this.filterGender = '';
+            this.search = '';
+        },
+
+        get hasActiveFilters() {
+            return Boolean(this.filterDepartment || this.filterDesignation || this.filterStatus || this.filterGender);
+        },
+
+        get activeFilterCount() {
+            let count = 0;
+            if (this.filterDepartment) count++;
+            if (this.filterDesignation) count++;
+            if (this.filterStatus) count++;
+            if (this.filterGender) count++;
+            return count;
+        },
+
+        get departmentOptions() {
+            const set = new Set();
+            this.employees.forEach(e => {
+                const name = e.department ? (e.department.name || e.department) : '';
+                if (name) set.add(name);
+            });
+            return Array.from(set).sort();
+        },
+
+        get designationOptions() {
+            const set = new Set();
+            this.employees.forEach(e => {
+                const name = e.designation ? (e.designation.name || e.designation) : '';
+                if (name) set.add(name);
+            });
+            return Array.from(set).sort();
+        },
+
+        get statusOptions() {
+            const set = new Set();
+            this.employees.forEach(e => {
+                if (e.employee_status) set.add(e.employee_status);
+            });
+            return Array.from(set).sort();
+        },
 
         async saveToHistory() {
             if (this.selectedCodes.length === 0 || !this.selectedTemplateId || this.isSaving) return;
@@ -1151,11 +1321,50 @@ function generatorState() {
         },
 
         get filteredEmployees() {
-            const q = this.search.toLowerCase();
-            if (!q) return this.employees;
-            return this.employees.filter(e =>
-                e.name.toLowerCase().includes(q) || e.employee_code.toLowerCase().includes(q)
-            );
+            const q = (this.search || '').toLowerCase().trim();
+            const dept = (this.filterDepartment || '').toLowerCase();
+            const desig = (this.filterDesignation || '').toLowerCase();
+            const status = (this.filterStatus || '').toLowerCase();
+            const gender = (this.filterGender || '').toLowerCase();
+
+            return this.employees.filter(e => {
+                // Search query match
+                if (q) {
+                    const name = (e.name || '').toLowerCase();
+                    const code = (e.employee_code || '').toLowerCase();
+                    const dName = (e.department ? (e.department.name || e.department) : '').toLowerCase();
+                    const desigName = (e.designation ? (e.designation.name || e.designation) : '').toLowerCase();
+                    if (!name.includes(q) && !code.includes(q) && !dName.includes(q) && !desigName.includes(q)) {
+                        return false;
+                    }
+                }
+
+                // Department filter
+                if (dept) {
+                    const eDept = (e.department ? (e.department.name || e.department) : '').toLowerCase();
+                    if (eDept !== dept) return false;
+                }
+
+                // Designation filter
+                if (desig) {
+                    const eDesig = (e.designation ? (e.designation.name || e.designation) : '').toLowerCase();
+                    if (eDesig !== desig) return false;
+                }
+
+                // Status filter
+                if (status) {
+                    const eStatus = (e.employee_status || '').toLowerCase();
+                    if (eStatus !== status) return false;
+                }
+
+                // Gender filter
+                if (gender) {
+                    const eGender = (e.gender || '').toLowerCase();
+                    if (eGender !== gender) return false;
+                }
+
+                return true;
+            });
         },
 
         getEmployee(code) {
