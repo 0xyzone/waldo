@@ -622,6 +622,14 @@ body.is-col-resizing {
         </button>
 
         <button type="button" @mousedown.prevent="exec('removeFormat')" class="p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer" title="Clear Format"><i class="fa-solid fa-eraser text-sm"></i></button>
+
+        <div class="h-5 w-px bg-slate-200 dark:bg-zinc-700 mx-1"></div>
+
+        <a href="{{ route('letters.generate') }}?template_id={{ $template->id }}"
+           class="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-lg text-xs font-bold shadow-xs transition-all active:scale-95"
+           title="Generate letters using this template">
+            <i class="fa-solid fa-wand-magic-sparkles text-xs"></i> Generate Letters
+        </a>
     </div>
 
     <!-- ── TABLE FLOATING ICON TOOLBAR ── -->
@@ -921,7 +929,10 @@ body.is-col-resizing {
                 <button type="submit" class="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm rounded-xl shadow-md shadow-amber-500/20 transition-all cursor-pointer">
                     <i class="fa-solid fa-floppy-disk mr-1.5"></i> Update Template
                 </button>
-                <a href="{{ route('letters.index') }}" class="block text-center py-2 text-sm text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200 transition-colors">Cancel</a>
+                <a href="{{ route('letters.generate') }}?template_id={{ $template->id }}" class="flex items-center justify-center gap-1.5 w-full py-2 px-4 border border-amber-500/30 hover:border-amber-500/60 bg-amber-500/10 hover:bg-amber-500/15 text-amber-700 dark:text-amber-400 font-bold text-xs rounded-xl transition-all">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Letters
+                </a>
+                <a href="{{ route('letters.index') }}" class="block text-center py-1.5 text-xs text-slate-500 dark:text-zinc-400 hover:text-slate-800 dark:hover:text-zinc-200 transition-colors">Cancel</a>
             </div>
         </aside>
     </form>
