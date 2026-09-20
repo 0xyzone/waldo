@@ -6,6 +6,7 @@ use App\Models\Department;
 use App\Models\Designation;
 use App\Models\Employee;
 use App\Models\EmployeePromotion;
+use App\Services\EmployeePromotionExportService;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -13,9 +14,11 @@ use Filament\Actions\EditAction;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 
 class EmployeePromotionsTable
@@ -166,7 +169,47 @@ class EmployeePromotionsTable
                     }),
             ])
             ->toolbarActions([
+                Action::make('exportExcel')
+                    ->label('Download Excel')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->action(function (HasTable $livewire, EmployeePromotionExportService $service) {
+                        $promotions = $livewire
+                            ->getFilteredTableQuery()
+                            ->with(['toDepartment', 'toDesignation', 'employee'])
+                            ->get();
+
+                        if ($promotions->isEmpty()) {
+                            Notification::make()
+                                ->title('No records to export')
+                                ->warning()
+                                ->send();
+
+                            return null;
+                        }
+
+                        return $service->export($promotions);
+                    }),
                 BulkActionGroup::make([
+                    Action::make('exportSelectedExcel')
+                        ->label('Download Selected Excel')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->accessSelectedRecords()
+                        ->action(function (Collection $records, EmployeePromotionExportService $service) {
+                            if ($records->isEmpty()) {
+                                Notification::make()
+                                    ->title('No records selected')
+                                    ->warning()
+                                    ->send();
+
+                                return null;
+                            }
+
+                            $records->loadMissing(['toDepartment', 'toDesignation', 'employee']);
+
+                            return $service->export($records);
+                        }),
                     DeleteBulkAction::make(),
                 ]),
             ]);
