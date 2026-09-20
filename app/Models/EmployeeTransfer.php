@@ -90,29 +90,38 @@ class EmployeeTransfer extends Model
     protected static function booted(): void
     {
         static::created(function (EmployeeTransfer $transfer): void {
-            $employee = Employee::where('employee_code', $transfer->employee_id)->first();
+            $today = now()->toDateString();
+            $transferDate = $transfer->transfer_date?->toDateString();
 
-            if (! $employee) {
-                return;
+            // Only apply if transfer date is today or in the past
+            if ($transferDate && $transferDate <= $today) {
+                $employee = Employee::where('employee_code', $transfer->employee_id)->first();
+
+                if ($employee) {
+                    $updates = [];
+
+                    if ($transfer->to_department_id !== null) {
+                        $updates['department_id'] = $transfer->to_department_id;
+                    }
+
+                    if ($transfer->to_designation_id !== null) {
+                        $updates['designation_id'] = $transfer->to_designation_id;
+                    }
+
+                    if (! empty($updates)) {
+                        $employee->update($updates);
+                    }
+                }
+
+                $transfer->updateQuietly([
+                    'hrms_synced' => true,
+                    'hrms_synced_at' => now(),
+                ]);
+
+                // Dispatch background Google Sheets sync
+                $userId = Auth::id();
+                SyncTransferToSheetJob::dispatch($transfer->id, $userId);
             }
-
-            $updates = [];
-
-            if ($transfer->to_department_id !== null) {
-                $updates['department_id'] = $transfer->to_department_id;
-            }
-
-            if ($transfer->to_designation_id !== null) {
-                $updates['designation_id'] = $transfer->to_designation_id;
-            }
-
-            if (! empty($updates)) {
-                $employee->update($updates);
-            }
-
-            // Dispatch background Google Sheets sync
-            $userId = Auth::id();
-            SyncTransferToSheetJob::dispatch($transfer->id, $userId);
         });
     }
 }

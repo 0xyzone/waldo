@@ -90,29 +90,38 @@ class EmployeePromotion extends Model
     protected static function booted(): void
     {
         static::created(function (EmployeePromotion $promotion): void {
-            $employee = Employee::where('employee_code', $promotion->employee_id)->first();
+            $today = now()->toDateString();
+            $promotionDate = $promotion->promotion_date?->toDateString();
 
-            if (! $employee) {
-                return;
+            // Only apply if promotion date is today or in the past
+            if ($promotionDate && $promotionDate <= $today) {
+                $employee = Employee::where('employee_code', $promotion->employee_id)->first();
+
+                if ($employee) {
+                    $updates = [];
+
+                    if ($promotion->to_department_id !== null) {
+                        $updates['department_id'] = $promotion->to_department_id;
+                    }
+
+                    if ($promotion->to_designation_id !== null) {
+                        $updates['designation_id'] = $promotion->to_designation_id;
+                    }
+
+                    if (! empty($updates)) {
+                        $employee->update($updates);
+                    }
+                }
+
+                $promotion->updateQuietly([
+                    'hrms_synced' => true,
+                    'hrms_synced_at' => now(),
+                ]);
+
+                // Dispatch background Google Sheets sync
+                $userId = Auth::id();
+                SyncPromotionToSheetJob::dispatch($promotion->id, $userId);
             }
-
-            $updates = [];
-
-            if ($promotion->to_department_id !== null) {
-                $updates['department_id'] = $promotion->to_department_id;
-            }
-
-            if ($promotion->to_designation_id !== null) {
-                $updates['designation_id'] = $promotion->to_designation_id;
-            }
-
-            if (! empty($updates)) {
-                $employee->update($updates);
-            }
-
-            // Dispatch background Google Sheets sync
-            $userId = Auth::id();
-            SyncPromotionToSheetJob::dispatch($promotion->id, $userId);
         });
     }
 }
