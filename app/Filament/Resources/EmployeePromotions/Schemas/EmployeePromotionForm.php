@@ -27,6 +27,7 @@ class EmployeePromotionForm
                     ->schema([
                         Select::make('employee_id')
                             ->label('Employee')
+                            ->autofocus()
                             ->options(fn() => Employee::with('department', 'designation')
                                 ->get()
                                 ->mapWithKeys(fn(Employee $e) => [
