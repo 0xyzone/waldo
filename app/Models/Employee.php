@@ -153,6 +153,14 @@ class Employee extends Model
     }
 
     /**
+     * Get all transfers for the Employee.
+     */
+    public function transfers(): HasMany
+    {
+        return $this->hasMany(EmployeeTransfer::class, 'employee_id', 'employee_code');
+    }
+
+    /**
      * Get the latest suspension record for the Employee.
      */
     public function latestSuspension(): HasOne
