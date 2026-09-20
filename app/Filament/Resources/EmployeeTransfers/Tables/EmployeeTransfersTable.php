@@ -195,6 +195,7 @@ class EmployeeTransfersTable
                         ->label('Download Selected Excel')
                         ->icon('heroicon-o-arrow-down-tray')
                         ->color('success')
+                        ->accessSelectedRecords()
                         ->action(function (Collection $records, EmployeeTransferExportService $service) {
                             if ($records->isEmpty()) {
                                 Notification::make()
