@@ -6,18 +6,24 @@ use App\Models\Department;
 use App\Models\Designation;
 use App\Models\NametagFine;
 use App\Models\User;
+use App\Services\NametagFineExportService;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
 class NametagFinesTable
@@ -196,7 +202,7 @@ class NametagFinesTable
                         /** @var User|null $user */
                         $user = Auth::user();
 
-                        return ! $record->acknowledged && ($user?->hasRole(['super_admin', 'HR', 'HR Assist']) ?? false);
+                        return ! $record->acknowledged && ($user?->hasRole(['super_admin', 'HR', 'HR Assist', 'Finance']) ?? false);
                     })
                     ->action(function (NametagFine $record): void {
                         $record->update([
@@ -217,8 +223,92 @@ class NametagFinesTable
             ])
             ->bulkActions([
                 BulkActionGroup::make([
+                    Action::make('exportSelected')
+                        ->label('Export Selected')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->accessSelectedRecords()
+                        ->modalHeading('Export Selected NameTag Fines')
+                        ->modalDescription('Choose file format and select header columns to include in your report.')
+                        ->modalSubmitActionLabel('Download Selected')
+                        ->form([
+                            Radio::make('format')
+                                ->label('Export Format')
+                                ->options([
+                                    'xlsx' => 'Excel Spreadsheet (.xlsx) — formatted with status colors',
+                                    'csv' => 'CSV File (.csv) — plain text data',
+                                ])
+                                ->default('xlsx')
+                                ->required(),
+                            Toggle::make('apply_styling')
+                                ->label('Apply Acknowledged Status Colors & Formatting (Excel only)')
+                                ->default(true),
+                            CheckboxList::make('columns')
+                                ->label('Select Headers to Include')
+                                ->options(NametagFineExportService::getAvailableColumns())
+                                ->default(array_keys(NametagFineExportService::getAvailableColumns()))
+                                ->columns(2)
+                                ->required()
+                                ->bulkToggleable(),
+                        ])
+                        ->action(function (array $data, Collection $records, NametagFineExportService $service) {
+                            if ($records->isEmpty()) {
+                                return null;
+                            }
+
+                            $records->loadMissing(['employee.department', 'employee.designation', 'creator', 'acknowledger']);
+
+                            return $service->export(
+                                $records,
+                                $data['columns'] ?? array_keys(NametagFineExportService::getAvailableColumns()),
+                                $data['format'] ?? 'xlsx',
+                                (bool) ($data['apply_styling'] ?? true)
+                            );
+                        }),
                     DeleteBulkAction::make(),
                 ]),
+            ])
+            ->toolbarActions([
+                Action::make('export')
+                    ->label('Export Data')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->modalHeading('Export Filtered NameTag Fines')
+                    ->modalDescription('Choose file format and select header columns to include in your report.')
+                    ->modalSubmitActionLabel('Download Report')
+                    ->form([
+                        Radio::make('format')
+                            ->label('Export Format')
+                            ->options([
+                                'xlsx' => 'Excel Spreadsheet (.xlsx) — formatted with status colors',
+                                'csv' => 'CSV File (.csv) — plain text data',
+                            ])
+                            ->default('xlsx')
+                            ->required(),
+                        Toggle::make('apply_styling')
+                            ->label('Apply Acknowledged Status Colors & Formatting (Excel only)')
+                            ->default(true),
+                        CheckboxList::make('columns')
+                            ->label('Select Headers to Include')
+                            ->options(NametagFineExportService::getAvailableColumns())
+                            ->default(array_keys(NametagFineExportService::getAvailableColumns()))
+                            ->columns(2)
+                            ->required()
+                            ->bulkToggleable(),
+                    ])
+                    ->action(function (array $data, HasTable $livewire, NametagFineExportService $service) {
+                        $records = $livewire
+                            ->getFilteredTableQuery()
+                            ->with(['employee.department', 'employee.designation', 'creator', 'acknowledger'])
+                            ->get();
+
+                        return $service->export(
+                            $records,
+                            $data['columns'] ?? array_keys(NametagFineExportService::getAvailableColumns()),
+                            $data['format'] ?? 'xlsx',
+                            (bool) ($data['apply_styling'] ?? true)
+                        );
+                    }),
             ]);
     }
 }
