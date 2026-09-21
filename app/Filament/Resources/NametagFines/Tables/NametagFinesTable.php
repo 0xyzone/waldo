@@ -111,7 +111,7 @@ class NametagFinesTable
                     ->limit(20)
                     ->tooltip(fn (NametagFine $record): ?string => $record->remarks)
                     ->placeholder('—')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(),
 
                 TextColumn::make('created_at')
                     ->label('Created At')
