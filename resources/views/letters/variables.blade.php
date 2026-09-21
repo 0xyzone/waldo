@@ -78,7 +78,7 @@
                 <div class="space-y-3">
                     <div class="flex items-start justify-between gap-2">
                         <div>
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-1.5 flex-wrap">
                                 <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider
                                     @if($v->type === 'calculated') bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20
                                     @elseif($v->type === 'richtext') bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20
@@ -89,6 +89,16 @@
                                     @else bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 @endif">
                                     {{ $v->type }}
                                 </span>
+
+                                @if($v->is_permanent)
+                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                                    <i class="fa-solid fa-lock text-[9px]"></i> Permanent
+                                </span>
+                                @else
+                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 border border-slate-200/60 dark:border-zinc-700/60">
+                                    Optional
+                                </span>
+                                @endif
                             </div>
                             <h3 class="text-base font-bold text-slate-800 dark:text-zinc-100 mt-1.5">{{ $v->label }}</h3>
                         </div>
@@ -286,6 +296,20 @@
                     </div>
                 </div>
 
+                <!-- Permanent / Required Toggle -->
+                <div class="p-3 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl flex items-center justify-between gap-3">
+                    <div class="space-y-0.5">
+                        <span class="text-xs font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-1.5">
+                            <i class="fa-solid fa-lock text-emerald-500 text-xs"></i> Permanent Variable
+                        </span>
+                        <p class="text-[11px] text-slate-400">If enabled, this variable will be included by default in all letter templates.</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="is_permanent" value="1" x-model="form.is_permanent" class="sr-only peer">
+                        <div class="w-10 h-5.5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-zinc-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all dark:border-zinc-600 peer-checked:bg-emerald-500"></div>
+                    </label>
+                </div>
+
                 <!-- Description -->
                 <div class="space-y-1.5">
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Description / Usage Notes <span class="font-normal text-slate-400">(optional)</span></label>
@@ -322,6 +346,7 @@ function globalVariablesManager() {
             key: '',
             label: '',
             type: 'text',
+            is_permanent: false,
             default_value: '',
             options: '',
             description: '',
@@ -335,6 +360,7 @@ function globalVariablesManager() {
                 key: '',
                 label: '',
                 type: 'text',
+                is_permanent: false,
                 default_value: '',
                 options: '',
                 description: '',
@@ -350,6 +376,7 @@ function globalVariablesManager() {
                 key: v.key,
                 label: v.label,
                 type: v.type,
+                is_permanent: Boolean(v.is_permanent),
                 default_value: v.default_value || '',
                 options: v.options || '',
                 description: v.description || '',

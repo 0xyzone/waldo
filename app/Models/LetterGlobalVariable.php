@@ -10,6 +10,7 @@ class LetterGlobalVariable extends Model
         'key',
         'label',
         'type',
+        'is_permanent',
         'default_value',
         'options',
         'formulas',
@@ -24,6 +25,7 @@ class LetterGlobalVariable extends Model
     protected function casts(): array
     {
         return [
+            'is_permanent' => 'boolean',
             'formulas' => 'array',
         ];
     }

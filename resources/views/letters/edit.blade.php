@@ -1005,6 +1005,11 @@ body.is-col-resizing {
                                       x-text="'@{{ ' + gv.key + ' }}'"></code>
                                 <span class="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400"
                                       x-text="gv.type"></span>
+                                <template x-if="gv.is_permanent">
+                                    <span class="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                                        <i class="fa-solid fa-lock text-[8px]"></i> Permanent
+                                    </span>
+                                </template>
                             </div>
                             <div class="flex items-center gap-3 text-[11px] text-slate-400">
                                 <span x-show="gv.description" x-text="gv.description"></span>

@@ -999,6 +999,11 @@ body.is-col-resizing {
                                       x-text="'@{{ ' + gv.key + ' }}'"></code>
                                 <span class="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400"
                                       x-text="gv.type"></span>
+                                <template x-if="gv.is_permanent">
+                                    <span class="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                                        <i class="fa-solid fa-lock text-[8px]"></i> Permanent
+                                    </span>
+                                </template>
                             </div>
                             <div class="flex items-center gap-3 text-[11px] text-slate-400">
                                 <span x-show="gv.description" x-text="gv.description"></span>
@@ -2027,12 +2032,23 @@ document.addEventListener('selectionchange', () => {
    ALPINE STATE
 =================================================================== */
 function createTemplateState() {
+    const allGlobalVars = @json($globalVariables ?? []);
+    const initialVars = allGlobalVars
+        .filter(gv => Boolean(gv.is_permanent))
+        .map(gv => ({
+            key: gv.key,
+            type: gv.type || 'text',
+            dummy: gv.default_value || '',
+            options: gv.options || '',
+            formulas: Array.isArray(gv.formulas) ? JSON.parse(JSON.stringify(gv.formulas)) : []
+        }));
+
     return {
         title: '',
         differentFirstPageMargins: false,
         margins: { top: 25, bottom: 25, left: 20, right: 20 },
         firstPageMargins: { top: 25, bottom: 25, left: 20, right: 20 },
-        variables: [],
+        variables: initialVars,
         pages: 1,
         _reflowInProgress: false,
         _reflowTimer: null,
