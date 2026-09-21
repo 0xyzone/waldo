@@ -63,7 +63,7 @@ class KamkajPanelProvider extends PanelProvider
                     ->activeIcon('heroicon-s-document-text')
                     ->sort(9)
                     ->group('HR & Admin')
-                    ->visible(fn () => auth()->user()->hasRole(['super_admin', 'HR'])),
+                    ->visible(fn () => auth()->user()->hasRole(['super_admin', 'HR', 'HR Assist'])),
                 NavigationItem::make('Employee SSF IDs')
                     ->url('/employee-ssids')
                     ->icon('heroicon-o-arrow-top-right-on-square')
