@@ -145,6 +145,22 @@ class Employee extends Model
     }
 
     /**
+     * Get the nametag distributions associated with the Employee.
+     */
+    public function nametagDistributions(): HasMany
+    {
+        return $this->hasMany(NametagDistribution::class, 'employee_id', 'employee_code');
+    }
+
+    /**
+     * Get the nametag fines associated with the Employee.
+     */
+    public function nametagFines(): HasMany
+    {
+        return $this->hasMany(NametagFine::class, 'employee_id', 'employee_code');
+    }
+
+    /**
      * Get all promotions for the Employee.
      */
     public function promotions(): HasMany

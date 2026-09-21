@@ -74,6 +74,7 @@ class KamkajPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 'HR & Admin',
+                'Purchase & Store',
                 'IT',
                 'Finance',
                 'Basic Info',
