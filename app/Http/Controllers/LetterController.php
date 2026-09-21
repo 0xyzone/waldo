@@ -286,8 +286,9 @@ class LetterController extends Controller
 
         $employees = $query->get();
         $templates = LetterTemplate::orderBy('title')->get();
+        $permanentVariables = LetterGlobalVariable::where('is_permanent', true)->orderBy('label')->get();
         $selectedTemplateId = request('template_id', '');
 
-        return view('letters.generate', compact('employees', 'templates', 'selectedTemplateId'));
+        return view('letters.generate', compact('employees', 'templates', 'permanentVariables', 'selectedTemplateId'));
     }
 }

@@ -568,20 +568,27 @@
 
     </div>
 
-    <!-- Right Sidebar: Custom variables input (no-print) -->
-    <aside x-show="selectedTemplate && selectedTemplate.variables && selectedTemplate.variables.length > 0"
+    <!-- Right Sidebar: Custom & Permanent variables input (no-print) -->
+    <aside x-show="selectedTemplate && allEffectiveVariables.length > 0"
            class="no-print w-full md:w-80 bg-white dark:bg-zinc-900 border-l border-slate-200 dark:border-zinc-800 flex flex-col overflow-hidden shrink-0 shadow-sm z-20">
         
         <div class="p-6 border-b border-slate-200 dark:border-zinc-800 space-y-2 shrink-0">
-            <h2 class="text-sm font-bold text-slate-800 dark:text-zinc-200 uppercase tracking-wider">Custom Variables</h2>
-            <p class="text-xs text-slate-400 mt-1">Specify values for template placeholders.</p>
+            <h2 class="text-sm font-bold text-slate-800 dark:text-zinc-200 uppercase tracking-wider">Template Variables</h2>
+            <p class="text-xs text-slate-400 mt-1">Specify values for custom & permanent placeholders.</p>
         </div>
         
         <div class="flex-1 overflow-y-auto p-6 space-y-4">
-            <template x-for="v in (selectedTemplate ? selectedTemplate.variables : [])" :key="v.key || v">
+            <template x-for="v in allEffectiveVariables" :key="v.key || v">
                 <div class="space-y-1.5">
-                    <label class="block text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider" 
-                           x-text="formatLabel(v.key || v)"></label>
+                    <div class="flex items-center justify-between">
+                        <label class="block text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider" 
+                               x-text="formatLabel(v.key || v)"></label>
+                        <template x-if="v.is_permanent">
+                            <span class="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                                <i class="fa-solid fa-lock text-[8px]"></i> Permanent
+                            </span>
+                        </template>
+                    </div>
                     
                     <!-- Date Field -->
                     <template x-if="(v.type || 'text') === 'date'">
@@ -717,12 +724,47 @@
 @section('scripts')
 <script>
 function generatorState() {
+    const rawPermanentVars = @json($permanentVariables ?? []);
+    const normalizedPermanentVars = rawPermanentVars.map(gv => ({
+        key: gv.key,
+        label: gv.label || gv.key,
+        type: gv.type || 'text',
+        dummy: gv.default_value || '',
+        options: gv.options || '',
+        formulas: Array.isArray(gv.formulas) ? JSON.parse(JSON.stringify(gv.formulas)) : [],
+        is_permanent: true
+    }));
+
     return {
         templates: @json($templates),
         employees: @json($employees),
+        permanentVariables: normalizedPermanentVars,
 
         selectedTemplateId: @json($selectedTemplateId ? (string) $selectedTemplateId : ''),
         selectedTemplate: null,
+
+        get allEffectiveVariables() {
+            if (!this.selectedTemplate) return [];
+            const tmplVars = (this.selectedTemplate.variables || []).map(v => {
+                if (typeof v === 'string') return { key: v, type: 'text', label: v };
+                return v;
+            });
+            const tmplKeySet = new Set(tmplVars.map(v => v.key));
+
+            // Start with template variables, then append permanent global variables that aren't already explicitly defined in the template
+            const combined = [...tmplVars];
+            this.permanentVariables.forEach(pv => {
+                if (!tmplKeySet.has(pv.key)) {
+                    combined.push(pv);
+                } else {
+                    // Mark matching template variable as permanent
+                    const existing = combined.find(item => item.key === pv.key);
+                    if (existing) existing.is_permanent = true;
+                }
+            });
+            return combined;
+        },
+
         selectedCodes: [],
         customValues: {},
         search: '',
@@ -891,12 +933,14 @@ function generatorState() {
                 this.firstPageMargins.left   = this.selectedTemplate.first_page_margin_left   ?? this.margins.left;
                 this.firstPageMargins.right  = this.selectedTemplate.first_page_margin_right  ?? this.margins.right;
 
-                (this.selectedTemplate.variables ?? []).forEach(v => {
+                this.allEffectiveVariables.forEach(v => {
                     const key  = typeof v === 'object' ? v.key : v;
                     const type = typeof v === 'object' ? (v.type || 'text') : 'text';
                     if (type === 'dropdown' && typeof v === 'object' && v.options && v.options.trim()) {
                         const first = v.options.split(',').map(s => s.trim()).filter(s => s)[0] || '';
-                        this.customValues[key] = first;
+                        this.customValues[key] = (typeof v === 'object' && v.dummy) ? v.dummy : first;
+                    } else if (typeof v === 'object' && v.dummy) {
+                        this.customValues[key] = v.dummy;
                     } else {
                         this.customValues[key] = '';
                     }
@@ -914,7 +958,7 @@ function generatorState() {
 
         // Evaluate formula expressions for all 'calculated' variables in sequence
         computeFormulas() {
-            if (!this.selectedTemplate || !Array.isArray(this.selectedTemplate.variables)) return;
+            if (!this.selectedTemplate || this.allEffectiveVariables.length === 0) return;
 
             for (let pass = 0; pass < 5; pass++) {
                 let changed = false;
@@ -933,8 +977,8 @@ function generatorState() {
                     if (norm) scopeObj[norm] = val;
                 });
 
-                // Include template variable keys & labels
-                this.selectedTemplate.variables.forEach(v => {
+                // Include effective variable keys & labels
+                this.allEffectiveVariables.forEach(v => {
                     if (typeof v === 'object') {
                         const raw = this.customValues[v.key];
                         const n = (raw === '' || raw === null || raw === undefined) ? 0 : parseFloat(String(raw).replace(/,/g, ''));
@@ -948,7 +992,7 @@ function generatorState() {
                 });
 
                 // 2. Evaluate formulas using scopeObj
-                this.selectedTemplate.variables.forEach(v => {
+                this.allEffectiveVariables.forEach(v => {
                     if (typeof v === 'object' && v.type === 'calculated' && Array.isArray(v.formulas)) {
                         const parentVal = this.customValues[v.key];
                         const isParentEmpty = parentVal === '' || parentVal === null || parentVal === undefined;
@@ -1232,8 +1276,8 @@ function generatorState() {
                 html = html.replace(rx, val);
             });
 
-            // Replace custom template variables
-            (this.selectedTemplate.variables || []).forEach(v => {
+            // Replace custom and permanent template variables
+            (this.allEffectiveVariables || []).forEach(v => {
                 const key  = typeof v === 'object' ? v.key : v;
                 const type = typeof v === 'object' ? (v.type || 'text') : 'text';
                 let val = this.customValues[key] || '';
