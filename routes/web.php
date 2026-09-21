@@ -22,7 +22,7 @@ Route::get('/candidates/{candidate}/print', [CandidatePrintController::class, 'p
 Route::get('/employee-ssids', [EmployeeSsidController::class, 'index'])->name('employees.ssid-list');
 Route::get('/employee-ssids/export', [EmployeeSsidController::class, 'exportExcel'])->name('employees.ssid-list.export');
 
-Route::prefix('/letters')->middleware('role:super_admin|HR')->group(function () {
+Route::prefix('/letters')->middleware('role:super_admin|HR|HR Assist')->group(function () {
     Route::get('/', [LetterController::class, 'index'])->name('letters.index');
     Route::get('/create', [LetterController::class, 'create'])->name('letters.create');
     Route::get('/generate', [LetterController::class, 'generate'])->name('letters.generate');
