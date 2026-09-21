@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -17,6 +18,7 @@ class NametagDistribution extends Model
         'date',
         'status',
         'remarks',
+        'created_by',
     ];
 
     /**
@@ -28,6 +30,7 @@ class NametagDistribution extends Model
     {
         return [
             'date' => 'date',
+            'created_by' => 'integer',
         ];
     }
 
@@ -37,5 +40,13 @@ class NametagDistribution extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class, 'employee_id', 'employee_code');
+    }
+
+    /**
+     * Get the user who created the record.
+     */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

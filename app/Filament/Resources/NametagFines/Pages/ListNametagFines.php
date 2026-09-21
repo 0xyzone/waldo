@@ -32,7 +32,11 @@ class ListNametagFines extends ListRecords
         return [
             CreateAction::make()
                 ->label('New NameTag Fine')
-                ->icon('heroicon-o-plus'),
+                ->icon('heroicon-o-plus')
+                ->mutateFormDataUsing(function (array $data) {
+                    $data['created_by'] = auth()->id();
+                    return $data;
+                }),
         ];
     }
 }

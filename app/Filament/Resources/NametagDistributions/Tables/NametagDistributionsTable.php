@@ -30,6 +30,10 @@ class NametagDistributionsTable
     {
         return $table
             ->columns([
+                TextColumn::make('creator.name')
+                    ->label('Created By')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('employee_id')
                     ->label('Code')
                     ->badge()
