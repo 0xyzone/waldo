@@ -833,10 +833,16 @@ body.is-col-resizing {
                         <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
                             <i class="fa-solid fa-sliders text-amber-500"></i> Custom Variables
                         </h4>
-                        <button type="button" @mousedown.prevent="addVariable()"
-                                class="px-2 py-1 bg-amber-500 text-white text-[10px] font-bold rounded-md hover:bg-amber-600 cursor-pointer">
-                            <i class="fa-solid fa-plus mr-0.5"></i> Add
-                        </button>
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" @click="globalModalOpen = true"
+                                    class="px-2 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/20 text-[10px] font-bold rounded-md cursor-pointer transition-all flex items-center gap-1">
+                                <i class="fa-solid fa-book-bookmark text-[9px]"></i> Global Library
+                            </button>
+                            <button type="button" @mousedown.prevent="addVariable()"
+                                    class="px-2 py-1 bg-amber-500 text-white text-[10px] font-bold rounded-md hover:bg-amber-600 cursor-pointer">
+                                <i class="fa-solid fa-plus mr-0.5"></i> Add
+                            </button>
+                        </div>
                     </div>
                     <div class="space-y-2.5">
                         <template x-for="(v, idx) in variables" :key="idx">
@@ -936,6 +942,118 @@ body.is-col-resizing {
             </div>
         </aside>
     </form>
+
+    <!-- ── GLOBAL VARIABLES LIBRARY MODAL ── -->
+    <div x-show="globalModalOpen" x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4"
+         style="display: none;" @keydown.escape.window="globalModalOpen = false">
+
+        <div class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
+             @click.outside="globalModalOpen = false">
+
+            <!-- Modal Header -->
+            <div class="p-5 border-b border-slate-200 dark:border-zinc-800 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center text-sm font-bold">
+                        <i class="fa-solid fa-book-bookmark"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900 dark:text-zinc-100 uppercase tracking-wider">Global Custom Variables</h3>
+                        <p class="text-[11px] text-slate-400">Select and include reusable global variables into this template.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('letters.variables.index') }}" target="_blank"
+                       class="text-[11px] text-amber-600 dark:text-amber-400 hover:underline font-bold flex items-center gap-1">
+                        Manage Global <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                    </a>
+                    <button type="button" @click="globalModalOpen = false" class="text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 p-1 cursor-pointer">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search & Quick Actions -->
+            <div class="p-4 border-b border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-950/50 flex items-center justify-between gap-3 shrink-0">
+                <div class="relative flex-1">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" x-model="globalVarSearch" placeholder="Filter global variables..."
+                           class="w-full pl-8 pr-3 py-1.5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-lg text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <button type="button" @click="addAllGlobalVars()"
+                            class="px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-[10px] font-bold shadow-xs transition-all cursor-pointer">
+                        Include All Available
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scrollable Variables List -->
+            <div class="p-5 overflow-y-auto flex-1 min-h-0 space-y-3">
+                <template x-for="gv in filteredGlobalVars" :key="gv.key">
+                    <div class="p-3.5 rounded-xl border transition-all flex items-center justify-between gap-3"
+                         :class="isVariableIncluded(gv.key)
+                            ? 'bg-amber-50/40 dark:bg-amber-950/20 border-amber-300 dark:border-amber-800/60'
+                            : 'bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700'">
+                        <div class="space-y-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="text-xs font-bold text-slate-800 dark:text-zinc-100" x-text="gv.label"></span>
+                                <code class="text-[11px] font-mono font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded"
+                                      x-text="'@{{ ' + gv.key + ' }}'"></code>
+                                <span class="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400"
+                                      x-text="gv.type"></span>
+                            </div>
+                            <div class="flex items-center gap-3 text-[11px] text-slate-400">
+                                <span x-show="gv.description" x-text="gv.description"></span>
+                                <span x-show="gv.default_value" class="font-mono">Default: <strong class="text-slate-600 dark:text-zinc-300" x-text="gv.default_value"></strong></span>
+                                <span x-show="gv.options" class="truncate max-w-xs">Options: <span class="text-slate-600 dark:text-zinc-300" x-text="gv.options"></span></span>
+                            </div>
+                        </div>
+
+                        <!-- Action buttons -->
+                        <div class="flex items-center gap-2 shrink-0">
+                            <!-- Toggle Include in Template -->
+                            <button type="button" @click="toggleGlobalVar(gv)"
+                                    :class="isVariableIncluded(gv.key)
+                                        ? 'bg-rose-50 hover:bg-rose-100 text-rose-600 border-rose-200 dark:bg-rose-950/30 dark:border-rose-800 dark:text-rose-400'
+                                        : 'bg-amber-500 hover:bg-amber-600 text-white border-transparent'"
+                                    class="px-2.5 py-1.5 rounded-lg text-xs font-bold border shadow-xs transition-all cursor-pointer flex items-center gap-1">
+                                <template x-if="isVariableIncluded(gv.key)">
+                                    <span><i class="fa-solid fa-check mr-1 text-[10px]"></i> Included</span>
+                                </template>
+                                <template x-if="!isVariableIncluded(gv.key)">
+                                    <span><i class="fa-solid fa-plus mr-1 text-[10px]"></i> Include</span>
+                                </template>
+                            </button>
+
+                            <!-- Insert token into document editor -->
+                            <button type="button" @mousedown.prevent="insertGlobalVarToken(gv)"
+                                    class="px-2.5 py-1.5 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 rounded-lg text-xs font-semibold transition-all cursor-pointer"
+                                    title="Insert placeholder directly into editor">
+                                <i class="fa-solid fa-arrow-left-to-bracket text-xs"></i> Insert
+                            </button>
+                        </div>
+                    </div>
+                </template>
+
+                <div x-show="filteredGlobalVars.length === 0" class="py-8 text-center text-xs text-slate-400 italic">
+                    No global variables match your search.
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-4 border-t border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-950 flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400 shrink-0">
+                <span x-text="`${globalVariables.length} global variables available`"></span>
+                <button type="button" @click="globalModalOpen = false"
+                        class="px-4 py-1.5 bg-slate-200 dark:bg-zinc-800 hover:bg-slate-300 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 rounded-lg font-bold transition-colors cursor-pointer">
+                    Done
+                </button>
+            </div>
+        </div>
+    </div>
 
     </div>
 </div>
@@ -1959,6 +2077,60 @@ function editTemplateState() {
             return this.prebuiltVars.filter(v => 
                 v.key.toLowerCase().includes(q) || v.label.toLowerCase().includes(q)
             );
+        },
+        globalVariables: @json($globalVariables ?? []),
+        globalModalOpen: false,
+        globalVarSearch: '',
+        get filteredGlobalVars() {
+            if (!this.globalVarSearch) return this.globalVariables;
+            const q = this.globalVarSearch.toLowerCase();
+            return this.globalVariables.filter(v =>
+                (v.key && v.key.toLowerCase().includes(q)) ||
+                (v.label && v.label.toLowerCase().includes(q)) ||
+                (v.description && v.description.toLowerCase().includes(q))
+            );
+        },
+        isVariableIncluded(key) {
+            return this.variables.some(v => v.key === key);
+        },
+        toggleGlobalVar(gv) {
+            const idx = this.variables.findIndex(v => v.key === gv.key);
+            if (idx >= 0) {
+                this.variables.splice(idx, 1);
+            } else {
+                this.variables.push({
+                    key: gv.key,
+                    type: gv.type || 'text',
+                    dummy: gv.default_value || '',
+                    options: gv.options || '',
+                    formulas: Array.isArray(gv.formulas) ? JSON.parse(JSON.stringify(gv.formulas)) : []
+                });
+            }
+        },
+        addAllGlobalVars() {
+            this.filteredGlobalVars.forEach(gv => {
+                if (!this.isVariableIncluded(gv.key)) {
+                    this.variables.push({
+                        key: gv.key,
+                        type: gv.type || 'text',
+                        dummy: gv.default_value || '',
+                        options: gv.options || '',
+                        formulas: Array.isArray(gv.formulas) ? JSON.parse(JSON.stringify(gv.formulas)) : []
+                    });
+                }
+            });
+        },
+        insertGlobalVarToken(gv) {
+            if (!this.isVariableIncluded(gv.key)) {
+                this.variables.push({
+                    key: gv.key,
+                    type: gv.type || 'text',
+                    dummy: gv.default_value || '',
+                    options: gv.options || '',
+                    formulas: Array.isArray(gv.formulas) ? JSON.parse(JSON.stringify(gv.formulas)) : []
+                });
+            }
+            this.insertVar(gv.key);
         },
 
         addVariable()     { this.variables.push({ key: '', type: 'text', dummy: '', options: '', formulas: [] }); },

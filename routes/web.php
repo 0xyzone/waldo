@@ -5,6 +5,7 @@ use App\Http\Controllers\CandidatePrintController;
 use App\Http\Controllers\EmployeeSsidController;
 use App\Http\Controllers\FontController;
 use App\Http\Controllers\LetterController;
+use App\Http\Controllers\LetterGlobalVariableController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
@@ -39,6 +40,13 @@ Route::prefix('/letters')->middleware('role:super_admin|HR')->group(function () 
     Route::post('/fonts', [FontController::class, 'store'])->name('letters.fonts.store');
     Route::get('/fonts/api', [FontController::class, 'apiList'])->name('letters.fonts.api');
     Route::delete('/fonts/{font}', [FontController::class, 'destroy'])->name('letters.fonts.destroy');
+
+    // Global Variables management (must be before /{id} routes)
+    Route::get('/variables', [LetterGlobalVariableController::class, 'index'])->name('letters.variables.index');
+    Route::post('/variables', [LetterGlobalVariableController::class, 'store'])->name('letters.variables.store');
+    Route::put('/variables/{variable}', [LetterGlobalVariableController::class, 'update'])->name('letters.variables.update');
+    Route::delete('/variables/{variable}', [LetterGlobalVariableController::class, 'destroy'])->name('letters.variables.destroy');
+    Route::get('/variables/api', [LetterGlobalVariableController::class, 'apiList'])->name('letters.variables.api');
 
     Route::post('/', [LetterController::class, 'store'])->name('letters.store');
     Route::get('/{id}/edit', [LetterController::class, 'edit'])->name('letters.edit');

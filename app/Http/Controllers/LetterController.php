@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\GeneratedLetter;
+use App\Models\LetterGlobalVariable;
 use App\Models\LetterTemplate;
 use Illuminate\Http\Request;
 
@@ -163,7 +164,9 @@ class LetterController extends Controller
 
     public function create()
     {
-        return view('letters.create');
+        $globalVariables = LetterGlobalVariable::orderBy('label')->get();
+
+        return view('letters.create', compact('globalVariables'));
     }
 
     public function store(Request $request)
@@ -212,8 +215,9 @@ class LetterController extends Controller
     public function edit($id)
     {
         $template = LetterTemplate::findOrFail($id);
+        $globalVariables = LetterGlobalVariable::orderBy('label')->get();
 
-        return view('letters.edit', compact('template'));
+        return view('letters.edit', compact('template', 'globalVariables'));
     }
 
     public function update(Request $request, $id)
