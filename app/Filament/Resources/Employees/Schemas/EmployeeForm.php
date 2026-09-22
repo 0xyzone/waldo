@@ -275,12 +275,20 @@ class EmployeeForm
                                     ]),
                                 Section::make('Tips & Points Settings')
                                     ->schema([
-                                        Grid::make(['default' => 1, 'sm' => 3])
+                                        Grid::make(['default' => 2, 'sm' => 4])
                                             ->schema([
                                                 TextInput::make('tips_amount')
                                                     ->label('Tips Amount')
                                                     ->numeric()
-                                                    ->prefix('₹'),
+                                                    ->prefix('₹')
+                                                    ->disabled()
+                                                    ->dehydrated(false)
+                                                    ->helperText('Calculated by Sheet (Desig. Wise + Adj.)'),
+                                                TextInput::make('tips_adj')
+                                                    ->label('Tips Adj.')
+                                                    ->numeric()
+                                                    ->prefix('₹')
+                                                    ->placeholder('0.00'),
                                                 Select::make('tips_status')
                                                     ->label('Tips Status')
                                                     ->options([

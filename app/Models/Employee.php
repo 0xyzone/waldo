@@ -57,6 +57,7 @@ class Employee extends Model
         'marital_status',
         'employee_status',
         'tips_amount',
+        'tips_adj',
         'tips_status',
         'point_value',
         'tips_blank',
@@ -80,6 +81,7 @@ class Employee extends Model
         return [
             'dob_ad' => 'date',
             'tips_amount' => 'decimal:2',
+            'tips_adj' => 'decimal:2',
             'point_value' => 'decimal:4',
             'tips_blank' => 'boolean',
             'publish_tips' => 'boolean',

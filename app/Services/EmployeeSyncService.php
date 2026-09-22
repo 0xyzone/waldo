@@ -42,9 +42,9 @@ class EmployeeSyncService
 
         Employee::withoutEvents(function () use ($stream, &$syncedCount, &$allChanges) {
             while (($row = fgetcsv($stream)) !== false) {
-                // Pad the row to 30 elements to avoid undefined index offsets
-                if (count($row) < 30) {
-                    $row = array_pad($row, 30, '');
+                // Pad the row to 32 elements to avoid undefined index offsets
+                if (count($row) < 32) {
+                    $row = array_pad($row, 32, '');
                 }
 
                 $employeeCode = trim($row[3] ?? '');
@@ -92,6 +92,7 @@ class EmployeeSyncService
 
                 // Parse numbers ($dpRank and $desigRank already computed above for dept/designation sync)
                 $tipsAmount = is_numeric($row[20] ?? null) ? (float) $row[20] : null;
+                $tipsAdj = is_numeric($row[31] ?? null) ? (float) $row[31] : null;
                 $pointValue = is_numeric($row[22] ?? null) ? (float) $row[22] : null;
 
                 // Parse booleans
@@ -145,6 +146,7 @@ class EmployeeSyncService
                         'marital_status' => trim($row[18] ?? '') ?: null,
                         'employee_status' => trim($row[19] ?? '') ?: null,
                         'tips_amount' => $tipsAmount,
+                        'tips_adj' => $tipsAdj,
                         'tips_status' => trim($row[21] ?? '') ?: null,
                         'point_value' => $pointValue,
                         'tips_blank' => $tipsBlank,

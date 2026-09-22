@@ -57,6 +57,7 @@ class EmployeeResource extends JsonResource
             // Tips & Financials
             'tips_status' => $this->tips_status,
             'tips_amount' => $this->tips_amount,
+            'tips_adj' => $this->tips_adj,
             'point_value' => $this->point_value,
             'tips_blank' => (bool) $this->tips_blank,
             'publish_tips' => (bool) $this->publish_tips,

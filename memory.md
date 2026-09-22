@@ -21,7 +21,7 @@
 ### 1. Employees & Core Management
 - **Model**: `App\Models\Employee` (Primary Key: `employee_code`, non-incrementing string)
 - **Statuses**: `Active`, `Inactive`, `Suspended`, `Resigned`, `Resigning This Month`, `Terminated`.
-- **Tips & Financials**: `tips_status` (`Release`, `Hold`), `tips_amount`, `point_value`, etc.
+- **Tips & Financials**: `tips_status` (`Release`, `Hold`), `tips_amount` (calculated via Google Sheet formula `AE+AF` and synced back to DB), `tips_adj` (synced to Sheet col AF), `point_value`, etc.
 - **Resource**: `App\Filament\Resources\Employees\EmployeeResource`
   - Table Record Actions: Compact dropdown `ActionGroup` containing View, Edit, **Suspend** (with date range, reason & attachments modal), and **Terminate** (with date & reason modal) to prevent card button overflow.
 

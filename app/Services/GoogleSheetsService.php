@@ -45,7 +45,7 @@ class GoogleSheetsService
         'dob_bs' => 17,
         'marital_status' => 18,
         'employee_status' => 19,
-        'tips_amount' => 20,
+        // 20 = tips_amount (generated in sheet formula: AE+AF, pulled into DB, never written from app)
         'tips_status' => 21,
         'point_value' => 22,
         'tips_blank' => 23,
@@ -55,6 +55,8 @@ class GoogleSheetsService
         // 27 = first_name (generated in sheet only, never written from app)
         // 28 = middle_name (generated in sheet only, never written from app)
         // 29 = last_name (generated in sheet only, never written from app)
+        // 30 = tips_amt_desig_wise (generated in sheet only via formula, never written)
+        'tips_adj' => 31,
     ];
 
     public function __construct()
@@ -172,7 +174,7 @@ class GoogleSheetsService
                 return;
             }
 
-            $clearRange = "Database!A{$sheetRowNumber}:AD{$sheetRowNumber}";
+            $clearRange = "Database!A{$sheetRowNumber}:AF{$sheetRowNumber}";
             $clearRequest = new ClearValuesRequest;
             $this->service->spreadsheets_values->clear(
                 $this->spreadsheetId,
@@ -235,7 +237,7 @@ class GoogleSheetsService
     {
         $targetRow = $this->findFirstEmptyRow();
 
-        $newRow = array_fill(0, 30, '');
+        $newRow = array_fill(0, 32, '');
 
         foreach ($this->columnMap as $field => $colIndex) {
             $newRow[$colIndex] = $this->resolveFieldValue($employee, $field);
@@ -246,7 +248,7 @@ class GoogleSheetsService
         $body = new ValueRange(['values' => [$newRow]]);
         $this->service->spreadsheets_values->update(
             $this->spreadsheetId,
-            "Database!A{$targetRow}:AD{$targetRow}",
+            "Database!A{$targetRow}:AF{$targetRow}",
             $body,
             ['valueInputOption' => 'USER_ENTERED']
         );
@@ -260,7 +262,7 @@ class GoogleSheetsService
     public function pullRowValuesIntoEmployee(Employee $employee, int $sheetRowNumber): void
     {
         try {
-            $range = "Database!A{$sheetRowNumber}:AD{$sheetRowNumber}";
+            $range = "Database!A{$sheetRowNumber}:AF{$sheetRowNumber}";
             $response = $this->service->spreadsheets_values->get($this->spreadsheetId, $range);
             $rows = $response->getValues();
             $values = $rows[0] ?? [];
@@ -269,22 +271,28 @@ class GoogleSheetsService
                 return;
             }
 
-            if (count($values) < 30) {
-                $values = array_pad($values, 30, '');
+            if (count($values) < 32) {
+                $values = array_pad($values, 32, '');
             }
 
+            $tipsAmount = is_numeric(trim($values[20] ?? '')) ? (float) trim($values[20]) : null;
             $hrmsPassword = trim($values[26] ?? '') ?: null;
             $firstName = trim($values[27] ?? '') ?: null;
             $middleName = trim($values[28] ?? '') ?: null;
             $lastName = trim($values[29] ?? '') ?: null;
 
-            Employee::withoutEvents(function () use ($employee, $hrmsPassword, $firstName, $middleName, $lastName) {
-                $employee->update(array_filter([
+            Employee::withoutEvents(function () use ($employee, $tipsAmount, $hrmsPassword, $firstName, $middleName, $lastName) {
+                $updateData = array_filter([
+                    'tips_amount' => $tipsAmount,
                     'hrms_password' => $hrmsPassword,
                     'first_name' => $firstName,
                     'middle_name' => $middleName,
                     'last_name' => $lastName,
-                ], fn ($val) => $val !== null));
+                ], fn ($val) => $val !== null);
+
+                if (! empty($updateData)) {
+                    $employee->update($updateData);
+                }
             });
         } catch (\Exception $e) {
             Log::error('Pull row values from Google Sheets failed: '.$e->getMessage());
@@ -307,7 +315,7 @@ class GoogleSheetsService
             'tips_blank' => $employee->tips_blank ? 'TRUE' : 'FALSE',
             'publish_tips' => $employee->publish_tips ? 'TRUE' : 'FALSE',
             'tips_fixed' => $employee->tips_fixed ? 'TRUE' : 'FALSE',
-            'tips_amount' => $employee->tips_amount !== null ? (string) $employee->tips_amount : '',
+            'tips_adj' => $employee->tips_adj !== null ? (string) $employee->tips_adj : '',
             'point_value' => $employee->point_value !== null ? (string) $employee->point_value : '',
             default => (string) ($employee->$field ?? ''),
         };
