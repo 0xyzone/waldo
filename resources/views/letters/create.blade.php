@@ -1276,7 +1276,7 @@
                                                         <span class="text-[9px] text-slate-400">Insert:</span>
                                                         <button type="button" @mousedown.prevent="insertVar(f.key)"
                                                             class="text-xs font-bold font-mono text-indigo-500 dark:text-indigo-400 hover:underline cursor-pointer">
-                                                            @{{ < span x - text = "f.key" > < /span> }}
+                                                            <span>&#123;&#123;&nbsp;<span x-text="f.key"></span>&nbsp;&#125;&#125;</span>
                                                         </button>
                                                     </div>
                                                 </div>
@@ -1291,7 +1291,9 @@
                                     <div x-show="v.key" class="flex items-center justify-between pt-1">
                                         <span class="text-[10px] text-slate-400">Insert:</span>
                                         <button type="button" @mousedown.prevent="insertVar(v.key)"
-                                            class="text-xs font-bold font-mono text-amber-600 dark:text-amber-400 hover:underline cursor-pointer">@{{ < span x - text = "v.key" > < /span> }}</button>
+                                            class="text-xs font-bold font-mono text-amber-600 dark:text-amber-400 hover:underline cursor-pointer">
+                                            <span>&#123;&#123;&nbsp;<span x-text="v.key"></span>&nbsp;&#125;&#125;</span>
+                                        </button>
                                     </div>
                                 </div>
                             </template>
