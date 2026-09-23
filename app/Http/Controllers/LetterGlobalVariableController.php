@@ -38,7 +38,7 @@ class LetterGlobalVariableController extends Controller
         $validated = $request->validate([
             'key' => 'required|string|alpha_dash|max:100|unique:letter_global_variables,key',
             'label' => 'required|string|max:255',
-            'type' => 'required|string|in:text,date,number,boolean,dropdown,richtext,calculated',
+            'type' => 'required|string|in:text,date,daterange,number,boolean,dropdown,richtext,calculated',
             'is_permanent' => 'nullable|boolean',
             'default_value' => 'nullable|string',
             'options' => 'nullable|string',
@@ -79,7 +79,7 @@ class LetterGlobalVariableController extends Controller
         $validated = $request->validate([
             'key' => 'required|string|alpha_dash|max:100|unique:letter_global_variables,key,'.$variable->id,
             'label' => 'required|string|max:255',
-            'type' => 'required|string|in:text,date,number,boolean,dropdown,richtext,calculated',
+            'type' => 'required|string|in:text,date,daterange,number,boolean,dropdown,richtext,calculated',
             'is_permanent' => 'nullable|boolean',
             'default_value' => 'nullable|string',
             'options' => 'nullable|string',

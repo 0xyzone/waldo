@@ -28,12 +28,65 @@
     <!-- AlpineJS -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+    <!-- Flatpickr for Range Selection -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
     <!-- FontAwesome for beautiful large icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        /* Flatpickr Theme Customization for Waldo */
+        .flatpickr-calendar {
+            background: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .dark .flatpickr-calendar {
+            background: #18181b;
+            border-color: #27272a;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            color: #f4f4f5;
+        }
+        .dark .flatpickr-day {
+            color: #e4e4e7;
+        }
+        .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange {
+            background: #f59e0b !important;
+            border-color: #f59e0b !important;
+            color: #ffffff !important;
+            font-weight: 700;
+        }
+        .flatpickr-day.inRange {
+            background: rgba(245, 158, 11, 0.15) !important;
+            border-color: transparent !important;
+            box-shadow: -5px 0 0 rgba(245, 158, 11, 0.15), 5px 0 0 rgba(245, 158, 11, 0.15);
+        }
+        .dark .flatpickr-day.inRange {
+            background: rgba(245, 158, 11, 0.25) !important;
+            box-shadow: -5px 0 0 rgba(245, 158, 11, 0.25), 5px 0 0 rgba(245, 158, 11, 0.25);
+            color: #fbbf24;
+        }
+        .flatpickr-day:hover {
+            background: #f1f5f9;
+        }
+        .dark .flatpickr-day:hover {
+            background: #27272a;
+        }
+        .dark .flatpickr-months .flatpickr-month,
+        .dark .flatpickr-current-month .flatpickr-monthDropdown-months,
+        .dark .flatpickr-current-month input.cur-year {
+            color: #f4f4f5;
+            fill: #f4f4f5;
+        }
+        .dark .flatpickr-weekdays,
+        .dark span.flatpickr-weekday {
+            color: #a1a1aa;
         }
         /* Custom scrollbar */
         ::-webkit-scrollbar {

@@ -173,8 +173,28 @@ if (!$employee) {
             if (key.startsWith('employee_')) return match;
             const cleanKey = key.startsWith('custom_') ? key.substring(7) : key;
             const repeater = this.$wire.get('data.variables') || [];
-            const found = repeater.find(v => v.key === cleanKey);
-            return found && found.dummy !== undefined && found.dummy !== null && found.dummy !== '' ? found.dummy : `[${this.formatLabel(cleanKey)}]`;
+            let found = repeater.find(v => v.key === cleanKey);
+            if (found && found.dummy !== undefined && found.dummy !== null && found.dummy !== '') {
+                return found.dummy;
+            }
+            // Check for daterange _from or _to sub-keys
+            if (cleanKey.endsWith('_from')) {
+                const parentKey = cleanKey.slice(0, -5);
+                const parent = repeater.find(v => v.key === parentKey && v.type === 'daterange');
+                if (parent) {
+                    const parts = (parent.dummy || '').split(' to ');
+                    return parts[0] || `[${this.formatLabel(cleanKey)}]`;
+                }
+            }
+            if (cleanKey.endsWith('_to')) {
+                const parentKey = cleanKey.slice(0, -3);
+                const parent = repeater.find(v => v.key === parentKey && v.type === 'daterange');
+                if (parent) {
+                    const parts = (parent.dummy || '').split(' to ');
+                    return parts[1] || parts[0] || `[${this.formatLabel(cleanKey)}]`;
+                }
+            }
+            return found ? `[${this.formatLabel(cleanKey)}]` : match;
         });
 
         return parsed;

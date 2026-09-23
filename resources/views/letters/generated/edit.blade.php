@@ -315,7 +315,79 @@
                                     </div>
                                 </template>
 
-                                <template x-if="(customMeta[key] || 'text') !== 'richtext' && (customMeta[key] || 'text') !== 'calculated' && (customMeta[key] || 'text') !== 'formula_result'">
+                                <!-- Date Range Field (Single Calendar for Start & End) -->
+                                <template x-if="(customMeta[key] || 'text') === 'daterange'">
+                                    <div class="space-y-1.5"
+                                         x-data="{
+                                            fp: null,
+                                            init() {
+                                                const el = this.$refs.rangeInput;
+                                                this.$nextTick(() => {
+                                                    if (typeof flatpickr === 'undefined') return;
+                                                    this.fp = flatpickr(el, {
+                                                        mode: 'range',
+                                                        dateFormat: 'Y-m-d',
+                                                        defaultDate: (customValues[key + '_from'] && customValues[key + '_to'])
+                                                            ? [customValues[key + '_from'], customValues[key + '_to']]
+                                                            : (customValues[key] ? customValues[key].split(' to ') : []),
+                                                        onChange: (selectedDates) => {
+                                                            if (selectedDates.length === 2) {
+                                                                const d1 = this.fp.formatDate(selectedDates[0], 'Y-m-d');
+                                                                const d2 = this.fp.formatDate(selectedDates[1], 'Y-m-d');
+                                                                customValues[key] = d1 + ' to ' + d2;
+                                                                customValues[key + '_from'] = d1;
+                                                                customValues[key + '_to'] = d2;
+                                                            }
+                                                        }
+                                                    });
+                                                });
+                                            }
+                                         }">
+                                        <input type="hidden" :name="`custom_values[${key}]`" :value="customValues[key]">
+                                        <input type="hidden" :name="`custom_values[${key}_from]`" :value="customValues[key + '_from']">
+                                        <input type="hidden" :name="`custom_values[${key}_to]`" :value="customValues[key + '_to']">
+                                        <div class="relative">
+                                            <input type="text"
+                                                   x-ref="rangeInput"
+                                                   :value="(customValues[key + '_from'] && customValues[key + '_to']) ? (customValues[key + '_from'] + ' to ' + customValues[key + '_to']) : ''"
+                                                   placeholder="Select start and end date..."
+                                                   readonly
+                                                   class="w-full pl-8 pr-7 py-1.5 border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-lg text-xs text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 cursor-pointer">
+                                            <i class="fa-solid fa-calendar-days absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+                                            <button type="button"
+                                                    x-show="customValues[key + '_from'] && customValues[key + '_to']"
+                                                    @click="if (fp) fp.clear(); customValues[key] = ''; customValues[key + '_from'] = ''; customValues[key + '_to'] = '';"
+                                                    class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 text-xs cursor-pointer"
+                                                    title="Clear date range">
+                                                <i class="fa-solid fa-xmark"></i>
+                                            </button>
+                                        </div>
+                                        <div class="flex items-center justify-between text-[10px] text-slate-400 px-0.5">
+                                            <div class="flex items-center gap-1">
+                                                <span>From:</span>
+                                                <button type="button"
+                                                        x-show="customValues[key + '_from']"
+                                                        @mousedown.prevent="insertCustomValue(key + '_from')"
+                                                        title="Insert start date"
+                                                        class="text-amber-600 dark:text-amber-400 hover:underline font-mono font-semibold cursor-pointer"
+                                                        x-text="formatDate(customValues[key + '_from'])"></button>
+                                                <span x-show="!customValues[key + '_from']" class="font-mono text-slate-400">—</span>
+                                            </div>
+                                            <div class="flex items-center gap-1">
+                                                <span>To:</span>
+                                                <button type="button"
+                                                        x-show="customValues[key + '_to']"
+                                                        @mousedown.prevent="insertCustomValue(key + '_to')"
+                                                        title="Insert end date"
+                                                        class="text-amber-600 dark:text-amber-400 hover:underline font-mono font-semibold cursor-pointer"
+                                                        x-text="formatDate(customValues[key + '_to'])"></button>
+                                                <span x-show="!customValues[key + '_to']" class="font-mono text-slate-400">—</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <template x-if="(customMeta[key] || 'text') !== 'richtext' && (customMeta[key] || 'text') !== 'calculated' && (customMeta[key] || 'text') !== 'daterange' && (customMeta[key] || 'text') !== 'formula_result'">
                                     <input type="text" :name="`custom_values[${key}]`" x-model="customValues[key]" 
                                            class="w-full px-2.5 py-1.5 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs text-slate-800 dark:text-zinc-200 focus:border-amber-500 outline-none">
                                 </template>
@@ -899,8 +971,27 @@ function editGeneratedLetterState() {
         },
 
         insertCustomValue(key) {
-            const val = this.customValues[key] || '';
+            let val = this.customValues[key] || '';
             if (!val) return;
+
+            const type = this.customMeta[key] || 'text';
+            if (type === 'daterange') {
+                const rawFrom = this.customValues[key + '_from'] || '';
+                const rawTo = this.customValues[key + '_to'] || '';
+                if (rawFrom && rawTo) {
+                    val = 'from ' + this.formatDate(rawFrom) + ' to ' + this.formatDate(rawTo);
+                } else {
+                    return;
+                }
+            } else if (key.endsWith('_from') || key.endsWith('_to')) {
+                const baseKey = key.replace(/_(from|to)$/, '');
+                if (this.customMeta[baseKey] === 'daterange') {
+                    val = this.formatDate(val);
+                }
+            } else if (type === 'date') {
+                val = this.formatDate(val);
+            }
+
             restoreSelection();
             const root = document.getElementById('page-content-editor');
             if (root) root.focus();

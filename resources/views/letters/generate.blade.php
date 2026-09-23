@@ -596,6 +596,59 @@
                                class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
                     </template>
 
+                    <!-- Date Range Field (Single Calendar for Start & End) -->
+                    <template x-if="v.type === 'daterange'">
+                        <div class="space-y-1.5"
+                             x-data="{
+                                fp: null,
+                                init() {
+                                    const key = v.key || v;
+                                    const el = this.$refs.rangeInput;
+                                    this.$nextTick(() => {
+                                        if (typeof flatpickr === 'undefined') return;
+                                        this.fp = flatpickr(el, {
+                                            mode: 'range',
+                                            dateFormat: 'Y-m-d',
+                                            defaultDate: (customValues[key + '_from'] && customValues[key + '_to']) 
+                                                ? [customValues[key + '_from'], customValues[key + '_to']] 
+                                                : [],
+                                            onChange: (selectedDates, dateStr) => {
+                                                if (selectedDates.length === 2) {
+                                                    const d1 = this.fp.formatDate(selectedDates[0], 'Y-m-d');
+                                                    const d2 = this.fp.formatDate(selectedDates[1], 'Y-m-d');
+                                                    customValues[key] = d1 + ' to ' + d2;
+                                                    customValues[key + '_from'] = d1;
+                                                    customValues[key + '_to'] = d2;
+                                                    updatePaginatedLetters();
+                                                }
+                                            }
+                                        });
+                                    });
+                                }
+                             }">
+                            <div class="relative">
+                                <input type="text"
+                                       x-ref="rangeInput"
+                                       :value="(customValues[(v.key || v) + '_from'] && customValues[(v.key || v) + '_to']) ? (customValues[(v.key || v) + '_from'] + ' to ' + customValues[(v.key || v) + '_to']) : ''"
+                                       placeholder="Select start and end date..."
+                                       readonly
+                                       class="w-full pl-8 pr-7 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500 cursor-pointer">
+                                <i class="fa-solid fa-calendar-days absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+                                <button type="button"
+                                        x-show="customValues[(v.key || v) + '_from'] && customValues[(v.key || v) + '_to']"
+                                        @click="if (fp) fp.clear(); customValues[v.key || v] = ''; customValues[(v.key || v) + '_from'] = ''; customValues[(v.key || v) + '_to'] = ''; updatePaginatedLetters();"
+                                        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 text-xs cursor-pointer"
+                                        title="Clear date range">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                            <div class="flex items-center justify-between text-[10px] text-slate-400 px-0.5">
+                                <span class="truncate">From: <strong class="text-slate-600 dark:text-zinc-300 font-mono" x-text="customValues[(v.key || v) + '_from'] || '—'"></strong></span>
+                                <span class="truncate">To: <strong class="text-slate-600 dark:text-zinc-300 font-mono" x-text="customValues[(v.key || v) + '_to'] || '—'"></strong></span>
+                            </div>
+                        </div>
+                    </template>
+
                     <!-- Number Field -->
                     <template x-if="(v.type || 'text') === 'number'">
                         <input type="number" x-model="customValues[v.key || v]" @input="computeFormulas()" :placeholder="'Enter ' + formatLabel(v.key || v)" 
@@ -944,6 +997,14 @@ function generatorState() {
                     } else {
                         this.customValues[key] = '';
                     }
+
+                    if (type === 'daterange') {
+                        const val = this.customValues[key] || '';
+                        const parts = val ? val.split(' to ') : [];
+                        this.customValues[key + '_from'] = parts[0] || '';
+                        this.customValues[key + '_to'] = parts[1] || parts[0] || '';
+                    }
+
                     // Initialize all formula child keys too
                     if (type === 'calculated' && Array.isArray(v.formulas)) {
                         v.formulas.forEach(f => {
@@ -1284,6 +1345,28 @@ function generatorState() {
 
                 if (type === 'date' && val) {
                     val = this.formatDate(val);
+                }
+
+                if (type === 'daterange') {
+                    const rawFrom = this.customValues[key + '_from'] || '';
+                    const rawTo   = this.customValues[key + '_to']   || '';
+                    const formattedFrom = rawFrom ? this.formatDate(rawFrom) : '';
+                    const formattedTo   = rawTo ? this.formatDate(rawTo) : '';
+
+                    // Only output formatted range when both start and end dates are selected
+                    let rangeStr = '';
+                    if (formattedFrom && formattedTo) {
+                        rangeStr = 'from ' + formattedFrom + ' to ' + formattedTo;
+                    }
+
+                    val = rangeStr;
+
+                    // Substitute sub-keys (key_from and key_to)
+                    const rxFrom = new RegExp('[{]{2}\\s*' + key + '_from\\s*[}]{2}', 'g');
+                    html = html.replace(rxFrom, formattedFrom);
+
+                    const rxTo = new RegExp('[{]{2}\\s*' + key + '_to\\s*[}]{2}', 'g');
+                    html = html.replace(rxTo, formattedTo);
                 }
 
                 const rx = new RegExp('[{]{2}\\s*' + key + '\\s*[}]{2}', 'g');

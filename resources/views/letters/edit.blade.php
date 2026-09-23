@@ -1055,12 +1055,23 @@
                         </div>
                         <div class="flex flex-wrap gap-1.5">
                             <template x-for="gv in filteredPermanentGlobalVars" :key="gv.key">
-                                <button type="button" @mousedown.prevent="insertVar(gv.key)"
-                                    class="px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/25 text-emerald-700 dark:text-emerald-400 rounded-md text-xs font-semibold font-mono border border-emerald-500/20 active:scale-95 cursor-pointer transition-all flex items-center gap-1"
-                                    :title="gv.label + (gv.description ? ' - ' + gv.description : '')">
-                                    <i class="fa-solid fa-lock text-[9px] opacity-70"></i>
-                                    <span x-text="gv.label"></span>
-                                </button>
+                                <div class="inline-flex items-center rounded-md border border-emerald-500/20 bg-emerald-500/10 overflow-hidden">
+                                    <button type="button" @mousedown.prevent="insertVar(gv.key)"
+                                        class="px-2 py-1 hover:bg-emerald-500/25 text-emerald-700 dark:text-emerald-400 text-xs font-semibold font-mono active:scale-95 cursor-pointer transition-all flex items-center gap-1"
+                                        :title="gv.label + (gv.description ? ' - ' + gv.description : '')">
+                                        <i class="fa-solid fa-lock text-[9px] opacity-70"></i>
+                                        <span x-text="gv.label"></span>
+                                    </button>
+                                    <template x-if="gv.type === 'daterange'">
+                                        <div class="flex items-center border-l border-emerald-500/20 text-[10px] font-mono">
+                                            <button type="button" @mousedown.prevent="insertVar(gv.key + '_from')"
+                                                class="px-1 py-1 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/25" title="From date only">from</button>
+                                            <span class="text-emerald-500/40">|</span>
+                                            <button type="button" @mousedown.prevent="insertVar(gv.key + '_to')"
+                                                class="px-1 py-1 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/25" title="To date only">to</button>
+                                        </div>
+                                    </template>
+                                </div>
                             </template>
                             <div x-show="filteredPermanentGlobalVars.length === 0 && permanentGlobalVars.length > 0"
                                 class="text-[11px] text-slate-400 italic">
@@ -1215,6 +1226,7 @@
                                                 class="w-full px-2 py-1 border border-slate-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 text-xs focus:border-amber-500 outline-none cursor-pointer">
                                                 <option value="text">Text</option>
                                                 <option value="date">Date</option>
+                                                <option value="daterange">Date Range</option>
                                                 <option value="number">Number</option>
                                                 <option value="boolean">Yes/No</option>
                                                 <option value="dropdown">Dropdown</option>
@@ -1292,12 +1304,32 @@
                                         </div>
                                     </div>
 
-                                    <div x-show="v.key" class="flex items-center justify-between pt-1">
-                                        <span class="text-[10px] text-slate-400">Insert:</span>
-                                        <button type="button" @mousedown.prevent="insertVar(v.key)"
-                                            class="text-xs font-bold font-mono text-amber-600 dark:text-amber-400 hover:underline cursor-pointer">
-                                            <span>&#123;&#123;&nbsp;<span x-text="v.key"></span>&nbsp;&#125;&#125;</span>
-                                        </button>
+                                    <!-- Variable token insertion buttons -->
+                                    <div x-show="v.key" class="space-y-1 pt-1">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-[10px] text-slate-400">Insert:</span>
+                                            <button type="button" @mousedown.prevent="insertVar(v.key)"
+                                                class="text-xs font-bold font-mono text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
+                                                :title="v.type === 'daterange' ? 'Full date range (e.g. Jan 1 - Jan 15)' : 'Insert placeholder'">
+                                                <span>&#123;&#123;&nbsp;<span x-text="v.key"></span>&nbsp;&#125;&#125;</span>
+                                            </button>
+                                        </div>
+                                        <!-- If daterange: also offer sub-keys _from and _to -->
+                                        <template x-if="v.type === 'daterange'">
+                                            <div class="flex items-center justify-end gap-1.5 pt-0.5">
+                                                <span class="text-[9px] text-slate-400">Sub-keys:</span>
+                                                <button type="button" @mousedown.prevent="insertVar(v.key + '_from')"
+                                                    class="text-[11px] font-bold font-mono text-teal-600 dark:text-teal-400 hover:underline cursor-pointer bg-teal-50 dark:bg-teal-950/30 px-1 py-0.5 rounded border border-teal-200 dark:border-teal-800/40"
+                                                    title="From date only">
+                                                    <span>&#123;&#123;&nbsp;<span x-text="v.key + '_from'"></span>&nbsp;&#125;&#125;</span>
+                                                </button>
+                                                <button type="button" @mousedown.prevent="insertVar(v.key + '_to')"
+                                                    class="text-[11px] font-bold font-mono text-teal-600 dark:text-teal-400 hover:underline cursor-pointer bg-teal-50 dark:bg-teal-950/30 px-1 py-0.5 rounded border border-teal-200 dark:border-teal-800/40"
+                                                    title="To date only">
+                                                    <span>&#123;&#123;&nbsp;<span x-text="v.key + '_to'"></span>&nbsp;&#125;&#125;</span>
+                                                </button>
+                                            </div>
+                                        </template>
                                     </div>
                                 </div>
                             </template>

@@ -121,6 +121,7 @@ class LetterTemplateForm
                                                     ->options([
                                                         'text' => 'Text',
                                                         'date' => 'Date',
+                                                        'daterange' => 'Date Range',
                                                         'number' => 'Number',
                                                         'boolean' => 'Boolean (Yes/No)',
                                                         'dropdown' => 'Dropdown',

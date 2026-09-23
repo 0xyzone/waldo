@@ -83,11 +83,12 @@
                                     @if($v->type === 'calculated') bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20
                                     @elseif($v->type === 'richtext') bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20
                                     @elseif($v->type === 'date') bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20
+                                    @elseif($v->type === 'daterange') bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20
                                     @elseif($v->type === 'dropdown') bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20
                                     @elseif($v->type === 'number') bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20
                                     @elseif($v->type === 'boolean') bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20
                                     @else bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 @endif">
-                                    {{ $v->type }}
+                                    {{ $v->type === 'daterange' ? 'Date Range' : $v->type }}
                                 </span>
 
                                 @if($v->is_permanent)
@@ -120,14 +121,23 @@
                         </div>
                     </div>
 
-                    <!-- Variable Placeholder Token -->
-                    {{-- <div class="flex items-center justify-between p-2 bg-slate-50 dark:bg-zinc-950 rounded-xl border border-slate-200/70 dark:border-zinc-800">
-                        <code class="text-xs font-bold font-mono text-amber-600 dark:text-amber-400">{!! '{{ ' . e($v->key) . ' }}' !!}</code>
-                        <button type="button" @click="copyToken('{{ $v->key }}')"
-                                class="text-[10px] text-slate-400 hover:text-amber-500 font-bold cursor-pointer">
-                            <i class="fa-solid fa-copy"></i>
-                        </button>
-                    </div> --}}
+                    @if($v->type === 'daterange')
+                    <!-- Tokens list for daterange: parent, from, to -->
+                    <div class="space-y-1 pt-1 border-t border-slate-100 dark:border-zinc-800">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-teal-500 dark:text-teal-400">Available Placeholders:</span>
+                        <div class="flex flex-wrap gap-1.5 pt-0.5">
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 font-mono text-[10px] border border-teal-200 dark:border-teal-800/60 font-semibold" title="Full formatted range">
+                                &#123;&#123;&nbsp;{{ $v->key }}&nbsp;&#125;&#125;
+                            </span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 font-mono text-[10px] border border-teal-200 dark:border-teal-800/60 font-semibold" title="From date only">
+                                &#123;&#123;&nbsp;{{ $v->key }}_from&nbsp;&#125;&#125;
+                            </span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 font-mono text-[10px] border border-teal-200 dark:border-teal-800/60 font-semibold" title="To date only">
+                                &#123;&#123;&nbsp;{{ $v->key }}_to&nbsp;&#125;&#125;
+                            </span>
+                        </div>
+                    </div>
+                    @endif
 
                     @if($v->description)
                     <p class="text-xs text-slate-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">{{ $v->description }}</p>
@@ -231,6 +241,7 @@
                                 class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs font-semibold text-slate-900 dark:text-zinc-100 focus:border-amber-500 outline-none cursor-pointer">
                             <option value="text">Text</option>
                             <option value="date">Date</option>
+                            <option value="daterange">Date Range</option>
                             <option value="number">Number</option>
                             <option value="boolean">Yes/No (Boolean)</option>
                             <option value="dropdown">Dropdown</option>
