@@ -19,19 +19,19 @@ class ListLeavers extends ListRecords
             'all' => Tab::make('All Leavers')
                 ->badge(Leaver::count()),
             'offboarded' => Tab::make('Offboarded')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('offboarded', true))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('offboarded', true))
                 ->badge(Leaver::query()->where('offboarded', true)->count()),
             'not_offboarded' => Tab::make('Not Offboarded')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('offboarded', false))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('offboarded', false))
                 ->badge(Leaver::where('offboarded', false)->count()),
             'pending' => Tab::make('Pending')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'pending'))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('status', 'pending'))
                 ->badge(Leaver::where('status', 'pending')->count()),
             'cleared' => Tab::make('Cleared')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'cleared'))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('status', 'cleared'))
                 ->badge(Leaver::where('status', 'cleared')->count()),
             'cancelled' => Tab::make('Cancelled')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'cancelled'))
+                ->modifyQueryUsing(fn(Builder $query) => $query->where('status', 'cancelled'))
                 ->badge(Leaver::where('status', 'cancelled')->count()),
         ];
     }
@@ -40,7 +40,20 @@ class ListLeavers extends ListRecords
     {
         return [
             CreateAction::make()
-                ->modalWidth('6xl'),
+                ->modalWidth('6xl')
+                ->afterCreate(function ($record) {
+                    $employee = Employee::where('employee_code', $record->employee_id)->first();
+                    $tipsHold = $record->hold_tips;
+
+                    if ($employee) {
+                        if ($tipsHold) {
+                            $employee->update([
+                                'tips_status' => 'Hold',
+                            ]);
+                        }
+                    }
+                    return;
+                }),
         ];
     }
 }
