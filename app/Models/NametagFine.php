@@ -22,6 +22,9 @@ class NametagFine extends Model
         'acknowledged',
         'acknowledged_by',
         'acknowledged_at',
+        'finance_acknowledged',
+        'finance_acknowledged_by',
+        'finance_acknowledged_at',
         'remarks',
     ];
 
@@ -46,6 +49,8 @@ class NametagFine extends Model
             'for_year' => 'integer',
             'acknowledged' => 'boolean',
             'acknowledged_at' => 'datetime',
+            'finance_acknowledged' => 'boolean',
+            'finance_acknowledged_at' => 'datetime',
         ];
     }
 
@@ -72,4 +77,13 @@ class NametagFine extends Model
     {
         return $this->belongsTo(User::class, 'acknowledged_by');
     }
+
+    /**
+     * Get the finance user who acknowledged the record.
+     */
+    public function financeAcknowledger(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'finance_acknowledged_by');
+    }
 }
+

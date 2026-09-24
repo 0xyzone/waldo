@@ -110,6 +110,43 @@ class NametagFinesTable
                     ->dateTime('M d, Y h:i A')
                     ->placeholder('Pending')
                     ->color(fn (NametagFine $record): string => $record->acknowledged ? 'success' : 'gray')
+                    ->sortable()
+                    ->toggleable(),
+
+                TextColumn::make('acknowledger.name')
+                    ->label('Acknowledged By')
+                    ->badge()
+                    ->color(fn (NametagFine $record): string => $record->acknowledged ? 'success' : 'gray')
+                    ->placeholder('Pending')
+                    ->sortable()
+                    ->toggleable(),
+
+                IconColumn::make('finance_acknowledged')
+                    ->label('Finance Ack.')
+                    ->boolean()
+                    ->tooltip(function (NametagFine $record): string {
+                        if (! $record->finance_acknowledged) {
+                            return 'Pending Finance Acknowledgement';
+                        }
+                        $by = $record->financeAcknowledger?->name ? " by {$record->financeAcknowledger->name}" : '';
+                        $when = $record->finance_acknowledged_at ? ' on '.$record->finance_acknowledged_at->format('M d, Y h:i A') : '';
+
+                        return "Finance Acknowledged{$by}{$when}";
+                    })
+                    ->color(fn (NametagFine $record): string => $record->finance_acknowledged ? 'success' : 'gray'),
+
+                TextColumn::make('financeAcknowledger.name')
+                    ->label('Finance Ack. By')
+                    ->badge()
+                    ->color(fn (NametagFine $record): string => $record->finance_acknowledged ? 'success' : 'gray')
+                    ->placeholder('Pending')
+                    ->sortable(),
+
+                TextColumn::make('finance_acknowledged_at')
+                    ->label('Finance Ack. Time')
+                    ->dateTime('M d, Y h:i A')
+                    ->placeholder('Pending')
+                    ->color(fn (NametagFine $record): string => $record->finance_acknowledged ? 'success' : 'gray')
                     ->sortable(),
 
                 TextColumn::make('remarks')
@@ -126,16 +163,24 @@ class NametagFinesTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('id', 'desc')
-            ->recordClasses(fn (NametagFine $record) => match ($record->acknowledged) {
-                true => 'border-l-4 border-emerald-500',
-                false => 'border-l-4 border-amber-500',
+            ->recordClasses(fn (NametagFine $record) => match (true) {
+                $record->finance_acknowledged && $record->acknowledged => 'border-l-4 border-emerald-500',
+                $record->finance_acknowledged => 'border-l-4 border-blue-500',
+                $record->acknowledged => 'border-l-4 border-teal-500',
+                default => 'border-l-4 border-amber-500',
             })
             ->filters([
                 TernaryFilter::make('acknowledged')
-                    ->label('Acknowledgement Status')
+                    ->label('HR Acknowledgement')
                     ->placeholder('All Records')
                     ->trueLabel('Acknowledged Only')
-                    ->falseLabel('Pending Acknowledgement Only'),
+                    ->falseLabel('Pending Only'),
+
+                TernaryFilter::make('finance_acknowledged')
+                    ->label('Finance Acknowledgement')
+                    ->placeholder('All Records')
+                    ->trueLabel('Acknowledged Only')
+                    ->falseLabel('Pending Only'),
 
                 SelectFilter::make('reason')
                     ->label('Reason')
@@ -189,6 +234,35 @@ class NametagFinesTable
                     ->preload(),
             ])
             ->actions([
+                Action::make('finance_acknowledge')
+                    ->label('Finance Ack')
+                    ->icon('heroicon-o-currency-dollar')
+                    ->color('info')
+                    ->button()
+                    ->requiresConfirmation()
+                    ->modalHeading('Finance Acknowledge NameTag Fine')
+                    ->modalDescription(fn (NametagFine $record): string => "Confirm finance acknowledgement of NPR {$record->amount} ({$record->reason}) for {$record->employee?->name} ({$record->employee_id}) for {$record->for_month} {$record->for_year}.")
+                    ->modalSubmitActionLabel('Confirm Finance Acknowledge')
+                    ->visible(function (NametagFine $record): bool {
+                        /** @var User|null $user */
+                        $user = Auth::user();
+
+                        return ! $record->finance_acknowledged && ($user?->hasRole(['Finance', 'super_admin']) ?? false);
+                    })
+                    ->action(function (NametagFine $record): void {
+                        $record->update([
+                            'finance_acknowledged' => true,
+                            'finance_acknowledged_by' => Auth::id(),
+                            'finance_acknowledged_at' => now(),
+                        ]);
+
+                        Notification::make()
+                            ->title('Finance Acknowledged')
+                            ->body("NameTag fine for {$record->employee?->name} ({$record->employee_id}) has been acknowledged by Finance.")
+                            ->success()
+                            ->send();
+                    }),
+
                 Action::make('acknowledge')
                     ->label('Acknowledge')
                     ->icon('heroicon-o-check-badge')
@@ -202,7 +276,7 @@ class NametagFinesTable
                         /** @var User|null $user */
                         $user = Auth::user();
 
-                        return ! $record->acknowledged && ($user?->hasRole(['super_admin', 'HR', 'HR Assist', 'Finance']) ?? false);
+                        return ! $record->acknowledged && ($user?->hasRole(['super_admin', 'HR', 'HR Assist']) ?? false);
                     })
                     ->action(function (NametagFine $record): void {
                         $record->update([
@@ -217,6 +291,7 @@ class NametagFinesTable
                             ->success()
                             ->send();
                     }),
+
 
                 EditAction::make(),
                 DeleteAction::make(),
@@ -264,6 +339,90 @@ class NametagFinesTable
                     }),
 
                 BulkActionGroup::make([
+                    Action::make('financeAcknowledgeSelected')
+                        ->label('Finance Acknowledge Selected')
+                        ->icon('heroicon-o-currency-dollar')
+                        ->color('info')
+                        ->requiresConfirmation()
+                        ->modalHeading('Finance Acknowledge Selected NameTag Fines')
+                        ->modalDescription('Confirm finance acknowledgement of all selected pending nametag fines.')
+                        ->modalSubmitActionLabel('Confirm Finance Acknowledge')
+                        ->visible(function (): bool {
+                            /** @var User|null $user */
+                            $user = Auth::user();
+
+                            return $user?->hasRole(['Finance', 'super_admin']) ?? false;
+                        })
+                        ->action(function (Collection $records): void {
+                            $pendingRecords = $records->filter(fn (NametagFine $record): bool => ! $record->finance_acknowledged);
+
+                            if ($pendingRecords->isEmpty()) {
+                                Notification::make()
+                                    ->title('Nothing to Acknowledge')
+                                    ->body('All selected records are already acknowledged by Finance.')
+                                    ->warning()
+                                    ->send();
+
+                                return;
+                            }
+
+                            $count = $pendingRecords->count();
+
+                            NametagFine::whereIn('id', $pendingRecords->pluck('id'))->update([
+                                'finance_acknowledged' => true,
+                                'finance_acknowledged_by' => Auth::id(),
+                                'finance_acknowledged_at' => now(),
+                            ]);
+
+                            Notification::make()
+                                ->title('Fines Finance-Acknowledged')
+                                ->body("{$count} nametag fine(s) have been acknowledged by Finance.")
+                                ->success()
+                                ->send();
+                        }),
+
+                    Action::make('acknowledgeSelected')
+                        ->label('Acknowledge Selected')
+                        ->icon('heroicon-o-check-badge')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Acknowledge Selected NameTag Fines')
+                        ->modalDescription('Confirm acknowledgement of all selected pending nametag fines.')
+                        ->modalSubmitActionLabel('Confirm Acknowledge')
+                        ->visible(function (): bool {
+                            /** @var User|null $user */
+                            $user = Auth::user();
+
+                            return $user?->hasRole(['super_admin', 'HR', 'HR Assist']) ?? false;
+                        })
+                        ->action(function (Collection $records): void {
+                            $pendingRecords = $records->filter(fn (NametagFine $record): bool => ! $record->acknowledged);
+
+                            if ($pendingRecords->isEmpty()) {
+                                Notification::make()
+                                    ->title('Nothing to Acknowledge')
+                                    ->body('All selected records are already acknowledged.')
+                                    ->warning()
+                                    ->send();
+
+                                return;
+                            }
+
+                            $count = $pendingRecords->count();
+
+                            NametagFine::whereIn('id', $pendingRecords->pluck('id'))->update([
+                                'acknowledged' => true,
+                                'acknowledged_by' => Auth::id(),
+                                'acknowledged_at' => now(),
+                            ]);
+
+                            Notification::make()
+                                ->title('Fines Acknowledged')
+                                ->body("{$count} nametag fine(s) have been acknowledged.")
+                                ->success()
+                                ->send();
+                        }),
+
                     Action::make('exportSelected')
                         ->label('Export Selected')
                         ->icon('heroicon-o-arrow-down-tray')

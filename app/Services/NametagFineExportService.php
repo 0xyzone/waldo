@@ -33,6 +33,9 @@ class NametagFineExportService
             'acknowledged' => 'Acknowledged Status',
             'acknowledged_by' => 'Acknowledged By',
             'acknowledged_at' => 'Acknowledged At',
+            'finance_acknowledged' => 'Finance Acknowledged Status',
+            'finance_acknowledged_by' => 'Finance Acknowledged By',
+            'finance_acknowledged_at' => 'Finance Acknowledged At',
             'remarks' => 'Remarks',
             'created_at' => 'Recorded At',
         ];
@@ -55,11 +58,15 @@ class NametagFineExportService
             'acknowledged' => $record->acknowledged ? 'Yes' : 'No',
             'acknowledged_by' => $record->acknowledger?->name ?? '-',
             'acknowledged_at' => $record->acknowledged_at ? $record->acknowledged_at->format('Y-m-d H:i') : '-',
+            'finance_acknowledged' => $record->finance_acknowledged ? 'Yes' : 'No',
+            'finance_acknowledged_by' => $record->financeAcknowledger?->name ?? '-',
+            'finance_acknowledged_at' => $record->finance_acknowledged_at ? $record->finance_acknowledged_at->format('Y-m-d H:i') : '-',
             'remarks' => $record->remarks ?? '-',
             'created_at' => $record->created_at ? $record->created_at->format('Y-m-d H:i') : '-',
             default => '-',
         };
     }
+
 
     /**
      * Export fines collection to CSV or Excel streamed response.
