@@ -44,8 +44,8 @@ class ListLeavers extends ListRecords
                 ->modalWidth('6xl')
                 ->after(function (Leaver $record): void {
                     if ($record->hold_tips) {
-                        Employee::where('employee_code', $record->employee_id)
-                            ->update(['tips_status' => 'Hold']);
+                        $employee = Employee::where('employee_code', $record->employee_id)->first();
+                        $employee?->update(['tips_status' => 'Hold']);
                     }
                 }),
         ];
