@@ -5,6 +5,14 @@
     will-change: transform;
 }
 
+.fi-table-sticky-header-active > tr > * {
+    background-color: var(--color-white, #fff);
+}
+
+.dark .fi-table-sticky-header-active > tr > * {
+    background-color: var(--color-gray-900, #111827);
+}
+
 .fi-table-sticky-header-active > tr:last-child > * {
     box-shadow:
         0 1px 0 rgb(17 24 39 / 8%),
@@ -22,3 +30,4 @@
         will-change: auto;
     }
 }
+

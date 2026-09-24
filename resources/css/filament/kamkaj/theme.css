@@ -29,3 +29,13 @@
     scrollbar-width: thin;
     scrollbar-color: rgba(156, 163, 175, 0.2) transparent;
 }
+
+/* Filament sticky table header background fix */
+.fi-table-sticky-header-active > tr > * {
+    background-color: var(--color-white, #ffffff) !important;
+}
+
+:is(.dark, :root.dark) .fi-table-sticky-header-active > tr > * {
+    background-color: var(--color-gray-900, #111827) !important;
+}
+
