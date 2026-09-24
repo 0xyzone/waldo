@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "505f3f17bf8288fac2f81bd40bc1546e",
+    "content-hash": "bae941118d2e2052809b3bb9cbd9e4d2",
     "packages": [
         {
             "name": "al-saloul/filament-image-gallery",
@@ -3870,6 +3870,73 @@
                 }
             ],
             "time": "2026-06-27T03:16:11+00:00"
+        },
+        {
+            "name": "majid-shafik/filament-table-sticky-header",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Majid-Shafik/filament-table-sticky-header.git",
+                "reference": "0c8327be19cfcf11c0f00cec1362a824cae42967"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Majid-Shafik/filament-table-sticky-header/zipball/0c8327be19cfcf11c0f00cec1362a824cae42967",
+                "reference": "0c8327be19cfcf11c0f00cec1362a824cae42967",
+                "shasum": ""
+            },
+            "require": {
+                "filament/filament": "^3.0 | ^4.0 | ^5.0",
+                "php": "^8.2",
+                "spatie/laravel-package-tools": "^1.15"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.0",
+                "orchestra/testbench": "^9.0|^10.0|^11.0",
+                "pestphp/pest": "^3.7|^4.0",
+                "pestphp/pest-plugin-laravel": "^3.0|^4.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "MajidShafik\\FilamentTableStickyHeader\\FilamentTableStickyHeaderServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "MajidShafik\\FilamentTableStickyHeader\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Majid Shafik",
+                    "homepage": "https://github.com/Majid-Shafik",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Keep Filament table headers visible while scrolling long tables.",
+            "homepage": "https://github.com/Majid-Shafik/filament-table-sticky-header",
+            "keywords": [
+                "filament",
+                "filament-plugin",
+                "filamentphp",
+                "fixed-header",
+                "laravel",
+                "sticky-header",
+                "table"
+            ],
+            "support": {
+                "issues": "https://github.com/Majid-Shafik/filament-table-sticky-header/issues",
+                "source": "https://github.com/Majid-Shafik/filament-table-sticky-header"
+            },
+            "time": "2026-09-14T17:03:26+00:00"
         },
         {
             "name": "monolog/monolog",

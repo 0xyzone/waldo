@@ -13,7 +13,8 @@
         "google/apiclient": "2.15",
         "laravel/framework": "^13.8",
         "laravel/sanctum": "^4.0",
-        "laravel/tinker": "^3.0"
+        "laravel/tinker": "^3.0",
+        "majid-shafik/filament-table-sticky-header": "^1.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
