@@ -18,12 +18,18 @@ class ListNametagFines extends ListRecords
         return [
             'all' => Tab::make('All')
                 ->badge(NametagFine::count()),
-            'pending_acknowledgement' => Tab::make('Pending Acknowledgment')
+            'pending_acknowledgement' => Tab::make('Pending HR Ack.')
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('acknowledged', false))
                 ->badge(NametagFine::where('acknowledged', false)->count()),
-            'acknowledged' => Tab::make('Acknowledged')
+            'pending_finance' => Tab::make('Pending Finance')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('finance_acknowledged', false))
+                ->badge(NametagFine::where('finance_acknowledged', false)->count()),
+            'acknowledged' => Tab::make('HR Acknowledged')
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('acknowledged', true))
                 ->badge(NametagFine::where('acknowledged', true)->count()),
+            'finance_acknowledged' => Tab::make('Finance Acknowledged')
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('finance_acknowledged', true))
+                ->badge(NametagFine::where('finance_acknowledged', true)->count()),
         ];
     }
 
@@ -35,6 +41,7 @@ class ListNametagFines extends ListRecords
                 ->icon('heroicon-o-plus')
                 ->mutateFormDataUsing(function (array $data) {
                     $data['created_by'] = auth()->id();
+
                     return $data;
                 }),
         ];
