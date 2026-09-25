@@ -12,6 +12,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use STS\FilamentImpersonate\Actions\Impersonate;
 
 class UsersTable
 {
@@ -76,6 +77,7 @@ class UsersTable
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),
+                Impersonate::make()
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

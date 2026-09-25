@@ -37,3 +37,12 @@
      - Color inputs (`#cell-border-inp`, `#cell-bg-inp`) positioned dynamically at clicked trigger before `.click()`, preventing top-left browser default modal spawn.
      - Nested table guard in `insertTable`: checks `getCurrentCell()` to disallow tables inside table cells.
    - Controller: `app/Http/Controllers/LetterController.php`.
+
+---
+
+## Task Completion & Error Notifications
+- **Always invoke Discord notification**: At the end of every workflow or upon error, execute:
+  ```bash
+  php scripts/notify_discord.php <success|failure> "<summary of changes or error>"
+  ```
+

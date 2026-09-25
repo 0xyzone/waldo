@@ -8,14 +8,15 @@
     "require": {
         "php": "^8.3",
         "al-saloul/filament-image-gallery": "^3.0",
-        "azgasim/filament-unsaved-changes-modal": "*",
+        "azgasim/filament-unsaved-changes-modal": "^1.0",
         "bezhansalleh/filament-shield": "^4.2",
         "filament/filament": "~5.0",
-        "google/apiclient": "2.15",
+        "google/apiclient": "2.18",
         "laravel/framework": "^13.8",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
-        "majid-shafik/filament-table-sticky-header": "^1.0"
+        "majid-shafik/filament-table-sticky-header": "^1.0",
+        "stechstudio/filament-impersonate": "^5.6"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
