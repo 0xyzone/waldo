@@ -7,6 +7,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Pages\Dashboard;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -78,6 +79,7 @@ class UsersTable
                 EditAction::make(),
                 DeleteAction::make(),
                 Impersonate::make()
+                ->redirectTo(Dashboard::getUrl())
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
