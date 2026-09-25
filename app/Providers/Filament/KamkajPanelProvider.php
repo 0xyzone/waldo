@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Http\Middleware\RequirePasswordChange;
+use AzGasim\FilamentUnsavedChangesModal\FilamentUnsavedChangesModalPlugin;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -102,6 +103,7 @@ class KamkajPanelProvider extends PanelProvider
                 Authenticate::class,
                 RequirePasswordChange::class,
             ])
+            ->unsavedChangesAlerts()
             ->plugins([
                 FilamentShieldPlugin::make()
                     ->gridColumns([
@@ -119,6 +121,7 @@ class KamkajPanelProvider extends PanelProvider
                         'default' => 1,
                         'sm' => 2,
                     ]),
+                    FilamentUnsavedChangesModalPlugin::make()
             ])
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
