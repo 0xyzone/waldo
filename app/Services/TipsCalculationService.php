@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Employee;
 use App\Models\TipsAdjustment;
 use App\Models\TipsDepartmentMapping;
+use App\Models\TipsNonEmployee;
 use App\Models\TipsReport;
 use App\Models\TipsReportItem;
 use Carbon\Carbon;
@@ -291,6 +292,53 @@ class TipsCalculationService
                         'is_left_out' => true,
                     ]);
                 }
+            }
+
+            // 6. Process Active Non-Employees (None Employee sheet)
+            $activeNonEmployees = TipsNonEmployee::where('is_active', true)->orderBy('code')->get();
+            foreach ($activeNonEmployees as $nonEmp) {
+                $code = (string) $nonEmp->code;
+                $empName = (string) $nonEmp->name;
+                $desig = (string) ($nonEmp->designation ?? '-');
+                $tipsPct = (float) ($nonEmp->tips_percentage ?? 100);
+                $baseAmount = (float) ($nonEmp->distribution_amount ?? 0);
+
+                $finalAmt = ($baseAmount * $tipsPct) / 100;
+                $roundedAmt = $finalAmt > 0 ? (float) (ceil($finalAmt / 100) * 100) : 0.0;
+
+                TipsReportItem::create([
+                    'tips_report_id' => $report->id,
+                    'employee_id' => $code,
+                    'employee_code' => $code,
+                    'department' => 'None Employee',
+                    'department_rank' => 998,
+                    'designation' => $desig,
+                    'designation_rank' => 998,
+                    'employee_name' => $empName,
+                    'working_days' => 0,
+                    'present_days' => 0,
+                    'absent_days' => 0,
+                    'total_leaves' => 0,
+                    'late_in_count' => 0,
+                    'early_out_count' => 0,
+                    'join_date' => null,
+                    'working_duration' => 'Non-Employee',
+                    'completion_factor' => 1.0,
+                    'point_value' => 0,
+                    'base_tips_amount' => $baseAmount,
+                    'tips_percentage' => $tipsPct,
+                    'is_blank' => false,
+                    'is_fixed' => true,
+                    'publish_tips' => true,
+                    'tips_status' => 'Release',
+                    'amount_to_adjust' => 0,
+                    'amount_to_deduct' => 0,
+                    'percentage_to_deduct' => 0,
+                    'calculated_tips' => $roundedAmt,
+                    'unrounded_amount' => $finalAmt,
+                    'final_distribution_amount' => $roundedAmt,
+                    'is_left_out' => false,
+                ]);
             }
 
             // Update status to generated

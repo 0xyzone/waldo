@@ -15,6 +15,18 @@ class TipsReportPrintController extends Controller
     {
         $query = $report->items();
 
+        if (in_array(strtolower(trim($department)), ['none employee', 'non employee', 'none-employee'])) {
+            $items = $query->where('department', 'None Employee')
+                ->orderBy('employee_code')
+                ->get();
+
+            return response()->view('tips.none-employee-sheet', [
+                'report' => $report,
+                'department' => 'None Employee',
+                'items' => $items,
+            ]);
+        }
+
         if (strtolower($department) === 'left outs') {
             $items = $query->where(function ($q) {
                 $q->where('is_left_out', true)
@@ -228,7 +240,7 @@ class TipsReportPrintController extends Controller
             ['name' => 'Housekeeping', 'amount' => $takeMatching(['housekeeping', 'hk'])],
             ['name' => 'Security + Transport', 'amount' => $takeMatching(['security', 'bouncer', 'transport', 'driver'])],
             ['name' => 'Kitchen', 'amount' => $takeMatching(['kitchen', 'culinary', 'cook'])],
-            ['name' => 'None Employee', 'amount' => $leftOutsTotal],
+            ['name' => 'None Employee', 'amount' => ($noneEmp = $takeMatching(['none employee', 'non employee'])) > 0 ? $noneEmp : $leftOutsTotal],
             ['name' => 'Cage', 'amount' => $takeMatching(['cage'])],
         ];
 
@@ -240,13 +252,14 @@ class TipsReportPrintController extends Controller
         $deptList[] = ['name' => 'Back Office', 'amount' => $backOfficeAmt];
 
         $totalToDistribute = collect($deptList)->sum('amount');
-        $companyShouldAdd = $totalToDistribute - $actualTotalCollection;
 
         $adjustmentsTotal = (float) $report->items()->sum('amount_to_adjust') - (float) $report->items()->sum('amount_to_deduct');
         $adjustmentsLeftOuts = $leftOutsTotal + max(0, $adjustmentsTotal);
         if ($adjustmentsLeftOuts == 0 && $leftOutsTotal > 0) {
             $adjustmentsLeftOuts = $leftOutsTotal;
         }
+
+        $companyShouldAdd = abs($actualTotalCollection + $adjustmentsLeftOuts - $totalToDistribute);
 
         $n = count($deptList);
         if ($n === 9) {

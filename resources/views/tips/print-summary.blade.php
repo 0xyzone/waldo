@@ -150,19 +150,8 @@
         </tfoot>
     </table>
 
-    <div class="footer-signatures">
-        <div class="sig-block">
-            <div class="sig-line"></div>
-            <strong>Prepared By</strong>
-        </div>
-        <div class="sig-block">
-            <div class="sig-line"></div>
-            <strong>Checked / Verified By</strong>
-        </div>
-        <div class="sig-block">
-            <div class="sig-line"></div>
-            <strong>Approved By</strong>
-        </div>
+    <div style="margin-top: 20px; text-align: right; font-size: 11px; color: #555; border-top: 1px solid #000; padding-top: 6px;">
+        Printed on: {{ now()->format('d M, Y h:i A') }}
     </div>
 
 </body>

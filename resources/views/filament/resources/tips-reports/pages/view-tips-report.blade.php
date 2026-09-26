@@ -56,7 +56,7 @@
             </div>
             <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center justify-between">
                 <span>Subsidy to cover payout</span>
-                <span class="text-gray-400">Distribute - Collection</span>
+                <span class="text-gray-400">Collection + Adj - Distribute</span>
             </div>
         </div>
 

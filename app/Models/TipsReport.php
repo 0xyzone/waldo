@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -32,6 +33,24 @@ class TipsReport extends Model
             'company_errors' => 'array',
             'left_outs' => 'array',
         ];
+    }
+
+    public function getValidTillDateAttribute(): string
+    {
+        try {
+            $month = $this->month ?: 'January';
+            $year = $this->year ?: date('Y');
+
+            return Carbon::parse("1 {$month} {$year}")
+                ->addMonthNoOverflow()
+                ->day(18)
+                ->format('d F, Y');
+        } catch (\Throwable) {
+            return Carbon::parse($this->cutoff_date ?? now())
+                ->addMonthNoOverflow()
+                ->day(18)
+                ->format('d F, Y');
+        }
     }
 
     public function isValidated(): bool

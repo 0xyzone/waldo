@@ -61,8 +61,11 @@ class ViewTipsReport extends ViewRecord implements HasTable
 
         $merged = array_unique(array_merge($masterPages, $existingDepts));
 
-        // Ensure Left Outs is present and at the end (Summary tab removed)
-        $final = array_values(array_filter($merged, fn ($d) => ! in_array($d, ['Left Outs', 'Summary'])));
+        // Ensure None Employee and Left Outs are positioned at the end (Summary tab removed)
+        $final = array_values(array_filter($merged, fn ($d) => ! in_array($d, ['None Employee', 'Left Outs', 'Summary'])));
+        if (in_array('None Employee', $merged) || in_array('None Employee', $existingDepts) || TipsReportItem::where('tips_report_id', $this->record->id)->where('department', 'None Employee')->exists()) {
+            $final[] = 'None Employee';
+        }
         $final[] = 'Left Outs';
 
         return $final;
@@ -126,7 +129,7 @@ class ViewTipsReport extends ViewRecord implements HasTable
 
     public function getCompanyShouldAddProperty(): float
     {
-        return max(0.0, $this->totalToDistribute - $this->actualCollection);
+        return (float) abs($this->actualCollection + $this->adjustmentsAndLeftOuts - $this->totalToDistribute);
     }
 
     public function getAdjustmentsAndLeftOutsProperty(): float
