@@ -75,6 +75,7 @@ class KamkajPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 'HR & Admin',
+                'Tips',
                 'Purchase & Store',
                 'IT',
                 'Finance',
@@ -121,7 +122,7 @@ class KamkajPanelProvider extends PanelProvider
                         'default' => 1,
                         'sm' => 2,
                     ]),
-                    FilamentUnsavedChangesModalPlugin::make()
+                FilamentUnsavedChangesModalPlugin::make(),
             ])
             ->renderHook(
                 PanelsRenderHook::HEAD_END,

@@ -25,9 +25,9 @@ class TipsAdjustmentResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'employee_id';
 
-    protected static string|UnitEnum|null $navigationGroup = 'HR & Admin';
+    protected static string|UnitEnum|null $navigationGroup = 'Tips';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema
     {

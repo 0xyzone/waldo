@@ -7,6 +7,7 @@ use App\Http\Controllers\FontController;
 use App\Http\Controllers\LetterController;
 use App\Http\Controllers\LetterGlobalVariableController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\TipsReportPrintController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -62,6 +63,19 @@ Route::prefix('/reports')->group(function () {
     Route::get('/departments/{department}/print', [ReportController::class, 'printDepartmentEmployees'])->name('reports.departments.print');
     Route::get('/departments/{department}/export', [ReportController::class, 'exportDepartmentEmployees'])->name('reports.departments.export');
 });
+
+// Tips Report Printing
+Route::get('/tips-reports/{report}/departments/{department}/print', [TipsReportPrintController::class, 'printDepartment'])
+    ->name('tips.reports.print')
+    ->middleware('auth');
+
+Route::get('/tips-reports/{report}/print-summary', [TipsReportPrintController::class, 'printSummary'])
+    ->name('tips.reports.print-summary')
+    ->middleware('auth');
+
+Route::get('/tips-reports/{report}/print-totals', [TipsReportPrintController::class, 'printTotals'])
+    ->name('tips.reports.print-totals')
+    ->middleware('auth');
 
 // API Documentation & Testing Console
 Route::get('/api-docs', [ApiDocsController::class, 'index'])->name('api.docs');
