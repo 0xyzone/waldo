@@ -40,7 +40,8 @@ class TipsDepartmentMappingForm
                     Toggle::make('is_active')
                         ->label('Active')
                         ->default(true),
-                ]),
+                ])
+                ->columnSpanFull(),
             ]);
     }
 }
