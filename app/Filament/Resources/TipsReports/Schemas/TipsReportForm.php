@@ -4,6 +4,7 @@ namespace App\Filament\Resources\TipsReports\Schemas;
 
 use App\Models\Employee;
 use App\Models\TipsDepartmentMapping;
+use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
@@ -51,19 +52,52 @@ class TipsReportForm
                                         'december' => 'December',
                                     ])
                                     ->default(strtolower(now()->format('F')))
+                                    ->live()
+                                    ->afterStateUpdated(function (Set $set, Get $get, ?string $state) {
+                                        $month = $state ?: strtolower(now()->format('F'));
+                                        $year = $get('year') ?: now()->format('Y');
+                                        try {
+                                            $cutoff = Carbon::parse("1 {$month} {$year}")->subDay()->toDateString();
+                                            $set('cutoff_date', $cutoff);
+                                            $set('title', ucfirst($month).' '.$year.' TIPS');
+                                        } catch (\Throwable) {
+                                        }
+                                    })
                                     ->required(),
 
                                 TextInput::make('year')
                                     ->label('Billing Year')
                                     ->default(now()->format('Y'))
                                     ->numeric()
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(function (Set $set, Get $get, ?string $state) {
+                                        $month = $get('month') ?: strtolower(now()->format('F'));
+                                        $year = $state ?: now()->format('Y');
+                                        if ($month && $year) {
+                                            try {
+                                                $cutoff = Carbon::parse("1 {$month} {$year}")->subDay()->toDateString();
+                                                $set('cutoff_date', $cutoff);
+                                                $set('title', ucfirst($month).' '.$year.' TIPS');
+                                            } catch (\Throwable) {
+                                            }
+                                        }
+                                    })
                                     ->required(),
                             ]),
 
                             Grid::make(2)->schema([
                                 DatePicker::make('cutoff_date')
                                     ->label('Cutoff Date (for Tenure Calculation)')
-                                    ->default(now()->toDateString())
+                                    ->default(function (Get $get) {
+                                        $month = $get('month') ?: strtolower(now()->format('F'));
+                                        $year = $get('year') ?: now()->format('Y');
+                                        try {
+                                            return Carbon::parse("1 {$month} {$year}")->subDay()->toDateString();
+                                        } catch (\Throwable) {
+                                            return now()->startOfMonth()->subDay()->toDateString();
+                                        }
+                                    })
+                                    ->helperText('Defaulted to the last day of the previous month from the billing month. You can also select another date if needed.')
                                     ->native(false)
                                     ->required(),
 
