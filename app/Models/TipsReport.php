@@ -18,6 +18,8 @@ class TipsReport extends Model
         'company_errors',
         'left_outs',
         'status',
+        'validated_at',
+        'validated_by',
         'created_by',
     ];
 
@@ -25,10 +27,21 @@ class TipsReport extends Model
     {
         return [
             'cutoff_date' => 'date',
+            'validated_at' => 'datetime',
             'collection_summary' => 'array',
             'company_errors' => 'array',
             'left_outs' => 'array',
         ];
+    }
+
+    public function isValidated(): bool
+    {
+        return $this->status === 'validated';
+    }
+
+    public function validator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'validated_by');
     }
 
     public function creator(): BelongsTo

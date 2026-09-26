@@ -5,8 +5,10 @@ namespace App\Filament\Resources\TipsReports\Pages;
 use App\Filament\Resources\TipsReports\TipsReportResource;
 use App\Models\TipsDepartmentMapping;
 use App\Models\TipsReportItem;
+use App\Services\TipsCalculationService;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -100,6 +102,56 @@ class ViewTipsReport extends ViewRecord implements HasTable
             ->where('department', $dept)
             ->where('is_left_out', false)
             ->sum('final_distribution_amount');
+    }
+
+    public function getActualCollectionProperty(): float
+    {
+        return (float) collect($this->record->collection_summary ?? [])->sum('total_amount');
+    }
+
+    public function getTotalChipsProperty(): float
+    {
+        return (float) collect($this->record->collection_summary ?? [])->sum('chips_amount');
+    }
+
+    public function getTotalCashProperty(): float
+    {
+        return (float) collect($this->record->collection_summary ?? [])->sum('cash_amount');
+    }
+
+    public function getTotalToDistributeProperty(): float
+    {
+        return (float) $this->record->items()->sum('final_distribution_amount');
+    }
+
+    public function getCompanyShouldAddProperty(): float
+    {
+        return max(0.0, $this->totalToDistribute - $this->actualCollection);
+    }
+
+    public function getAdjustmentsAndLeftOutsProperty(): float
+    {
+        $leftOuts = (float) TipsReportItem::where('tips_report_id', $this->record->id)
+            ->where(function ($q) {
+                $q->where('is_left_out', true)
+                    ->orWhere('department', 'Left Outs');
+            })->sum('final_distribution_amount');
+
+        $adjustmentsTotal = (float) TipsReportItem::where('tips_report_id', $this->record->id)->sum('amount_to_adjust')
+            - (float) TipsReportItem::where('tips_report_id', $this->record->id)->sum('amount_to_deduct');
+
+        $result = $leftOuts + max(0.0, $adjustmentsTotal);
+
+        return $result > 0 ? $result : $leftOuts;
+    }
+
+    public function getLeftOutsCountProperty(): int
+    {
+        return TipsReportItem::where('tips_report_id', $this->record->id)
+            ->where(function ($q) {
+                $q->where('is_left_out', true)
+                    ->orWhere('department', 'Left Outs');
+            })->count();
     }
 
     public function table(Table $table): Table
@@ -211,18 +263,6 @@ class ViewTipsReport extends ViewRecord implements HasTable
                     ->color(fn ($state) => strtoupper((string) $state) === 'RELEASE' ? 'success' : 'danger'),
             ])
             ->headerActions([
-                Action::make('printSummary')
-                    ->label('Print Summary')
-                    ->icon('heroicon-m-table-cells')
-                    ->color('info')
-                    ->url(fn () => route('tips.reports.print-summary', ['report' => $this->record->id]))
-                    ->openUrlInNewTab(),
-                Action::make('printTotals')
-                    ->label('Print Totals')
-                    ->icon('heroicon-m-calculator')
-                    ->color('warning')
-                    ->url(fn () => route('tips.reports.print-totals', ['report' => $this->record->id]))
-                    ->openUrlInNewTab(),
                 Action::make('printSheet')
                     ->label(fn () => 'Print '.$this->activeDepartment.' Payout Sheet')
                     ->icon('heroicon-m-printer')
@@ -238,25 +278,86 @@ class ViewTipsReport extends ViewRecord implements HasTable
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('validateReport')
+                ->label('Validate & Lock')
+                ->icon('heroicon-m-check-badge')
+                ->color('success')
+                ->requiresConfirmation()
+                ->modalHeading('Validate & Lock Tips Report')
+                ->modalDescription('Once validated, this tips report is permanently locked for auditing. Editing and recalculating will be disabled. Proceed?')
+                ->modalSubmitActionLabel('Yes, Validate & Lock')
+                ->visible(fn () => ! $this->record->isValidated())
+                ->action(function () {
+                    $this->record->update([
+                        'status' => 'validated',
+                        'validated_at' => now(),
+                        'validated_by' => auth()->id(),
+                    ]);
+                    Notification::make()
+                        ->title('Report Validated')
+                        ->body('This tips report has been validated and locked.')
+                        ->success()
+                        ->send();
+                }),
+
+            Action::make('unlockReport')
+                ->label('Unlock')
+                ->icon('heroicon-m-lock-open')
+                ->color('danger')
+                ->requiresConfirmation()
+                ->modalHeading('Unlock Tips Report')
+                ->modalDescription('Unlocking will permit modifications and recalculations again. Are you sure?')
+                ->modalSubmitActionLabel('Yes, Unlock')
+                ->visible(fn () => $this->record->isValidated() && (auth()->user()?->hasRole('super_admin') ?? true))
+                ->action(function () {
+                    $this->record->update([
+                        'status' => 'generated',
+                    ]);
+                    Notification::make()
+                        ->title('Report Unlocked')
+                        ->body('This tips report is now unlocked.')
+                        ->warning()
+                        ->send();
+                }),
+
             Action::make('printSummary')
-                ->label('🖨️ Print Summary')
+                ->label('Print Summary')
+                ->icon('heroicon-m-table-cells')
                 ->color('info')
                 ->url(fn () => route('tips.reports.print-summary', ['report' => $this->record->id]))
                 ->openUrlInNewTab(),
+
             Action::make('printTotals')
-                ->label('🖨️ Print Totals')
+                ->label('Print Totals')
+                ->icon('heroicon-m-calculator')
                 ->color('warning')
                 ->url(fn () => route('tips.reports.print-totals', ['report' => $this->record->id]))
                 ->openUrlInNewTab(),
-            Action::make('printCurrent')
-                ->label(fn () => '🖨️ Print '.$this->activeDepartment.' Sheet')
-                ->color('success')
-                ->url(fn () => route('tips.reports.print', [
-                    'report' => $this->record->id,
-                    'department' => $this->activeDepartment,
-                ]))
-                ->openUrlInNewTab(),
-            EditAction::make(),
+
+            Action::make('regenerate')
+                ->label('Regenerate')
+                ->icon('heroicon-m-arrow-path')
+                ->color('gray')
+                ->requiresConfirmation()
+                ->modalHeading('Regenerate Tips Calculation')
+                ->modalDescription('This will re-calculate staff distributions using the current attendance file and employee records. Any existing calculated items will be replaced. Proceed?')
+                ->modalSubmitActionLabel('Yes, Regenerate')
+                ->visible(fn () => ! $this->record->isValidated())
+                ->action(function () {
+                    app(TipsCalculationService::class)->generate($this->record, [
+                        'company_errors' => $this->record->company_errors ?? [],
+                        'left_outs' => $this->record->left_outs ?? [],
+                    ]);
+                    Notification::make()
+                        ->title('Tips Distribution Regenerated')
+                        ->body('Report data has been re-calculated and saved.')
+                        ->success()
+                        ->send();
+                    $this->resetTable();
+                }),
+
+            EditAction::make()
+                ->hidden(fn () => $this->record->isValidated()),
         ];
     }
 }

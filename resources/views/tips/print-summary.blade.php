@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Tips Distribution Summary - {{ ucfirst($report->month) }} {{ $report->year }}</title>
+    <title>Tips Amount Summary - {{ ucfirst($report->month) }} {{ $report->year }}</title>
     <style>
         @page {
             size: A4 landscape;
@@ -100,7 +100,7 @@
     </div>
 
     <div class="header-box">
-        <h1 class="header-title">Tips Distribution Summary - {{ ucfirst($report->month) }} {{ $report->year }}</h1>
+        <h1 class="header-title">Tips Amount Summary - {{ ucfirst($report->month) }} {{ $report->year }}</h1>
     </div>
 
     <table class="summary-table">

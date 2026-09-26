@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\TipsReports\Pages;
 
 use App\Filament\Resources\TipsReports\TipsReportResource;
-use App\Services\TipsCalculationService;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
@@ -13,10 +12,26 @@ class EditTipsReport extends EditRecord
 {
     protected static string $resource = TipsReportResource::class;
 
+    public function mount(int|string $record): void
+    {
+        parent::mount($record);
+
+        if ($this->getRecord()->isValidated()) {
+            Notification::make()
+                ->title('Editing Disabled')
+                ->body('This report has been validated and locked. Editing is not permitted.')
+                ->danger()
+                ->send();
+
+            $this->redirect($this->getResource()::getUrl('view', ['record' => $this->getRecord()]));
+        }
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
+            DeleteAction::make()
+                ->hidden(fn () => $this->getRecord()->isValidated()),
         ];
     }
 
@@ -24,24 +39,11 @@ class EditTipsReport extends EditRecord
     {
         $record->update($data);
 
-        try {
-            app(TipsCalculationService::class)->generate($record, [
-                'company_errors' => $record->company_errors ?? [],
-                'left_outs' => $record->left_outs ?? [],
-            ]);
-
-            Notification::make()
-                ->title('Tips Distribution Re-calculated')
-                ->body("Successfully recalculated {$record->items()->count()} distribution records.")
-                ->success()
-                ->send();
-        } catch (\Throwable $e) {
-            Notification::make()
-                ->title('Calculation Notice')
-                ->body($e->getMessage())
-                ->warning()
-                ->send();
-        }
+        Notification::make()
+            ->title('Report Saved')
+            ->body('Report updated successfully. Existing generated calculations remain intact.')
+            ->success()
+            ->send();
 
         return $record;
     }

@@ -14,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
 class TipsReportResource extends Resource
@@ -43,6 +44,15 @@ class TipsReportResource extends Resource
         return [
             //
         ];
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        if ($record instanceof TipsReport && $record->isValidated()) {
+            return false;
+        }
+
+        return parent::canEdit($record);
     }
 
     public static function getPages(): array

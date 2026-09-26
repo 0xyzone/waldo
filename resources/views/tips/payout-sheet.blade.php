@@ -142,7 +142,7 @@
                 <th style="width: 170px;">Employee Name</th>
                 <th style="width: 150px;">Designation</th>
                 <th style="width: 48px;">Tips %</th>
-                <th style="width: 72px;">Distribution</th>
+                <th style="width: 72px;">Amount</th>
                 <th style="width: 150px;">Signature</th>
             </tr>
         </thead>

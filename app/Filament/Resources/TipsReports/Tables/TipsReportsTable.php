@@ -38,10 +38,20 @@ class TipsReportsTable
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'validated' => 'Validated (Locked)',
+                        'generated' => 'Generated',
+                        default => ucfirst($state),
+                    })
                     ->color(fn (string $state): string => match ($state) {
-                        'generated' => 'success',
-                        'locked', 'published' => 'info',
+                        'validated' => 'success',
+                        'generated' => 'info',
                         default => 'warning',
+                    })
+                    ->icon(fn (string $state): ?string => match ($state) {
+                        'validated' => 'heroicon-m-lock-closed',
+                        'generated' => 'heroicon-m-check-circle',
+                        default => null,
                     }),
 
                 TextColumn::make('items_count')
@@ -61,7 +71,8 @@ class TipsReportsTable
             ])
             ->actions([
                 ViewAction::make(),
-                EditAction::make(),
+                EditAction::make()
+                    ->hidden(fn ($record) => $record->isValidated()),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
