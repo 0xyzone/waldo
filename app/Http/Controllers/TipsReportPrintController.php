@@ -32,17 +32,13 @@ class TipsReportPrintController extends Controller
                 $q->where('is_left_out', true)
                     ->orWhere('department', 'Left Outs');
             })
-                ->orderBy('department_rank')
-                ->orderBy('designation_rank')
-                ->orderBy('employee_name')
+                ->orderByHierarchy()
                 ->get();
             $deptTitle = 'Left Outs';
         } else {
             $items = $query->where('department', $department)
                 ->where('is_left_out', false)
-                ->orderBy('department_rank')
-                ->orderBy('designation_rank')
-                ->orderBy('employee_name')
+                ->orderByHierarchy()
                 ->get();
             $deptTitle = $department;
         }

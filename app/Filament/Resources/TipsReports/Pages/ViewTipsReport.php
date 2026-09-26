@@ -170,17 +170,13 @@ class ViewTipsReport extends ViewRecord implements HasTable
                                 ->where('is_left_out', true)
                                 ->orWhere('department', 'Left Outs');
                         })
-                        ->orderBy('department_rank')
-                        ->orderBy('designation_rank')
-                        ->orderBy('employee_name');
+                        ->orderByHierarchy();
                 }
 
                 return $query
                     ->where('department', $this->activeDepartment)
                     ->where('is_left_out', false)
-                    ->orderBy('department_rank')
-                    ->orderBy('designation_rank')
-                    ->orderBy('employee_name');
+                    ->orderByHierarchy();
             })
             ->columns([
                 TextColumn::make('#')
@@ -203,7 +199,8 @@ class ViewTipsReport extends ViewRecord implements HasTable
                     ->visible(fn () => $this->activeDepartment === 'Left Outs'),
                 TextColumn::make('working_duration')
                     ->label('Tenure')
-                    ->placeholder('-'),
+                    ->placeholder('-')
+                    ->sortable(query: fn (Builder $query, string $direction): Builder => $query->orderByTenure($direction)),
                 TextColumn::make('completion_factor')
                     ->label('Compl.')
                     ->formatStateUsing(fn ($state) => $state + 0),

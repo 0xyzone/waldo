@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -77,5 +78,34 @@ class TipsReportItem extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class, 'employee_code', 'employee_code');
+    }
+
+    /**
+     * Scope query to order by hierarchy:
+     * 1. Department Rank (ASC)
+     * 2. Designation Rank (ASC)
+     * 3. Tenure (Longest tenure first / earliest join date first)
+     * 4. Employee Name (ASC)
+     */
+    public function scopeOrderByHierarchy(Builder $query): Builder
+    {
+        return $query
+            ->orderBy('department_rank')
+            ->orderBy('designation_rank')
+            ->orderByRaw('CASE WHEN COALESCE(STR_TO_DATE(REPLACE(join_date, ",", ""), "%d %M %Y"), STR_TO_DATE(join_date, "%Y-%m-%d")) IS NULL THEN 1 ELSE 0 END ASC')
+            ->orderByRaw('COALESCE(STR_TO_DATE(REPLACE(join_date, ",", ""), "%d %M %Y"), STR_TO_DATE(join_date, "%Y-%m-%d")) ASC')
+            ->orderBy('employee_name');
+    }
+
+    /**
+     * Scope query to order by tenure.
+     */
+    public function scopeOrderByTenure(Builder $query, string $direction = 'asc'): Builder
+    {
+        $dir = strtolower($direction) === 'desc' ? 'DESC' : 'ASC';
+
+        return $query
+            ->orderByRaw('CASE WHEN COALESCE(STR_TO_DATE(REPLACE(join_date, ",", ""), "%d %M %Y"), STR_TO_DATE(join_date, "%Y-%m-%d")) IS NULL THEN 1 ELSE 0 END ASC')
+            ->orderByRaw('COALESCE(STR_TO_DATE(REPLACE(join_date, ",", ""), "%d %M %Y"), STR_TO_DATE(join_date, "%Y-%m-%d")) '.$dir);
     }
 }
