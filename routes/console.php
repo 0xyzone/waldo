@@ -8,8 +8,8 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('employees:sync')->hourly();
-Schedule::command('biometrics:sync')->hourly();
-Schedule::command('suspensions:check-status')->daily();
-Schedule::command('transitions:apply-effective')->daily();
-Schedule::command('sync-logs:prune')->daily();
+Schedule::command('employees:sync')->hourly()->withoutOverlapping();
+Schedule::command('biometrics:sync')->hourly()->withoutOverlapping();
+Schedule::command('suspensions:check-status')->daily()->withoutOverlapping();
+Schedule::command('transitions:apply-effective')->daily()->withoutOverlapping();
+Schedule::command('sync-logs:prune')->daily()->withoutOverlapping();

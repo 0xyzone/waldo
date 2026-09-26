@@ -53,6 +53,13 @@ class RecordScheduleRunListener
         $now = now();
         $duration = (float) $event->runtime;
 
+        if (! $run) {
+            $run = ScheduleRun::where('command', $command)
+                ->where('status', 'running')
+                ->latest('started_at')
+                ->first();
+        }
+
         if ($run) {
             $run->update([
                 'status' => 'success',
@@ -83,6 +90,13 @@ class RecordScheduleRunListener
         $exception = $event->exception;
         $output = $exception ? ($exception->getMessage()."\n".$exception->getTraceAsString()) : null;
 
+        if (! $run) {
+            $run = ScheduleRun::where('command', $command)
+                ->where('status', 'running')
+                ->latest('started_at')
+                ->first();
+        }
+
         if ($run) {
             $run->update([
                 'status' => 'failed',
@@ -107,6 +121,18 @@ class RecordScheduleRunListener
     public function handleSkipped(ScheduledTaskSkipped $event): void
     {
         $key = $this->taskKey($event->task);
+        $command = $this->resolveTaskCommand($event->task);
+
+        $run = static::$activeRuns[$key]
+            ?? ScheduleRun::where('command', $command)
+                ->where('status', 'running')
+                ->latest('started_at')
+                ->first();
+
+        if ($run) {
+            $run->delete();
+        }
+
         unset(static::$activeRuns[$key]);
     }
 
@@ -130,6 +156,10 @@ class RecordScheduleRunListener
 
     protected function taskKey($task): string
     {
+        if (method_exists($task, 'mutexName')) {
+            return $task->mutexName();
+        }
+
         return spl_object_hash($task);
     }
 }
