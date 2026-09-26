@@ -66,7 +66,35 @@ class AppServiceProvider extends ServiceProvider
                     .bg-red-row td { background-color: rgba(254, 202, 202, 0.4) !important; }
                     .dark .bg-red-row { background-color: rgba(255, 0, 0, 0.6) !important; color: rgb(254, 202, 202) !important; }
                     .dark .bg-red-row td { background-color: rgba(255, 0, 0, 0.6) !important; }
+
+                    /* Remove number input spinners / arrows globally */
+                    input[type="number"]::-webkit-outer-spin-button,
+                    input[type="number"]::-webkit-inner-spin-button {
+                        -webkit-appearance: none !important;
+                        margin: 0 !important;
+                    }
+                    input[type="number"] {
+                        -moz-appearance: textfield !important;
+                        appearance: textfield !important;
+                    }
                 </style>
+                <script>
+                    // Prevent mouse wheel from accidentally altering number inputs
+                    document.addEventListener("wheel", function (event) {
+                        if (document.activeElement && document.activeElement.tagName === "INPUT" && document.activeElement.type === "number") {
+                            document.activeElement.blur();
+                        }
+                    }, { passive: true });
+
+                    // Prevent ArrowUp and ArrowDown keys from changing number values
+                    document.addEventListener("keydown", function (event) {
+                        if (event.target && event.target.tagName === "INPUT" && event.target.type === "number") {
+                            if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+                                event.preventDefault();
+                            }
+                        }
+                    });
+                </script>
             ')
         );
 
