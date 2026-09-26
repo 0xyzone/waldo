@@ -52,8 +52,8 @@ class TipsDepartmentMappingResource extends Resource
     {
         return [
             'index' => ListTipsDepartmentMappings::route('/'),
-            'create' => CreateTipsDepartmentMapping::route('/create'),
-            'edit' => EditTipsDepartmentMapping::route('/{record}/edit'),
+            // 'create' => CreateTipsDepartmentMapping::route('/create'),
+            // 'edit' => EditTipsDepartmentMapping::route('/{record}/edit'),
         ];
     }
 }
