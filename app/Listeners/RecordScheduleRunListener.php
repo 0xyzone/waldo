@@ -7,7 +7,6 @@ use Illuminate\Console\Events\ScheduledTaskFailed;
 use Illuminate\Console\Events\ScheduledTaskFinished;
 use Illuminate\Console\Events\ScheduledTaskSkipped;
 use Illuminate\Console\Events\ScheduledTaskStarting;
-use Illuminate\Events\Dispatcher;
 
 class RecordScheduleRunListener
 {
@@ -18,22 +17,26 @@ class RecordScheduleRunListener
      */
     protected static array $activeRuns = [];
 
-    /**
-     * Register the listeners for the subscriber.
-     */
-    public function subscribe(Dispatcher $events): array
-    {
-        return [
-            ScheduledTaskStarting::class => 'handleStarting',
-            ScheduledTaskFinished::class => 'handleFinished',
-            ScheduledTaskFailed::class => 'handleFailed',
-            ScheduledTaskSkipped::class => 'handleSkipped',
-        ];
-    }
-
     public function handleStarting(ScheduledTaskStarting $event): void
     {
+        $key = $this->taskKey($event->task);
+        if (isset(static::$activeRuns[$key])) {
+            return;
+        }
+
         $command = $this->resolveTaskCommand($event->task);
+
+        // Deduplication safeguard: if a running record for this command started within the last 5 seconds exists, reuse it
+        $existing = ScheduleRun::where('command', $command)
+            ->where('status', 'running')
+            ->where('started_at', '>=', now()->subSeconds(5))
+            ->first();
+
+        if ($existing) {
+            static::$activeRuns[$key] = $existing;
+
+            return;
+        }
 
         $run = ScheduleRun::create([
             'command' => $command,
@@ -41,13 +44,14 @@ class RecordScheduleRunListener
             'started_at' => now(),
         ]);
 
-        static::$activeRuns[$this->taskKey($event->task)] = $run;
+        static::$activeRuns[$key] = $run;
     }
 
     public function handleFinished(ScheduledTaskFinished $event): void
     {
         $key = $this->taskKey($event->task);
         $run = static::$activeRuns[$key] ?? null;
+        unset(static::$activeRuns[$key]);
 
         $command = $this->resolveTaskCommand($event->task);
         $now = now();
@@ -67,8 +71,17 @@ class RecordScheduleRunListener
                 'duration_seconds' => $duration,
                 'exit_code' => 0,
             ]);
-            unset(static::$activeRuns[$key]);
         } else {
+            // Deduplication safeguard: don't create fallback if a success run was already recorded within the last 5 seconds
+            $recent = ScheduleRun::where('command', $command)
+                ->where('status', 'success')
+                ->where('finished_at', '>=', $now->copy()->subSeconds(5))
+                ->first();
+
+            if ($recent) {
+                return;
+            }
+
             ScheduleRun::create([
                 'command' => $command,
                 'status' => 'success',
@@ -84,6 +97,7 @@ class RecordScheduleRunListener
     {
         $key = $this->taskKey($event->task);
         $run = static::$activeRuns[$key] ?? null;
+        unset(static::$activeRuns[$key]);
 
         $command = $this->resolveTaskCommand($event->task);
         $now = now();
@@ -105,8 +119,17 @@ class RecordScheduleRunListener
                 'exit_code' => 1,
                 'output' => $output,
             ]);
-            unset(static::$activeRuns[$key]);
         } else {
+            // Deduplication safeguard: don't create fallback if a failed run was already recorded within the last 5 seconds
+            $recent = ScheduleRun::where('command', $command)
+                ->where('status', 'failed')
+                ->where('finished_at', '>=', $now->copy()->subSeconds(5))
+                ->first();
+
+            if ($recent) {
+                return;
+            }
+
             ScheduleRun::create([
                 'command' => $command,
                 'status' => 'failed',

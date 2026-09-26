@@ -13,3 +13,4 @@ Schedule::command('biometrics:sync')->hourly()->withoutOverlapping();
 Schedule::command('suspensions:check-status')->daily()->withoutOverlapping();
 Schedule::command('transitions:apply-effective')->daily()->withoutOverlapping();
 Schedule::command('sync-logs:prune')->daily()->withoutOverlapping();
+Schedule::command('schedule-runs:prune')->dailyAt('00:00')->withoutOverlapping();

@@ -99,6 +99,32 @@ class ListScheduleRuns extends ListRecords
                             ->send();
                     }
                 }),
+
+            Action::make('pruneRuns')
+                ->label('Prune Old Runs')
+                ->icon('heroicon-m-trash')
+                ->color('danger')
+                ->requiresConfirmation()
+                ->modalHeading('Prune Schedule Runs Older Than 2 Days')
+                ->modalDescription('Are you sure you want to delete all schedule run entries whose run date is more than 2 days old?')
+                ->action(function () {
+                    try {
+                        Artisan::call('schedule-runs:prune');
+                        $output = trim(Artisan::output());
+
+                        Notification::make()
+                            ->title('Prune Completed')
+                            ->body($output ?: 'Schedule run records older than 2 days were deleted.')
+                            ->success()
+                            ->send();
+                    } catch (\Throwable $e) {
+                        Notification::make()
+                            ->title('Prune Failed')
+                            ->body($e->getMessage())
+                            ->danger()
+                            ->send();
+                    }
+                }),
         ];
     }
 
@@ -129,6 +155,7 @@ class ListScheduleRuns extends ListRecords
             'suspensions:check-status' => 'artisan suspensions:check-status',
             'transitions:apply-effective' => 'artisan transitions:apply-effective',
             'sync-logs:prune' => 'artisan sync-logs:prune',
+            'schedule-runs:prune' => 'artisan schedule-runs:prune',
         ];
     }
 }
