@@ -24,19 +24,19 @@ class ViewTipsReport extends ViewRecord implements HasTable
 
     protected string $view = 'filament.resources.tips-reports.pages.view-tips-report';
 
-    public string $activeDepartment = 'F&B';
+    public string $activeDepartment = 'PIT';
 
     public function mount(int|string $record): void
     {
         parent::mount($record);
 
-        // Default to first department with items, or PIT
-        $firstDept = TipsReportItem::where('tips_report_id', $this->record->id)
-            ->where('is_left_out', false)
-            ->value('department');
+        $departments = $this->departments;
+        $requestedDept = request()->query('department');
 
-        if ($firstDept) {
-            $this->activeDepartment = $firstDept;
+        if ($requestedDept && in_array($requestedDept, $departments, true)) {
+            $this->activeDepartment = $requestedDept;
+        } elseif (! empty($departments)) {
+            $this->activeDepartment = $departments[0];
         }
     }
 
