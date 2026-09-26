@@ -24,7 +24,7 @@ class ViewTipsReport extends ViewRecord implements HasTable
 
     protected string $view = 'filament.resources.tips-reports.pages.view-tips-report';
 
-    public string $activeDepartment = 'PIT';
+    public string $activeDepartment = 'F&B';
 
     public function mount(int|string $record): void
     {
