@@ -17,7 +17,7 @@ class TipsReportPrintController extends Controller
 
         if (in_array(strtolower(trim($department)), ['none employee', 'non employee', 'none-employee'])) {
             $items = $query->where('department', 'None Employee')
-                ->orderBy('employee_code')
+                ->orderByNumericCode()
                 ->get();
 
             return response()->view('tips.none-employee-sheet', [

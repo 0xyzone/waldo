@@ -184,7 +184,7 @@ class ViewTipsReport extends ViewRecord implements HasTable
                 TextColumn::make('employee_code')
                     ->label('Code')
                     ->copyable()
-                    ->sortable()
+                    ->sortable(query: fn (Builder $query, string $direction): Builder => $query->orderByNumericCode($direction))
                     ->weight('bold'),
                 TextColumn::make('employee_name')
                     ->label('Employee Name')

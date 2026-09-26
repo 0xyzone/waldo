@@ -84,7 +84,7 @@ class TipsReportItem extends Model
      * Scope query to order by hierarchy:
      * 1. Department Rank (ASC)
      * 2. Designation Rank (ASC)
-     * 3. Tenure (Longest tenure first / earliest join date first)
+     * 3. Employee Code (numeric, skipping 'CWD' prefix) (ASC)
      * 4. Employee Name (ASC)
      */
     public function scopeOrderByHierarchy(Builder $query): Builder
@@ -92,9 +92,20 @@ class TipsReportItem extends Model
         return $query
             ->orderBy('department_rank')
             ->orderBy('designation_rank')
-            ->orderByRaw('CASE WHEN COALESCE(STR_TO_DATE(REPLACE(join_date, ",", ""), "%d %M %Y"), STR_TO_DATE(join_date, "%Y-%m-%d")) IS NULL THEN 1 ELSE 0 END ASC')
-            ->orderByRaw('COALESCE(STR_TO_DATE(REPLACE(join_date, ",", ""), "%d %M %Y"), STR_TO_DATE(join_date, "%Y-%m-%d")) ASC')
+            ->orderByNumericCode()
             ->orderBy('employee_name');
+    }
+
+    /**
+     * Scope query to order by employee code numerically (skipping non-numeric prefix like CWD).
+     */
+    public function scopeOrderByNumericCode(Builder $query, string $direction = 'asc'): Builder
+    {
+        $dir = strtolower($direction) === 'desc' ? 'DESC' : 'ASC';
+
+        return $query
+            ->orderByRaw('CASE WHEN employee_code IS NULL OR employee_code = "" THEN 1 ELSE 0 END ASC')
+            ->orderByRaw('CAST(NULLIF(REGEXP_REPLACE(employee_code, "[^0-9]", ""), "") AS UNSIGNED) '.$dir);
     }
 
     /**
