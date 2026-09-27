@@ -4,6 +4,7 @@ use App\Http\Controllers\ApiDocsController;
 use App\Http\Controllers\CandidatePrintController;
 use App\Http\Controllers\EmployeeSsidController;
 use App\Http\Controllers\FontController;
+use App\Http\Controllers\IdCardPrintReportPrintController;
 use App\Http\Controllers\LetterController;
 use App\Http\Controllers\LetterGlobalVariableController;
 use App\Http\Controllers\ReportController;
@@ -75,6 +76,11 @@ Route::get('/tips-reports/{report}/print-summary', [TipsReportPrintController::c
 
 Route::get('/tips-reports/{report}/print-totals', [TipsReportPrintController::class, 'printTotals'])
     ->name('tips.reports.print-totals')
+    ->middleware('auth');
+
+// ID Card Print Reports Sheet
+Route::get('/id-card-print-reports/{report}/print', [IdCardPrintReportPrintController::class, 'print'])
+    ->name('id-card-print-reports.print')
     ->middleware('auth');
 
 // API Documentation & Testing Console
