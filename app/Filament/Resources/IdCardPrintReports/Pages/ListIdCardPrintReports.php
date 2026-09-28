@@ -14,6 +14,8 @@ class ListIdCardPrintReports extends ListRecords
     {
         return [
             CreateAction::make()
+                ->modalWidth('6xl')
+                ->slideOver()
                 ->label('New ID Card Batch')
                 ->icon('heroicon-m-plus'),
         ];

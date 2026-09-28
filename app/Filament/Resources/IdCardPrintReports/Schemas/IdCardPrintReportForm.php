@@ -20,19 +20,26 @@ class IdCardPrintReportForm
                 Section::make('Batch Details')
                     ->description('Specify batch title, print date, and optional remarks.')
                     ->schema([
+                        TextInput::make('title')
+                            ->label('Batch Title')
+                            ->placeholder('e.g. ID Card Print Batch - 27 Sep 2026')
+                            ->default('ID Card Print Batch - ' . now()->format('jS F Y'))
+                            ->required(),
                         Grid::make(3)->schema([
-                            TextInput::make('title')
-                                ->label('Batch Title')
-                                ->placeholder('e.g. ID Card Print Batch - 27 Sep 2026')
-                                ->default('ID Card Print Batch - '.now()->format('d M Y'))
-                                ->required(),
-
                             DatePicker::make('batch_date')
                                 ->label('Print / Batch Date')
                                 ->default(now()->toDateString())
+                                ->autoFocus()
                                 ->native(false)
-                                ->required(),
+                                ->live(onBlur: true)
+                                ->afterStateUpdated(function (callable $set, $state) {
+                                    if (!$state) {
+                                        return;
+                                    }
 
+                                    $set('title', 'ID Card Print Batch - ' . date('jS F Y', strtotime($state)));
+                                })
+                                ->required(),
                             Select::make('status')
                                 ->label('Status')
                                 ->options([
@@ -43,14 +50,12 @@ class IdCardPrintReportForm
                                 ->default('active')
                                 ->required(),
                         ]),
-
                         Textarea::make('notes')
                             ->label('Batch Notes / Instructions')
                             ->placeholder('Optional notes regarding this printing batch...')
                             ->rows(3)
                             ->columnSpanFull(),
                     ]),
-
                 Section::make('Upload Employee CSV / Excel File (Optional)')
                     ->description('Upload file with columns: code, name, depart, or skip to start an empty batch.')
                     ->schema([
