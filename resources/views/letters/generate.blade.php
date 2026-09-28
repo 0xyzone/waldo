@@ -506,22 +506,34 @@
             </div>
         </div>
 
-        <!-- Letters Preview Container -->
-        <div id="preview-container" x-show="selectedTemplateId" class="space-y-8 flex flex-col items-center">
-            
-            <template x-if="selectedCodes.length === 0 && selectedTemplateId">
-                <div class="no-print px-4 py-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl text-xs font-semibold text-amber-800 dark:text-amber-300 flex items-center gap-2">
-                    <i class="fa-solid fa-info-circle text-amber-500"></i>
-                    <span>Previewing sample letter. Check one or more employees in the sidebar to generate for specific staff.</span>
+        <!-- No Employee Selected Disclaimer (shown when template is selected but no employee is checked) -->
+        <template x-if="selectedTemplateId && selectedCodes.length === 0">
+            <div class="flex flex-col items-center justify-center p-12 text-center max-w-md my-auto space-y-5">
+                <div class="w-20 h-20 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 flex items-center justify-center text-4xl shadow-sm">
+                    👤
                 </div>
-            </template>
+                <div class="space-y-2">
+                    <h2 class="text-lg font-bold text-slate-800 dark:text-zinc-200">No Employee Selected</h2>
+                    <p class="text-sm text-slate-400 dark:text-zinc-500 leading-relaxed">
+                        Please select one or more employees from the <strong class="text-slate-600 dark:text-zinc-300">Target Employees</strong> list on the left to preview and generate their letters.
+                    </p>
+                </div>
+                <div class="flex items-center gap-2 px-4 py-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                    <i class="fa-solid fa-arrow-left text-amber-500 text-sm"></i>
+                    <span class="text-xs font-semibold text-amber-700 dark:text-amber-400">Select employees from the sidebar</span>
+                </div>
+            </div>
+        </template>
 
-            <template x-for="code in (selectedCodes.length > 0 ? selectedCodes : (employees.length > 0 ? [employees[0].employee_code] : []))" :key="code">
+        <!-- Letters Preview Container (only shown when employees are selected) -->
+        <div id="preview-container" x-show="selectedTemplateId && selectedCodes.length > 0" class="space-y-8 flex flex-col items-center">
+
+            <template x-for="code in selectedCodes" :key="code">
                 <div class="space-y-2">
                     <!-- Employee label tag -->
                     <div class="flex items-center gap-2 mb-2 no-print self-start bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-400 px-3 py-1.5 rounded-xl text-xs font-bold shadow-xs">
                         <i class="fa-solid fa-circle-user text-amber-500"></i>
-                        <span x-text="(getEmployee(code)?.name || code) + ' (' + code + ')' + (selectedCodes.length === 0 ? ' — Sample Preview' : '')"></span>
+                        <span x-text="(getEmployee(code)?.name || code) + ' (' + code + ')'"></span>
                     </div>
 
                     <!-- Rendering each letter page -->
@@ -1519,9 +1531,7 @@ function generatorState() {
                 return;
             }
 
-            const codes = this.selectedCodes.length > 0 
-                ? this.selectedCodes 
-                : (this.employees.length > 0 ? [this.employees[0].employee_code] : []);
+            const codes = this.selectedCodes;
 
             if (codes.length === 0) {
                 this.paginatedLetters = {};
@@ -1548,6 +1558,8 @@ function generatorState() {
             if (!this.selectedTemplate) return '';
             const emp = this.getEmployee(code);
             if (!emp) return '';
+
+            let html = this.selectedTemplate.content || '';
 
             // Clean any potential template variable chips to tokens, preserving data-font if specified
             html = html.replace(/<span\b[^>]*class="[^"]*template-variable[^"]*"[^>]*data-var(?:-key)?="([^"]+)"[^>]*data-font="([^"]+)"[^>]*>[\s\S]*?<\/span>/gi, function(match, key, font) {
