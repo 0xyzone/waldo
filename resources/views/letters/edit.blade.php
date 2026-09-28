@@ -993,7 +993,8 @@
 
         <!-- Form wraps the entire 3-pane layout -->
         <form id="template-form" action="{{ route('letters.update', $template->id) }}" method="POST"
-            class="flex-1 flex flex-row overflow-hidden" @submit.prevent="doSave($event)">
+            class="flex-1 flex flex-row overflow-hidden" @submit.prevent="doSave($event)"
+            @keydown.enter="handleFormEnter($event)">
             @csrf
             @method('PUT')
             <input type="hidden" name="content" id="content-hidden">
@@ -1826,18 +1827,11 @@
         function setVariableFont(varEl, fontName) {
             if (!varEl) return;
             varEl.setAttribute('data-font', fontName);
-            varEl.setAttribute('title', 'Variable: ' + (varEl.getAttribute('data-var') || '') + ' | Font: ' + fontName + ' | Type: ' + (varEl.getAttribute('data-var-type') || ''));
+            varEl.setAttribute('title', '{' + '{ ' + (varEl.getAttribute('data-var') || '') + ' }' + '}');
 
-            let fontTag = varEl.querySelector('.var-font-tag');
-            if (!fontTag) {
-                fontTag = document.createElement('span');
-                fontTag.setAttribute('contenteditable', 'false');
-                varEl.appendChild(fontTag);
-            }
-
-            const isNepali = /preeti|kalimati|kantipur|mangal/i.test(fontName);
-            fontTag.className = 'var-font-tag ' + (isNepali ? 'var-font-nepali' : 'var-font-latin');
-            fontTag.innerHTML = (isNepali ? '<span class="mr-0.5">🇳🇵</span>' : '<span class="mr-0.5 opacity-70">🔤</span>') + fontName;
+            // Remove any leftover font badge if it exists from older versions
+            const oldTag = varEl.querySelector('.var-font-tag');
+            if (oldTag) oldTag.remove();
         }
 
         function execFont(name) {
@@ -2836,25 +2830,42 @@
             });
 
             return {
-                title: @json($template->title),
-                differentFirstPageMargins: {{ $template->different_first_page_margins ? 'true' : 'false' }},
+                title: @json(old('title', $template->title)),
+                differentFirstPageMargins: {{ (old('different_first_page_margins') !== null ? old('different_first_page_margins') : $template->different_first_page_margins) ? 'true' : 'false' }},
                 margins: {
-                    top: {{ $template->margin_top ?? 25 }},
-                    bottom: {{ $template->margin_bottom ?? 25 }},
-                    left: {{ $template->margin_left ?? 20 }},
-                    right: {{ $template->margin_right ?? 20 }},
+                    top: {{ old('margin_top', $template->margin_top ?? 25) }},
+                    bottom: {{ old('margin_bottom', $template->margin_bottom ?? 25) }},
+                    left: {{ old('margin_left', $template->margin_left ?? 20) }},
+                    right: {{ old('margin_right', $template->margin_right ?? 20) }}
                 },
                 firstPageMargins: {
-                    top: {{ $template->first_page_margin_top ?? ($template->margin_top ?? 25) }},
-                    bottom: {{ $template->first_page_margin_bottom ?? ($template->margin_bottom ?? 25) }},
-                    left: {{ $template->first_page_margin_left ?? ($template->margin_left ?? 20) }},
-                    right: {{ $template->first_page_margin_right ?? ($template->margin_right ?? 20) }},
+                    top: {{ old('first_page_margin_top', $template->first_page_margin_top ?? ($template->margin_top ?? 25)) }},
+                    bottom: {{ old('first_page_margin_bottom', $template->first_page_margin_bottom ?? ($template->margin_bottom ?? 25)) }},
+                    left: {{ old('first_page_margin_left', $template->first_page_margin_left ?? ($template->margin_left ?? 20)) }},
+                    right: {{ old('first_page_margin_right', $template->first_page_margin_right ?? ($template->margin_right ?? 20)) }}
                 },
                 variables: customTemplateVars,
                 pages: 1,
                 _reflowInProgress: false,
                 _reflowTimer: null,
                 varSearch: '',
+                handleFormEnter(e) {
+                    if (e.target && e.target.tagName === 'INPUT') {
+                        e.preventDefault();
+                        if (e.target.name === 'title') {
+                            const firstContent = document.querySelector('.doc-page-content');
+                            if (firstContent) {
+                                firstContent.focus();
+                                const sel = window.getSelection();
+                                const range = document.createRange();
+                                range.selectNodeContents(firstContent);
+                                range.collapse(false);
+                                sel.removeAllRanges();
+                                sel.addRange(range);
+                            }
+                        }
+                    }
+                },
                 prebuiltVars: [{
                         key: 'employee_name',
                         label: 'Name'
@@ -3138,19 +3149,12 @@
                     span.setAttribute('data-var-type', type);
                     span.setAttribute('data-font', font);
                     span.setAttribute('contenteditable', 'false');
-                    span.setAttribute('title', 'Variable: ' + '{' + '{ ' + key + ' }' + '}' + ' | Font: ' + font + ' | Type: ' + type);
+                    span.setAttribute('title', '{' + '{ ' + key + ' }' + '}');
 
                     const nameSpan = document.createElement('span');
                     nameSpan.className = 'var-name';
                     nameSpan.textContent = '{' + '{ ' + key + ' }' + '}';
                     span.appendChild(nameSpan);
-
-                    const fontTag = document.createElement('span');
-                    fontTag.setAttribute('contenteditable', 'false');
-                    const isNepali = /preeti|kalimati|kantipur|mangal/i.test(font);
-                    fontTag.className = 'var-font-tag ' + (isNepali ? 'var-font-nepali' : 'var-font-latin');
-                    fontTag.innerHTML = (isNepali ? '<span class="mr-0.5">🇳🇵</span>' : '<span class="mr-0.5 opacity-70">🔤</span>') + font;
-                    span.appendChild(fontTag);
 
                     return span;
                 },
@@ -3158,11 +3162,8 @@
                 createVariableBadgeHtml(key, font, type) {
                     if (!type) type = this.getVarType(key);
                     if (!font) font = 'Times New Roman';
-                    const isNepali = /preeti|kalimati|kantipur|mangal/i.test(font);
-                    const tagClass = 'var-font-tag ' + (isNepali ? 'var-font-nepali' : 'var-font-latin');
-                    const tagContent = (isNepali ? '🇳🇵 ' : '🔤 ') + font;
-                    const title = 'Variable: ' + '{' + '{ ' + key + ' }' + '}' + ' | Font: ' + font + ' | Type: ' + type;
-                    return `<span class="template-variable var-type-${type}" data-var="${key}" data-var-type="${type}" data-font="${font}" contenteditable="false" title="${title}"><span class="var-name font-mono">&#123;&#123;&nbsp;${key}&nbsp;&#125;&#125;</span><span class="${tagClass}" contenteditable="false">${tagContent}</span></span>`;
+                    const title = '{' + '{ ' + key + ' }' + '}';
+                    return '<span class="template-variable var-type-' + type + '" data-var="' + key + '" data-var-type="' + type + '" data-font="' + font + '" contenteditable="false" title="' + title + '"><span class="var-name font-mono">&#123;&#123;&nbsp;' + key + '&nbsp;&#125;&#125;</span></span>';
                 },
 
                 insertVar(key) {
@@ -3259,9 +3260,34 @@
                         return;
                     }
 
+                    // Check if document has only 1 page and content easily fits without manual page break
+                    const existingPages = container.querySelectorAll('.doc-page');
+                    const hasPageBreaks = container.querySelector('.page-break-marker');
+                    if (existingPages.length === 1 && !hasPageBreaks) {
+                        const page1 = existingPages[0];
+                        const content1 = page1.querySelector('.doc-page-content');
+                        if (content1) {
+                            const curMarginB = this.differentFirstPageMargins ? this.firstPageMargins.bottom : this.margins.bottom;
+                            const marginBPx = curMarginB * (96 / 25.4);
+                            const usableBottom = page1.clientHeight - marginBPx;
+                            let contentBottom = 0;
+                            if (content1.lastElementChild) {
+                                const lastRect = content1.lastElementChild.getBoundingClientRect();
+                                const pageRect = page1.getBoundingClientRect();
+                                contentBottom = lastRect.bottom - pageRect.top;
+                            }
+                            if (contentBottom <= usableBottom) {
+                                this.pages = 1;
+                                this._reflowInProgress = false;
+                                return;
+                            }
+                        }
+                    }
+
                     // 1. Save selection/cursor position
                     const sel = window.getSelection();
                     let hasSelectionMarkers = false;
+                    let isCollapsedCursor = false;
                     if (sel && sel.rangeCount > 0) {
                         const range = sel.getRangeAt(0);
                         const activeEl = getActive();
@@ -3275,15 +3301,25 @@
                             endMarker.style.display = 'none';
 
                             try {
-                                const endRange = range.cloneRange();
-                                endRange.collapse(false);
-                                endRange.insertNode(endMarker);
+                                if (range.collapsed) {
+                                    isCollapsedCursor = true;
+                                    const r = range.cloneRange();
+                                    r.insertNode(startMarker);
+                                    if (startMarker.parentNode) {
+                                        startMarker.parentNode.insertBefore(endMarker, startMarker.nextSibling);
+                                        hasSelectionMarkers = true;
+                                    }
+                                } else {
+                                    const endRange = range.cloneRange();
+                                    endRange.collapse(false);
+                                    endRange.insertNode(endMarker);
 
-                                const startRange = range.cloneRange();
-                                startRange.collapse(true);
-                                startRange.insertNode(startMarker);
+                                    const startRange = range.cloneRange();
+                                    startRange.collapse(true);
+                                    startRange.insertNode(startMarker);
 
-                                hasSelectionMarkers = true;
+                                    hasSelectionMarkers = true;
+                                }
                             } catch (e) {
                                 console.error('Error inserting selection markers:', e);
                                 if (startMarker.parentNode) startMarker.remove();
@@ -3515,55 +3551,13 @@
                         };
                     };
 
-                    while (temp.firstChild) {
-                        const node = temp.firstChild;
+                    try {
+                        while (temp.firstChild) {
+                            const node = temp.firstChild;
 
-                        // Handle manual page break marker
-                        if (node.nodeType === 1 && node.classList.contains('page-break-marker')) {
-                            currentContent.appendChild(node);
-                            currentPageNum++;
-                            currentPage = this.createPage(currentPageNum);
-                            currentContent = currentPage.querySelector('.doc-page-content');
-
-                            const newPageH = currentPage.clientHeight;
-                            const curNewMarginB = (currentPageNum === 1 && this.differentFirstPageMargins) ?
-                                this.firstPageMargins.bottom :
-                                this.margins.bottom;
-                            const newMarginB = curNewMarginB * (96 / 25.4);
-                            usableBottom = newPageH - newMarginB;
-                            continue;
-                        }
-
-                        currentContent.appendChild(node);
-
-                        let rect = null;
-                        if (node.nodeType === 1) {
-                            rect = node.getBoundingClientRect();
-                        } else if (node.nodeType === 3 && node.textContent.trim()) {
-                            const r = document.createRange();
-                            r.selectNode(node);
-                            rect = r.getBoundingClientRect();
-                        }
-
-                        if (rect) {
-                            const pageRect = currentPage.getBoundingClientRect();
-                            const nodeBottom = rect.bottom - pageRect.top;
-
-                            if (nodeBottom > usableBottom) {
-                                const isPageEmpty = (currentContent.childNodes.length === 1);
-                                const result = splitNode(node, usableBottom, pageRect, isPageEmpty);
-
-                                if (result.fits === null) {
-                                    node.remove();
-                                }
-                                if (result.overflows) {
-                                    if (temp.firstChild) {
-                                        temp.insertBefore(result.overflows, temp.firstChild);
-                                    } else {
-                                        temp.appendChild(result.overflows);
-                                    }
-                                }
-
+                            // Handle manual page break marker
+                            if (node.nodeType === 1 && node.classList.contains('page-break-marker')) {
+                                currentContent.appendChild(node);
                                 currentPageNum++;
                                 currentPage = this.createPage(currentPageNum);
                                 currentContent = currentPage.querySelector('.doc-page-content');
@@ -3574,7 +3568,56 @@
                                     this.margins.bottom;
                                 const newMarginB = curNewMarginB * (96 / 25.4);
                                 usableBottom = newPageH - newMarginB;
+                                continue;
                             }
+
+                            currentContent.appendChild(node);
+
+                            let rect = null;
+                            if (node.nodeType === 1) {
+                                rect = node.getBoundingClientRect();
+                            } else if (node.nodeType === 3 && node.textContent.trim()) {
+                                const r = document.createRange();
+                                r.selectNode(node);
+                                rect = r.getBoundingClientRect();
+                            }
+
+                            if (rect) {
+                                const pageRect = currentPage.getBoundingClientRect();
+                                const nodeBottom = rect.bottom - pageRect.top;
+
+                                if (nodeBottom > usableBottom) {
+                                    const isPageEmpty = (currentContent.childNodes.length === 1);
+                                    const result = splitNode(node, usableBottom, pageRect, isPageEmpty);
+
+                                    if (result.fits === null) {
+                                        node.remove();
+                                    }
+                                    if (result.overflows) {
+                                        if (temp.firstChild) {
+                                            temp.insertBefore(result.overflows, temp.firstChild);
+                                        } else {
+                                            temp.appendChild(result.overflows);
+                                        }
+                                    }
+
+                                    currentPageNum++;
+                                    currentPage = this.createPage(currentPageNum);
+                                    currentContent = currentPage.querySelector('.doc-page-content');
+
+                                    const newPageH = currentPage.clientHeight;
+                                    const curNewMarginB = (currentPageNum === 1 && this.differentFirstPageMargins) ?
+                                        this.firstPageMargins.bottom :
+                                        this.margins.bottom;
+                                    const newMarginB = curNewMarginB * (96 / 25.4);
+                                    usableBottom = newPageH - newMarginB;
+                                }
+                            }
+                        }
+                    } catch (reflowErr) {
+                        console.error('Error during reflowPages node distribution:', reflowErr);
+                        while (temp.firstChild) {
+                            currentContent.appendChild(temp.firstChild);
                         }
                     }
 
@@ -3591,27 +3634,29 @@
                     if (hasSelectionMarkers) {
                         const startMarker = document.getElementById('cursor-start-marker');
                         const endMarker = document.getElementById('cursor-end-marker');
-                        if (startMarker && endMarker) {
+                        if (startMarker && startMarker.parentNode) {
                             const parent = startMarker.parentNode;
                             const range = document.createRange();
 
-                            range.setStartAfter(startMarker);
-                            range.setEndBefore(endMarker);
+                            if (isCollapsedCursor || !endMarker || !endMarker.parentNode) {
+                                range.setStartAfter(startMarker);
+                                range.collapse(true);
+                            } else {
+                                range.setStartAfter(startMarker);
+                                range.setEndBefore(endMarker);
+                            }
 
                             const sel = window.getSelection();
                             sel.removeAllRanges();
                             sel.addRange(range);
 
                             startMarker.remove();
-                            endMarker.remove();
+                            if (endMarker && endMarker.parentNode) {
+                                endMarker.remove();
+                            }
 
                             if (parent) {
                                 parent.normalize();
-                            }
-
-                            const endParent = endMarker.parentNode;
-                            if (endParent && endParent !== parent) {
-                                endParent.normalize();
                             }
                         }
                     }
@@ -3825,11 +3870,11 @@
 
                 init() {
                     this.$nextTick(() => {
-                        const rawContent = @json($template->content ?? '');
+                        const rawContent = @json(old('content', $template->content ?? ''));
                         // 1. Only convert deliberate MANUAL page breaks into visual break markers
-                        let converted = rawContent.replace(/<!--\s*MANUAL_PAGE_BREAK\s*-->/gi,
+                        let converted = rawContent ? rawContent.replace(/<!--\s*MANUAL_PAGE_BREAK\s*-->/gi,
                             '<div class="page-break-marker" contenteditable="false" title="Click to remove page break"></div>'
-                            );
+                            ) : '';
                         // 2. Strip automatic soft page breaks completely so they never become markers or force extra pages
                         converted = converted.replace(/<!--\s*PAGE_BREAK\s*-->/gi, '');
 
@@ -3868,7 +3913,7 @@
                                 return;
                             }
 
-                            // Variable click and font tag toggle handler
+                            // Variable click handler - sync font toolbar
                             const varEl = e.target.closest('.template-variable');
                             if (varEl) {
                                 window._lastClickedVar = varEl;
@@ -3876,15 +3921,6 @@
                                 const curFont = varEl.getAttribute('data-font') || 'Times New Roman';
                                 if (fontSel) {
                                     fontSel.value = curFont;
-                                }
-
-                                // If user clicked directly on the font tag, toggle between Preeti and Times New Roman
-                                if (e.target.closest('.var-font-tag')) {
-                                    historyManager.record(true);
-                                    const nextFont = /preeti/i.test(curFont) ? 'Times New Roman' : 'Preeti';
-                                    setVariableFont(varEl, nextFont);
-                                    if (fontSel) fontSel.value = nextFont;
-                                    historyManager.record(true);
                                 }
                             }
                         });
