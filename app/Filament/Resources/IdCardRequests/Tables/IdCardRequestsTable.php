@@ -125,6 +125,7 @@ class IdCardRequestsTable
                     ->label('Send to Discord')
                     ->icon('heroicon-o-paper-airplane')
                     ->color('primary')
+                    ->visible(fn () => auth()->user()->hasRole('HR'))
                     ->form([
                         Select::make('setting_id')
                             ->label('Bot Configuration')
