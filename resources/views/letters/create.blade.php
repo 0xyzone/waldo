@@ -3346,6 +3346,10 @@
                     });
 
                     // 3. Clear container
+                    // Save scroll position before clearing – the momentary height collapse
+                    // of pages-container causes the scroll container to reset to 0.
+                    const editorScroll = document.getElementById('editor-scroll');
+                    const savedScrollTop = editorScroll ? editorScroll.scrollTop : 0;
                     container.innerHTML = '';
 
                     // 4. Distribute nodes node-by-node
@@ -3611,14 +3615,37 @@
 
                             if (parent) {
                                 parent.normalize();
-                                const root = getEditorRoot();
-                                if (root) root.focus();
                             }
 
                             const endParent = endMarker.parentNode;
                             if (endParent && endParent !== parent) {
                                 endParent.normalize();
                             }
+                        }
+                    }
+
+                    // Restore scroll position that was lost when pages-container was
+                    // cleared. Then nudge to keep the cursor inside the viewport.
+                    if (editorScroll) {
+                        editorScroll.scrollTop = savedScrollTop;
+
+                        // If the cursor ended up outside the visible area (e.g. pushed
+                        // onto a new page), scroll just enough to reveal it.
+                        const curSel = window.getSelection();
+                        if (curSel && curSel.rangeCount > 0) {
+                            try {
+                                const r = curSel.getRangeAt(0).cloneRange();
+                                r.collapse(true);
+                                const rect  = r.getBoundingClientRect();
+                                const sRect = editorScroll.getBoundingClientRect();
+                                if (rect && rect.height > 0) {
+                                    if (rect.bottom > sRect.bottom - 20) {
+                                        editorScroll.scrollTop += rect.bottom - sRect.bottom + 40;
+                                    } else if (rect.top < sRect.top + 20) {
+                                        editorScroll.scrollTop -= sRect.top - rect.top + 20;
+                                    }
+                                }
+                            } catch (_) {}
                         }
                     }
 
