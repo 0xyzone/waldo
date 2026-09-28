@@ -6,7 +6,7 @@
     <style>
         @page {
             size: A4 portrait;
-            margin: 10mm 12mm;
+            margin: 10mm 12mm 12mm 12mm;
         }
 
         body {
@@ -74,30 +74,50 @@
 
         .meta-col.text-right {
             justify-content: flex-end;
+            margin-left: auto;
         }
 
         table.sheet-table {
             width: 100%;
             table-layout: fixed;
-            border-collapse: collapse;
-            margin-bottom: 15px;
+            border-collapse: separate;
+            border-spacing: 0;
+            border: none;
+            margin-bottom: 0;
         }
 
         table.sheet-table th,
         table.sheet-table td {
-            border: 1px solid #333;
-            padding: 6px 8px;
+            border-right: 1px solid #333;
+            border-bottom: 1px solid #333;
+            padding: 4px 8px;
             text-align: left;
             vertical-align: middle;
             word-wrap: break-word;
         }
 
+        table.sheet-table th:first-child,
+        table.sheet-table td:first-child {
+            border-left: 1px solid #333;
+        }
+
         table.sheet-table th {
+            border-top: 1px solid #333;
             background-color: #f2f2f2;
             font-weight: bold;
             font-size: 11px;
             text-align: center;
             text-transform: uppercase;
+            padding: 6px 8px;
+        }
+
+        table.sheet-table tr {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        table.sheet-table thead {
+            display: table-header-group;
         }
 
         table.sheet-table td.text-center {
@@ -110,7 +130,7 @@
 
         .sig-box {
             width: 100%;
-            min-height: 52px;
+            min-height: 44px;
             display: block;
         }
 
@@ -150,8 +170,8 @@
                 </div>
             </div>
             <div class="meta-row">
-                <div class="meta-col">
-                    <span class="meta-label">Total ID Cards Listed:</span>
+                <div class="meta-col text-right">
+                    <span class="meta-label">Total Cards Listed:</span>
                     <span class="meta-value">{{ $items->count() }} Cards</span>
                 </div>
             </div>
@@ -183,12 +203,6 @@
                 </tr>
             @endforelse
         </tbody>
-        <tfoot>
-            <tr style="background: #f9f9f9; font-weight: bold;">
-                <td colspan="4" class="text-right">TOTAL CARDS LISTED:</td>
-                <td class="text-center">{{ $items->count() }}</td>
-            </tr>
-        </tfoot>
     </table>
 
 </body>
