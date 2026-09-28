@@ -3143,7 +3143,7 @@
                     span.setAttribute('data-var-type', type);
                     span.setAttribute('data-font', font);
                     span.setAttribute('contenteditable', 'false');
-                    span.setAttribute('title', 'Variable: {{ ' + key + ' }} | Font: ' + font + ' | Type: ' + type);
+                    span.setAttribute('title', 'Variable: ' + '{' + '{ ' + key + ' }' + '}' + ' | Font: ' + font + ' | Type: ' + type);
 
                     const nameSpan = document.createElement('span');
                     nameSpan.className = 'var-name';
@@ -3166,7 +3166,7 @@
                     const isNepali = /preeti|kalimati|kantipur|mangal/i.test(font);
                     const tagClass = 'var-font-tag ' + (isNepali ? 'var-font-nepali' : 'var-font-latin');
                     const tagContent = (isNepali ? '🇳🇵 ' : '🔤 ') + font;
-                    const title = `Variable: {{ ${key} }} | Font: ${font} | Type: ${type}`;
+                    const title = 'Variable: ' + '{' + '{ ' + key + ' }' + '}' + ' | Font: ' + font + ' | Type: ' + type;
                     return `<span class="template-variable var-type-${type}" data-var="${key}" data-var-type="${type}" data-font="${font}" contenteditable="false" title="${title}"><span class="var-name font-mono">&#123;&#123;&nbsp;${key}&nbsp;&#125;&#125;</span><span class="${tagClass}" contenteditable="false">${tagContent}</span></span>`;
                 },
 
