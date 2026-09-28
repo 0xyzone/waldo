@@ -76,26 +76,17 @@
             justify-content: flex-end;
         }
 
-        .print-footer {
-            margin-top: 18px;
-            text-align: right;
-            font-size: 10.5px;
-            color: #555;
-            border-top: 1px solid #ccc;
-            padding-top: 6px;
-        }
-
         table.sheet-table {
             width: 100%;
             table-layout: fixed;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         table.sheet-table th,
         table.sheet-table td {
             border: 1px solid #333;
-            padding: 5px 6px;
+            padding: 6px 8px;
             text-align: left;
             vertical-align: middle;
             word-wrap: break-word;
@@ -104,7 +95,7 @@
         table.sheet-table th {
             background-color: #f2f2f2;
             font-weight: bold;
-            font-size: 10.5px;
+            font-size: 11px;
             text-align: center;
             text-transform: uppercase;
         }
@@ -119,35 +110,8 @@
 
         .sig-box {
             width: 100%;
-            min-height: 28px;
+            min-height: 52px;
             display: block;
-        }
-
-        .footer-signatures {
-            margin-top: 32px;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 20px;
-        }
-
-        .sig-line-block {
-            text-align: center;
-            width: 170px;
-        }
-
-        .sig-line {
-            border-top: 1px solid #000;
-            margin-bottom: 5px;
-        }
-
-        .badge-status {
-            display: inline-block;
-            padding: 1px 5px;
-            font-size: 9.5px;
-            font-weight: bold;
-            text-transform: uppercase;
-            border-radius: 3px;
-            border: 1px solid #999;
         }
 
         @media print {
@@ -181,7 +145,7 @@
                     <span class="meta-value">{{ $report->batch_date?->format('d M, Y') }}</span>
                 </div>
                 <div class="meta-col text-right">
-                    <span class="meta-label">Department Filter:</span>
+                    <span class="meta-label">Department:</span>
                     <span class="meta-value">{{ strtoupper($department) }}</span>
                 </div>
             </div>
@@ -190,10 +154,6 @@
                     <span class="meta-label">Total ID Cards Listed:</span>
                     <span class="meta-value">{{ $items->count() }} Cards</span>
                 </div>
-                <div class="meta-col text-right">
-                    <span class="meta-label">Status Filter:</span>
-                    <span class="meta-value">{{ $status }}</span>
-                </div>
             </div>
         </div>
     </div>
@@ -201,13 +161,11 @@
     <table class="sheet-table">
         <thead>
             <tr>
-                <th style="width: 32px;">S.N.</th>
-                <th style="width: 65px;">Code</th>
-                <th style="width: 170px;">Employee Name</th>
-                <th style="width: 130px;">Department</th>
-                <th style="width: 130px;">Designation</th>
-                <th style="width: 75px;">Status</th>
-                <th style="width: 130px;">Signature / Receiver</th>
+                <th style="width: 38px;">S.N.</th>
+                <th style="width: 90px;">Employee Code</th>
+                <th style="width: 190px;">Employee Name</th>
+                <th style="width: 150px;">Department</th>
+                <th style="width: 240px;">Signature / Receiver</th>
             </tr>
         </thead>
         <tbody>
@@ -217,45 +175,21 @@
                     <td class="text-center"><strong>{{ $item->employee_code }}</strong></td>
                     <td style="font-weight: 500;">{{ $item->employee_name }}</td>
                     <td>{{ $item->department ?? '-' }}</td>
-                    <td>{{ $item->designation ?? '-' }}</td>
-                    <td class="text-center">
-                        <span class="badge-status">{{ strtoupper($item->status) }}</span>
-                    </td>
                     <td class="text-center"><span class="sig-box"></span></td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" class="text-center" style="padding: 20px;">No employee ID cards found matching this filter.</td>
+                    <td colspan="5" class="text-center" style="padding: 20px;">No employee ID cards found matching this filter.</td>
                 </tr>
             @endforelse
         </tbody>
         <tfoot>
             <tr style="background: #f9f9f9; font-weight: bold;">
-                <td colspan="5" class="text-right">TOTAL CARDS LISTED:</td>
+                <td colspan="4" class="text-right">TOTAL CARDS LISTED:</td>
                 <td class="text-center">{{ $items->count() }}</td>
-                <td></td>
             </tr>
         </tfoot>
     </table>
-
-    <div class="footer-signatures">
-        <div class="sig-line-block">
-            <div class="sig-line"></div>
-            <div><strong>Prepared By (IT)</strong></div>
-        </div>
-        <div class="sig-line-block">
-            <div class="sig-line"></div>
-            <div><strong>Verified By (HR)</strong></div>
-        </div>
-        <div class="sig-line-block">
-            <div class="sig-line"></div>
-            <div><strong>Received By (Department / Staff)</strong></div>
-        </div>
-    </div>
-
-    <div class="print-footer">
-        Printed on: {{ now()->format('d M, Y h:i A') }} | Waldo HRM & IT Management System
-    </div>
 
 </body>
 </html>

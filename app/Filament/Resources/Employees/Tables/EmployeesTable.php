@@ -138,6 +138,14 @@ class EmployeesTable
                         ->color('gray')
                         ->size('sm')
                         ->extraAttributes(['class' => 'mt-1 block']),
+                    TextColumn::make('contact_number')
+                        ->icon('heroicon-m-phone')
+                        ->iconColor('primary')
+                        ->searchable()
+                        ->color('gray')
+                        ->size('sm')
+                        ->copyable()
+                        ->extraAttributes(['class' => 'mt-1 block']),
                     TextColumn::make('ssid')
                         ->icon('heroicon-o-document-text')
                         ->iconColor('primary')
