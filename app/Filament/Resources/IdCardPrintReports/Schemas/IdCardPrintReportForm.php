@@ -32,6 +32,7 @@ class IdCardPrintReportForm
                                 ->autoFocus()
                                 ->native(false)
                                 ->live(onBlur: true)
+                                ->closeOnDateSelection()
                                 ->afterStateUpdated(function (callable $set, $state) {
                                     if (!$state) {
                                         return;
