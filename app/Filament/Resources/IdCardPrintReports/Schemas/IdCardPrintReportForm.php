@@ -23,7 +23,7 @@ class IdCardPrintReportForm
                         TextInput::make('title')
                             ->label('Batch Title')
                             ->placeholder('e.g. ID Card Print Batch - 27 Sep 2026')
-                            ->default('ID Card Print Batch - ' . now()->format('jS F Y'))
+                            ->default('ID Card Print Batch - '.now()->format('jS F Y'))
                             ->required(),
                         Grid::make(3)->schema([
                             DatePicker::make('batch_date')
@@ -34,11 +34,11 @@ class IdCardPrintReportForm
                                 ->live(onBlur: true)
                                 ->closeOnDateSelection()
                                 ->afterStateUpdated(function (callable $set, $state) {
-                                    if (!$state) {
+                                    if (! $state) {
                                         return;
                                     }
 
-                                    $set('title', 'ID Card Print Batch - ' . date('jS F Y', strtotime($state)));
+                                    $set('title', 'ID Card Print Batch - '.date('jS F Y', strtotime($state)));
                                 })
                                 ->required(),
                             Select::make('status')
@@ -58,7 +58,7 @@ class IdCardPrintReportForm
                             ->columnSpanFull(),
                     ]),
                 Section::make('Upload Employee CSV / Excel File (Optional)')
-                    ->description('Upload file with columns: code, name, depart, or skip to start an empty batch.')
+                    ->description('Upload file containing employee codes (e.g. code, name, depart). Employees will be matched by code.')
                     ->schema([
                         FileUpload::make('csv_file_path')
                             ->label('Employee CSV File (.csv / .xlsx)')

@@ -33,29 +33,31 @@ class IdCardPrintProcessingService
         // Identify header columns
         $headerInfo = $this->detectHeaderColumns($rows);
         if ($headerInfo === null) {
-            // If no clear header found, assume standard 0 => code, 1 => name, 2 => depart
+            // If no clear header found, assume standard 0 => code, 1 => name, 2 => depart, 3 => designation
             $codeCol = 0;
             $nameCol = 1;
             $deptCol = 2;
+            $desigCol = 3;
             $startRow = 0;
         } else {
             $codeCol = $headerInfo['code'];
             $nameCol = $headerInfo['name'];
             $deptCol = $headerInfo['depart'];
+            $desigCol = $headerInfo['designation'];
             $startRow = $headerInfo['start_row'];
         }
 
-        // Preload employees indexed by normalized employee_code
+        // Preload employees indexed by uppercase employee_code (prefix preserved)
         $employees = Employee::with(['department', 'designation'])
             ->get()
             ->keyBy(fn ($e) => strtoupper(trim((string) $e->employee_code)));
 
-        // Also build a numeric index (e.g. '123' => Employee) for robust matching
-        $employeesByNumeric = [];
+        // Also build a clean alphanumeric index preserving prefix (e.g. 'CWD967' => Employee)
+        $employeesByCleanCode = [];
         foreach ($employees as $code => $emp) {
-            $numOnly = preg_replace('/[^0-9]/', '', $code);
-            if ($numOnly !== '') {
-                $employeesByNumeric[$numOnly] = $emp;
+            $clean = preg_replace('/[^A-Z0-9]/', '', (string) $code);
+            if ($clean !== '') {
+                $employeesByCleanCode[$clean] = $emp;
             }
         }
 
@@ -75,29 +77,30 @@ class IdCardPrintProcessingService
 
             $csvName = $nameCol !== null && isset($cells[$nameCol]) ? trim((string) $cells[$nameCol]) : null;
             $csvDepart = $deptCol !== null && isset($cells[$deptCol]) ? trim((string) $cells[$deptCol]) : null;
+            $csvDesig = $desigCol !== null && isset($cells[$desigCol]) ? trim((string) $cells[$desigCol]) : null;
 
-            // Find matching employee
+            // Direct comparison with prefix (case-insensitive, e.g. 'cwd967' matches 'CWD967')
             $upperCode = strtoupper($rawCode);
-            $matchedEmp = $employees->get($upperCode);
+            $cleanCode = preg_replace('/[^A-Z0-9]/', '', $upperCode);
 
-            // Fallback numeric matching if direct code didn't hit
-            if (! $matchedEmp) {
-                $codeDigits = preg_replace('/[^0-9]/', '', $rawCode);
-                if ($codeDigits !== '' && isset($employeesByNumeric[$codeDigits])) {
-                    $matchedEmp = $employeesByNumeric[$codeDigits];
-                }
+            $matchedEmp = $employees->get($upperCode) ?? $employeesByCleanCode[$cleanCode] ?? null;
+
+            // If raw code was entered without prefix (e.g. '967' instead of 'CWD967'), try adding 'CWD' prefix
+            if (! $matchedEmp && is_numeric($rawCode)) {
+                $prefixed = 'CWD'.$rawCode;
+                $matchedEmp = $employees->get($prefixed) ?? $employeesByCleanCode[$prefixed] ?? null;
             }
 
             if ($matchedEmp) {
                 $employeeCode = $matchedEmp->employee_code;
                 $employeeName = $matchedEmp->name ?: trim(($matchedEmp->first_name ?? '').' '.($matchedEmp->last_name ?? ''));
                 $department = $matchedEmp->department?->name ?? $csvDepart;
-                $designation = $matchedEmp->designation?->name ?? null;
+                $designation = $matchedEmp->designation?->name ?? $csvDesig;
             } else {
-                $employeeCode = $rawCode;
-                $employeeName = $csvName ?: $rawCode;
+                $employeeCode = strtoupper($rawCode);
+                $employeeName = $csvName ?: $employeeCode;
                 $department = $csvDepart ?: 'General';
-                $designation = null;
+                $designation = $csvDesig ?: null;
             }
 
             $itemsToInsert[] = [
@@ -147,12 +150,32 @@ class IdCardPrintProcessingService
             ->get()
             ->keyBy(fn ($e) => strtoupper(trim((string) $e->employee_code)));
 
+        // Preload employees indexed by uppercase employee_code (prefix preserved)
+        $employeesByCleanCode = [];
+        foreach ($employees as $code => $emp) {
+            $clean = preg_replace('/[^A-Z0-9]/', '', (string) $code);
+            if ($clean !== '') {
+                $employeesByCleanCode[$clean] = $emp;
+            }
+        }
+
         $updatedCount = 0;
         foreach ($items as $item) {
-            $matchedEmp = $employees->get(strtoupper(trim((string) $item->employee_code)));
+            $rawCode = trim((string) $item->employee_code);
+            $upperCode = strtoupper($rawCode);
+            $cleanCode = preg_replace('/[^A-Z0-9]/', '', $upperCode);
+
+            $matchedEmp = $employees->get($upperCode) ?? $employeesByCleanCode[$cleanCode] ?? null;
+
+            if (! $matchedEmp && is_numeric($rawCode)) {
+                $prefixed = 'CWD'.$rawCode;
+                $matchedEmp = $employees->get($prefixed) ?? $employeesByCleanCode[$prefixed] ?? null;
+            }
+
             if ($matchedEmp) {
                 $name = $matchedEmp->name ?: trim(($matchedEmp->first_name ?? '').' '.($matchedEmp->last_name ?? ''));
                 $item->update([
+                    'employee_code' => $matchedEmp->employee_code,
                     'employee_name' => $name ?: $item->employee_name,
                     'department' => $matchedEmp->department?->name ?? $item->department,
                     'designation' => $matchedEmp->designation?->name ?? $item->designation,
@@ -239,10 +262,10 @@ class IdCardPrintProcessingService
     }
 
     /**
-     * Detect header row and column positions for code, name, depart.
+     * Detect header row and column positions for code, name, depart, designation.
      *
      * @param  array<int, array<int, mixed>>  $rows
-     * @return array{code: ?int, name: ?int, depart: ?int, start_row: int}|null
+     * @return array{code: ?int, name: ?int, depart: ?int, designation: ?int, start_row: int}|null
      */
     protected function detectHeaderColumns(array $rows): ?array
     {
@@ -251,6 +274,7 @@ class IdCardPrintProcessingService
             $codeCol = null;
             $nameCol = null;
             $deptCol = null;
+            $desigCol = null;
 
             foreach ($row as $idx => $rawVal) {
                 $val = strtolower(trim((string) $rawVal));
@@ -269,6 +293,11 @@ class IdCardPrintProcessingService
                 if (in_array($val, ['depart', 'department', 'dept', 'dept name', 'department name']) || str_contains($val, 'depart') || str_contains($val, 'dept')) {
                     $deptCol = $idx;
                 }
+
+                // Designation detection
+                if (in_array($val, ['designation', 'desig', 'designation name', 'post', 'position', 'role', 'title', 'job title', 'job_title']) || str_contains($val, 'designat') || str_contains($val, 'desig')) {
+                    $desigCol = $idx;
+                }
             }
 
             // If at least code column is found
@@ -277,6 +306,7 @@ class IdCardPrintProcessingService
                     'code' => $codeCol,
                     'name' => $nameCol,
                     'depart' => $deptCol,
+                    'designation' => $desigCol,
                     'start_row' => $i + 1,
                 ];
             }
