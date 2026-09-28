@@ -692,12 +692,12 @@
         <div
             class="no-print bg-white dark:bg-zinc-900 border-b border-slate-200 dark:border-zinc-800 px-3 py-2 flex flex-wrap items-center gap-1 shrink-0 shadow-sm z-20">
 
-            <button type="button" @mousedown.prevent="exec('undo')"
-                class="p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"
-                title="Undo"><i class="fa-solid fa-rotate-left text-sm"></i></button>
-            <button type="button" @mousedown.prevent="exec('redo')"
-                class="p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"
-                title="Redo"><i class="fa-solid fa-rotate-right text-sm"></i></button>
+            <button type="button" id="tb-undo" @mousedown.prevent="exec('undo')"
+                class="p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer transition-opacity"
+                title="Undo (Ctrl+Z)"><i class="fa-solid fa-rotate-left text-sm"></i></button>
+            <button type="button" id="tb-redo" @mousedown.prevent="exec('redo')"
+                class="p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer transition-opacity"
+                title="Redo (Ctrl+Y)"><i class="fa-solid fa-rotate-right text-sm"></i></button>
 
             <div class="h-5 w-px bg-slate-200 dark:bg-zinc-700 mx-0.5"></div>
 
@@ -717,6 +717,8 @@
                 <option>Courier New</option>
                 <option>Verdana</option>
                 <option>Plus Jakarta Sans</option>
+                <option value="Preeti">Preeti (नेपाली)</option>
+                <option value="Kalimati">Kalimati (Unicode)</option>
             </select>
 
             <div class="flex items-center border border-slate-200 dark:border-zinc-700 rounded-lg bg-slate-50 dark:bg-zinc-950 overflow-visible relative"
@@ -1287,14 +1289,14 @@
                                                         class="col-span-2 flex items-center justify-between pt-0.5">
                                                         <span class="text-[9px] text-slate-400">Insert:</span>
                                                         <button type="button" @mousedown.prevent="insertVar(f.key)"
-                                                            class="text-xs font-bold font-mono text-indigo-500 dark:text-indigo-400 hover:underline cursor-pointer">
+                                                            class="text-xs font-bold font-mono text-purple-600 dark:text-purple-400 hover:underline cursor-pointer">
                                                             <span>&#123;&#123;&nbsp;<span x-text="f.key"></span>&nbsp;&#125;&#125;</span>
                                                         </button>
                                                     </div>
                                                 </div>
                                             </template>
                                             <div x-show="!(v.formulas && v.formulas.length)"
-                                                class="py-3 text-center text-[10px] text-slate-400 italic border border-dashed border-indigo-200 dark:border-indigo-900/50 rounded-lg">
+                                                class="py-3 text-center text-[10px] text-slate-400 italic border border-dashed border-purple-200 dark:border-purple-900/50 rounded-lg">
                                                 No formula variables yet.
                                             </div>
                                         </div>
@@ -1305,7 +1307,7 @@
                                         <div class="flex items-center justify-between">
                                             <span class="text-[10px] text-slate-400">Insert:</span>
                                             <button type="button" @mousedown.prevent="insertVar(v.key)"
-                                                class="text-xs font-bold font-mono text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
+                                                class="text-xs font-bold font-mono text-purple-600 dark:text-purple-400 hover:underline cursor-pointer"
                                                 :title="v.type === 'daterange' ? 'Full date range (e.g. Jan 1 - Jan 15)' : 'Insert placeholder'">
                                                 <span>&#123;&#123;&nbsp;<span x-text="v.key"></span>&nbsp;&#125;&#125;</span>
                                             </button>
@@ -1315,12 +1317,12 @@
                                             <div class="flex items-center justify-end gap-1.5 pt-0.5">
                                                 <span class="text-[9px] text-slate-400">Sub-keys:</span>
                                                 <button type="button" @mousedown.prevent="insertVar(v.key + '_from')"
-                                                    class="text-[11px] font-bold font-mono text-teal-600 dark:text-teal-400 hover:underline cursor-pointer bg-teal-50 dark:bg-teal-950/30 px-1 py-0.5 rounded border border-teal-200 dark:border-teal-800/40"
+                                                    class="text-[11px] font-bold font-mono text-purple-600 dark:text-purple-400 hover:underline cursor-pointer bg-purple-50 dark:bg-purple-950/30 px-1 py-0.5 rounded border border-purple-200 dark:border-purple-800/40"
                                                     title="From date only">
                                                     <span>&#123;&#123;&nbsp;<span x-text="v.key + '_from'"></span>&nbsp;&#125;&#125;</span>
                                                 </button>
                                                 <button type="button" @mousedown.prevent="insertVar(v.key + '_to')"
-                                                    class="text-[11px] font-bold font-mono text-teal-600 dark:text-teal-400 hover:underline cursor-pointer bg-teal-50 dark:bg-teal-950/30 px-1 py-0.5 rounded border border-teal-200 dark:border-teal-800/40"
+                                                    class="text-[11px] font-bold font-mono text-purple-600 dark:text-purple-400 hover:underline cursor-pointer bg-purple-50 dark:bg-purple-950/30 px-1 py-0.5 rounded border border-purple-200 dark:border-purple-800/40"
                                                     title="To date only">
                                                     <span>&#123;&#123;&nbsp;<span x-text="v.key + '_to'"></span>&nbsp;&#125;&#125;</span>
                                                 </button>
@@ -1540,20 +1542,331 @@
             }
         }
 
+        /* ── Robust Undo / Redo History Manager ── */
+        const historyManager = {
+            stack: [],
+            index: -1,
+            maxSize: 60,
+            isApplying: false,
+            debounceTimer: null,
+
+            getRoot() {
+                return document.getElementById('pages-container') || document.getElementById('page-content-editor');
+            },
+
+            record(saveCursor = true) {
+                if (this.isApplying) return;
+                const root = this.getRoot();
+                if (!root) return;
+
+                const html = root.innerHTML;
+                if (this.index >= 0 && this.stack[this.index] && this.stack[this.index].html === html) {
+                    return;
+                }
+
+                const cursorBookmark = saveCursor ? this.getCursorBookmark(root) : null;
+
+                if (this.index < this.stack.length - 1) {
+                    this.stack = this.stack.slice(0, this.index + 1);
+                }
+
+                this.stack.push({
+                    html: html,
+                    cursor: cursorBookmark,
+                    timestamp: Date.now()
+                });
+
+                if (this.stack.length > this.maxSize) {
+                    this.stack.shift();
+                } else {
+                    this.index++;
+                }
+
+                this.updateButtons();
+            },
+
+            recordDebounced(delay = 350) {
+                if (this.isApplying) return;
+                clearTimeout(this.debounceTimer);
+                this.debounceTimer = setTimeout(() => {
+                    this.record(true);
+                }, delay);
+            },
+
+            canUndo() {
+                return this.index > 0;
+            },
+
+            canRedo() {
+                return this.index < this.stack.length - 1;
+            },
+
+            undo() {
+                clearTimeout(this.debounceTimer);
+                const root = this.getRoot();
+                if (!root) return false;
+
+                if (this.index >= 0 && this.stack[this.index] && this.stack[this.index].html !== root.innerHTML) {
+                    this.record(true);
+                }
+
+                if (!this.canUndo()) return false;
+
+                this.isApplying = true;
+                this.index--;
+                const state = this.stack[this.index];
+                this.applyState(state);
+                this.isApplying = false;
+                this.updateButtons();
+                return true;
+            },
+
+            redo() {
+                clearTimeout(this.debounceTimer);
+                if (!this.canRedo()) return false;
+
+                this.isApplying = true;
+                this.index++;
+                const state = this.stack[this.index];
+                this.applyState(state);
+                this.isApplying = false;
+                this.updateButtons();
+                return true;
+            },
+
+            applyState(state) {
+                if (!state) return;
+                const root = this.getRoot();
+                if (!root) return;
+
+                root.innerHTML = state.html;
+
+                if (typeof initTableResizeHandles === 'function') {
+                    initTableResizeHandles();
+                }
+
+                const pages = root.querySelectorAll('.doc-page');
+                if (pages.length > 0) {
+                    pages.forEach((p, idx) => {
+                        const lbl = p.querySelector('.page-number-label');
+                        if (lbl) lbl.textContent = 'Page ' + (idx + 1);
+                    });
+                    const alpineEl = document.querySelector('[x-data]');
+                    if (alpineEl && window.Alpine) {
+                        try {
+                            const comp = Alpine.$data(alpineEl);
+                            if (comp) comp.pages = pages.length;
+                        } catch (e) {}
+                    }
+                }
+
+                if (state.cursor) {
+                    this.restoreCursorBookmark(root, state.cursor);
+                }
+
+                if (typeof updateToolbarState === 'function') {
+                    updateToolbarState();
+                }
+            },
+
+            getCursorBookmark(root) {
+                const sel = window.getSelection();
+                if (!sel || sel.rangeCount === 0) return null;
+                const range = sel.getRangeAt(0);
+
+                const pageContent = range.startContainer.nodeType === Node.ELEMENT_NODE
+                    ? (range.startContainer.closest('.doc-page-content') || range.startContainer.closest('#page-content-editor'))
+                    : (range.startContainer.parentNode?.closest('.doc-page-content') || range.startContainer.parentNode?.closest('#page-content-editor'));
+
+                if (!pageContent || !root.contains(pageContent)) return null;
+
+                const allPages = Array.from(root.querySelectorAll('.doc-page-content'));
+                const pageIndex = allPages.length > 0 ? allPages.indexOf(pageContent) : 0;
+
+                let startOffset = 0;
+                let endOffset = 0;
+
+                try {
+                    const preRange = document.createRange();
+                    preRange.selectNodeContents(pageContent);
+                    preRange.setEnd(range.startContainer, range.startOffset);
+                    startOffset = preRange.toString().length;
+
+                    const endPreRange = document.createRange();
+                    endPreRange.selectNodeContents(pageContent);
+                    endPreRange.setEnd(range.endContainer, range.endOffset);
+                    endOffset = endPreRange.toString().length;
+                } catch (e) {
+                    startOffset = 0;
+                    endOffset = 0;
+                }
+
+                return {
+                    pageIndex: Math.max(0, pageIndex),
+                    startOffset: startOffset,
+                    endOffset: endOffset
+                };
+            },
+
+            restoreCursorBookmark(root, bookmark) {
+                if (!bookmark) return;
+                const allPages = Array.from(root.querySelectorAll('.doc-page-content'));
+                const pageContent = allPages[bookmark.pageIndex] || allPages[0] || root;
+                if (!pageContent) return;
+
+                pageContent.focus();
+                try {
+                    let currentOffset = 0;
+                    let startNode = null, startNodeOffset = 0;
+                    let endNode = null, endNodeOffset = 0;
+
+                    const walker = document.createTreeWalker(pageContent, NodeFilter.SHOW_TEXT, null, false);
+                    let node;
+                    while ((node = walker.nextNode())) {
+                        const len = node.nodeValue.length;
+                        if (!startNode && (currentOffset + len >= bookmark.startOffset)) {
+                            startNode = node;
+                            startNodeOffset = Math.max(0, bookmark.startOffset - currentOffset);
+                        }
+                        if (!endNode && (currentOffset + len >= bookmark.endOffset)) {
+                            endNode = node;
+                            endNodeOffset = Math.max(0, bookmark.endOffset - currentOffset);
+                            break;
+                        }
+                        currentOffset += len;
+                    }
+
+                    const sel = window.getSelection();
+                    const range = document.createRange();
+
+                    if (startNode) {
+                        range.setStart(startNode, Math.min(startNodeOffset, startNode.nodeValue.length));
+                    } else {
+                        range.selectNodeContents(pageContent);
+                        range.collapse(false);
+                    }
+
+                    if (endNode && bookmark.endOffset > bookmark.startOffset) {
+                        range.setEnd(endNode, Math.min(endNodeOffset, endNode.nodeValue.length));
+                    } else if (startNode) {
+                        range.collapse(true);
+                    }
+
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                    if (typeof saveSelection === 'function') saveSelection();
+                } catch (e) {
+                    pageContent.focus();
+                }
+            },
+
+            updateButtons() {
+                const undoBtn = document.getElementById('tb-undo') || document.querySelector('button[title*="Undo"]');
+                const redoBtn = document.getElementById('tb-redo') || document.querySelector('button[title*="Redo"]');
+                if (undoBtn) {
+                    undoBtn.style.opacity = this.canUndo() ? '1' : '0.35';
+                    undoBtn.style.cursor = this.canUndo() ? 'pointer' : 'default';
+                }
+                if (redoBtn) {
+                    redoBtn.style.opacity = this.canRedo() ? '1' : '0.35';
+                    redoBtn.style.cursor = this.canRedo() ? 'pointer' : 'default';
+                }
+            }
+        };
+
+        // Window-level keydown handler for Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z
+        window.addEventListener('keydown', (e) => {
+            const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+            const isCmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
+            if (!isCmdOrCtrl) return;
+
+            const active = document.activeElement;
+            if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT')) {
+                return;
+            }
+
+            const key = e.key.toLowerCase();
+            if (key === 'z') {
+                e.preventDefault();
+                if (e.shiftKey) {
+                    historyManager.redo();
+                } else {
+                    historyManager.undo();
+                }
+            } else if (key === 'y') {
+                e.preventDefault();
+                historyManager.redo();
+            }
+        });
+
         // Execute a document command on the active contenteditable
         function exec(cmd, val = null) {
+            if (cmd === 'undo') {
+                historyManager.undo();
+                return;
+            }
+            if (cmd === 'redo') {
+                historyManager.redo();
+                return;
+            }
+            historyManager.record(true);
             restoreSelection();
             document.execCommand(cmd, false, val);
+            historyManager.recordDebounced(150);
         }
 
         function execBlock(tag) {
+            historyManager.record(true);
             restoreSelection();
             document.execCommand('formatBlock', false, '<' + tag + '>');
+            historyManager.record(true);
+        }
+
+        function setVariableFont(varEl, fontName) {
+            if (!varEl) return;
+            varEl.setAttribute('data-font', fontName);
+            varEl.setAttribute('title', 'Variable: ' + (varEl.getAttribute('data-var') || '') + ' | Font: ' + fontName + ' | Type: ' + (varEl.getAttribute('data-var-type') || ''));
+
+            let fontTag = varEl.querySelector('.var-font-tag');
+            if (!fontTag) {
+                fontTag = document.createElement('span');
+                fontTag.setAttribute('contenteditable', 'false');
+                varEl.appendChild(fontTag);
+            }
+
+            const isNepali = /preeti|kalimati|kantipur|mangal/i.test(fontName);
+            fontTag.className = 'var-font-tag ' + (isNepali ? 'var-font-nepali' : 'var-font-latin');
+            fontTag.innerHTML = (isNepali ? '<span class="mr-0.5">🇳🇵</span>' : '<span class="mr-0.5 opacity-70">🔤</span>') + fontName;
         }
 
         function execFont(name) {
+            historyManager.record(true);
             restoreSelection();
             document.execCommand('fontName', false, name);
+
+            // Update font on any selected or active template variables
+            const sel = window.getSelection();
+            if (sel && sel.rangeCount > 0) {
+                const range = sel.getRangeAt(0);
+                const container = range.commonAncestorContainer;
+                const parentEl = container.nodeType === 1 ? container : container.parentNode;
+
+                const targetVar = parentEl ? parentEl.closest('.template-variable') : null;
+                if (targetVar) {
+                    setVariableFont(targetVar, name);
+                } else if (parentEl) {
+                    parentEl.querySelectorAll('.template-variable').forEach(v => {
+                        if (sel.containsNode(v, true)) {
+                            setVariableFont(v, name);
+                        }
+                    });
+                }
+            }
+            if (window._lastClickedVar && document.contains(window._lastClickedVar)) {
+                setVariableFont(window._lastClickedVar, name);
+            }
+
+            historyManager.record(true);
         }
 
         function execFontSize(pt) {
@@ -1670,6 +1983,7 @@
 
         function insertTable(rows, cols) {
             if (getCurrentCell()) return;
+            historyManager.record(true);
             rows = rows || 3;
             cols = cols || 3;
             const el = getActive();
@@ -1687,6 +2001,7 @@
             html += '</tbody></table><p><br></p>';
             document.execCommand('insertHTML', false, html);
             initTableResizeHandles();
+            historyManager.record(true);
         }
 
         /* ── Table manipulation ── */
@@ -1833,6 +2148,7 @@
 
             initTableResizeHandles();
             showTableMenuForSelection();
+            historyManager.record(true);
         }
 
         function unmergeSelectedCells() {
@@ -1917,6 +2233,7 @@
 
             initTableResizeHandles();
             showTableMenuForSelection();
+            historyManager.record(true);
         }
 
         function selectCellRange(cellA, cellB) {
@@ -2096,6 +2413,7 @@
         }
 
         function tableAction(action, value) {
+            historyManager.record(true);
             const targets = getSelectedOrActiveCells();
             const cell = targets[0] || _activeCell || getCurrentCell();
             if (!cell) return;
@@ -2107,9 +2425,11 @@
 
             if (action === 'mergeCells') {
                 mergeSelectedCells();
+                historyManager.record(true);
                 return;
             } else if (action === 'unmergeCells') {
                 unmergeSelectedCells();
+                historyManager.record(true);
                 return;
             } else if (action === 'addRowAbove' || action === 'addRowBelow') {
                 const newRow = document.createElement('tr');
@@ -2454,6 +2774,7 @@
                     nextCell = null;
                     table = null;
                     document.body.classList.remove('is-col-resizing');
+                    historyManager.record(true);
                 }
             });
         }
@@ -2474,6 +2795,10 @@
                 if (btn) btn.classList.toggle('active', document.queryCommandState(cmd));
             });
 
+            if (typeof historyManager !== 'undefined') {
+                historyManager.updateButtons();
+            }
+
             // Update font / size pickers
             const sel = window.getSelection();
             if (sel && sel.rangeCount > 0) {
@@ -2481,17 +2806,25 @@
                 if (node.nodeType === 3) node = node.parentNode;
                 const ed = getActive();
                 if (ed && ed.contains(node)) {
-                    const cs = window.getComputedStyle(node);
+                    const varEl = node.closest ? node.closest('.template-variable') : (node.parentNode && node.parentNode.closest ? node.parentNode.closest('.template-variable') : null);
                     const fontSel = document.getElementById('tb-font');
-                    if (fontSel) {
-                        const fn = cs.fontFamily.replace(/['"]/g, '');
-                        for (const opt of fontSel.options) {
-                            if (fn.toLowerCase().includes(opt.value.toLowerCase())) {
-                                fontSel.value = opt.value;
-                                break;
+                    if (varEl && varEl.getAttribute('data-font')) {
+                        if (fontSel) {
+                            fontSel.value = varEl.getAttribute('data-font');
+                        }
+                    } else {
+                        const cs = window.getComputedStyle(node);
+                        if (fontSel) {
+                            const fn = cs.fontFamily.replace(/['"]/g, '');
+                            for (const opt of fontSel.options) {
+                                if (fn.toLowerCase().includes(opt.value.toLowerCase())) {
+                                    fontSel.value = opt.value;
+                                    break;
+                                }
                             }
                         }
                     }
+                    const cs = window.getComputedStyle(node);
                     const sizInp = document.getElementById('tb-size');
                     if (sizInp) sizInp.value = Math.round(parseFloat(cs.fontSize) * 0.75) || 12;
                 }
@@ -2785,18 +3118,110 @@
                     return text.length === 0 && !clone.querySelector('img, table, hr, p, div, h1, h2, h3, ul, ol');
                 },
 
+                getVarType(key) {
+                    if (!key) return 'custom';
+                    const baseKey = key.replace(/_(from|to)$/, '');
+                    const isPermanent = this.permanentGlobalVars && this.permanentGlobalVars.some(g => g.key === key || g.key === baseKey);
+                    if (isPermanent) return 'permanent';
+
+                    const isPrebuilt = (this.prebuiltVars && this.prebuiltVars.some(pv => pv.key === key || pv.key === baseKey)) || key.startsWith('employee_');
+                    if (isPrebuilt) return 'prebuilt';
+
+                    return 'custom';
+                },
+
+                createVariableElement(key, font) {
+                    const type = this.getVarType(key);
+                    if (!font) {
+                        const tbFont = document.getElementById('tb-font');
+                        font = (tbFont && tbFont.value) ? tbFont.value : 'Times New Roman';
+                    }
+
+                    const span = document.createElement('span');
+                    span.className = 'template-variable var-type-' + type;
+                    span.setAttribute('data-var', key);
+                    span.setAttribute('data-var-type', type);
+                    span.setAttribute('data-font', font);
+                    span.setAttribute('contenteditable', 'false');
+                    span.setAttribute('title', 'Variable: {{ ' + key + ' }} | Font: ' + font + ' | Type: ' + type);
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'var-name';
+                    nameSpan.textContent = '{' + '{ ' + key + ' }' + '}';
+                    span.appendChild(nameSpan);
+
+                    const fontTag = document.createElement('span');
+                    fontTag.setAttribute('contenteditable', 'false');
+                    const isNepali = /preeti|kalimati|kantipur|mangal/i.test(font);
+                    fontTag.className = 'var-font-tag ' + (isNepali ? 'var-font-nepali' : 'var-font-latin');
+                    fontTag.innerHTML = (isNepali ? '<span class="mr-0.5">🇳🇵</span>' : '<span class="mr-0.5 opacity-70">🔤</span>') + font;
+                    span.appendChild(fontTag);
+
+                    return span;
+                },
+
+                createVariableBadgeHtml(key, font, type) {
+                    if (!type) type = this.getVarType(key);
+                    if (!font) font = 'Times New Roman';
+                    const isNepali = /preeti|kalimati|kantipur|mangal/i.test(font);
+                    const tagClass = 'var-font-tag ' + (isNepali ? 'var-font-nepali' : 'var-font-latin');
+                    const tagContent = (isNepali ? '🇳🇵 ' : '🔤 ') + font;
+                    const title = `Variable: {{ ${key} }} | Font: ${font} | Type: ${type}`;
+                    return `<span class="template-variable var-type-${type}" data-var="${key}" data-var-type="${type}" data-font="${font}" contenteditable="false" title="${title}"><span class="var-name font-mono">&#123;&#123;&nbsp;${key}&nbsp;&#125;&#125;</span><span class="${tagClass}" contenteditable="false">${tagContent}</span></span>`;
+                },
+
                 /* Insert a placeholder token at cursor */
                 insertVar(key) {
+                    historyManager.record(true);
                     const el = getActive();
                     if (!el) return;
                     el.focus();
-                    const ob = String.fromCharCode(123, 123);
-                    const cb = String.fromCharCode(125, 125);
-                    document.execCommand('insertText', false, ob + ' ' + key + ' ' + cb + ' ');
+                    
+                    const sel = window.getSelection();
+                    if (!sel || sel.rangeCount === 0) return;
+                    const range = sel.getRangeAt(0);
+
+                    // Determine active font at cursor
+                    let activeFont = 'Times New Roman';
+                    const tbFont = document.getElementById('tb-font');
+                    if (tbFont && tbFont.value) {
+                        activeFont = tbFont.value;
+                    }
+
+                    const span = this.createVariableElement(key, activeFont);
+
+                    range.deleteContents();
+                    range.insertNode(span);
+
+                    // Insert trailing space so user can continue typing normally
+                    const space = document.createTextNode('\u00A0');
+                    if (span.nextSibling) {
+                        span.parentNode.insertBefore(space, span.nextSibling);
+                    } else {
+                        span.parentNode.appendChild(space);
+                    }
+
+                    const newRange = document.createRange();
+                    newRange.setStartAfter(space);
+                    newRange.collapse(true);
+                    sel.removeAllRanges();
+                    sel.addRange(newRange);
+                    saveSelection();
+
+                    this.reflowPages();
+                    historyManager.record(true);
                 },
 
                 /* Toolbar proxies */
                 exec(cmd) {
+                    if (cmd === 'undo') {
+                        historyManager.undo();
+                        return;
+                    }
+                    if (cmd === 'redo') {
+                        historyManager.redo();
+                        return;
+                    }
                     exec(cmd);
                 },
                 execBlock(tag) {
@@ -3243,6 +3668,7 @@
 
                 /* Insert a manual page break — creates new page and moves cursor there */
                 insertPageBreak() {
+                    historyManager.record(true);
                     const el = getActive();
                     if (!el) return;
                     el.focus();
@@ -3265,6 +3691,7 @@
                     }
 
                     this.reflowPages();
+                    historyManager.record(true);
                 },
 
                 /* Collect all page HTML and submit the form */
@@ -3283,6 +3710,19 @@
                         if (cme) cme.remove();
                         const cm = clone.querySelector('#cursor-marker');
                         if (cm) cm.remove();
+                        // Normalize .template-variable spans into clean standard variable tokens preserving font and type
+                        clone.querySelectorAll('.template-variable').forEach(el => {
+                            const key = el.getAttribute('data-var') || el.textContent.replace(/[{}]/g, '').trim();
+                            const font = el.getAttribute('data-font') || 'Times New Roman';
+                            const varType = el.getAttribute('data-var-type') || self.getVarType(key);
+
+                            const span = document.createElement('span');
+                            span.style.fontFamily = font;
+                            span.setAttribute('data-var-font', font);
+                            span.setAttribute('data-var-type', varType);
+                            span.textContent = '{' + '{ ' + key + ' }' + '}';
+                            el.parentNode.replaceChild(span, el);
+                        });
                         // Trim trailing empty block nodes so no phantom blank page is created on reload
                         let last = clone.lastChild;
                         while (last) {
@@ -3386,12 +3826,49 @@
                         container.addEventListener('click', (e) => {
                             const marker = e.target.closest('.page-break-marker');
                             if (marker) {
+                                historyManager.record(true);
                                 marker.remove();
                                 self.reflowPages();
+                                historyManager.record(true);
+                                return;
+                            }
+
+                            // Variable click and font tag toggle handler
+                            const varEl = e.target.closest('.template-variable');
+                            if (varEl) {
+                                window._lastClickedVar = varEl;
+                                const fontSel = document.getElementById('tb-font');
+                                const curFont = varEl.getAttribute('data-font') || 'Times New Roman';
+                                if (fontSel) {
+                                    fontSel.value = curFont;
+                                }
+
+                                // If user clicked directly on the font tag, toggle between Preeti and Times New Roman
+                                if (e.target.closest('.var-font-tag')) {
+                                    historyManager.record(true);
+                                    const nextFont = /preeti/i.test(curFont) ? 'Times New Roman' : 'Preeti';
+                                    setVariableFont(varEl, nextFont);
+                                    if (fontSel) fontSel.value = nextFont;
+                                    historyManager.record(true);
+                                }
                             }
                         });
 
                         container.addEventListener('keydown', (e) => {
+                            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+                                e.preventDefault();
+                                if (e.shiftKey) {
+                                    historyManager.redo();
+                                } else {
+                                    historyManager.undo();
+                                }
+                                return;
+                            }
+                            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+                                e.preventDefault();
+                                historyManager.redo();
+                                return;
+                            }
                             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
                                 e.preventDefault();
                                 self.insertPageBreak();
@@ -3417,6 +3894,7 @@
                                             const idx = pages.indexOf(content);
                                             if (idx > 0) {
                                                 e.preventDefault();
+                                                historyManager.record(true);
                                                 const prevPage = pages[idx - 1];
                                                 const marker = document.createElement('span');
                                                 marker.id = 'cursor-start-marker';
@@ -3434,6 +3912,7 @@
                                                     sel.addRange(newRange);
                                                     m.remove();
                                                 }
+                                                historyManager.record(true);
                                             }
                                         }
                                     }
@@ -3444,6 +3923,7 @@
                                             const idx = pages.indexOf(content);
                                             if (idx < pages.length - 1) {
                                                 e.preventDefault();
+                                                historyManager.record(true);
                                                 const nextPage = pages[idx + 1];
                                                 const marker = document.createElement('span');
                                                 marker.id = 'cursor-start-marker';
@@ -3461,6 +3941,7 @@
                                                     sel.addRange(newRange);
                                                     m.remove();
                                                 }
+                                                historyManager.record(true);
                                             }
                                         }
                                     }
@@ -3472,7 +3953,13 @@
                             updateToolbarState();
                             clearTimeout(self._reflowTimer);
                             self._reflowTimer = setTimeout(() => self.reflowPages(), 150);
+                            historyManager.recordDebounced(350);
                         });
+
+                        setTimeout(() => {
+                            historyManager.record(false);
+                            historyManager.updateButtons();
+                        }, 120);
 
                         container.addEventListener('mouseup', updateToolbarState);
                         container.addEventListener('keyup', updateToolbarState);

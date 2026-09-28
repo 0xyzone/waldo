@@ -36,6 +36,138 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
+        @font-face {
+            font-family: 'Preeti';
+            src: local('Preeti'), local('Preeti Regular'), url('{{ asset('storage/letter-fonts/5e863031-8dcd-4210-9605-aea09f491236.ttf') }}') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        /* Template variable pill base */
+        .template-variable {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+            font-style: normal !important;
+            font-weight: 600 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 5px !important;
+            padding: 1.5px 8px !important;
+            margin: 0 2px !important;
+            border-radius: 9999px !important;
+            font-size: 0.88em !important;
+            vertical-align: baseline !important;
+            user-select: all !important;
+            line-height: 1.4 !important;
+            text-decoration: none !important;
+            cursor: pointer !important;
+            transition: all 0.15s ease !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+        }
+
+        /* 1. Prebuilt Variables: Primary color (Amber) */
+        .template-variable.var-type-prebuilt,
+        .template-variable[data-var-type="prebuilt"] {
+            background-color: rgba(245, 158, 11, 0.12) !important;
+            color: #b45309 !important;
+            border: 1px solid rgba(245, 158, 11, 0.38) !important;
+        }
+        .template-variable.var-type-prebuilt:hover,
+        .template-variable[data-var-type="prebuilt"]:hover {
+            background-color: rgba(245, 158, 11, 0.22) !important;
+            border-color: rgba(245, 158, 11, 0.6) !important;
+        }
+        .dark .template-variable.var-type-prebuilt,
+        .dark .template-variable[data-var-type="prebuilt"] {
+            background-color: rgba(245, 158, 11, 0.18) !important;
+            color: #fbbf24 !important;
+            border-color: rgba(245, 158, 11, 0.45) !important;
+        }
+
+        /* 2. Permanent Variables: Lime */
+        .template-variable.var-type-permanent,
+        .template-variable[data-var-type="permanent"] {
+            background-color: rgba(132, 204, 22, 0.15) !important;
+            color: #4d7c0f !important;
+            border: 1px solid rgba(132, 204, 22, 0.42) !important;
+        }
+        .template-variable.var-type-permanent:hover,
+        .template-variable[data-var-type="permanent"]:hover {
+            background-color: rgba(132, 204, 22, 0.25) !important;
+            border-color: rgba(132, 204, 22, 0.65) !important;
+        }
+        .dark .template-variable.var-type-permanent,
+        .dark .template-variable[data-var-type="permanent"] {
+            background-color: rgba(132, 204, 22, 0.2) !important;
+            color: #a3e635 !important;
+            border-color: rgba(132, 204, 22, 0.5) !important;
+        }
+
+        /* 3. Custom Variables: Purple / Violet */
+        .template-variable.var-type-custom,
+        .template-variable[data-var-type="custom"] {
+            background-color: rgba(168, 85, 247, 0.14) !important;
+            color: #7e22ce !important;
+            border: 1px solid rgba(168, 85, 247, 0.4) !important;
+        }
+        .template-variable.var-type-custom:hover,
+        .template-variable[data-var-type="custom"]:hover {
+            background-color: rgba(168, 85, 247, 0.24) !important;
+            border-color: rgba(168, 85, 247, 0.65) !important;
+        }
+        .dark .template-variable.var-type-custom,
+        .dark .template-variable[data-var-type="custom"] {
+            background-color: rgba(168, 85, 247, 0.2) !important;
+            color: #c084fc !important;
+            border-color: rgba(168, 85, 247, 0.5) !important;
+        }
+
+        /* Pill Variable Name */
+        .template-variable .var-name {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+            font-size: 0.95em !important;
+            letter-spacing: -0.01em !important;
+        }
+
+        /* Pill Font Tag */
+        .template-variable .var-font-tag {
+            display: inline-flex !important;
+            align-items: center !important;
+            font-size: 0.72em !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.02em !important;
+            padding: 1px 6px !important;
+            border-radius: 9999px !important;
+            line-height: 1.25 !important;
+            pointer-events: auto !important;
+            user-select: none !important;
+            cursor: pointer !important;
+            transition: all 0.15s ease !important;
+        }
+        .template-variable .var-font-tag:hover {
+            transform: scale(1.06) !important;
+        }
+
+        /* Nepali Font Tag (Preeti, etc.) */
+        .template-variable .var-font-tag.var-font-nepali {
+            background-color: #dc2626 !important;
+            color: #ffffff !important;
+            border: 1px solid #b91c1c !important;
+            box-shadow: 0 1px 2px rgba(220, 38, 38, 0.3) !important;
+        }
+
+        /* Standard Latin Font Tag */
+        .template-variable .var-font-tag.var-font-latin {
+            background-color: rgba(0, 0, 0, 0.08) !important;
+            color: currentColor !important;
+            border: 1px solid rgba(0, 0, 0, 0.12) !important;
+            opacity: 0.9 !important;
+        }
+        .dark .template-variable .var-font-tag.var-font-latin {
+            background-color: rgba(255, 255, 255, 0.12) !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+        }
+
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
@@ -193,6 +325,24 @@
     <!-- Load Font Face Config -->
     <script>
     (function loadCustomFonts() {
+        const defaultNepaliFonts = [
+            { family: 'Preeti', label: 'Preeti (नेपाली)' },
+            { family: 'Kalimati', label: 'Kalimati (Unicode)' }
+        ];
+
+        const selects = document.querySelectorAll('#tb-font');
+        selects.forEach(sel => {
+            const existingValues = [...sel.options].map(o => o.value);
+            defaultNepaliFonts.forEach(df => {
+                if (!existingValues.includes(df.family)) {
+                    const opt = document.createElement('option');
+                    opt.value = df.family;
+                    opt.textContent = df.label;
+                    sel.appendChild(opt);
+                }
+            });
+        });
+
         fetch('{{ route('letters.fonts.api') }}')
             .then(r => r.json())
             .then(fonts => {
@@ -203,7 +353,6 @@
                 ).join('\n');
                 document.head.appendChild(style);
 
-                const selects = document.querySelectorAll('#tb-font');
                 selects.forEach(sel => {
                     const existingValues = [...sel.options].map(o => o.value);
                     fonts.forEach(f => {

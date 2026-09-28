@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\NepaliDate\NepaliDate;
 use App\Models\Employee;
 use App\Models\GeneratedLetter;
 use App\Models\LetterGlobalVariable;
 use App\Models\LetterTemplate;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class LetterController extends Controller
@@ -290,5 +292,56 @@ class LetterController extends Controller
         $selectedTemplateId = request('template_id', '');
 
         return view('letters.generate', compact('employees', 'templates', 'permanentVariables', 'selectedTemplateId'));
+    }
+
+    public function convertDate(Request $request)
+    {
+        $dateStr = $request->input('date');
+        if (! $dateStr) {
+            return response()->json(['error' => 'Date is required'], 422);
+        }
+
+        try {
+            $c = Carbon::parse($dateStr);
+            $converter = new NepaliDate;
+            $bs = $converter->convertAdToBs($c->year, $c->month, $c->day);
+            if (empty($bs)) {
+                return response()->json(['error' => 'Date out of range for Nepali calendar conversion (2000-2090 BS)'], 422);
+            }
+
+            $enDetails = $converter->getDetails($c->year, $c->month, $c->day, 'ad', 'en');
+            $npDetails = $converter->getDetails($c->year, $c->month, $c->day, 'ad', 'np');
+
+            $digitsToPreeti = [
+                '0' => ')', '1' => '!', '2' => '@', '3' => '#', '4' => '$',
+                '5' => '%', '6' => '^', '7' => '&', '8' => '*', '9' => '(',
+            ];
+            $monthsToPreeti = [
+                1 => 'j}zfv', 2 => 'h]7', 3 => 'c;f/', 4 => ';fpg',
+                5 => 'ebf}', 6 => 'c;f]h', 7 => 'sflt{s', 8 => 'd+l;/',
+                9 => "k';", 10 => 'df3', 11 => "kmfu'g", 12 => 'r}t',
+            ];
+
+            $preetiYear = strtr((string) $bs['year'], $digitsToPreeti);
+            $preetiMonthNum = strtr(sprintf('%02d', $bs['month']), $digitsToPreeti);
+            $preetiDay = strtr((string) $bs['day'], $digitsToPreeti);
+            $preetiMonthName = $monthsToPreeti[$bs['month']] ?? '';
+
+            return response()->json([
+                'ad' => $c->format('Y-m-d'),
+                'ad_formatted' => $c->format('jS F, Y'),
+                'bs_year' => $bs['year'],
+                'bs_month' => $bs['month'],
+                'bs_day' => $bs['day'],
+                'bs_date' => sprintf('%04d-%02d-%02d', $bs['year'], $bs['month'], $bs['day']),
+                'bs_words' => $bs['day'].' '.($enDetails['F'] ?? '').', '.$bs['year'],
+                'bs_unicode' => ($npDetails['d'] ?? $bs['day']).' '.($npDetails['F'] ?? '').' '.($npDetails['Y'] ?? $bs['year']),
+                'bs_unicode_digits' => sprintf('%s-%s-%s', $npDetails['Y'] ?? $bs['year'], $npDetails['m'] ?? sprintf('%02d', $bs['month']), $npDetails['d'] ?? sprintf('%02d', $bs['day'])),
+                'bs_preeti_words' => $preetiDay.' '.$preetiMonthName.' '.$preetiYear,
+                'bs_preeti_digits' => $preetiYear.'.'.$preetiMonthNum.'.'.$preetiDay,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
     }
 }

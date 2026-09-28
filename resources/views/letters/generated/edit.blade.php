@@ -146,8 +146,8 @@
     <!-- ── TOOLBAR ── -->
     <div class="no-print bg-white dark:bg-zinc-900 border-b border-slate-200 dark:border-zinc-800 px-3 py-2 flex flex-wrap items-center gap-1 shrink-0 shadow-sm z-20">
 
-        <button type="button" @mousedown.prevent="exec('undo')" class="p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer" title="Undo"><i class="fa-solid fa-rotate-left text-sm"></i></button>
-        <button type="button" @mousedown.prevent="exec('redo')" class="p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer" title="Redo"><i class="fa-solid fa-rotate-right text-sm"></i></button>
+        <button type="button" id="tb-undo" @mousedown.prevent="exec('undo')" class="p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer transition-opacity" title="Undo (Ctrl+Z)"><i class="fa-solid fa-rotate-left text-sm"></i></button>
+        <button type="button" id="tb-redo" @mousedown.prevent="exec('redo')" class="p-1.5 text-slate-600 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer transition-opacity" title="Redo (Ctrl+Y)"><i class="fa-solid fa-rotate-right text-sm"></i></button>
 
         <div class="h-5 w-px bg-slate-200 dark:bg-zinc-700 mx-0.5"></div>
 
@@ -167,6 +167,8 @@
             <option>Courier New</option>
             <option>Verdana</option>
             <option>Plus Jakarta Sans</option>
+            <option value="Preeti">Preeti (नेपाली)</option>
+            <option value="Kalimati">Kalimati (Unicode)</option>
         </select>
 
         <div class="flex items-center border border-slate-200 dark:border-zinc-700 rounded-lg bg-slate-50 dark:bg-zinc-950 overflow-visible relative" x-data="{ dropdownOpen: false }" @click.outside="dropdownOpen = false">
@@ -604,19 +606,254 @@ function restoreSelection() {
     }
 }
 
+/* ── Robust Undo / Redo History Manager ── */
+const historyManager = {
+    stack: [],
+    index: -1,
+    maxSize: 60,
+    isApplying: false,
+    debounceTimer: null,
+
+    getRoot() {
+        return document.getElementById('page-content-editor');
+    },
+
+    record(saveCursor = true) {
+        if (this.isApplying) return;
+        const root = this.getRoot();
+        if (!root) return;
+
+        const html = root.innerHTML;
+        if (this.index >= 0 && this.stack[this.index] && this.stack[this.index].html === html) {
+            return;
+        }
+
+        const cursorBookmark = saveCursor ? this.getCursorBookmark(root) : null;
+
+        if (this.index < this.stack.length - 1) {
+            this.stack = this.stack.slice(0, this.index + 1);
+        }
+
+        this.stack.push({
+            html: html,
+            cursor: cursorBookmark,
+            timestamp: Date.now()
+        });
+
+        if (this.stack.length > this.maxSize) {
+            this.stack.shift();
+        } else {
+            this.index++;
+        }
+
+        this.updateButtons();
+    },
+
+    recordDebounced(delay = 350) {
+        if (this.isApplying) return;
+        clearTimeout(this.debounceTimer);
+        this.debounceTimer = setTimeout(() => {
+            this.record(true);
+        }, delay);
+    },
+
+    canUndo() {
+        return this.index > 0;
+    },
+
+    canRedo() {
+        return this.index < this.stack.length - 1;
+    },
+
+    undo() {
+        clearTimeout(this.debounceTimer);
+        const root = this.getRoot();
+        if (!root) return false;
+
+        if (this.index >= 0 && this.stack[this.index] && this.stack[this.index].html !== root.innerHTML) {
+            this.record(true);
+        }
+
+        if (!this.canUndo()) return false;
+
+        this.isApplying = true;
+        this.index--;
+        const state = this.stack[this.index];
+        this.applyState(state);
+        this.isApplying = false;
+        this.updateButtons();
+        return true;
+    },
+
+    redo() {
+        clearTimeout(this.debounceTimer);
+        if (!this.canRedo()) return false;
+
+        this.isApplying = true;
+        this.index++;
+        const state = this.stack[this.index];
+        this.applyState(state);
+        this.isApplying = false;
+        this.updateButtons();
+        return true;
+    },
+
+    applyState(state) {
+        if (!state) return;
+        const root = this.getRoot();
+        if (!root) return;
+
+        root.innerHTML = state.html;
+
+        if (state.cursor) {
+            this.restoreCursorBookmark(root, state.cursor);
+        }
+    },
+
+    getCursorBookmark(root) {
+        const sel = window.getSelection();
+        if (!sel || sel.rangeCount === 0) return null;
+        const range = sel.getRangeAt(0);
+
+        if (!root.contains(range.startContainer)) return null;
+
+        let startOffset = 0;
+        let endOffset = 0;
+
+        try {
+            const preRange = document.createRange();
+            preRange.selectNodeContents(root);
+            preRange.setEnd(range.startContainer, range.startOffset);
+            startOffset = preRange.toString().length;
+
+            const endPreRange = document.createRange();
+            endPreRange.selectNodeContents(root);
+            endPreRange.setEnd(range.endContainer, range.endOffset);
+            endOffset = endPreRange.toString().length;
+        } catch (e) {
+            startOffset = 0;
+            endOffset = 0;
+        }
+
+        return {
+            startOffset: startOffset,
+            endOffset: endOffset
+        };
+    },
+
+    restoreCursorBookmark(root, bookmark) {
+        if (!bookmark) return;
+        root.focus();
+        try {
+            let currentOffset = 0;
+            let startNode = null, startNodeOffset = 0;
+            let endNode = null, endNodeOffset = 0;
+
+            const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+            let node;
+            while ((node = walker.nextNode())) {
+                const len = node.nodeValue.length;
+                if (!startNode && (currentOffset + len >= bookmark.startOffset)) {
+                    startNode = node;
+                    startNodeOffset = Math.max(0, bookmark.startOffset - currentOffset);
+                }
+                if (!endNode && (currentOffset + len >= bookmark.endOffset)) {
+                    endNode = node;
+                    endNodeOffset = Math.max(0, bookmark.endOffset - currentOffset);
+                    break;
+                }
+                currentOffset += len;
+            }
+
+            const sel = window.getSelection();
+            const range = document.createRange();
+
+            if (startNode) {
+                range.setStart(startNode, Math.min(startNodeOffset, startNode.nodeValue.length));
+            } else {
+                range.selectNodeContents(root);
+                range.collapse(false);
+            }
+
+            if (endNode && bookmark.endOffset > bookmark.startOffset) {
+                range.setEnd(endNode, Math.min(endNodeOffset, endNode.nodeValue.length));
+            } else if (startNode) {
+                range.collapse(true);
+            }
+
+            sel.removeAllRanges();
+            sel.addRange(range);
+            if (typeof saveSelection === 'function') saveSelection();
+        } catch (e) {
+            root.focus();
+        }
+    },
+
+    updateButtons() {
+        const undoBtn = document.getElementById('tb-undo') || document.querySelector('button[title*="Undo"]');
+        const redoBtn = document.getElementById('tb-redo') || document.querySelector('button[title*="Redo"]');
+        if (undoBtn) {
+            undoBtn.style.opacity = this.canUndo() ? '1' : '0.35';
+            undoBtn.style.cursor = this.canUndo() ? 'pointer' : 'default';
+        }
+        if (redoBtn) {
+            redoBtn.style.opacity = this.canRedo() ? '1' : '0.35';
+            redoBtn.style.cursor = this.canRedo() ? 'pointer' : 'default';
+        }
+    }
+};
+
+window.addEventListener('keydown', (e) => {
+    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    const isCmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
+    if (!isCmdOrCtrl) return;
+
+    const active = document.activeElement;
+    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT')) {
+        return;
+    }
+
+    const key = e.key.toLowerCase();
+    if (key === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) {
+            historyManager.redo();
+        } else {
+            historyManager.undo();
+        }
+    } else if (key === 'y') {
+        e.preventDefault();
+        historyManager.redo();
+    }
+});
+
 function exec(cmd, val = null) {
+    if (cmd === 'undo') {
+        historyManager.undo();
+        return;
+    }
+    if (cmd === 'redo') {
+        historyManager.redo();
+        return;
+    }
+    historyManager.record(true);
     restoreSelection();
     document.execCommand(cmd, false, val);
+    historyManager.recordDebounced(150);
 }
 
 function execBlock(tag) {
+    historyManager.record(true);
     restoreSelection();
     document.execCommand('formatBlock', false, '<' + tag + '>');
+    historyManager.record(true);
 }
 
 function execFont(name) {
+    historyManager.record(true);
     restoreSelection();
     document.execCommand('fontName', false, name);
+    historyManager.record(true);
 }
 
 function execFontSize(pt) {
@@ -682,15 +919,17 @@ function adjustSize(delta) {
 function insertTable() {
     const root = document.getElementById('page-content-editor');
     if (!root) return;
+    historyManager.record(true);
     root.focus();
-    let html = '<table><tbody>';
+    let html = '<table style="width:100%;table-layout:fixed;"><tbody>';
     for (let r = 0; r < 3; r++) {
         html += '<tr>';
         for (let c = 0; c < 3; c++) html += '<td>&nbsp;</td>';
         html += '</tr>';
     }
-    html += '</tbody>mtable><p><br></p>';
+    html += '</tbody></table><p><br></p>';
     document.execCommand('insertHTML', false, html);
+    historyManager.record(true);
 }
 
 document.addEventListener('selectionchange', () => {
@@ -964,10 +1203,7 @@ function editGeneratedLetterState() {
         insertPredefinedValue(key) {
             const val = this.getEvaluatedPredefinedValue(key);
             if (!val) return;
-            restoreSelection();
-            const root = document.getElementById('page-content-editor');
-            if (root) root.focus();
-            document.execCommand('insertText', false, val);
+            this.safeInsertVal(val);
         },
 
         insertCustomValue(key) {
@@ -992,10 +1228,66 @@ function editGeneratedLetterState() {
                 val = this.formatDate(val);
             }
 
+            this.safeInsertVal(val);
+        },
+
+        safeInsertVal(val) {
+            historyManager.record(true);
             restoreSelection();
             const root = document.getElementById('page-content-editor');
             if (root) root.focus();
-            document.execCommand('insertText', false, val);
+
+            const sel = window.getSelection();
+            if (!sel || sel.rangeCount === 0) return;
+            const range = sel.getRangeAt(0);
+
+            // Check if current context is Preeti font
+            let isInsidePreeti = false;
+            let p = range.commonAncestorContainer;
+            if (p && p.nodeType === 3) p = p.parentNode;
+            while (p && p !== root) {
+                const ff = window.getComputedStyle(p).fontFamily.toLowerCase();
+                const face = p.getAttribute ? (p.getAttribute('face') || '').toLowerCase() : '';
+                if (ff.includes('preeti') || face.includes('preeti')) {
+                    isInsidePreeti = true;
+                    break;
+                }
+                p = p.parentNode;
+            }
+
+            if (isInsidePreeti) {
+                const span = document.createElement('span');
+                if (/[\u0900-\u097F]/.test(val)) {
+                    span.style.fontFamily = "'Kalimati', 'Noto Sans Devanagari', 'Nirmala UI', sans-serif";
+                } else {
+                    span.style.fontFamily = "'Times New Roman', Arial, sans-serif";
+                }
+                span.textContent = val;
+                range.deleteContents();
+                range.insertNode(span);
+                range.setStartAfter(span);
+                range.collapse(true);
+                sel.removeAllRanges();
+                sel.addRange(range);
+            } else {
+                document.execCommand('insertText', false, val);
+            }
+            historyManager.record(true);
+        },
+
+        init() {
+            this.$nextTick(() => {
+                const ed = document.getElementById('page-content-editor');
+                if (ed) {
+                    ed.addEventListener('input', () => {
+                        historyManager.recordDebounced(350);
+                    });
+                }
+                setTimeout(() => {
+                    historyManager.record(false);
+                    historyManager.updateButtons();
+                }, 100);
+            });
         },
 
         prepareSubmit(e) {

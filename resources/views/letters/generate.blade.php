@@ -592,13 +592,44 @@
                     
                     <!-- Date Field -->
                     <template x-if="(v.type || 'text') === 'date'">
-                        <input type="date" x-model="customValues[v.key || v]" @change="computeFormulas()"
-                               class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
+                        <div class="space-y-2">
+                            <input type="date" x-model="customValues[v.key || v]" @change="computeFormulas(); updatePaginatedLetters()"
+                                   class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
+                            
+                            <!-- Nepali (BS) Date Conversion & Format Selector -->
+                            <div x-show="customValues[v.key || v]" class="p-2.5 bg-amber-500/5 dark:bg-amber-950/20 border border-amber-500/20 rounded-xl space-y-2">
+                                <div class="flex items-center justify-between text-[11px]">
+                                    <span class="font-bold text-amber-800 dark:text-amber-400 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-calendar-check text-amber-500"></i>
+                                        <span>Nepali (BS) Date:</span>
+                                    </span>
+                                    <span class="font-mono font-bold text-slate-800 dark:text-zinc-200"
+                                          x-text="getNepaliDateInfo(customValues[v.key || v])?.bs_words || '—'"></span>
+                                </div>
+                                <div class="text-[10px] text-slate-500 dark:text-zinc-400 flex items-center justify-between border-t border-amber-500/10 pt-1.5">
+                                    <span>Devanagari: <strong class="text-slate-700 dark:text-zinc-200" x-text="getNepaliDateInfo(customValues[v.key || v])?.bs_unicode || '—'"></strong></span>
+                                    <span>Digits: <strong class="text-slate-700 dark:text-zinc-200 font-mono" x-text="getNepaliDateInfo(customValues[v.key || v])?.bs_date || '—'"></strong></span>
+                                </div>
+                                <div class="space-y-1 pt-1.5 border-t border-amber-500/10">
+                                    <label class="block text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Use In Letter As:</label>
+                                    <select x-model="dateFormats[v.key || v]" @change="updatePaginatedLetters()"
+                                            class="w-full px-2 py-1.5 border border-amber-500/30 bg-white dark:bg-zinc-900 rounded-lg text-xs font-semibold text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 cursor-pointer">
+                                        <option value="ad_full">AD Full: 28th September, 2026</option>
+                                        <option value="ad_standard">AD Standard: 2026-09-28</option>
+                                        <option value="bs_words">BS in Words: 12 Ashoj, 2083</option>
+                                        <option value="bs_digits">BS Digits: 2083-06-12</option>
+                                        <option value="bs_unicode">BS Devanagari: १२ असोज २०८३</option>
+                                        <option value="bs_preeti_words">BS Preeti (नेपाली): १२ असोज २०८३</option>
+                                        <option value="bs_preeti_digits">BS Preeti Digits: २०८३.०६.१२</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                     </template>
 
                     <!-- Date Range Field (Single Calendar for Start & End) -->
                     <template x-if="v.type === 'daterange'">
-                        <div class="space-y-1.5"
+                        <div class="space-y-2"
                              x-data="{
                                 fp: null,
                                 init() {
@@ -646,8 +677,41 @@
                                 <span class="truncate">From: <strong class="text-slate-600 dark:text-zinc-300 font-mono" x-text="customValues[(v.key || v) + '_from'] || '—'"></strong></span>
                                 <span class="truncate">To: <strong class="text-slate-600 dark:text-zinc-300 font-mono" x-text="customValues[(v.key || v) + '_to'] || '—'"></strong></span>
                             </div>
+
+                            <!-- Nepali (BS) Date Conversion & Format Selector for Range -->
+                            <div x-show="customValues[(v.key || v) + '_from'] && customValues[(v.key || v) + '_to']"
+                                 class="p-2.5 bg-amber-500/5 dark:bg-amber-950/20 border border-amber-500/20 rounded-xl space-y-2">
+                                <div class="text-[11px] font-bold text-amber-800 dark:text-amber-400 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-calendar-check text-amber-500"></i>
+                                    <span>Nepali (BS) Range:</span>
+                                </div>
+                                <div class="text-[10px] text-slate-600 dark:text-zinc-300 space-y-1 border-t border-amber-500/10 pt-1.5">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-slate-400">From (BS):</span>
+                                        <strong class="font-mono text-slate-700 dark:text-zinc-200" x-text="getNepaliDateInfo(customValues[(v.key || v) + '_from'])?.bs_words || '—'"></strong>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-slate-400">To (BS):</span>
+                                        <strong class="font-mono text-slate-700 dark:text-zinc-200" x-text="getNepaliDateInfo(customValues[(v.key || v) + '_to'])?.bs_words || '—'"></strong>
+                                    </div>
+                                </div>
+                                <div class="space-y-1 pt-1.5 border-t border-amber-500/10">
+                                    <label class="block text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Use In Letter As:</label>
+                                    <select x-model="dateFormats[v.key || v]" @change="updatePaginatedLetters()"
+                                            class="w-full px-2 py-1.5 border border-amber-500/30 bg-white dark:bg-zinc-900 rounded-lg text-xs font-semibold text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 cursor-pointer">
+                                        <option value="ad_full">AD Full: from 1st Sep, 2026 to 28th Sep, 2026</option>
+                                        <option value="ad_standard">AD Standard: 2026-09-01 to 2026-09-28</option>
+                                        <option value="bs_words">BS in Words: from 16 Bhadra, 2083 to 12 Ashoj, 2083</option>
+                                        <option value="bs_digits">BS Digits: 2083-05-16 to 2083-06-12</option>
+                                        <option value="bs_unicode">BS Devanagari: २०८३ भदौ १६ देखि २०८३ असोज १२ सम्म</option>
+                                        <option value="bs_preeti_words">BS Preeti (नेपाली): !^ ebf} @)*# b]lv !@ c;f]h @)*# ;Dd</option>
+                                        <option value="bs_preeti_digits">BS Preeti Digits: @)*#.)%.!^ b]lv @)*#.)^.!@ ;Dd</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     </template>
+
 
                     <!-- Number Field -->
                     <template x-if="(v.type || 'text') === 'number'">
@@ -776,6 +840,194 @@
 
 @section('scripts')
 <script>
+const nepaliCalendar = {
+    bsData: [
+        [2000, 30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
+        [2001, 31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2002, 31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
+        [2003, 31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
+        [2004, 30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
+        [2005, 31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2006, 31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
+        [2007, 31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
+        [2008, 31, 31, 31, 32, 31, 31, 29, 30, 30, 29, 29, 31],
+        [2009, 31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2010, 31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
+        [2011, 31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
+        [2012, 31, 31, 31, 32, 31, 31, 29, 30, 30, 29, 30, 30],
+        [2013, 31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2014, 31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
+        [2015, 31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
+        [2016, 31, 31, 31, 32, 31, 31, 29, 30, 30, 29, 30, 30],
+        [2017, 31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2018, 31, 32, 31, 32, 31, 30, 30, 29, 30, 29, 30, 30],
+        [2019, 31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
+        [2020, 31, 31, 31, 32, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2021, 31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2022, 31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 30],
+        [2023, 31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
+        [2024, 31, 31, 31, 32, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2025, 31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2026, 31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
+        [2027, 30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
+        [2028, 31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2029, 31, 31, 32, 31, 32, 30, 30, 29, 30, 29, 30, 30],
+        [2030, 31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
+        [2031, 30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
+        [2032, 31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2033, 31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
+        [2034, 31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
+        [2035, 30, 32, 31, 32, 31, 31, 29, 30, 30, 29, 29, 31],
+        [2036, 31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2037, 31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
+        [2038, 31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
+        [2039, 31, 31, 31, 32, 31, 31, 29, 30, 30, 29, 30, 30],
+        [2040, 31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2041, 31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
+        [2042, 31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
+        [2043, 31, 31, 31, 32, 31, 31, 29, 30, 30, 29, 30, 30],
+        [2044, 31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2045, 31, 32, 31, 32, 31, 30, 30, 29, 30, 29, 30, 30],
+        [2046, 31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
+        [2047, 31, 31, 31, 32, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2048, 31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2049, 31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 30],
+        [2050, 31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
+        [2051, 31, 31, 31, 32, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2052, 31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2053, 31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 30],
+        [2054, 31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
+        [2055, 31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2056, 31, 31, 32, 31, 32, 30, 30, 29, 30, 29, 30, 30],
+        [2057, 31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
+        [2058, 30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
+        [2059, 31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2060, 31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
+        [2061, 31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
+        [2062, 30, 32, 31, 32, 31, 31, 29, 30, 29, 30, 29, 31],
+        [2063, 31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2064, 31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
+        [2065, 31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
+        [2066, 31, 31, 31, 32, 31, 31, 29, 30, 30, 29, 29, 31],
+        [2067, 31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2068, 31, 31, 32, 32, 31, 30, 30, 29, 30, 29, 30, 30],
+        [2069, 31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
+        [2070, 31, 31, 31, 32, 31, 31, 29, 30, 30, 29, 30, 30],
+        [2071, 31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2072, 31, 32, 31, 32, 31, 30, 30, 29, 30, 29, 30, 30],
+        [2073, 31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 31],
+        [2074, 31, 31, 31, 32, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2075, 31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2076, 31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 30],
+        [2077, 31, 32, 31, 32, 31, 30, 30, 30, 29, 30, 29, 31],
+        [2078, 31, 31, 31, 32, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2079, 31, 31, 32, 31, 31, 31, 30, 29, 30, 29, 30, 30],
+        [2080, 31, 32, 31, 32, 31, 30, 30, 30, 29, 29, 30, 30],
+        [2081, 31, 31, 32, 32, 31, 30, 30, 30, 29, 30, 30, 30],
+        [2082, 30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 30, 30],
+        [2083, 31, 31, 32, 31, 31, 30, 30, 30, 29, 30, 30, 30],
+        [2084, 31, 31, 32, 31, 31, 30, 30, 30, 29, 30, 30, 30],
+        [2085, 31, 32, 31, 32, 30, 31, 30, 30, 29, 30, 30, 30],
+        [2086, 30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 30, 30],
+        [2087, 31, 31, 32, 31, 31, 31, 30, 30, 29, 30, 30, 30],
+        [2088, 30, 31, 32, 32, 30, 31, 30, 30, 29, 30, 30, 30],
+        [2089, 30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 30, 30],
+        [2090, 30, 32, 31, 32, 31, 30, 30, 30, 29, 30, 30, 30]
+    ],
+    isLeapYear(year) {
+        return (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0));
+    },
+    monthsEn: ['', 'Baishakh', 'Jestha', 'Ashadh', 'Shrawan', 'Bhadra', 'Ashoj', 'Kartik', 'Mangsir', 'Poush', 'Magh', 'Falgun', 'Chaitra'],
+    monthsNp: ['', 'वैशाख', 'जेठ', 'असार', 'साउन', 'भदौ', 'असोज', 'कार्तिक', 'मंसिर', 'पुस', 'माघ', 'फागुन', 'चैत'],
+    monthsPreeti: ['', 'j}zfv', 'h]7', 'c;f/', ';fpg', 'ebf}', 'c;f]h', 'sflt{s', 'd+l;/', "k';", 'df3', "kmfu'g", 'r}t'],
+    digitsNp: ['०', '१', '२', '३', '४', '५', '६', '७', '८', '९'],
+    digitsPreeti: [')', '!', '@', '#', '$', '%', '^', '&', '*', '('],
+
+    toDevanagariDigits(str) {
+        return String(str).replace(/[0-9]/g, d => this.digitsNp[parseInt(d, 10)]);
+    },
+    toPreetiDigits(str) {
+        return String(str).replace(/[0-9]/g, d => this.digitsPreeti[parseInt(d, 10)]);
+    },
+
+    convertEnglishToNepali(yy, mm, dd) {
+        if (yy < 1944 || yy > 2033) return null;
+        const month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        const lmonth = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+        const def_eyy = 1944;
+        const def_nyy = 2000;
+        const def_nmm = 9;
+        const def_ndd = 17 - 1;
+        let total_edays = 0;
+        let total_ndays = 0;
+
+        let day = 7 - 1;
+        let m = 0;
+        let y = 0;
+
+        for (let i = 0; i < (yy - def_eyy); i++) {
+            const isLeap = this.isLeapYear(def_eyy + i);
+            for (let j = 0; j < 12; j++) {
+                total_edays += isLeap ? lmonth[j] : month[j];
+            }
+        }
+
+        for (let i = 0; i < (mm - 1); i++) {
+            total_edays += this.isLeapYear(yy) ? lmonth[i] : month[i];
+        }
+        total_edays += dd;
+
+        let i = 0;
+        let j = def_nmm;
+        total_ndays = def_ndd;
+        m = def_nmm;
+        y = def_nyy;
+
+        while (total_edays !== 0) {
+            let a = this.bsData[i][j];
+            total_ndays++;
+            day++;
+
+            if (total_ndays > a) {
+                m++;
+                total_ndays = 1;
+                j++;
+            }
+
+            if (day > 7) day = 1;
+
+            if (m > 12) {
+                y++;
+                m = 1;
+            }
+
+            if (j > 12) {
+                j = 1;
+                i++;
+            }
+
+            total_edays--;
+        }
+
+        const mmStr = String(m).padStart(2, '0');
+        const ddStr = String(total_ndays).padStart(2, '0');
+
+        return {
+            year: y,
+            month: m,
+            day: total_ndays,
+            weekday: day,
+            bs_date: `${y}-${mmStr}-${ddStr}`,
+            bs_words: `${total_ndays} ${this.monthsEn[m]}, ${y}`,
+            bs_unicode: `${this.toDevanagariDigits(total_ndays)} ${this.monthsNp[m]} ${this.toDevanagariDigits(y)}`,
+            bs_unicode_digits: `${this.toDevanagariDigits(y)}-${this.toDevanagariDigits(mmStr)}-${this.toDevanagariDigits(ddStr)}`,
+            bs_preeti_words: `${this.toPreetiDigits(total_ndays)} ${this.monthsPreeti[m]} ${this.toPreetiDigits(y)}`,
+            bs_preeti_digits: `${this.toPreetiDigits(y)}.${this.toPreetiDigits(mmStr)}.${this.toPreetiDigits(ddStr)}`
+        };
+    }
+};
+
 function generatorState() {
     const rawPermanentVars = @json($permanentVariables ?? []);
     const normalizedPermanentVars = rawPermanentVars.map(gv => ({
@@ -820,6 +1072,7 @@ function generatorState() {
 
         selectedCodes: [],
         customValues: {},
+        dateFormats: {},
         search: '',
         showFilters: false,
         filterDepartment: '',
@@ -959,6 +1212,7 @@ function generatorState() {
             this.$watch('selectedTemplateId', () => this.onTemplateChange());
             this.$watch('selectedCodes', () => this.updatePaginatedLetters());
             this.$watch('customValues', () => this.updatePaginatedLetters(), { deep: true });
+            this.$watch('dateFormats', () => this.updatePaginatedLetters(), { deep: true });
             this.$watch('margins', () => this.updatePaginatedLetters(), { deep: true });
             this.$watch('firstPageMargins', () => this.updatePaginatedLetters(), { deep: true });
             this.$watch('differentFirstPageMargins', () => this.updatePaginatedLetters());
@@ -974,6 +1228,7 @@ function generatorState() {
         onTemplateChange() {
             this.selectedTemplate = this.templates.find(t => t.id == this.selectedTemplateId) || null;
             this.customValues = {};
+            this.dateFormats = {};
 
             if (this.selectedTemplate) {
                 this.differentFirstPageMargins = Boolean(this.selectedTemplate.different_first_page_margins);
@@ -989,6 +1244,9 @@ function generatorState() {
                 this.allEffectiveVariables.forEach(v => {
                     const key  = typeof v === 'object' ? v.key : v;
                     const type = typeof v === 'object' ? (v.type || 'text') : 'text';
+                    if (type === 'date' || type === 'daterange') {
+                        this.dateFormats[key] = 'ad_full';
+                    }
                     if (type === 'dropdown' && typeof v === 'object' && v.options && v.options.trim()) {
                         const first = v.options.split(',').map(s => s.trim()).filter(s => s)[0] || '';
                         this.customValues[key] = (typeof v === 'object' && v.dummy) ? v.dummy : first;
@@ -1291,9 +1549,20 @@ function generatorState() {
             const emp = this.getEmployee(code);
             if (!emp) return '';
 
-            let html = this.selectedTemplate.content || '';
+            // Clean any potential template variable chips to tokens, preserving data-font if specified
+            html = html.replace(/<span\b[^>]*class="[^"]*template-variable[^"]*"[^>]*data-var(?:-key)?="([^"]+)"[^>]*data-font="([^"]+)"[^>]*>[\s\S]*?<\/span>/gi, function(match, key, font) {
+                return `<span style="font-family: '${font}';" data-var-font="${font}">` + '{' + '{ ' + key + ' }' + '}' + `</span>`;
+            });
+            html = html.replace(/<span\b[^>]*class="[^"]*template-variable[^"]*"[^>]*data-var(?:-key)?="([^"]+)"[^>]*>[\s\S]*?<\/span>/gi, '{' + '{ $1 }' + '}');
 
-             // Replace prebuilt employee variables — use character class [{}]{2} to avoid Blade parsing
+            // Determine if template uses legacy ASCII Preeti font
+            const isTemplatePreeti = Boolean(
+                (this.selectedTemplate && this.selectedTemplate.font_family === 'Preeti') ||
+                (this.selectedTemplate && (this.selectedTemplate.content || '').includes("'Preeti'")) ||
+                (this.selectedTemplate && (this.selectedTemplate.content || '').includes('"Preeti"'))
+            );
+
+            // Replace prebuilt employee variables — use character class [{}]{2} to avoid Blade parsing
             const prebuilts = {
                 employee_name:                     this.getEmployeeNameWithPrefix(emp.name, emp.gender),
                 employee_first_name:               emp.first_name || '',
@@ -1304,8 +1573,7 @@ function generatorState() {
                 employee_designation:              emp.designation ? (emp.designation.name || '') : '',
                 employee_job_description:          emp.designation ? (emp.designation.job_description || '') : '',
                 employee_gender:                   emp.gender || '',
-                employee_join_date:      this.formatDate(emp.join_date_formatted),
-                // employee_join_date_formatted:      emp.join_date_formatted || '',
+                employee_join_date:                this.formatDate(emp.join_date_formatted),
                 employee_contact_number:           emp.contact_number || '',
                 employee_email:                    emp.email || '',
                 employee_citizenship_number:       emp.citizenship_number || '',
@@ -1333,8 +1601,9 @@ function generatorState() {
             };
 
             Object.entries(prebuilts).forEach(([k, val]) => {
+                const safeVal = this.wrapVarVal(val, 'text', isTemplatePreeti);
                 const rx = new RegExp('[{]{2}\\s*' + k + '\\s*[}]{2}', 'g');
-                html = html.replace(rx, val);
+                html = html.replace(rx, safeVal);
             });
 
             // Replace custom and permanent template variables
@@ -1342,21 +1611,32 @@ function generatorState() {
                 const key  = typeof v === 'object' ? v.key : v;
                 const type = typeof v === 'object' ? (v.type || 'text') : 'text';
                 let val = this.customValues[key] || '';
+                const fmt = this.dateFormats[key] || 'ad_full';
 
                 if (type === 'date' && val) {
-                    val = this.formatDate(val);
+                    val = this.formatDateWithFormat(val, fmt);
+                    val = this.wrapVarVal(val, fmt, isTemplatePreeti);
                 }
 
                 if (type === 'daterange') {
                     const rawFrom = this.customValues[key + '_from'] || '';
                     const rawTo   = this.customValues[key + '_to']   || '';
-                    const formattedFrom = rawFrom ? this.formatDate(rawFrom) : '';
-                    const formattedTo   = rawTo ? this.formatDate(rawTo) : '';
 
-                    // Only output formatted range when both start and end dates are selected
                     let rangeStr = '';
-                    if (formattedFrom && formattedTo) {
-                        rangeStr = 'from ' + formattedFrom + ' to ' + formattedTo;
+                    let formattedFrom = '';
+                    let formattedTo   = '';
+
+                    if (rawFrom && rawTo) {
+                        rangeStr = this.formatDateRangeWithFormat(rawFrom, rawTo, fmt);
+                        rangeStr = this.wrapVarVal(rangeStr, fmt, isTemplatePreeti);
+                    }
+                    if (rawFrom) {
+                        formattedFrom = this.formatDateWithFormat(rawFrom, fmt);
+                        formattedFrom = this.wrapVarVal(formattedFrom, fmt, isTemplatePreeti);
+                    }
+                    if (rawTo) {
+                        formattedTo = this.formatDateWithFormat(rawTo, fmt);
+                        formattedTo = this.wrapVarVal(formattedTo, fmt, isTemplatePreeti);
                     }
 
                     val = rangeStr;
@@ -1369,6 +1649,10 @@ function generatorState() {
                     html = html.replace(rxTo, formattedTo);
                 }
 
+                if (type !== 'richtext' && type !== 'date' && type !== 'daterange' && val) {
+                    val = this.wrapVarVal(val, 'text', isTemplatePreeti);
+                }
+
                 const rx = new RegExp('[{]{2}\\s*' + key + '\\s*[}]{2}', 'g');
                 html = html.replace(rx, val);
 
@@ -1376,7 +1660,8 @@ function generatorState() {
                 if (type === 'calculated' && Array.isArray(v.formulas)) {
                     v.formulas.forEach(f => {
                         if (!f.key) return;
-                        const fVal = this.customValues[f.key] || '';
+                        let fVal = this.customValues[f.key] || '';
+                        if (fVal) fVal = this.wrapVarVal(fVal, 'text', isTemplatePreeti);
                         const frx = new RegExp('[{]{2}\\s*' + f.key + '\\s*[}]{2}', 'g');
                         html = html.replace(frx, fVal);
                     });
@@ -1384,6 +1669,93 @@ function generatorState() {
             });
 
             return html;
+        },
+
+        getNepaliDateInfo(dateStr) {
+            if (!dateStr) return null;
+            const parts = String(dateStr).split('-');
+            if (parts.length < 3) return null;
+            const y = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10);
+            const d = parseInt(parts[2], 10);
+            if (isNaN(y) || isNaN(m) || isNaN(d)) return null;
+            return nepaliCalendar.convertEnglishToNepali(y, m, d);
+        },
+
+        formatDateWithFormat(dateStr, formatType) {
+            if (!dateStr) return '';
+            formatType = formatType || 'ad_full';
+            if (formatType === 'ad_full') {
+                return this.formatDate(dateStr);
+            }
+            if (formatType === 'ad_standard') {
+                return dateStr;
+            }
+            const info = this.getNepaliDateInfo(dateStr);
+            if (!info) return this.formatDate(dateStr);
+            if (formatType === 'bs_words') {
+                return info.bs_words;
+            }
+            if (formatType === 'bs_digits') {
+                return info.bs_date;
+            }
+            if (formatType === 'bs_unicode') {
+                return info.bs_unicode;
+            }
+            if (formatType === 'bs_preeti_words') {
+                return info.bs_preeti_words;
+            }
+            if (formatType === 'bs_preeti_digits') {
+                return info.bs_preeti_digits;
+            }
+            return this.formatDate(dateStr);
+        },
+
+        formatDateRangeWithFormat(fromStr, toStr, formatType) {
+            if (!fromStr || !toStr) return '';
+            formatType = formatType || 'ad_full';
+            if (formatType === 'ad_full') {
+                return 'from ' + this.formatDate(fromStr) + ' to ' + this.formatDate(toStr);
+            }
+            if (formatType === 'ad_standard') {
+                return fromStr + ' to ' + toStr;
+            }
+            const fInfo = this.getNepaliDateInfo(fromStr);
+            const tInfo = this.getNepaliDateInfo(toStr);
+            if (!fInfo || !tInfo) {
+                return 'from ' + this.formatDate(fromStr) + ' to ' + this.formatDate(toStr);
+            }
+            if (formatType === 'bs_words') {
+                return 'from ' + fInfo.bs_words + ' to ' + tInfo.bs_words;
+            }
+            if (formatType === 'bs_digits') {
+                return fInfo.bs_date + ' to ' + tInfo.bs_date;
+            }
+            if (formatType === 'bs_unicode') {
+                return fInfo.bs_unicode + ' देखि ' + tInfo.bs_unicode + ' सम्म';
+            }
+            if (formatType === 'bs_preeti_words') {
+                return fInfo.bs_preeti_words + ' b]lv ' + tInfo.bs_preeti_words + ' ;Dd';
+            }
+            if (formatType === 'bs_preeti_digits') {
+                return fInfo.bs_preeti_digits + ' b]lv ' + tInfo.bs_preeti_digits + ' ;Dd';
+            }
+            return 'from ' + this.formatDate(fromStr) + ' to ' + this.formatDate(toStr);
+        },
+
+        wrapVarVal(val, formatType, isTemplatePreeti) {
+            if (val === '' || val === null || val === undefined) return '';
+            const strVal = String(val);
+
+            if (formatType === 'bs_preeti_words' || formatType === 'bs_preeti_digits') {
+                return `<span style="font-family: 'Preeti', sans-serif;">${strVal}</span>`;
+            }
+
+            if (formatType === 'bs_unicode') {
+                return `<span style="font-family: 'Kalimati', 'Noto Sans Devanagari', 'Mangal', sans-serif !important;">${strVal}</span>`;
+            }
+
+            return strVal;
         },
 
         getGenderPrefix(gender) {
