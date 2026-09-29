@@ -3141,12 +3141,13 @@
                     return 'custom';
                 },
 
-                createVariableElement(key, font) {
-                    const type = this.getVarType(key);
+                createVariableElement(key, font, type) {
+                    if (!type) type = this.getVarType(key);
                     if (!font) {
                         const tbFont = document.getElementById('tb-font');
                         font = (tbFont && tbFont.value) ? tbFont.value : 'Times New Roman';
                     }
+                    font = font.replace(/['"]/g, '').trim();
 
                     const span = document.createElement('span');
                     span.className = 'template-variable var-type-' + type;
@@ -3154,10 +3155,10 @@
                     span.setAttribute('data-var-type', type);
                     span.setAttribute('data-font', font);
                     span.setAttribute('contenteditable', 'false');
-                    span.setAttribute('title', '{' + '{ ' + key + ' }' + '}');
+                    span.setAttribute('title', 'Variable: ' + key);
 
                     const nameSpan = document.createElement('span');
-                    nameSpan.className = 'var-name';
+                    nameSpan.className = 'var-name font-mono';
                     nameSpan.textContent = '{' + '{ ' + key + ' }' + '}';
                     span.appendChild(nameSpan);
 
@@ -3167,20 +3168,49 @@
                 createVariableBadgeHtml(key, font, type) {
                     if (!type) type = this.getVarType(key);
                     if (!font) font = 'Times New Roman';
-                    const title = '{' + '{ ' + key + ' }' + '}';
+                    font = font.replace(/['"]/g, '').trim();
+                    const title = 'Variable: ' + key;
                     return '<span class="template-variable var-type-' + type + '" data-var="' + key + '" data-var-type="' + type + '" data-font="' + font + '" contenteditable="false" title="' + title + '"><span class="var-name font-mono">&#123;&#123;&nbsp;' + key + '&nbsp;&#125;&#125;</span></span>';
                 },
 
                 /* Insert a placeholder token at cursor */
                 insertVar(key) {
                     historyManager.record(true);
-                    const el = getActive();
-                    if (!el) return;
+                    let el = getActive();
+                    if (!el) {
+                        el = document.querySelector('.doc-page-content');
+                        if (!el) return;
+                    }
                     el.focus();
                     
                     const sel = window.getSelection();
-                    if (!sel || sel.rangeCount === 0) return;
-                    const range = sel.getRangeAt(0);
+                    let range = null;
+                    if (sel && sel.rangeCount > 0 && el.contains(sel.getRangeAt(0).commonAncestorContainer)) {
+                        range = sel.getRangeAt(0);
+                    } else {
+                        range = document.createRange();
+                        if (el.lastElementChild) {
+                            range.selectNodeContents(el.lastElementChild);
+                            range.collapse(false);
+                        } else {
+                            range.selectNodeContents(el);
+                            range.collapse(false);
+                        }
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    }
+
+                    // Ensure insertion is inside a block paragraph
+                    if (range.startContainer === el || (range.startContainer.nodeType === Node.ELEMENT_NODE && range.startContainer.classList.contains('doc-page-content'))) {
+                        let p = document.createElement('p');
+                        p.innerHTML = '<br>';
+                        el.appendChild(p);
+                        range = document.createRange();
+                        range.setStart(p, 0);
+                        range.collapse(true);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    }
 
                     // Determine active font at cursor
                     let activeFont = 'Times New Roman';
@@ -3190,6 +3220,17 @@
                     }
 
                     const span = this.createVariableElement(key, activeFont);
+
+                    // If inserting into an empty block with just <br>, clear the <br> placeholder
+                    const parentBlock = range.startContainer.nodeType === Node.ELEMENT_NODE
+                        ? range.startContainer.closest('p, div, td, th')
+                        : range.startContainer.parentNode?.closest('p, div, td, th');
+                    if (parentBlock && (parentBlock.innerHTML === '<br>' || parentBlock.innerHTML.trim() === '')) {
+                        parentBlock.innerHTML = '';
+                        range = document.createRange();
+                        range.setStart(parentBlock, 0);
+                        range.collapse(true);
+                    }
 
                     range.deleteContents();
                     range.insertNode(span);
@@ -3392,6 +3433,7 @@
                     let currentPageNum = 1;
                     let currentPage = this.createPage(currentPageNum);
                     let currentContent = currentPage.querySelector('.doc-page-content');
+                    currentContent.innerHTML = '';
 
                     let pageH = currentPage.clientHeight;
                     let curMarginB = (currentPageNum === 1 && this.differentFirstPageMargins) ?
@@ -3569,6 +3611,7 @@
                                 currentPageNum++;
                                 currentPage = this.createPage(currentPageNum);
                                 currentContent = currentPage.querySelector('.doc-page-content');
+                                currentContent.innerHTML = '';
 
                                 const newPageH = currentPage.clientHeight;
                                 const curNewMarginB = (currentPageNum === 1 && this.differentFirstPageMargins) ?
@@ -3612,6 +3655,7 @@
                                     currentPageNum++;
                                     currentPage = this.createPage(currentPageNum);
                                     currentContent = currentPage.querySelector('.doc-page-content');
+                                    currentContent.innerHTML = '';
 
                                     const newPageH = currentPage.clientHeight;
                                     const curNewMarginB = (currentPageNum === 1 && this.differentFirstPageMargins) ?
@@ -3634,6 +3678,13 @@
                     if (firstGap && !firstGap.classList.contains('doc-page')) {
                         firstGap.remove();
                     }
+
+                    // Ensure any empty pages have at least <p><br></p>
+                    container.querySelectorAll('.doc-page-content').forEach(c => {
+                        if (!c.firstElementChild && !c.textContent.trim()) {
+                            c.innerHTML = '<p><br></p>';
+                        }
+                    });
 
                     // Update page count
                     this.pages = container.querySelectorAll('.doc-page').length;
@@ -3723,6 +3774,8 @@
                     const content = document.createElement('div');
                     content.className = 'doc-page-content';
                     content.spellcheck = true;
+                    content.contentEditable = 'true';
+                    content.innerHTML = '<p><br></p>';
                     if (num === 1) content.dataset.placeholder = 'Start typing your letter here…';
                     this.bindPageContent(content, page);
 
@@ -3769,7 +3822,8 @@
                 /* Collect all page HTML and submit the form */
                 syncContent() {
                     const rawPages = Array.from(document.querySelectorAll('.doc-page-content'));
-                    const pages = rawPages.map(p => {
+                    const self = this;
+                    let pages = rawPages.map(p => {
                         const clone = p.cloneNode(true);
                         // Convert visual manual break markers to <!-- MANUAL_PAGE_BREAK --> comments
                         clone.querySelectorAll('.page-break-marker').forEach(el => {
@@ -3785,7 +3839,7 @@
                         // Normalize .template-variable spans into clean standard variable tokens preserving font and type
                         clone.querySelectorAll('.template-variable').forEach(el => {
                             const key = el.getAttribute('data-var') || el.textContent.replace(/[{}]/g, '').trim();
-                            const font = el.getAttribute('data-font') || 'Times New Roman';
+                            const font = (el.getAttribute('data-font') || 'Times New Roman').replace(/['"]/g, '').trim();
                             const varType = el.getAttribute('data-var-type') || self.getVarType(key);
 
                             const span = document.createElement('span');
@@ -3795,37 +3849,38 @@
                             span.textContent = '{' + '{ ' + key + ' }' + '}';
                             el.parentNode.replaceChild(span, el);
                         });
-                        // Trim trailing empty block nodes so no phantom blank page is created on reload
-                        let last = clone.lastChild;
-                        while (last) {
-                            if (last.nodeType === 8) {
-                                // Do not strip comment nodes (like MANUAL_PAGE_BREAK)
-                                break;
+
+                        // Clean any leftover orphaned ">" artifacts
+                        const cloneWalker = document.createTreeWalker(clone, NodeFilter.SHOW_TEXT, null, false);
+                        let ctNode;
+                        const orphanNodes = [];
+                        while ((ctNode = cloneWalker.nextNode())) {
+                            if (ctNode.nodeValue && ctNode.nodeValue.startsWith('">')) {
+                                orphanNodes.push(ctNode);
                             }
-                            if (last.nodeType === 3 && last.textContent.trim() === '') {
-                                const prev = last.previousSibling;
-                                clone.removeChild(last);
-                                last = prev;
-                                continue;
-                            }
-                            const tag = last.tagName ? last.tagName.toLowerCase() : '';
-                            if (tag === 'br') {
-                                const prev = last.previousSibling;
-                                clone.removeChild(last);
-                                last = prev;
-                                continue;
-                            }
-                            if ((tag === 'p' || tag === 'div') && (last.innerHTML.replace(/[\s\u00a0]/g, '') ===
-                                    '' || last.innerHTML === '<br>')) {
-                                const prev = last.previousSibling;
-                                clone.removeChild(last);
-                                last = prev;
-                                continue;
-                            }
-                            break;
                         }
+                        orphanNodes.forEach(n => {
+                            n.nodeValue = n.nodeValue.replace(/^">\s*/, '');
+                            if (!n.nodeValue) n.remove();
+                        });
+
                         return clone.innerHTML.replace(/\u200B/g, '');
                     });
+
+                    // Remove accidental empty trailing pages (only secondary pages that have no text/tables/breaks/variables)
+                    while (pages.length > 1) {
+                        const lastHtml = pages[pages.length - 1];
+                        const text = lastHtml.replace(/<[^>]*>/g, '').replace(/[\s\u00a0]/g, '');
+                        const hasBreak = rawPages[pages.length - 1].querySelector('.page-break-marker') !== null;
+                        const hasMedia = /<(?:table|img)\b/i.test(lastHtml);
+                        const hasVar = /data-var-font/i.test(lastHtml);
+                        if (!text && !hasBreak && !hasMedia && !hasVar) {
+                            pages.pop();
+                            rawPages.pop();
+                        } else {
+                            break;
+                        }
+                    }
 
                     let html = '';
                     pages.forEach((pageHtml, idx) => {
@@ -3880,28 +3935,181 @@
                     form.submit();
                 },
 
+                normalizeContentHtml(rawContent) {
+                    if (!rawContent || !rawContent.trim()) {
+                        return '<p><br></p>';
+                    }
+
+                    // 1. Convert manual page break markers to visual elements
+                    let converted = rawContent.replace(/<!--\s*MANUAL_PAGE_BREAK\s*-->/gi,
+                        '<div class="page-break-marker" contenteditable="false" title="Click to remove page break"></div>'
+                    );
+                    // 2. Remove soft automatic page breaks
+                    converted = converted.replace(/<!--\s*PAGE_BREAK\s*-->/gi, '');
+
+                    // 3. Normalize newlines:
+                    const hasBlockTags = /<(?:p|div|table|h[1-6]|ul|ol|blockquote)\b/i.test(converted);
+                    if (!hasBlockTags) {
+                        // Plain text or inline tags separated by newlines (e.g. Template 4)
+                        const blocks = converted.split(/\r?\n\s*\r?\n/);
+                        return blocks.map(b => {
+                            const trimmed = b.trim();
+                            if (!trimmed || trimmed === '&nbsp;') {
+                                return '<p><br></p>';
+                            }
+                            const withBr = b.replace(/\r?\n/g, '<br>');
+                            return '<p>' + withBr + '</p>';
+                        }).join('');
+                    }
+
+                    return converted;
+                },
+
+                ensureParagraphStructure(container) {
+                    const blockTagNames = new Set(['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'UL', 'OL', 'TABLE', 'BLOCKQUOTE', 'PRE', 'HR']);
+                    const frag = document.createDocumentFragment();
+                    let currentP = null;
+
+                    Array.from(container.childNodes).forEach(node => {
+                        const isBlock = node.nodeType === Node.ELEMENT_NODE && (
+                            blockTagNames.has(node.tagName.toUpperCase()) ||
+                            node.classList.contains('page-break-marker')
+                        );
+
+                        if (isBlock) {
+                            currentP = null;
+                            frag.appendChild(node);
+                        } else {
+                            if (node.nodeType === Node.TEXT_NODE && /^\s*$/.test(node.nodeValue)) {
+                                if (/\n\s*\n/.test(node.nodeValue)) {
+                                    const emptyP = document.createElement('p');
+                                    emptyP.innerHTML = '<br>';
+                                    frag.appendChild(emptyP);
+                                    currentP = null;
+                                }
+                                return;
+                            }
+
+                            if (node.nodeType === Node.ELEMENT_NODE && node.tagName.toUpperCase() === 'BR') {
+                                if (currentP) {
+                                    currentP = null;
+                                } else {
+                                    const emptyP = document.createElement('p');
+                                    emptyP.innerHTML = '<br>';
+                                    frag.appendChild(emptyP);
+                                }
+                                return;
+                            }
+
+                            if (!currentP) {
+                                currentP = document.createElement('p');
+                                frag.appendChild(currentP);
+                            }
+                            currentP.appendChild(node);
+                        }
+                    });
+
+                    container.innerHTML = '';
+                    container.appendChild(frag);
+                    if (!container.firstElementChild) {
+                        container.innerHTML = '<p><br></p>';
+                    }
+                },
+
                 init() {
                     this.$nextTick(() => {
+                        try {
+                            document.execCommand('defaultParagraphSeparator', false, 'p');
+                        } catch (_) {}
+
                         const rawContent = @json(old('content', ''));
-                        let converted = rawContent ? rawContent.replace(/<!--\s*MANUAL_PAGE_BREAK\s*-->/gi,
-                            '<div class="page-break-marker" contenteditable="false" title="Click to remove page break"></div>'
-                            ) : '';
-                        converted = converted.replace(/<!--\s*PAGE_BREAK\s*-->/gi, '');
+                        let converted = this.normalizeContentHtml(rawContent);
 
+                        // 3. Parse and wrap variables into protected chips safely using DOM
                         const self = this;
-                        converted = converted.replace(/<span\b[^>]*data-var-font="([^"]+)"[^>]*>\s*[{]{2}\s*([a-zA-Z0-9_]+)\s*[}]{2}\s*<\/span>/gi, function(match, font, key) {
-                            return self.createVariableBadgeHtml(key, font);
-                        });
-                        converted = converted.replace(/<span\b[^>]*style="[^"]*font-family:\s*['"]?([^'";]+)['"]?[^"]*"[^>]*>\s*[{]{2}\s*([a-zA-Z0-9_]+)\s*[}]{2}\s*<\/span>/gi, function(match, font, key) {
-                            return self.createVariableBadgeHtml(key, font.trim());
-                        });
-                        converted = converted.replace(/[{]{2}\s*([a-zA-Z0-9_]+)\s*[}]{2}/g, function(match, key) {
-                            return self.createVariableBadgeHtml(key);
-                        });
-
                         const page = this.createPage(1);
                         const content = page.querySelector('.doc-page-content');
-                        content.innerHTML = converted || '<p><br></p>';
+
+                        const tempContainer = document.createElement('div');
+                        tempContainer.innerHTML = converted || '<p><br></p>';
+
+                        // A. Convert saved variable spans (span[data-var-font] or .template-variable)
+                        tempContainer.querySelectorAll('.template-variable, span[data-var-font], span[data-var]').forEach(span => {
+                            const key = span.getAttribute('data-var') || span.textContent.replace(/[{}]/g, '').trim();
+                            if (!key) return;
+                            const rawFont = span.getAttribute('data-font') || span.getAttribute('data-var-font') || span.style.fontFamily || 'Times New Roman';
+                            const font = rawFont.replace(/['"]/g, '').trim();
+                            const type = span.getAttribute('data-var-type') || self.getVarType(key);
+                            const badge = self.createVariableElement(key, font, type);
+                            span.parentNode.replaceChild(badge, span);
+                        });
+
+                        // B. Convert any font-styled spans that contain variable tokens
+                        tempContainer.querySelectorAll('span[style*="font-family"]').forEach(span => {
+                            if (span.classList.contains('template-variable')) return;
+                            const m = span.textContent.trim().match(/^[{]{2}\s*([a-zA-Z0-9_]+)\s*[}]{2}$/);
+                            if (m) {
+                                const key = m[1];
+                                const rawFont = span.style.fontFamily || 'Times New Roman';
+                                const font = rawFont.replace(/['"]/g, '').trim();
+                                const type = self.getVarType(key);
+                                const badge = self.createVariableElement(key, font, type);
+                                span.parentNode.replaceChild(badge, span);
+                            }
+                        });
+
+                        // C. Convert any plain text variable tokens into chips using TreeWalker (never touches attributes!)
+                        const walker = document.createTreeWalker(tempContainer, NodeFilter.SHOW_TEXT, null, false);
+                        const textNodesToConvert = [];
+                        let tNode;
+                        while ((tNode = walker.nextNode())) {
+                            if (tNode.parentElement && tNode.parentElement.closest('.template-variable')) {
+                                continue;
+                            }
+                            if (/[{]{2}\s*([a-zA-Z0-9_]+)\s*[}]{2}/.test(tNode.nodeValue)) {
+                                textNodesToConvert.push(tNode);
+                            }
+                        }
+
+                        textNodesToConvert.forEach(node => {
+                            const parent = node.parentNode;
+                            if (!parent) return;
+                            const text = node.nodeValue;
+                            const regex = /[{]{2}\s*([a-zA-Z0-9_]+)\s*[}]{2}/g;
+                            const frag = document.createDocumentFragment();
+                            let lastIdx = 0;
+                            let match;
+                            while ((match = regex.exec(text)) !== null) {
+                                if (match.index > lastIdx) {
+                                    frag.appendChild(document.createTextNode(text.substring(lastIdx, match.index)));
+                                }
+                                const key = match[1];
+                                const rawFont = (parent.style && parent.style.fontFamily) ? parent.style.fontFamily : 'Times New Roman';
+                                const font = rawFont.replace(/['"]/g, '').trim();
+                                frag.appendChild(self.createVariableElement(key, font));
+                                lastIdx = regex.lastIndex;
+                            }
+                            if (lastIdx < text.length) {
+                                frag.appendChild(document.createTextNode(text.substring(lastIdx)));
+                            }
+                            parent.replaceChild(frag, node);
+                        });
+
+                        // D. Clean any leftover corrupted artifacts (like orphaned `">` text nodes right after a variable)
+                        tempContainer.querySelectorAll('.template-variable').forEach(badge => {
+                            let next = badge.nextSibling;
+                            if (next && next.nodeType === Node.TEXT_NODE && next.nodeValue) {
+                                if (next.nodeValue.startsWith('">')) {
+                                    next.nodeValue = next.nodeValue.replace(/^">\s*/, '');
+                                    if (!next.nodeValue) next.remove();
+                                }
+                            }
+                        });
+
+                        // Ensure all top-level content in tempContainer is structured in paragraphs
+                        this.ensureParagraphStructure(tempContainer);
+
+                        content.innerHTML = tempContainer.innerHTML || '<p><br></p>';
 
                         this.reflowPages();
 
@@ -3909,8 +4117,37 @@
                         if (root) root.focus();
 
                         // Register editing and boundary events at the root pages-container level
-                        const self = this;
                         const container = document.getElementById('pages-container');
+
+                        // Keep defaultParagraphSeparator set whenever focus changes in container
+                        container.addEventListener('focusin', () => {
+                            try {
+                                document.execCommand('defaultParagraphSeparator', false, 'p');
+                            } catch (_) {}
+                        });
+
+                        // Click on .doc-page outside .doc-page-content redirects focus to .doc-page-content
+                        container.addEventListener('click', (e) => {
+                            const docPage = e.target.closest('.doc-page');
+                            if (docPage && !e.target.closest('.doc-page-content') && !e.target.closest('.page-number-label')) {
+                                const pageContent = docPage.querySelector('.doc-page-content');
+                                if (pageContent) {
+                                    pageContent.focus();
+                                    const sel = window.getSelection();
+                                    const range = document.createRange();
+                                    if (pageContent.lastElementChild) {
+                                        range.selectNodeContents(pageContent.lastElementChild);
+                                        range.collapse(false);
+                                    } else {
+                                        range.selectNodeContents(pageContent);
+                                        range.collapse(false);
+                                    }
+                                    sel.removeAllRanges();
+                                    sel.addRange(range);
+                                }
+                            }
+                        });
+
 
                         // Click to remove manual page break
                         container.addEventListener('click', (e) => {

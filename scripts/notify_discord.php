@@ -15,6 +15,9 @@ $title = $isSuccess ? 'Task Completed Successfully' : 'Task Failed / Encountered
 $color = $isSuccess ? 0x22C55E : 0xEF4444; // Green or Red
 $statusLabel = $isSuccess ? 'Success' : 'Failure';
 
+date_default_timezone_set('Asia/Kathmandu');
+$nowKathmandu = new DateTime('now', new DateTimeZone('Asia/Kathmandu'));
+
 $payload = [
     'content' => "<@&{$roleId}>",
     'embeds' => [
@@ -29,12 +32,15 @@ $payload = [
                     'inline' => true,
                 ],
                 [
-                    'name' => 'Timestamp',
-                    'value' => date('Y-m-d H:i:s T'),
+                    'name' => 'Timestamp (Kathmandu)',
+                    'value' => $nowKathmandu->format('Y-m-d h:i:s A T'),
                     'inline' => true,
                 ],
             ],
-            'timestamp' => (new DateTime('now', new DateTimeZone('UTC')))->format(DateTime::ATOM),
+            'footer' => [
+                'text' => 'Timezone: Asia/Kathmandu (UTC+05:45)',
+            ],
+            'timestamp' => $nowKathmandu->format(DateTime::ATOM),
         ],
     ],
 ];
