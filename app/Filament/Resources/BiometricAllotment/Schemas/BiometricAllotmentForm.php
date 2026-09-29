@@ -193,6 +193,7 @@ class BiometricAllotmentForm
                                     ])
                                     ->searchable()
                                     ->preload()
+                                    ->default('Morning')
                                     ->native(false),
                                 TextInput::make('phone')
                                     ->label('Phone Number')
