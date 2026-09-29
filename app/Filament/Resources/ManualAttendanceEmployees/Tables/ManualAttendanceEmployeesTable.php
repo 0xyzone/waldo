@@ -123,7 +123,62 @@ class ManualAttendanceEmployeesTable
                             })
                             ->searchable()
                             ->preload()
-                            ->required(),
+                            ->required()
+                            ->extraAlpineAttributes([
+                                'x-init' => <<<'JS'
+                                    const setupSearchClear = () => {
+                                        if (typeof select === 'undefined' || !select) {
+                                            setTimeout(setupSearchClear, 30);
+                                            return;
+                                        }
+                                        if (select._searchClearHooked) {
+                                            return;
+                                        }
+                                        select._searchClearHooked = true;
+
+                                        const resetSearchInput = () => {
+                                            if (select && select.searchInput) {
+                                                select.searchInput.value = '';
+                                                select.searchQuery = '';
+                                                if (!select.hasDynamicOptions && select.originalOptions) {
+                                                    select.options = JSON.parse(JSON.stringify(select.originalOptions));
+                                                }
+                                                select.renderOptions();
+                                                if (typeof select.deferPositionDropdown === 'function') {
+                                                    select.deferPositionDropdown();
+                                                }
+                                                select.searchInput.focus();
+                                            }
+                                        };
+
+                                        const origSelectOption = select.selectOption.bind(select);
+                                        select.selectOption = function (value) {
+                                            const wasSelected = Array.isArray(select.state) && select.state.includes(value);
+                                            origSelectOption(value);
+                                            if (!wasSelected) {
+                                                resetSearchInput();
+                                            }
+                                        };
+                                    };
+                                    $nextTick(setupSearchClear);
+                                    $watch('state', (newVal, oldVal) => {
+                                        if (Array.isArray(newVal) && (!Array.isArray(oldVal) || newVal.length > oldVal.length)) {
+                                            if (typeof select !== 'undefined' && select && select.searchInput && select.searchInput.value) {
+                                                select.searchInput.value = '';
+                                                select.searchQuery = '';
+                                                if (!select.hasDynamicOptions && select.originalOptions) {
+                                                    select.options = JSON.parse(JSON.stringify(select.originalOptions));
+                                                }
+                                                select.renderOptions();
+                                                if (typeof select.deferPositionDropdown === 'function') {
+                                                    select.deferPositionDropdown();
+                                                }
+                                                select.searchInput.focus();
+                                            }
+                                        }
+                                    });
+                                JS,
+                            ]),
 
                         Textarea::make('notes')
                             ->label('Notes for Selected Employees (Optional)')
