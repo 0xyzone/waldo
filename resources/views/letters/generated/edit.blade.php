@@ -159,7 +159,7 @@
             <option value="h3">Heading 3</option>
         </select>
 
-        <select id="tb-font" @mousedown.stop @change="execFont($el.value)"
+        <select id="tb-font" @mousedown="saveSelection()" @focus="saveSelection()" @change="restoreSelection(); execFont($el.value)"
                 class="px-2 py-1 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-sm font-semibold rounded-lg text-slate-700 dark:text-zinc-300 focus:outline-none cursor-pointer">
             <option>Times New Roman</option>
             <option>Arial</option>
@@ -846,13 +846,63 @@ function execBlock(tag) {
     historyManager.record(true);
     restoreSelection();
     document.execCommand('formatBlock', false, '<' + tag + '>');
+    saveSelection();
     historyManager.record(true);
 }
 
 function execFont(name) {
     historyManager.record(true);
     restoreSelection();
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+
+    const fontSel = document.getElementById('tb-font');
+    if (fontSel) fontSel.value = name;
+
+    if (sel.isCollapsed) {
+        const range = sel.getRangeAt(0);
+        const span = document.createElement('span');
+        span.style.fontFamily = `'${name}', sans-serif`;
+        const zwsp = document.createTextNode('\u200B');
+        span.appendChild(zwsp);
+        range.insertNode(span);
+        const newRange = document.createRange();
+        newRange.setStart(zwsp, 1);
+        newRange.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(newRange);
+        saveSelection();
+        historyManager.recordDebounced(150);
+        return;
+    }
+
+    try {
+        document.execCommand('styleWithCSS', false, true);
+    } catch (e) {}
+
     document.execCommand('fontName', false, name);
+
+    const root = document.getElementById('page-content-editor');
+    if (root) {
+        root.querySelectorAll(`font[face="${name}" i], font[face*="${name}" i]`).forEach(el => {
+            el.style.fontFamily = `'${name}', sans-serif`;
+            el.querySelectorAll('[style*="font-family"], font[face]').forEach(child => {
+                child.style.fontFamily = '';
+                child.removeAttribute('face');
+            });
+        });
+        root.querySelectorAll('span[style*="font-family"]').forEach(el => {
+            if (el.style.fontFamily && el.style.fontFamily.toLowerCase().includes(name.toLowerCase())) {
+                el.style.fontFamily = `'${name}', sans-serif`;
+                el.querySelectorAll('[style*="font-family"], font[face]').forEach(child => {
+                    child.style.fontFamily = '';
+                    child.removeAttribute('face');
+                });
+            }
+        });
+    }
+
+    saveSelection();
     historyManager.record(true);
 }
 
@@ -864,10 +914,16 @@ function execFontSize(pt) {
     const inp = document.getElementById('tb-size');
     if (inp) inp.value = pt;
 
+    historyManager.record(true);
+
     if (sel.isCollapsed) {
         const range = sel.getRangeAt(0);
         const span = document.createElement('span');
         span.style.fontSize = pt + 'pt';
+        const fontSel = document.getElementById('tb-font');
+        if (fontSel && fontSel.value) {
+            span.style.fontFamily = `'${fontSel.value}', sans-serif`;
+        }
         const zwsp = document.createTextNode('\u200B');
         span.appendChild(zwsp);
         range.insertNode(span);
@@ -877,39 +933,62 @@ function execFontSize(pt) {
         sel.removeAllRanges();
         sel.addRange(newRange);
         saveSelection();
+        historyManager.recordDebounced(150);
         return;
     }
 
-    const range = sel.getRangeAt(0);
-    const span = document.createElement('span');
-    span.style.fontSize = pt + 'pt';
-
     try {
-        const extracted = range.extractContents();
-        span.appendChild(extracted);
-        range.insertNode(span);
-        const newRange = document.createRange();
-        newRange.selectNodeContents(span);
-        sel.removeAllRanges();
-        sel.addRange(newRange);
-        saveSelection();
-    } catch (e) {
         document.execCommand('styleWithCSS', false, true);
-        document.execCommand('fontSize', false, '7');
-        const root = document.getElementById('page-content-editor');
-        if (root) {
-            root.querySelectorAll('[size="7"], font[size]').forEach(n => {
-                n.removeAttribute('size');
-                n.style.fontSize = pt + 'pt';
-            });
-            root.querySelectorAll('span[style*="-webkit-xxx-large"], span[style*="xx-large"]').forEach(n => {
-                n.style.fontSize = pt + 'pt';
+    } catch (e) {}
+
+    document.execCommand('fontSize', false, '7');
+
+    const root = document.getElementById('page-content-editor');
+    let applied = false;
+    if (root) {
+        const tagged = root.querySelectorAll('span[style*="xxx-large"], span[style*="xx-large"], [size="7"], font[size="7"]');
+        if (tagged.length > 0) {
+            applied = true;
+            tagged.forEach(el => {
+                el.removeAttribute('size');
+                el.style.fontSize = pt + 'pt';
+                el.querySelectorAll('[style*="font-size"], font[size]').forEach(child => {
+                    child.style.fontSize = '';
+                    child.removeAttribute('size');
+                });
             });
         }
     }
+
+    if (!applied) {
+        try {
+            const range = sel.getRangeAt(0);
+            const span = document.createElement('span');
+            span.style.fontSize = pt + 'pt';
+            const extracted = range.extractContents();
+            if (extracted.querySelectorAll) {
+                extracted.querySelectorAll('[style*="font-size"], font[size]').forEach(child => {
+                    child.style.fontSize = '';
+                    child.removeAttribute('size');
+                });
+            }
+            span.appendChild(extracted);
+            range.insertNode(span);
+            const newRange = document.createRange();
+            newRange.selectNodeContents(span);
+            sel.removeAllRanges();
+            sel.addRange(newRange);
+        } catch (err) {
+            console.warn('execFontSize fallback error:', err);
+        }
+    }
+
+    saveSelection();
+    historyManager.record(true);
 }
 
 function adjustSize(delta) {
+    restoreSelection();
     const inp = document.getElementById('tb-size');
     let s = Math.max(1, Math.min(100, (parseInt(inp.value) || 12) + delta));
     inp.value = s;

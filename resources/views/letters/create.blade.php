@@ -709,7 +709,7 @@
                 <option value="h3">Heading 3</option>
             </select>
 
-            <select id="tb-font" @mousedown.stop @change="execFont($el.value)"
+            <select id="tb-font" @mousedown="saveSelection()" @focus="saveSelection()" @change="restoreSelection(); execFont($el.value)"
                 class="px-2 py-1 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-sm font-semibold rounded-lg text-slate-700 dark:text-zinc-300 focus:outline-none cursor-pointer">
                 <option>Times New Roman</option>
                 <option>Arial</option>
@@ -1813,14 +1813,18 @@
             historyManager.record(true);
             restoreSelection();
             document.execCommand(cmd, false, val);
+            saveSelection();
             historyManager.recordDebounced(150);
+            updateToolbarState();
         }
 
         function execBlock(tag) {
             historyManager.record(true);
             restoreSelection();
             document.execCommand('formatBlock', false, '<' + tag + '>');
+            saveSelection();
             historyManager.record(true);
+            updateToolbarState();
         }
 
         function setVariableFont(varEl, fontName) {
@@ -1836,10 +1840,61 @@
         function execFont(name) {
             historyManager.record(true);
             restoreSelection();
+            const sel = window.getSelection();
+            if (!sel || sel.rangeCount === 0) return;
+
+            const fontSel = document.getElementById('tb-font');
+            if (fontSel) fontSel.value = name;
+
+            // When selection is collapsed: insert a styled span with zero-width space so next typed text has this font
+            if (sel.isCollapsed) {
+                const range = sel.getRangeAt(0);
+                const span = document.createElement('span');
+                span.style.fontFamily = `'${name}', sans-serif`;
+                span.setAttribute('data-font', name);
+                const zwsp = document.createTextNode('\u200B');
+                span.appendChild(zwsp);
+                range.insertNode(span);
+                const newRange = document.createRange();
+                newRange.setStart(zwsp, 1);
+                newRange.collapse(true);
+                sel.removeAllRanges();
+                sel.addRange(newRange);
+                saveSelection();
+                historyManager.recordDebounced(150);
+                updateToolbarState();
+                return;
+            }
+
+            // When text is selected: use styleWithCSS and fontName
+            try {
+                document.execCommand('styleWithCSS', false, true);
+            } catch (e) {}
+
             document.execCommand('fontName', false, name);
 
+            const root = getEditorRoot();
+            if (root) {
+                // Ensure proper CSS font-family on font/span tags and clean inner conflicting font-families
+                root.querySelectorAll(`font[face="${name}" i], font[face*="${name}" i]`).forEach(el => {
+                    el.style.fontFamily = `'${name}', sans-serif`;
+                    el.querySelectorAll('[style*="font-family"], font[face]').forEach(child => {
+                        child.style.fontFamily = '';
+                        child.removeAttribute('face');
+                    });
+                });
+                root.querySelectorAll('span[style*="font-family"]').forEach(el => {
+                    if (el.style.fontFamily && el.style.fontFamily.toLowerCase().includes(name.toLowerCase())) {
+                        el.style.fontFamily = `'${name}', sans-serif`;
+                        el.querySelectorAll('[style*="font-family"], font[face]').forEach(child => {
+                            child.style.fontFamily = '';
+                            child.removeAttribute('face');
+                        });
+                    }
+                });
+            }
+
             // Update font on any selected or active template variables
-            const sel = window.getSelection();
             if (sel && sel.rangeCount > 0) {
                 const range = sel.getRangeAt(0);
                 const container = range.commonAncestorContainer;
@@ -1860,7 +1915,9 @@
                 setVariableFont(window._lastClickedVar, name);
             }
 
-            historyManager.record(true);
+            saveSelection();
+            historyManager.recordDebounced(150);
+            updateToolbarState();
         }
 
         function execFontSize(pt) {
@@ -1871,10 +1928,17 @@
             const inp = document.getElementById('tb-size');
             if (inp) inp.value = pt;
 
+            historyManager.record(true);
+
+            // Collapsed selection: user wants next typing to be this size
             if (sel.isCollapsed) {
                 const range = sel.getRangeAt(0);
                 const span = document.createElement('span');
                 span.style.fontSize = pt + 'pt';
+                const fontSel = document.getElementById('tb-font');
+                if (fontSel && fontSel.value) {
+                    span.style.fontFamily = `'${fontSel.value}', sans-serif`;
+                }
                 const zwsp = document.createTextNode('\u200B');
                 span.appendChild(zwsp);
                 range.insertNode(span);
@@ -1884,39 +1948,92 @@
                 sel.removeAllRanges();
                 sel.addRange(newRange);
                 saveSelection();
+                historyManager.recordDebounced(150);
+                updateToolbarState();
                 return;
             }
 
-            const range = sel.getRangeAt(0);
-            const span = document.createElement('span');
-            span.style.fontSize = pt + 'pt';
-
+            // Text is selected:
+            // 1. Try native execCommand with marker size '7'
             try {
-                const extracted = range.extractContents();
-                span.appendChild(extracted);
-                range.insertNode(span);
-                const newRange = document.createRange();
-                newRange.selectNodeContents(span);
-                sel.removeAllRanges();
-                sel.addRange(newRange);
-                saveSelection();
-            } catch (e) {
                 document.execCommand('styleWithCSS', false, true);
-                document.execCommand('fontSize', false, '7');
-                const root = getEditorRoot();
-                if (root) {
-                    root.querySelectorAll('[size="7"], font[size]').forEach(n => {
-                        n.removeAttribute('size');
-                        n.style.fontSize = pt + 'pt';
-                    });
-                    root.querySelectorAll('span[style*="-webkit-xxx-large"], span[style*="xx-large"]').forEach(n => {
-                        n.style.fontSize = pt + 'pt';
+            } catch (e) {}
+
+            document.execCommand('fontSize', false, '7');
+
+            const root = getEditorRoot();
+            let applied = false;
+            if (root) {
+                const tagged = root.querySelectorAll('span[style*="xxx-large"], span[style*="xx-large"], [size="7"], font[size="7"]');
+                if (tagged.length > 0) {
+                    applied = true;
+                    tagged.forEach(el => {
+                        el.removeAttribute('size');
+                        el.style.fontSize = pt + 'pt';
+                        // Clean any child elements with existing font-size styles so they do not override the parent
+                        el.querySelectorAll('[style*="font-size"], font[size]').forEach(child => {
+                            child.style.fontSize = '';
+                            child.removeAttribute('size');
+                        });
                     });
                 }
             }
+
+            // Fallback: if native execCommand didn't wrap cleanly (e.g. across mixed content)
+            if (!applied) {
+                try {
+                    const range = sel.getRangeAt(0);
+                    const span = document.createElement('span');
+                    span.style.fontSize = pt + 'pt';
+                    const extracted = range.extractContents();
+                    // Strip existing child font sizes
+                    if (extracted.querySelectorAll) {
+                        extracted.querySelectorAll('[style*="font-size"], font[size]').forEach(child => {
+                            child.style.fontSize = '';
+                            child.removeAttribute('size');
+                        });
+                    }
+                    span.appendChild(extracted);
+                    range.insertNode(span);
+                    const newRange = document.createRange();
+                    newRange.selectNodeContents(span);
+                    sel.removeAllRanges();
+                    sel.addRange(newRange);
+                } catch (err) {
+                    console.warn('execFontSize fallback error:', err);
+                }
+            }
+
+            // Also update any selected or active template-variables
+            if (sel && sel.rangeCount > 0) {
+                const range = sel.getRangeAt(0);
+                const container = range.commonAncestorContainer;
+                const parentEl = container.nodeType === 1 ? container : container.parentNode;
+                const targetVar = parentEl ? parentEl.closest('.template-variable') : null;
+                if (targetVar) {
+                    targetVar.setAttribute('data-size', pt);
+                    targetVar.style.setProperty('font-size', (pt * 0.88) + 'pt', 'important');
+                } else if (parentEl) {
+                    parentEl.querySelectorAll('.template-variable').forEach(v => {
+                        if (sel.containsNode(v, true)) {
+                            v.setAttribute('data-size', pt);
+                            v.style.setProperty('font-size', (pt * 0.88) + 'pt', 'important');
+                        }
+                    });
+                }
+            }
+            if (window._lastClickedVar && document.contains(window._lastClickedVar)) {
+                window._lastClickedVar.setAttribute('data-size', pt);
+                window._lastClickedVar.style.setProperty('font-size', (pt * 0.88) + 'pt', 'important');
+            }
+
+            saveSelection();
+            historyManager.recordDebounced(150);
+            updateToolbarState();
         }
 
         function adjustSize(delta) {
+            restoreSelection();
             const inp = document.getElementById('tb-size');
             let s = Math.max(1, Math.min(100, (parseInt(inp.value) || 12) + delta));
             inp.value = s;
@@ -1927,14 +2044,22 @@
             restoreSelection();
             const bar = document.getElementById('color-bar');
             if (bar) bar.style.background = color;
+            document.execCommand('styleWithCSS', false, true);
             document.execCommand('foreColor', false, color);
+            saveSelection();
+            historyManager.recordDebounced(150);
+            updateToolbarState();
         }
 
         function execHighlight(color) {
             restoreSelection();
             const bar = document.getElementById('hl-bar');
             if (bar) bar.style.background = color;
+            document.execCommand('styleWithCSS', false, true);
             document.execCommand('hiliteColor', false, color);
+            saveSelection();
+            historyManager.recordDebounced(150);
+            updateToolbarState();
         }
 
         // Apply line-height to the current block (paragraph/heading)
@@ -2820,7 +2945,13 @@
                     }
                     const cs = window.getComputedStyle(node);
                     const sizInp = document.getElementById('tb-size');
-                    if (sizInp) sizInp.value = Math.round(parseFloat(cs.fontSize) * 0.75) || 12;
+                    if (sizInp) {
+                        if (varEl && varEl.getAttribute('data-size')) {
+                            sizInp.value = varEl.getAttribute('data-size');
+                        } else {
+                            sizInp.value = Math.round(parseFloat(cs.fontSize) * 0.75) || 12;
+                        }
+                    }
                 }
             }
         }
