@@ -622,6 +622,10 @@
                                     <span>Devanagari: <strong class="text-slate-700 dark:text-zinc-200" x-text="getNepaliDateInfo(customValues[v.key || v])?.bs_unicode || '—'"></strong></span>
                                     <span>Digits: <strong class="text-slate-700 dark:text-zinc-200 font-mono" x-text="getNepaliDateInfo(customValues[v.key || v])?.bs_date || '—'"></strong></span>
                                 </div>
+                                <div class="text-[10px] text-slate-500 dark:text-zinc-400 flex items-center justify-between border-t border-amber-500/10 pt-1.5">
+                                    <span>Preeti:</span>
+                                    <strong class="text-slate-700 dark:text-zinc-200 font-bold" style="font-family: 'Preeti', sans-serif;" x-text="getNepaliDateInfo(customValues[v.key || v])?.bs_preeti_words || '—'"></strong>
+                                </div>
                                 <div class="space-y-1 pt-1.5 border-t border-amber-500/10">
                                     <label class="block text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Use In Letter As:</label>
                                     <select x-model="dateFormats[v.key || v]" @change="updatePaginatedLetters()"
@@ -707,6 +711,16 @@
                                         <strong class="font-mono text-slate-700 dark:text-zinc-200" x-text="getNepaliDateInfo(customValues[(v.key || v) + '_to'])?.bs_words || '—'"></strong>
                                     </div>
                                 </div>
+                                <div class="text-[10px] text-slate-500 dark:text-zinc-400 space-y-1 border-t border-amber-500/10 pt-1.5">
+                                    <div class="flex items-center justify-between">
+                                        <span>Devanagari:</span>
+                                        <strong class="text-slate-700 dark:text-zinc-200" x-text="formatDateRangeWithFormat(customValues[(v.key || v) + '_from'], customValues[(v.key || v) + '_to'], 'bs_unicode') || '—'"></strong>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span>Preeti:</span>
+                                        <strong class="text-slate-700 dark:text-zinc-200 font-bold" style="font-family: 'Preeti', sans-serif;" x-text="formatDateRangeWithFormat(customValues[(v.key || v) + '_from'], customValues[(v.key || v) + '_to'], 'bs_preeti_words') || '—'"></strong>
+                                    </div>
+                                </div>
                                 <div class="space-y-1 pt-1.5 border-t border-amber-500/10">
                                     <label class="block text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Use In Letter As:</label>
                                     <select x-model="dateFormats[v.key || v]" @change="updatePaginatedLetters()"
@@ -715,9 +729,9 @@
                                         <option value="ad_standard">AD Standard: 2026-09-01 to 2026-09-28</option>
                                         <option value="bs_words">BS in Words: from 16 Bhadra, 2083 to 12 Ashoj, 2083</option>
                                         <option value="bs_digits">BS Digits: 2083-05-16 to 2083-06-12</option>
-                                        <option value="bs_unicode">BS Devanagari: २०८३ भदौ १६ देखि २०८३ असोज १२ सम्म</option>
-                                        <option value="bs_preeti_words">BS Preeti (नेपाली): !^ ebf} @)*# b]lv !@ c;f]h @)*# ;Dd</option>
-                                        <option value="bs_preeti_digits">BS Preeti Digits: @)*#.)%.!^ b]lv @)*#.)^.!@ ;Dd</option>
+                                        <option value="bs_unicode">BS Devanagari: १६ भदौ २०८३ देखि १२ असोज २०८३ सम्म</option>
+                                        <option value="bs_preeti_words">BS Preeti (नेपाली): १६ भदौ २०८३ देखि १२ असोज २०८३ सम्म</option>
+                                        <option value="bs_preeti_digits">BS Preeti Digits: २०८३.०५.१६ देखि २०८३.०६.१२ सम्म</option>
                                     </select>
                                 </div>
                             </div>
@@ -727,8 +741,41 @@
 
                     <!-- Number Field -->
                     <template x-if="(v.type || 'text') === 'number'">
-                        <input type="number" x-model="customValues[v.key || v]" @input="computeFormulas()" :placeholder="'Enter ' + formatLabel(v.key || v)" 
-                               class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
+                        <div class="space-y-2">
+                            <input type="number" x-model="customValues[v.key || v]" 
+                                   @input="computeFormulas(); updatePaginatedLetters()" 
+                                   :placeholder="'Enter ' + formatLabel(v.key || v)" 
+                                   class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500">
+
+                            <!-- Nepali & Preeti Number Conversion & Format Selector -->
+                            <div x-show="customValues[v.key || v] !== '' && customValues[v.key || v] !== undefined && customValues[v.key || v] !== null" 
+                                 class="p-2.5 bg-amber-500/5 dark:bg-amber-950/20 border border-amber-500/20 rounded-xl space-y-2">
+                                <div class="flex items-center justify-between text-[11px]">
+                                    <span class="font-bold text-amber-800 dark:text-amber-400 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-arrow-right-arrow-left text-amber-500"></i>
+                                        <span>Preeti Digits:</span>
+                                    </span>
+                                    <span class="font-bold text-slate-800 dark:text-zinc-200 text-sm" style="font-family: 'Preeti', sans-serif;"
+                                          x-text="formatNumberWithFormat(customValues[v.key || v], 'preeti_comma') || '—'"></span>
+                                </div>
+                                <div class="text-[10px] text-slate-500 dark:text-zinc-400 flex items-center justify-between border-t border-amber-500/10 pt-1.5">
+                                    <span>Devanagari: <strong class="text-slate-700 dark:text-zinc-200 font-semibold" x-text="formatNumberWithFormat(customValues[v.key || v], 'devanagari_comma') || '—'"></strong></span>
+                                    <span>Standard: <strong class="text-slate-700 dark:text-zinc-200 font-mono font-semibold" x-text="formatNumberWithFormat(customValues[v.key || v], 'en_comma') || '—'"></strong></span>
+                                </div>
+                                <div class="space-y-1 pt-1.5 border-t border-amber-500/10">
+                                    <label class="block text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Use In Letter As:</label>
+                                    <select x-model="dateFormats[v.key || v]" @change="updatePaginatedLetters()"
+                                            class="w-full px-2 py-1.5 border border-amber-500/30 bg-white dark:bg-zinc-900 rounded-lg text-xs font-semibold text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 cursor-pointer">
+                                        <option value="en">Standard (English): 50000</option>
+                                        <option value="en_comma">English with Comma: 50,000</option>
+                                        <option value="devanagari">Devanagari: ५००००</option>
+                                        <option value="devanagari_comma">Devanagari with Comma: ५०,०००</option>
+                                        <option value="preeti">BS Preeti Digits (नेपाली): ५००००</option>
+                                        <option value="preeti_comma">BS Preeti Digits with Comma: ५०,०००</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                     </template>
 
                     <!-- Boolean Yes/No Dropdown -->
@@ -810,8 +857,38 @@
                             <input type="number"
                                    :placeholder="'Enter ' + formatLabel(v.key || v)"
                                    x-model.number="customValues[v.key || v]"
-                                   @input="computeFormulas()"
+                                   @input="computeFormulas(); updatePaginatedLetters()"
                                    class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-indigo-400 transition-all">
+
+                            <!-- Nepali & Preeti Number Conversion & Format Selector for Calculated Base -->
+                            <div x-show="customValues[v.key || v] !== '' && customValues[v.key || v] !== undefined && customValues[v.key || v] !== null" 
+                                 class="p-2.5 bg-amber-500/5 dark:bg-amber-950/20 border border-amber-500/20 rounded-xl space-y-2">
+                                <div class="flex items-center justify-between text-[11px]">
+                                    <span class="font-bold text-amber-800 dark:text-amber-400 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-arrow-right-arrow-left text-amber-500"></i>
+                                        <span>Preeti Digits:</span>
+                                    </span>
+                                    <span class="font-bold text-slate-800 dark:text-zinc-200 text-sm" style="font-family: 'Preeti', sans-serif;"
+                                          x-text="formatNumberWithFormat(customValues[v.key || v], 'preeti_comma') || '—'"></span>
+                                </div>
+                                <div class="text-[10px] text-slate-500 dark:text-zinc-400 flex items-center justify-between border-t border-amber-500/10 pt-1.5">
+                                    <span>Devanagari: <strong class="text-slate-700 dark:text-zinc-200 font-semibold" x-text="formatNumberWithFormat(customValues[v.key || v], 'devanagari_comma') || '—'"></strong></span>
+                                    <span>Standard: <strong class="text-slate-700 dark:text-zinc-200 font-mono font-semibold" x-text="formatNumberWithFormat(customValues[v.key || v], 'en_comma') || '—'"></strong></span>
+                                </div>
+                                <div class="space-y-1 pt-1.5 border-t border-amber-500/10">
+                                    <label class="block text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Use In Letter As:</label>
+                                    <select x-model="dateFormats[v.key || v]" @change="updatePaginatedLetters()"
+                                            class="w-full px-2 py-1.5 border border-amber-500/30 bg-white dark:bg-zinc-900 rounded-lg text-xs font-semibold text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 cursor-pointer">
+                                        <option value="en">Standard (English): 50000</option>
+                                        <option value="en_comma">English with Comma: 50,000</option>
+                                        <option value="devanagari">Devanagari: ५००००</option>
+                                        <option value="devanagari_comma">Devanagari with Comma: ५०,०००</option>
+                                        <option value="preeti">BS Preeti Digits (नेपाली): ५००००</option>
+                                        <option value="preeti_comma">BS Preeti Digits with Comma: ५०,०००</option>
+                                    </select>
+                                </div>
+                            </div>
+
                             <!-- Formula results preview -->
                             <template x-if="v.formulas && v.formulas.length">
                                 <div class="rounded-xl border border-indigo-100 dark:border-indigo-900/50 overflow-hidden">
@@ -1253,11 +1330,19 @@ function generatorState() {
                 this.firstPageMargins.left   = this.selectedTemplate.first_page_margin_left   ?? this.margins.left;
                 this.firstPageMargins.right  = this.selectedTemplate.first_page_margin_right  ?? this.margins.right;
 
+                const isTemplatePreeti = Boolean(
+                    (this.selectedTemplate && this.selectedTemplate.font_family === 'Preeti') ||
+                    (this.selectedTemplate && (this.selectedTemplate.content || '').includes("'Preeti'")) ||
+                    (this.selectedTemplate && (this.selectedTemplate.content || '').includes('"Preeti"'))
+                );
+
                 this.allEffectiveVariables.forEach(v => {
                     const key  = typeof v === 'object' ? v.key : v;
                     const type = typeof v === 'object' ? (v.type || 'text') : 'text';
                     if (type === 'date' || type === 'daterange') {
-                        this.dateFormats[key] = 'ad_full';
+                        this.dateFormats[key] = isTemplatePreeti ? 'bs_preeti_words' : 'ad_full';
+                    } else if (type === 'number' || type === 'calculated') {
+                        this.dateFormats[key] = isTemplatePreeti ? 'preeti_comma' : 'en';
                     }
                     if (type === 'dropdown' && typeof v === 'object' && v.options && v.options.trim()) {
                         const first = v.options.split(',').map(s => s.trim()).filter(s => s)[0] || '';
@@ -1278,7 +1363,10 @@ function generatorState() {
                     // Initialize all formula child keys too
                     if (type === 'calculated' && Array.isArray(v.formulas)) {
                         v.formulas.forEach(f => {
-                            if (f.key) this.customValues[f.key] = '';
+                            if (f.key) {
+                                this.customValues[f.key] = '';
+                                this.dateFormats[f.key] = isTemplatePreeti ? 'preeti_comma' : 'en_comma';
+                            }
                         });
                     }
                 });
@@ -1623,7 +1711,7 @@ function generatorState() {
                 const key  = typeof v === 'object' ? v.key : v;
                 const type = typeof v === 'object' ? (v.type || 'text') : 'text';
                 let val = this.customValues[key] || '';
-                const fmt = this.dateFormats[key] || 'ad_full';
+                const fmt = this.dateFormats[key] || (type === 'number' || type === 'calculated' ? (isTemplatePreeti ? 'preeti_comma' : 'en') : 'ad_full');
 
                 if (type === 'date' && val) {
                     val = this.formatDateWithFormat(val, fmt);
@@ -1661,7 +1749,12 @@ function generatorState() {
                     html = html.replace(rxTo, formattedTo);
                 }
 
-                if (type !== 'richtext' && type !== 'date' && type !== 'daterange' && val) {
+                if ((type === 'number' || type === 'calculated') && (val !== '' && val !== null && val !== undefined)) {
+                    val = this.formatNumberWithFormat(val, fmt);
+                    val = this.wrapVarVal(val, fmt, isTemplatePreeti);
+                }
+
+                if (type !== 'richtext' && type !== 'date' && type !== 'daterange' && type !== 'number' && type !== 'calculated' && val) {
                     val = this.wrapVarVal(val, 'text', isTemplatePreeti);
                 }
 
@@ -1673,7 +1766,11 @@ function generatorState() {
                     v.formulas.forEach(f => {
                         if (!f.key) return;
                         let fVal = this.customValues[f.key] || '';
-                        if (fVal) fVal = this.wrapVarVal(fVal, 'text', isTemplatePreeti);
+                        const fFmt = this.dateFormats[f.key] || fmt || (isTemplatePreeti ? 'preeti_comma' : 'en_comma');
+                        if (fVal !== '' && fVal !== null && fVal !== undefined) {
+                            fVal = this.formatNumberWithFormat(fVal, fFmt);
+                            fVal = this.wrapVarVal(fVal, fFmt, isTemplatePreeti);
+                        }
                         const frx = new RegExp('[{]{2}\\s*' + f.key + '\\s*[}]{2}', 'g');
                         html = html.replace(frx, fVal);
                     });
@@ -1755,16 +1852,63 @@ function generatorState() {
             return 'from ' + this.formatDate(fromStr) + ' to ' + this.formatDate(toStr);
         },
 
+        formatNumberWithFormat(val, formatType) {
+            if (val === '' || val === null || val === undefined) return '';
+            formatType = formatType || 'en';
+
+            const strVal = String(val).trim();
+            if (strVal === '') return '';
+
+            const isNegative = strVal.startsWith('-');
+            const cleanStr = isNegative ? strVal.slice(1) : strVal;
+            const parts = cleanStr.split('.');
+
+            // Parse integer part and format with commas
+            const intNum = parseInt(parts[0], 10);
+            const intWithComma = isNaN(intNum) ? parts[0] : intNum.toLocaleString('en-US');
+            const intNoComma = parts[0];
+
+            const decPart = parts.length > 1 ? '.' + parts[1] : '';
+
+            const enNoComma = (isNegative ? '-' : '') + intNoComma + decPart;
+            const enWithComma = (isNegative ? '-' : '') + intWithComma + decPart;
+
+            if (formatType === 'en') {
+                return enNoComma;
+            }
+            if (formatType === 'en_comma') {
+                return enWithComma;
+            }
+            if (formatType === 'devanagari') {
+                return nepaliCalendar.toDevanagariDigits(enNoComma);
+            }
+            if (formatType === 'devanagari_comma') {
+                return nepaliCalendar.toDevanagariDigits(enWithComma);
+            }
+            if (formatType === 'preeti') {
+                return nepaliCalendar.toPreetiDigits(enNoComma);
+            }
+            if (formatType === 'preeti_comma') {
+                return nepaliCalendar.toPreetiDigits(enWithComma);
+            }
+
+            return enNoComma;
+        },
+
         wrapVarVal(val, formatType, isTemplatePreeti) {
             if (val === '' || val === null || val === undefined) return '';
             const strVal = String(val);
 
-            if (formatType === 'bs_preeti_words' || formatType === 'bs_preeti_digits') {
-                return `<span style="font-family: 'Preeti', sans-serif;">${strVal}</span>`;
+            if (formatType === 'bs_preeti_words' || formatType === 'bs_preeti_digits' || formatType === 'preeti' || formatType === 'preeti_comma') {
+                return `<span style="font-family: 'Preeti', sans-serif !important;">${strVal}</span>`;
             }
 
-            if (formatType === 'bs_unicode') {
+            if (formatType === 'bs_unicode' || formatType === 'devanagari' || formatType === 'devanagari_comma') {
                 return `<span style="font-family: 'Kalimati', 'Noto Sans Devanagari', 'Mangal', sans-serif !important;">${strVal}</span>`;
+            }
+
+            if (isTemplatePreeti && (formatType === 'en' || formatType === 'en_comma' || formatType === 'ad_full' || formatType === 'ad_standard')) {
+                return `<span style="font-family: Arial, 'Times New Roman', sans-serif !important;">${strVal}</span>`;
             }
 
             return strVal;

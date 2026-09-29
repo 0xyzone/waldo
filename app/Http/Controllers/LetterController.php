@@ -344,4 +344,43 @@ class LetterController extends Controller
             return response()->json(['error' => $e->getMessage()], 422);
         }
     }
+
+    public function convertNumber(Request $request)
+    {
+        $number = $request->input('number');
+        if ($number === null || $number === '') {
+            return response()->json(['error' => 'Number is required'], 422);
+        }
+
+        $digitsToPreeti = [
+            '0' => ')', '1' => '!', '2' => '@', '3' => '#', '4' => '$',
+            '5' => '%', '6' => '^', '7' => '&', '8' => '*', '9' => '(',
+        ];
+        $digitsToDevanagari = [
+            '0' => '०', '1' => '१', '2' => '२', '3' => '३', '4' => '४',
+            '5' => '५', '6' => '६', '7' => '७', '8' => '८', '9' => '९',
+        ];
+
+        $cleanStr = trim((string) $number);
+        $isNegative = str_starts_with($cleanStr, '-');
+        $cleanStr = $isNegative ? substr($cleanStr, 1) : $cleanStr;
+        $parts = explode('.', $cleanStr);
+
+        $intNum = is_numeric($parts[0]) ? (float) $parts[0] : 0;
+        $intWithComma = number_format($intNum);
+        $intNoComma = $parts[0];
+        $decPart = isset($parts[1]) ? '.'.$parts[1] : '';
+
+        $enNoComma = ($isNegative ? '-' : '').$intNoComma.$decPart;
+        $enWithComma = ($isNegative ? '-' : '').$intWithComma.$decPart;
+
+        return response()->json([
+            'en' => $enNoComma,
+            'en_comma' => $enWithComma,
+            'devanagari' => strtr($enNoComma, $digitsToDevanagari),
+            'devanagari_comma' => strtr($enWithComma, $digitsToDevanagari),
+            'preeti' => strtr($enNoComma, $digitsToPreeti),
+            'preeti_comma' => strtr($enWithComma, $digitsToPreeti),
+        ]);
+    }
 }

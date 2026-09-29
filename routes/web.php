@@ -29,6 +29,7 @@ Route::prefix('/letters')->middleware('role:super_admin|HR|HR Assist')->group(fu
     Route::get('/create', [LetterController::class, 'create'])->name('letters.create');
     Route::get('/generate', [LetterController::class, 'generate'])->name('letters.generate');
     Route::get('/convert-date', [LetterController::class, 'convertDate'])->name('letters.convert-date');
+    Route::get('/convert-number', [LetterController::class, 'convertNumber'])->name('letters.convert-number');
 
     // Generated Letters History & Saving
     Route::get('/history', [LetterController::class, 'history'])->name('letters.history');
