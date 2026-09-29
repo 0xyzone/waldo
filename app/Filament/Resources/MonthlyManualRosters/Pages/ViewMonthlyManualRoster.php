@@ -150,7 +150,7 @@ class ViewMonthlyManualRoster extends ViewRecord implements HasTable
                             ->success()
                             ->send();
 
-                        $this->resetTable();
+                        $this->flushCachedTableRecords();
                     }),
 
                 TextColumn::make('#')
@@ -375,7 +375,7 @@ class ViewMonthlyManualRoster extends ViewRecord implements HasTable
                             ->title('Notes Saved')
                             ->success()
                             ->send();
-                        $this->resetTable();
+                        $this->flushCachedTableRecords();
                     }),
 
                 DeleteAction::make()
@@ -383,7 +383,7 @@ class ViewMonthlyManualRoster extends ViewRecord implements HasTable
                     ->modalHeading('Remove from this Checklist')
                     ->after(function (): void {
                         $this->record->refreshStatistics();
-                        $this->resetTable();
+                        $this->flushCachedTableRecords();
                     }),
             ])
             ->bulkActions([
@@ -407,7 +407,7 @@ class ViewMonthlyManualRoster extends ViewRecord implements HasTable
                                 ->success()
                                 ->send();
 
-                            $this->resetTable();
+                            $this->flushCachedTableRecords();
                         }),
 
                     BulkAction::make('markSelectedPending')
@@ -429,14 +429,14 @@ class ViewMonthlyManualRoster extends ViewRecord implements HasTable
                                 ->warning()
                                 ->send();
 
-                            $this->resetTable();
+                            $this->flushCachedTableRecords();
                         }),
 
                     DeleteBulkAction::make()
                         ->label('Remove Selected')
                         ->after(function (): void {
                             $this->record->refreshStatistics();
-                            $this->resetTable();
+                            $this->flushCachedTableRecords();
                         }),
                 ]),
             ])
