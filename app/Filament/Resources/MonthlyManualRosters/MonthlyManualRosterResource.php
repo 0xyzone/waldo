@@ -9,11 +9,11 @@ use App\Filament\Resources\MonthlyManualRosters\Pages\ViewMonthlyManualRoster;
 use App\Filament\Resources\MonthlyManualRosters\Schemas\MonthlyManualRosterForm;
 use App\Filament\Resources\MonthlyManualRosters\Tables\MonthlyManualRostersTable;
 use App\Models\MonthlyManualRoster;
-use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use BackedEnum;
 use UnitEnum;
 
 class MonthlyManualRosterResource extends Resource
@@ -30,7 +30,7 @@ class MonthlyManualRosterResource extends Resource
 
     protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::CalendarDays;
 
-    protected static string|UnitEnum|null $navigationGroup = 'HR & Admin';
+    protected static string|UnitEnum|null $navigationGroup = 'Roster Management';
 
     protected static ?int $navigationSort = 10;
 

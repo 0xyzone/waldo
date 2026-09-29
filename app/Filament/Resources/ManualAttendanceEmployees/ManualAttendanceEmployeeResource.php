@@ -29,7 +29,7 @@ class ManualAttendanceEmployeeResource extends Resource
 
     protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::ClipboardDocumentList;
 
-    protected static string|UnitEnum|null $navigationGroup = 'HR & Admin';
+    protected static string|UnitEnum|null $navigationGroup = 'Roster Management';
 
     protected static ?int $navigationSort = 9;
 
