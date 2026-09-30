@@ -194,6 +194,8 @@
             display: flex;
             align-items: center;
             gap: 16px;
+            flex-shrink: 0;
+            white-space: nowrap;
         }
 
         .meta-item {
@@ -201,6 +203,8 @@
             align-items: flex-end;
             gap: 5px;
             font-size: 11px;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .meta-lbl {
@@ -209,6 +213,8 @@
             text-transform: uppercase;
             font-size: 9.5px;
             letter-spacing: 0.4px;
+            white-space: nowrap !important;
+            flex-shrink: 0;
         }
 
         .meta-val {
@@ -464,7 +470,7 @@
         }
 
         .auth-meta-col {
-            padding: 4px 8px;
+            padding: 4px 10px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -475,32 +481,36 @@
         .auth-meta-body {
             display: flex;
             flex-direction: column;
-            gap: 5px;
-            margin-top: 2px;
+            justify-content: space-around;
+            flex: 1;
+            gap: 8px;
+            margin-top: 4px;
+            margin-bottom: 2px;
         }
 
         .auth-meta-row {
             display: flex;
             align-items: flex-end;
-            gap: 5px;
-            font-size: 10px;
+            gap: 6px;
+            font-size: 10.5px;
         }
 
         .auth-meta-lbl {
             font-weight: 800;
             color: #334155;
             text-transform: uppercase;
-            font-size: 8.5px;
-            letter-spacing: 0.3px;
+            font-size: 9px;
+            letter-spacing: 0.4px;
             white-space: nowrap;
+            min-width: 12mm;
         }
 
         .auth-meta-val {
             flex: 1;
             border-bottom: 1.3px solid #0f172a;
-            height: 16px;
-            line-height: 16px;
-            font-size: 10px;
+            height: 18px;
+            line-height: 18px;
+            font-size: 10.5px;
             font-weight: 700;
             color: #0f172a;
             padding: 0 4px;
@@ -671,7 +681,7 @@
                         </div>
                         <div class="header-meta-group">
                             <div class="meta-item">
-                                <span class="meta-lbl">Ref #:</span>
+                                <span class="meta-lbl">Ref&nbsp;#:</span>
                                 <span class="meta-val font-mono">{{ $record->request_number }}</span>
                             </div>
                             <div class="meta-item">
@@ -795,20 +805,12 @@
                                 <div class="auth-sig-title">Approval Details</div>
                                 <div class="auth-meta-body">
                                     <div class="auth-meta-row">
+                                        <span class="auth-meta-lbl">Name:</span>
+                                        <span class="auth-meta-val bold">{{ $record->status === 'approved' ? 'Managing Director' : '' }}</span>
+                                    </div>
+                                    <div class="auth-meta-row">
                                         <span class="auth-meta-lbl">Date:</span>
                                         <span class="auth-meta-val">{{ $record->date_approved?->format('d / m / Y') ?? '' }}</span>
-                                    </div>
-                                    <div class="auth-meta-row">
-                                        <span class="auth-meta-lbl">Approved Salary:</span>
-                                        <span class="auth-meta-val bold">
-                                            {{ $record->status === 'approved' ? 'NPR ' . number_format((float)$record->proposed_salary, 2) : '—' }}
-                                        </span>
-                                    </div>
-                                    <div class="auth-meta-row">
-                                        <span class="auth-meta-lbl">Status:</span>
-                                        <span class="auth-meta-val bold uppercase" style="color: {{ $record->status === 'approved' ? '#15803d' : ($record->status === 'rejected' ? '#dc2626' : '#64748b') }};">
-                                            {{ $record->status ? strtoupper($record->status) : 'PENDING' }}
-                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -842,7 +844,7 @@
                             </div>
                             <div class="header-meta-group">
                                 <div class="meta-item">
-                                    <span class="meta-lbl">Ref #:</span>
+                                    <span class="meta-lbl">Ref&nbsp;#:</span>
                                     <span class="meta-val font-mono"></span>
                                 </div>
                                 <div class="meta-item">
@@ -956,16 +958,12 @@
                                     <div class="auth-sig-title">Approval Details</div>
                                     <div class="auth-meta-body">
                                         <div class="auth-meta-row">
+                                            <span class="auth-meta-lbl">Name:</span>
+                                            <span class="auth-meta-val"></span>
+                                        </div>
+                                        <div class="auth-meta-row">
                                             <span class="auth-meta-lbl">Date:</span>
                                             <span class="auth-meta-val"></span>
-                                        </div>
-                                        <div class="auth-meta-row">
-                                            <span class="auth-meta-lbl">Approved Salary:</span>
-                                            <span class="auth-meta-val"></span>
-                                        </div>
-                                        <div class="auth-meta-row">
-                                            <span class="auth-meta-lbl">Status:</span>
-                                            <span class="auth-meta-val bold uppercase">PENDING</span>
                                         </div>
                                     </div>
                                 </div>
