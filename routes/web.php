@@ -8,6 +8,7 @@ use App\Http\Controllers\IdCardPrintReportPrintController;
 use App\Http\Controllers\LetterController;
 use App\Http\Controllers\LetterGlobalVariableController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SalaryIncrementRequestPrintController;
 use App\Http\Controllers\TipsReportPrintController;
 use Illuminate\Support\Facades\Route;
 
@@ -83,6 +84,15 @@ Route::get('/tips-reports/{report}/print-totals', [TipsReportPrintController::cl
 // ID Card Print Reports Sheet
 Route::get('/id-card-print-reports/{report}/print', [IdCardPrintReportPrintController::class, 'print'])
     ->name('id-card-print-reports.print')
+    ->middleware('auth');
+
+// Salary Increment Recommendation Form Printing (Blank & Record)
+Route::get('/salary-increment-requests/print-blank', [SalaryIncrementRequestPrintController::class, 'printBlank'])
+    ->name('salary-increment-requests.print-blank')
+    ->middleware('auth');
+
+Route::get('/salary-increment-requests/{record}/print', [SalaryIncrementRequestPrintController::class, 'printRecord'])
+    ->name('salary-increment-requests.print-record')
     ->middleware('auth');
 
 // API Documentation & Testing Console
