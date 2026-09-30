@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 class SalaryIncrementRequestPrintController extends Controller
 {
     /**
-     * Print blank salary increment recommendation form (2x A5 on 1x A4 sheet).
+     * Print blank salary increment recommendation form (A4).
      */
     public function printBlank(Request $request): Response
     {
@@ -23,7 +23,7 @@ class SalaryIncrementRequestPrintController extends Controller
     }
 
     /**
-     * Print salary increment recommendation form for a specific record (2x A5 on 1x A4 sheet).
+     * Print salary increment recommendation form for a specific record (A4).
      */
     public function printRecord(Request $request, SalaryIncrementRequest $record): Response
     {

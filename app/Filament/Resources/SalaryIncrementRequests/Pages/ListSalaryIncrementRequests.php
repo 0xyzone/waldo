@@ -47,7 +47,7 @@ class ListSalaryIncrementRequests extends ListRecords
     {
         return [
             Action::make('printBlankForm')
-                ->label('Print Blank Form (2x A5 on A4)')
+                ->label('Print Blank Form (A4)')
                 ->icon('heroicon-m-printer')
                 ->color('success')
                 ->url(route('salary-increment-requests.print-blank'))
