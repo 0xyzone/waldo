@@ -38,12 +38,12 @@ class SalaryIncrementRequestsTable
                     ->sortable()
                     ->weight('bold'),
 
-                TextColumn::make('hod.name')
-                    ->label('Recommending HOD')
-                    ->description(fn (SalaryIncrementRequest $record): ?string => $record->hod_id)
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(),
+                // TextColumn::make('hod.name')
+                //     ->label('Recommending HOD')
+                //     ->description(fn (SalaryIncrementRequest $record): ?string => $record->hod_id)
+                //     ->searchable()
+                //     ->sortable()
+                //     ->toggleable(),
 
                 TextColumn::make('date_requested')
                     ->label('Requested')
@@ -76,13 +76,13 @@ class SalaryIncrementRequestsTable
                     ->color('success')
                     ->sortable(),
 
-                TextColumn::make('increment_percentage')
-                    ->label('Incr %')
-                    ->suffix('%')
-                    ->placeholder('—')
-                    ->badge()
-                    ->color('success')
-                    ->sortable(),
+                // TextColumn::make('increment_percentage')
+                //     ->label('Incr %')
+                //     ->suffix('%')
+                //     ->placeholder('—')
+                //     ->badge()
+                //     ->color('success')
+                //     ->sortable(),
 
                 IconColumn::make('hr_acknowledged')
                     ->label('HR Ack')

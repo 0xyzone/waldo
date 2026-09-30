@@ -19,26 +19,24 @@ class SalaryIncrementRequestForm
         return $schema
             ->components([
                 Section::make('Salary Increment Request Details')
+                    ->columnSpanFull()
                     ->schema([
-                        Grid::make(3)->schema([
+                        Grid::make(3)->columnSpanFull()->schema([
                             TextInput::make('request_number')
                                 ->label('Ref #')
                                 ->placeholder('Auto-generated (SIR-YYYY-####)')
                                 ->disabled()
                                 ->dehydrated(false),
-
                             DatePicker::make('date_requested')
                                 ->label('Date')
                                 ->default(now()->toDateString())
                                 ->required()
                                 ->native(false),
-
                             DatePicker::make('date_applicable')
                                 ->label('Effective Date')
                                 ->required()
                                 ->native(false),
                         ]),
-
                         Grid::make(3)->schema([
                             Select::make('employee_id')
                                 ->label('Employee Code')
@@ -77,7 +75,6 @@ class SalaryIncrementRequestForm
                                         $set('current_designation_id', $employee->designation_id);
                                     }
                                 }),
-
                             TextInput::make('employee_name_display')
                                 ->label('Employee Name')
                                 ->disabled()
@@ -89,7 +86,6 @@ class SalaryIncrementRequestForm
                                         $set('employee_name_display', $emp?->name);
                                     }
                                 }),
-
                             TextInput::make('join_date_display')
                                 ->label('Date of Joining')
                                 ->disabled()
@@ -102,7 +98,6 @@ class SalaryIncrementRequestForm
                                     }
                                 }),
                         ]),
-
                         Grid::make(3)->schema([
                             TextInput::make('current_salary')
                                 ->label('Current Salary (NPR)')
@@ -119,7 +114,6 @@ class SalaryIncrementRequestForm
                                         $set('increment_percentage', round(($diff / $current) * 100, 2));
                                     }
                                 }),
-
                             TextInput::make('proposed_salary')
                                 ->label('Proposed Salary (NPR)')
                                 ->numeric()
@@ -135,7 +129,6 @@ class SalaryIncrementRequestForm
                                         $set('increment_percentage', round(($diff / $current) * 100, 2));
                                     }
                                 }),
-
                             TextInput::make('increment_amount')
                                 ->label('Increment Amount (NPR)')
                                 ->numeric()
