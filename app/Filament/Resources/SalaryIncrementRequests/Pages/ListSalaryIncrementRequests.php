@@ -47,7 +47,7 @@ class ListSalaryIncrementRequests extends ListRecords
     {
         return [
             Action::make('printBlankForm')
-                ->label('Print Blank Form (A4)')
+                ->label('Print Blank Form (2x A5)')
                 ->icon('heroicon-m-printer')
                 ->color('success')
                 ->url(route('salary-increment-requests.print-blank'))
@@ -56,8 +56,7 @@ class ListSalaryIncrementRequests extends ListRecords
             CreateAction::make()
                 ->label('New Increment Request')
                 ->icon('heroicon-m-plus')
-                ->modalWidth('7xl')
-                ->slideOver()
+                ->modalWidth('3xl')
                 ->mutateFormDataUsing(function (array $data): array {
                     $data['created_by'] = Auth::id();
 
