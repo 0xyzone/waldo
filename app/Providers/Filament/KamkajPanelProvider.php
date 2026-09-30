@@ -75,12 +75,13 @@ class KamkajPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 'HR & Admin',
-                'Tips',
-                'Purchase & Store',
+                'Roster Management',
                 'IT',
                 'Finance',
-                'Basic Info',
+                'Tips',
+                'Purchase & Store',
                 'Filament Shield',
+                'System Settings',
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
