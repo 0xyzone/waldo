@@ -56,7 +56,8 @@ class ListSalaryIncrementRequests extends ListRecords
             CreateAction::make()
                 ->label('New Increment Request')
                 ->icon('heroicon-m-plus')
-                ->modalWidth('4xl')
+                ->modalWidth('7xl')
+                ->slideOver()
                 ->mutateFormDataUsing(function (array $data): array {
                     $data['created_by'] = Auth::id();
 
