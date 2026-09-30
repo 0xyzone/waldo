@@ -60,6 +60,7 @@ class KamkajPanelProvider extends PanelProvider
             ->navigationItems([
                 NavigationItem::make('Letters & Templates')
                     ->url('/letters')
+                    ->openUrlInNewTab()
                     ->icon('heroicon-o-arrow-top-right-on-square')
                     ->activeIcon('heroicon-s-document-text')
                     ->sort(9)
@@ -67,6 +68,7 @@ class KamkajPanelProvider extends PanelProvider
                     ->visible(fn () => auth()->user()->hasRole(['super_admin', 'HR', 'HR Assist'])),
                 NavigationItem::make('Employee SSF IDs')
                     ->url('/employee-ssids')
+                    ->openUrlInNewTab()
                     ->icon('heroicon-o-arrow-top-right-on-square')
                     ->activeIcon('heroicon-s-document-text')
                     ->sort(10)
