@@ -21,6 +21,10 @@ class IdCardPrintProcessingService
         }
 
         $absolutePath = Storage::disk('public')->path($report->csv_file_path);
+        if (! file_exists($absolutePath) && file_exists($report->csv_file_path)) {
+            $absolutePath = $report->csv_file_path;
+        }
+
         if (! file_exists($absolutePath)) {
             return 0;
         }
@@ -71,6 +75,7 @@ class IdCardPrintProcessingService
             }
 
             $rawCode = $codeCol !== null && isset($cells[$codeCol]) ? trim((string) $cells[$codeCol]) : '';
+            $rawCode = preg_replace('/\.0+$/', '', $rawCode);
             if ($rawCode === '') {
                 continue;
             }
@@ -162,6 +167,7 @@ class IdCardPrintProcessingService
         $updatedCount = 0;
         foreach ($items as $item) {
             $rawCode = trim((string) $item->employee_code);
+            $rawCode = preg_replace('/\.0+$/', '', $rawCode);
             $upperCode = strtoupper($rawCode);
             $cleanCode = preg_replace('/[^A-Z0-9]/', '', $upperCode);
 
@@ -204,7 +210,15 @@ class IdCardPrintProcessingService
                 $rows = [];
                 foreach ($reader->getSheetIterator() as $sheet) {
                     foreach ($sheet->getRowIterator() as $row) {
-                        $cells = $row->toArray();
+                        $rawCells = $row->toArray();
+                        $cells = array_map(function ($c) {
+                            if ($c instanceof \DateTimeInterface) {
+                                return $c->format('Y-m-d');
+                            }
+
+                            return is_scalar($c) ? $c : '';
+                        }, $rawCells);
+
                         if (! empty(array_filter($cells, fn ($c) => trim((string) $c) !== ''))) {
                             $rows[] = $cells;
                         }
@@ -245,12 +259,12 @@ class IdCardPrintProcessingService
         }
 
         // Parse first line
-        $firstCells = str_getcsv($firstLine, $delimiter);
+        $firstCells = str_getcsv($firstLine, $delimiter, '"', '\\');
         if (! empty($firstCells)) {
             $rows[] = $firstCells;
         }
 
-        while (($cells = fgetcsv($handle, 0, $delimiter)) !== false) {
+        while (($cells = fgetcsv($handle, 0, $delimiter, '"', '\\')) !== false) {
             if (! empty(array_filter($cells, fn ($c) => trim((string) $c) !== ''))) {
                 $rows[] = $cells;
             }
@@ -279,23 +293,46 @@ class IdCardPrintProcessingService
             foreach ($row as $idx => $rawVal) {
                 $val = strtolower(trim((string) $rawVal));
 
+                // Skip serial number columns from matching as code
+                if (in_array($val, ['sn', 's.n.', 's/n', 's_n', 'sl no', 'sl.no', 'sr no', 'sr.no', 'no', '#', 'sno'])) {
+                    continue;
+                }
+
                 // Code detection
-                if (in_array($val, ['code', 'emp code', 'emp_code', 'employee code', 'employee_code', 'id', 'empid', 'emp_id']) || str_contains($val, 'code')) {
+                if (
+                    in_array($val, [
+                        'code', 'emp code', 'emp_code', 'employee code', 'employee_code',
+                        'id', 'empid', 'emp_id', 'emp id', 'employee id', 'employee_id',
+                        'emp no', 'emp_no', 'employee no', 'employee_no',
+                        'staff id', 'staff_id', 'staff code', 'staff_code', 'id no', 'card no', 'card_no',
+                    ]) ||
+                    str_contains($val, 'code') ||
+                    (str_contains($val, 'id') && ! str_contains($val, 'valid') && ! str_contains($val, 'paid'))
+                ) {
                     $codeCol = $idx;
                 }
 
                 // Name detection
-                if (in_array($val, ['name', 'emp name', 'emp_name', 'employee name', 'employee_name', 'full name', 'fullname']) || (str_contains($val, 'name') && ! str_contains($val, 'code'))) {
+                if (
+                    in_array($val, ['name', 'emp name', 'emp_name', 'employee name', 'employee_name', 'full name', 'fullname', 'staff name', 'staff_name', 'employee']) ||
+                    (str_contains($val, 'name') && ! str_contains($val, 'code'))
+                ) {
                     $nameCol = $idx;
                 }
 
                 // Depart detection
-                if (in_array($val, ['depart', 'department', 'dept', 'dept name', 'department name']) || str_contains($val, 'depart') || str_contains($val, 'dept')) {
+                if (
+                    in_array($val, ['depart', 'department', 'dept', 'dept name', 'department name', 'division', 'section']) ||
+                    str_contains($val, 'depart') || str_contains($val, 'dept')
+                ) {
                     $deptCol = $idx;
                 }
 
                 // Designation detection
-                if (in_array($val, ['designation', 'desig', 'designation name', 'post', 'position', 'role', 'title', 'job title', 'job_title']) || str_contains($val, 'designat') || str_contains($val, 'desig')) {
+                if (
+                    in_array($val, ['designation', 'desig', 'designation name', 'post', 'position', 'role', 'title', 'job title', 'job_title']) ||
+                    str_contains($val, 'designat') || str_contains($val, 'desig') || str_contains($val, 'position')
+                ) {
                     $desigCol = $idx;
                 }
             }

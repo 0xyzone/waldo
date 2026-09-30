@@ -170,6 +170,10 @@
                 </div>
             </div>
             <div class="meta-row">
+                <div class="meta-col">
+                    <span class="meta-label">Status:</span>
+                    <span class="meta-value">{{ strtoupper($status) }}</span>
+                </div>
                 <div class="meta-col text-right">
                     <span class="meta-label">Total Cards Listed:</span>
                     <span class="meta-value">{{ $items->count() }} Cards</span>

@@ -25,9 +25,12 @@ class IdCardPrintReportPrintController extends Controller
             $deptTitle = 'All Departments';
         }
 
-        $targetStatus = ($status && strtoupper($status) !== 'ALL') ? $status : 'printed';
-        $query->where('status', $targetStatus);
-        $statusTitle = ucfirst($targetStatus);
+        if ($status && strtoupper(trim($status)) !== 'ALL') {
+            $query->where('status', trim($status));
+            $statusTitle = ucwords(trim($status));
+        } else {
+            $statusTitle = 'All Statuses';
+        }
 
         $items = $query
             ->orderBy('department')
