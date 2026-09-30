@@ -4,71 +4,72 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
+use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\SalaryIncrementRequest;
-use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class SalaryIncrementRequestPolicy
 {
     use HandlesAuthorization;
-
-    public function viewAny(User $authUser): bool
+    
+    public function viewAny(AuthUser $authUser): bool
     {
-        return $authUser->hasRole(['super_admin', 'HR', 'HR Assist', 'Finance']) || $authUser->can('ViewAny:SalaryIncrementRequest');
+        return $authUser->can('ViewAny:SalaryIncrementRequest');
     }
 
-    public function view(User $authUser, SalaryIncrementRequest $salaryIncrementRequest): bool
+    public function view(AuthUser $authUser, SalaryIncrementRequest $salaryIncrementRequest): bool
     {
-        return $authUser->hasRole(['super_admin', 'HR', 'HR Assist', 'Finance']) || $authUser->can('View:SalaryIncrementRequest');
+        return $authUser->can('View:SalaryIncrementRequest');
     }
 
-    public function create(User $authUser): bool
+    public function create(AuthUser $authUser): bool
     {
-        return $authUser->hasRole(['super_admin', 'HR', 'HR Assist']) || $authUser->can('Create:SalaryIncrementRequest');
+        return $authUser->can('Create:SalaryIncrementRequest');
     }
 
-    public function update(User $authUser, SalaryIncrementRequest $salaryIncrementRequest): bool
+    public function update(AuthUser $authUser, SalaryIncrementRequest $salaryIncrementRequest): bool
     {
-        return $authUser->hasRole(['super_admin', 'HR', 'HR Assist', 'Finance']) || $authUser->can('Update:SalaryIncrementRequest');
+        return $authUser->can('Update:SalaryIncrementRequest');
     }
 
-    public function delete(User $authUser, SalaryIncrementRequest $salaryIncrementRequest): bool
+    public function delete(AuthUser $authUser, SalaryIncrementRequest $salaryIncrementRequest): bool
     {
-        return $authUser->hasRole(['super_admin', 'HR']) || $authUser->can('Delete:SalaryIncrementRequest');
+        return $authUser->can('Delete:SalaryIncrementRequest');
     }
 
-    public function deleteAny(User $authUser): bool
+    public function deleteAny(AuthUser $authUser): bool
     {
-        return $authUser->hasRole(['super_admin', 'HR']) || $authUser->can('DeleteAny:SalaryIncrementRequest');
+        return $authUser->can('DeleteAny:SalaryIncrementRequest');
     }
 
-    public function restore(User $authUser, SalaryIncrementRequest $salaryIncrementRequest): bool
+    public function restore(AuthUser $authUser, SalaryIncrementRequest $salaryIncrementRequest): bool
     {
-        return $authUser->hasRole(['super_admin', 'HR']) || $authUser->can('Restore:SalaryIncrementRequest');
+        return $authUser->can('Restore:SalaryIncrementRequest');
     }
 
-    public function forceDelete(User $authUser, SalaryIncrementRequest $salaryIncrementRequest): bool
+    public function forceDelete(AuthUser $authUser, SalaryIncrementRequest $salaryIncrementRequest): bool
     {
-        return $authUser->hasRole(['super_admin', 'HR']) || $authUser->can('ForceDelete:SalaryIncrementRequest');
+        return $authUser->can('ForceDelete:SalaryIncrementRequest');
     }
 
-    public function forceDeleteAny(User $authUser): bool
+    public function forceDeleteAny(AuthUser $authUser): bool
     {
-        return $authUser->hasRole(['super_admin', 'HR']) || $authUser->can('ForceDeleteAny:SalaryIncrementRequest');
+        return $authUser->can('ForceDeleteAny:SalaryIncrementRequest');
     }
 
-    public function restoreAny(User $authUser): bool
+    public function restoreAny(AuthUser $authUser): bool
     {
-        return $authUser->hasRole(['super_admin', 'HR']) || $authUser->can('RestoreAny:SalaryIncrementRequest');
+        return $authUser->can('RestoreAny:SalaryIncrementRequest');
     }
 
-    public function replicate(User $authUser, SalaryIncrementRequest $salaryIncrementRequest): bool
+    public function replicate(AuthUser $authUser, SalaryIncrementRequest $salaryIncrementRequest): bool
     {
-        return $authUser->hasRole(['super_admin', 'HR']) || $authUser->can('Replicate:SalaryIncrementRequest');
+        return $authUser->can('Replicate:SalaryIncrementRequest');
     }
 
-    public function reorder(User $authUser): bool
+    public function reorder(AuthUser $authUser): bool
     {
-        return $authUser->hasRole(['super_admin', 'HR']) || $authUser->can('Reorder:SalaryIncrementRequest');
+        return $authUser->can('Reorder:SalaryIncrementRequest');
     }
+
 }
