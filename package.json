@@ -33,11 +33,13 @@
         "@types/react-dom": "^19.2.5",
         "@vitejs/plugin-react": "^6.1.1",
         "clsx": "^2.1.1",
+        "laravel-echo": "^2.5.0",
         "lucide-react": "^1.39.0",
         "prosemirror-state": "^1.4.4",
         "prosemirror-tables": "^1.8.5",
         "prosemirror-transform": "^1.12.1",
         "prosemirror-view": "^1.42.3",
+        "pusher-js": "^8.6.0",
         "react": "^19.2.8",
         "react-dom": "^19.2.8",
         "tailwind-merge": "^3.6.0"

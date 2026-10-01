@@ -53,6 +53,7 @@ class KamkajPanelProvider extends PanelProvider
             )
             ->globalSearch(false)
             ->databaseNotifications()
+            ->broadcasting()
             // ->databaseNotificationsPolling('30s')
             ->maxContentWidth('full')
             ->sidebarCollapsibleOnDesktop()

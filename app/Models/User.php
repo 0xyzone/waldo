@@ -9,6 +9,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -50,5 +51,36 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function mapUsers(): HasMany
     {
         return $this->hasMany(MapUser::class);
+    }
+
+    public function conversations(): BelongsToMany
+    {
+        return $this->belongsToMany(Conversation::class, 'conversation_participants')
+            ->withPivot(['last_read_at'])
+            ->withTimestamps();
+    }
+
+    public function messages(): HasMany
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    public function unreadMessagesCount(): int
+    {
+        $participants = ConversationParticipant::where('user_id', $this->id)->get();
+
+        if ($participants->isEmpty()) {
+            return 0;
+        }
+
+        $unread = 0;
+        foreach ($participants as $participant) {
+            $unread += Message::where('conversation_id', $participant->conversation_id)
+                ->where('sender_id', '!=', $this->id)
+                ->when($participant->last_read_at, fn ($q) => $q->where('created_at', '>', $participant->last_read_at))
+                ->count();
+        }
+
+        return $unread;
     }
 }
