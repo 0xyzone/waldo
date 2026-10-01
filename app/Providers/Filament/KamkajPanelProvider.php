@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\EditProfile;
+use App\Filament\Pages\Auth\Login;
 use App\Http\Middleware\RequirePasswordChange;
 use AzGasim\FilamentUnsavedChangesModal\FilamentUnsavedChangesModalPlugin;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
@@ -32,11 +34,11 @@ class KamkajPanelProvider extends PanelProvider
             ->id('kamkaj')
             ->path('kamkaj')
             ->viteTheme('resources/css/filament/kamkaj/theme.css')
-            ->login()
+            ->login(Login::class)
             ->passwordReset()
             ->emailVerification()
             ->emailChangeVerification()
-            ->profile()
+            ->profile(EditProfile::class)
             ->favicon(fn () => request()->isSecure() ? asset('img/logo.ico') : asset('img/logo-http.ico'))
             ->renderHook(
                 PanelsRenderHook::HEAD_END,

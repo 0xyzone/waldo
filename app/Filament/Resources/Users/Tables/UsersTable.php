@@ -27,8 +27,16 @@ class UsersTable
                     ->label('Name')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('username')
+                    ->label('Username')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('email')
                     ->label('Email address')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('phone')
+                    ->label('Phone')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('email_verified_at')
@@ -79,7 +87,7 @@ class UsersTable
                 EditAction::make(),
                 DeleteAction::make(),
                 Impersonate::make()
-                ->redirectTo(Dashboard::getUrl())
+                    ->redirectTo(Dashboard::getUrl()),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
