@@ -86,3 +86,13 @@
   - Supports previewing uploaded multi-image CVs, single-page and bulk printing via in-modal iframe print engine.
   - Standalone printable route: `GET /candidates/{candidate}/print` (`CandidatePrintController@print`).
 
+### 10. Tips Reports & HRMS Attendance Processing
+- **Models**: `App\Models\TipsReport`, `App\Models\TipsReportItem`, `App\Models\TipsDepartmentMapping`, `App\Models\TipsNonEmployee`
+- **Service**: `App\Services\TipsCalculationService`
+- **Resource**: `App\Filament\Resources\TipsReports\TipsReportResource`
+- **Attendance Excel Parser**:
+  - Parses uploaded HRMS leave/attendance Excel/CSV exports with support for legacy formats and new 2-tier header formats with blank offset rows.
+  - Recognizes `Missing Punch In Count` (stored in `tips_report_items.missing_punch_in_count` and displayed in the report table).
+  - Explicitly prioritizes direct `Absent Days` (Col I) and `Total Leave` (Col J) values from the HRMS export.
+  - Preserves backward compatibility for earlier exports summing LOP / individual leave categories.
+

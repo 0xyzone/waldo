@@ -120,6 +120,7 @@ class TipsCalculationService
                         $totalLeaves = (float) ($row['total_leave'] ?? 0);
                         $lateIn = (int) ($row['late_in_count'] ?? 0);
                         $earlyOut = (int) ($row['early_out_count'] ?? 0);
+                        $missingPunchIn = (int) ($row['missing_punch_in_count'] ?? 0);
 
                         // Employee baseline settings
                         $pointValue = (float) ($employee->point_value ?? 0);
@@ -195,6 +196,7 @@ class TipsCalculationService
                             'total_leaves' => $totalLeaves,
                             'late_in_count' => $lateIn,
                             'early_out_count' => $earlyOut,
+                            'missing_punch_in_count' => $missingPunchIn,
                             'join_date' => $joinDateRaw,
                             'working_duration' => $workingDuration,
                             'completion_factor' => $completionFactor,
@@ -273,6 +275,7 @@ class TipsCalculationService
                         'total_leaves' => 0,
                         'late_in_count' => 0,
                         'early_out_count' => 0,
+                        'missing_punch_in_count' => 0,
                         'join_date' => $employee?->join_date_formatted,
                         'working_duration' => 'Left Out Override',
                         'completion_factor' => 1.0,
@@ -321,6 +324,7 @@ class TipsCalculationService
                     'total_leaves' => 0,
                     'late_in_count' => 0,
                     'early_out_count' => 0,
+                    'missing_punch_in_count' => 0,
                     'join_date' => null,
                     'working_duration' => 'Non-Employee',
                     'completion_factor' => 1.0,
@@ -434,8 +438,13 @@ class TipsCalculationService
             $normalized = array_map(fn ($c) => strtolower(trim((string) $c)), $rows[$i]);
             if (in_array('username', $normalized) || (in_array('full name', $normalized) && in_array('id', $normalized))) {
                 $headerRowIdx = $i;
-                if ($i > 0) {
-                    $categoryRowIdx = $i - 1;
+                // Find nearest non-empty row above headerRowIdx as categoryRow
+                for ($k = $i - 1; $k >= 0; $k--) {
+                    $nonEmpty = array_filter($rows[$k], fn ($c) => trim((string) $c) !== '');
+                    if (! empty($nonEmpty)) {
+                        $categoryRowIdx = $k;
+                        break;
+                    }
                 }
                 break;
             }
@@ -453,6 +462,7 @@ class TipsCalculationService
         $idCol = null;
         $lateInCol = null;
         $earlyOutCol = null;
+        $missingPunchInCol = null;
         $workingDaysCol = null;
         $presentDaysCol = null;
         $absentDaysCol = null;
@@ -464,13 +474,13 @@ class TipsCalculationService
             $norm = strtolower(trim((string) $cell));
             $catNorm = isset($categoryRow[$idx]) ? strtolower(trim((string) $categoryRow[$idx])) : '';
 
-            if ($norm === 'username') {
+            if ($norm === 'username' || $catNorm === 'username') {
                 $usernameCol = $idx;
             }
-            if ($norm === 'full name') {
+            if ($norm === 'full name' || $catNorm === 'full name') {
                 $fullNameCol = $idx;
             }
-            if ($norm === 'id') {
+            if ($norm === 'id' || $catNorm === 'id') {
                 $idCol = $idx;
             }
             if (in_array($norm, ['working days', 'working_days']) || in_array($catNorm, ['working days', 'working_days'])) {
@@ -493,6 +503,12 @@ class TipsCalculationService
 
             if (in_array($norm, ['early out count', 'early out', 'early_out_count']) || in_array($catNorm, ['early out count', 'early out', 'early_out_count'])) {
                 $earlyOutCol = $idx;
+            }
+
+            // Missing Punch In Count check on either headerRow or categoryRow
+            if (in_array($norm, ['missing punch in count', 'missing punch in', 'missing_punch_in_count', 'missing punch', 'missing_punch'])
+                || in_array($catNorm, ['missing punch in count', 'missing punch in', 'missing_punch_in_count', 'missing punch', 'missing_punch'])) {
+                $missingPunchInCol = $idx;
             }
 
             // Check for Used Balance columns in HRMS Leave report
@@ -519,10 +535,11 @@ class TipsCalculationService
                 continue;
             }
 
-            // Absent days: use explicit absent days column if present; otherwise sum LOP/Absent used balances
+            // Absent days: strictly use explicit absent days column if present; otherwise fallback to summing LOP/Absent used balances (for legacy formats)
             $absentDays = 0.0;
-            if ($absentDaysCol !== null && is_numeric($cells[$absentDaysCol] ?? null)) {
-                $absentDays = (float) $cells[$absentDaysCol];
+            if ($absentDaysCol !== null) {
+                $val = $cells[$absentDaysCol] ?? null;
+                $absentDays = ($val !== '-' && is_numeric($val)) ? (float) $val : 0.0;
             } else {
                 foreach ($absentCols as $cIdx => $name) {
                     $v = $cells[$cIdx] ?? 0;
@@ -532,10 +549,11 @@ class TipsCalculationService
                 }
             }
 
-            // Total leaves: use explicit total leave column if present; otherwise sum individual leave used balances
+            // Total leaves: strictly use explicit total leave column if present; otherwise sum individual leave used balances (for legacy formats)
             $totalLeaves = 0.0;
-            if ($totalLeaveCol !== null && is_numeric($cells[$totalLeaveCol] ?? null)) {
-                $totalLeaves = (float) $cells[$totalLeaveCol];
+            if ($totalLeaveCol !== null) {
+                $val = $cells[$totalLeaveCol] ?? null;
+                $totalLeaves = ($val !== '-' && is_numeric($val)) ? (float) $val : 0.0;
             } elseif (! empty($leaveCols)) {
                 foreach ($leaveCols as $cIdx => $name) {
                     $v = $cells[$cIdx] ?? 0;
@@ -561,6 +579,10 @@ class TipsCalculationService
                 ? (int) $cells[$earlyOutCol]
                 : 0;
 
+            $missingPunchIn = $missingPunchInCol !== null && is_numeric($cells[$missingPunchInCol] ?? null)
+                ? (int) $cells[$missingPunchInCol]
+                : 0;
+
             $fullName = $fullNameCol !== null ? trim((string) ($cells[$fullNameCol] ?? '')) : null;
             $id = $idCol !== null ? ($cells[$idCol] ?? null) : null;
 
@@ -574,6 +596,7 @@ class TipsCalculationService
                 'total_leave' => $totalLeaves,
                 'late_in_count' => $lateIn,
                 'early_out_count' => $earlyOut,
+                'missing_punch_in_count' => $missingPunchIn,
             ];
         }
 

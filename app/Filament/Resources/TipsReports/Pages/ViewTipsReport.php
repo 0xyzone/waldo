@@ -222,6 +222,12 @@ class ViewTipsReport extends ViewRecord implements HasTable
                     ->color(fn ($state) => $state > 0 ? 'danger' : 'gray')
                     ->sortable(),
 
+                TextColumn::make('missing_punch_in_count')
+                    ->label('Missing Punch')
+                    ->formatStateUsing(fn ($state) => $state + 0)
+                    ->color(fn ($state) => $state > 0 ? 'warning' : 'gray')
+                    ->sortable(),
+
                 TextColumn::make('tips_percentage')
                     ->label('Tips %')
                     ->suffix('%')
