@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -15,6 +16,8 @@ class Conversation extends Model
     protected $fillable = [
         'type',
         'title',
+        'created_by',
+        'avatar_url',
         'last_message_at',
     ];
 
@@ -103,6 +106,61 @@ class Conversation extends Model
             ['user_id' => $userAId, 'last_read_at' => now()],
             ['user_id' => $userBId, 'last_read_at' => null],
         ]);
+
+        return $conversation;
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function isGroup(): bool
+    {
+        return $this->type === 'group';
+    }
+
+    public function getDisplayName(int $currentUserId): string
+    {
+        if ($this->isGroup()) {
+            return $this->title ?: 'Group Chat';
+        }
+
+        return $this->getRecipientUser($currentUserId)?->name ?? 'User';
+    }
+
+    public function getDisplayAvatar(int $currentUserId): ?string
+    {
+        if ($this->isGroup()) {
+            return $this->avatar_url ? asset('storage/'.$this->avatar_url) : null;
+        }
+
+        return $this->getRecipientUser($currentUserId)?->getFilamentAvatarUrl();
+    }
+
+    /**
+     * Create a group conversation.
+     *
+     * @param  array<int>  $participantUserIds
+     */
+    public static function createGroup(int $creatorId, string $title, array $participantUserIds, ?string $avatarUrl = null): self
+    {
+        $conversation = self::create([
+            'type' => 'group',
+            'title' => $title,
+            'created_by' => $creatorId,
+            'avatar_url' => $avatarUrl,
+            'last_message_at' => now(),
+        ]);
+
+        $allUserIds = array_unique(array_merge([$creatorId], $participantUserIds));
+
+        foreach ($allUserIds as $uId) {
+            $conversation->participants()->create([
+                'user_id' => $uId,
+                'last_read_at' => ($uId === $creatorId) ? now() : null,
+            ]);
+        }
 
         return $conversation;
     }

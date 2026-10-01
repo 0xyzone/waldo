@@ -3,6 +3,7 @@
 namespace App\Filament\Pages\Auth;
 
 use Filament\Auth\Pages\EditProfile as BaseEditProfile;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Schema;
@@ -13,6 +14,7 @@ class EditProfile extends BaseEditProfile
     {
         return $schema
             ->components([
+                $this->getAvatarFormComponent(),
                 $this->getNameFormComponent(),
                 $this->getUsernameFormComponent(),
                 $this->getEmailFormComponent(),
@@ -21,6 +23,19 @@ class EditProfile extends BaseEditProfile
                 $this->getPasswordConfirmationFormComponent(),
                 $this->getCurrentPasswordFormComponent(),
             ]);
+    }
+
+    protected function getAvatarFormComponent(): Component
+    {
+        return FileUpload::make('avatar_url')
+            ->label('Profile Avatar')
+            ->avatar()
+            ->image()
+            ->disk('public')
+            ->directory('avatars')
+            ->maxSize(2048)
+            ->circleCropper()
+            ->alignCenter();
     }
 
     protected function getUsernameFormComponent(): Component

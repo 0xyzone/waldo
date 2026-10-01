@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
@@ -12,6 +13,14 @@ class UserForm
     {
         return $schema
             ->components([
+                FileUpload::make('avatar_url')
+                    ->label('Avatar')
+                    ->avatar()
+                    ->image()
+                    ->disk('public')
+                    ->directory('avatars')
+                    ->maxSize(2048)
+                    ->alignCenter(),
                 TextInput::make('name')
                     ->required(),
                 TextInput::make('username')

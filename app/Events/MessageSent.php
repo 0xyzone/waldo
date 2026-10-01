@@ -27,9 +27,17 @@ class MessageSent implements ShouldBroadcastNow
 
     public string $body;
 
+    public string $type;
+
     public ?string $attachmentPath;
 
     public ?string $attachmentName;
+
+    public ?string $fileType;
+
+    public ?int $fileSize;
+
+    public ?string $senderAvatar;
 
     public string $createdAt;
 
@@ -47,9 +55,13 @@ class MessageSent implements ShouldBroadcastNow
         $this->senderId = $message->sender_id;
         $this->senderName = $message->sender?->name ?? 'User';
         $this->senderUsername = $message->sender?->username;
+        $this->senderAvatar = $message->sender?->getFilamentAvatarUrl();
         $this->body = $message->body;
+        $this->type = $message->type ?? 'text';
         $this->attachmentPath = $message->attachment_path;
         $this->attachmentName = $message->attachment_name;
+        $this->fileType = $message->file_type;
+        $this->fileSize = $message->file_size;
         $this->createdAt = $message->created_at?->diffForHumans() ?? 'just now';
 
         $this->recipientIds = ConversationParticipant::where('conversation_id', $message->conversation_id)
@@ -94,9 +106,14 @@ class MessageSent implements ShouldBroadcastNow
             'sender_id' => $this->senderId,
             'sender_name' => $this->senderName,
             'sender_username' => $this->senderUsername,
+            'sender_avatar' => $this->senderAvatar,
             'body' => $this->body,
+            'type' => $this->type,
             'attachment_path' => $this->attachmentPath,
+            'attachment_url' => $this->attachmentPath ? asset('storage/'.$this->attachmentPath) : null,
             'attachment_name' => $this->attachmentName,
+            'file_type' => $this->fileType,
+            'file_size' => $this->fileSize,
             'created_at' => $this->createdAt,
         ];
     }
