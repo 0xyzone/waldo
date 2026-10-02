@@ -848,7 +848,8 @@
                                         @elseif($msg->isAudio())
                                             <!-- Modern Waveform Voice Note Player -->
                                             <div 
-                                                x-data="voicePlayer('{{ $msg->getAttachmentUrl() }}')"
+                                                x-data="voicePlayer('{{ $msg->getAttachmentUrl() }}', $el)"
+                                                data-voice-player
                                                 class="my-1.5 flex items-center gap-2.5 rounded-2xl px-3 py-2 transition-all {{ $isMe ? 'bg-amber-700/60 text-white' : 'bg-gray-100 dark:bg-slate-700/70 text-gray-900 dark:text-white' }} min-w-[240px] max-w-[280px] sm:max-w-[320px] select-none"
                                             >
                                                 <!-- Play/Pause Button -->
@@ -2385,9 +2386,10 @@
     @endif
 
     <script>
-        window.voicePlayer = function(url) {
+        window.voicePlayer = function(url, rootEl = null) {
             return {
                 url: url,
+                rootEl: rootEl,
                 audio: null,
                 isPlaying: false,
                 currentTime: 0,
@@ -2399,6 +2401,23 @@
                 animRaf: null,
 
                 init() {
+                    if (!this.rootEl) {
+                        this.rootEl = this.$el;
+                    }
+                    if (this.rootEl) {
+                        this.rootEl._voicePlayer = this;
+                        this.rootEl.addEventListener('play-voice-note', () => {
+                            this.play();
+                        });
+                    }
+
+                    // Global listener: Stop this voice note immediately if any other voice note starts playing
+                    window.addEventListener('voice-player-stop-all', (e) => {
+                        if (e.detail?.except !== this && this.isPlaying) {
+                            this.pause();
+                        }
+                    });
+
                     this.audio = new Audio();
                     this.audio.preload = 'auto';
                     this.audio.src = this.url;
@@ -2425,6 +2444,9 @@
                         this.stopSmoothProgress();
                         this.currentTime = 0;
                         this.progress = 0;
+
+                        // Continuous playback: automatically play the next voice note in thread!
+                        this.playNextVoiceNote();
                     });
                 },
 
@@ -2535,20 +2557,59 @@
                     }
                 },
 
+                play() {
+                    if (!this.audio) return;
+                    // Stop any other voice note currently playing across the application
+                    window.dispatchEvent(new CustomEvent('voice-player-stop-all', { detail: { except: this } }));
+
+                    this.audio.playbackRate = this.speed;
+                    this.audio.play().then(() => {
+                        this.isPlaying = true;
+                        this.startSmoothProgress();
+                    }).catch(() => {});
+                },
+
+                pause() {
+                    if (!this.audio) return;
+                    this.audio.pause();
+                    this.isPlaying = false;
+                    this.stopSmoothProgress();
+                },
+
                 togglePlay() {
                     if (!this.audio) return;
                     if (this.isPlaying) {
-                        this.audio.pause();
-                        this.isPlaying = false;
-                        this.stopSmoothProgress();
+                        this.pause();
                     } else {
-                        document.querySelectorAll('audio').forEach(a => { if (a !== this.audio) a.pause(); });
-                        this.audio.playbackRate = this.speed;
-                        this.audio.play().then(() => {
-                            this.isPlaying = true;
-                            this.startSmoothProgress();
-                        }).catch(() => {});
+                        this.play();
                     }
+                },
+
+                playNextVoiceNote() {
+                    const currentEl = this.rootEl || this.$el;
+                    if (!currentEl) return;
+
+                    // Find the enclosing messages feed container
+                    const feed = currentEl.closest('[x-ref="messagesFeed"]')
+                        || currentEl.closest('.overflow-y-auto')
+                        || document;
+
+                    const players = Array.from(feed.querySelectorAll('[data-voice-player]'));
+                    const currentIndex = players.indexOf(currentEl);
+
+                    // If there is another voice note after this one, automatically trigger play!
+                    if (currentIndex !== -1 && currentIndex + 1 < players.length) {
+                        const nextPlayerEl = players[currentIndex + 1];
+                        nextPlayerEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        setTimeout(() => {
+                            if (nextPlayerEl._voicePlayer) {
+                                nextPlayerEl._voicePlayer.play();
+                            } else {
+                                nextPlayerEl.dispatchEvent(new CustomEvent('play-voice-note'));
+                            }
+                        }, 250);
+                    }
+                    // If no next voice note, playback stops in its entirety (no-op)
                 },
 
                 handleBarClick(e) {
