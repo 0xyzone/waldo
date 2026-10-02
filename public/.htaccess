@@ -30,7 +30,17 @@
     RewriteRule ^ index.php [L]
 </IfModule>
 
-# Increase upload size limits for Apache PHP
+# Disable QUIC/HTTP3 for Livewire endpoints to prevent ERR_QUIC_GOAWAY errors
+# LiteSpeed's QUIC drops frequent POST connections (Livewire polling) with GOAWAY frames.
+# Alt-Svc: clear tells the browser to stop using QUIC for these specific URLs.
+<IfModule mod_headers.c>
+    <If "%{REQUEST_URI} =~ m|^/livewire|">
+        Header always set Alt-Svc "clear"
+        Header always set Cache-Control "no-store, no-cache, must-revalidate"
+    </If>
+</IfModule>
+
+# Increase upload size limits for Apache/LiteSpeed PHP
 <IfModule mod_php.c>
     php_value upload_max_filesize 64M
     php_value post_max_size 64M

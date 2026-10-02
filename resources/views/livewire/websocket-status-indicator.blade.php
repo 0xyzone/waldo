@@ -1,4 +1,4 @@
-<div wire:poll.10s="checkStatus" class="relative inline-flex items-center">
+<div wire:poll.60s="checkStatus" class="relative inline-flex items-center">
     <!-- Topbar Pill -->
     <div class="flex items-center gap-1.5">
         @if($isRunning)
