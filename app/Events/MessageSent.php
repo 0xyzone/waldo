@@ -41,6 +41,12 @@ class MessageSent implements ShouldBroadcastNow
 
     public string $createdAt;
 
+    public ?int $replyToId = null;
+
+    public ?array $replyTo = null;
+
+    public bool $isForwarded = false;
+
     /**
      * @var array<int>
      */
@@ -53,7 +59,7 @@ class MessageSent implements ShouldBroadcastNow
 
     public function __construct(Message $message, array $mentionedUserIds = [])
     {
-        $message->loadMissing('sender');
+        $message->loadMissing(['sender', 'replyTo.sender']);
 
         $this->id = $message->id;
         $this->mentionedUserIds = $mentionedUserIds;
@@ -69,6 +75,17 @@ class MessageSent implements ShouldBroadcastNow
         $this->fileType = $message->file_type;
         $this->fileSize = $message->file_size;
         $this->createdAt = $message->created_at?->diffForHumans() ?? 'just now';
+        $this->replyToId = $message->reply_to_id;
+        $this->isForwarded = (bool) $message->is_forwarded;
+
+        if ($message->replyTo) {
+            $this->replyTo = [
+                'id' => $message->replyTo->id,
+                'sender_name' => $message->replyTo->sender?->name ?? 'User',
+                'body' => $message->replyTo->getReplySnippet(60),
+                'type' => $message->replyTo->type,
+            ];
+        }
 
         $this->recipientIds = ConversationParticipant::where('conversation_id', $message->conversation_id)
             ->where('user_id', '!=', $message->sender_id)
@@ -122,6 +139,9 @@ class MessageSent implements ShouldBroadcastNow
             'file_size' => $this->fileSize,
             'created_at' => $this->createdAt,
             'mentioned_user_ids' => $this->mentionedUserIds,
+            'reply_to_id' => $this->replyToId,
+            'reply_to' => $this->replyTo,
+            'is_forwarded' => $this->isForwarded,
         ];
     }
 }

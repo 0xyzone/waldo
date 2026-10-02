@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Message extends Model
 {
@@ -14,8 +15,10 @@ class Message extends Model
 
     protected $fillable = [
         'conversation_id',
+        'reply_to_id',
         'sender_id',
         'body',
+        'is_forwarded',
         'type',
         'attachment_path',
         'attachment_name',
@@ -32,12 +35,23 @@ class Message extends Model
     protected function casts(): array
     {
         return [
+            'is_forwarded' => 'boolean',
             'is_deleted' => 'boolean',
             'deleted_at' => 'datetime',
             'is_pinned' => 'boolean',
             'pinned_at' => 'datetime',
             'pinned_until' => 'datetime',
         ];
+    }
+
+    public function replyTo(): BelongsTo
+    {
+        return $this->belongsTo(Message::class, 'reply_to_id');
+    }
+
+    public function replies(): HasMany
+    {
+        return $this->hasMany(Message::class, 'reply_to_id');
     }
 
     public function conversation(): BelongsTo
@@ -279,5 +293,26 @@ class Message extends Model
         }
 
         return nl2br($body);
+    }
+
+    public function getReplySnippet(int $limit = 60): string
+    {
+        if ($this->is_deleted) {
+            return 'This message was deleted';
+        }
+
+        if ($this->isAudio()) {
+            return '🎤 Voice message';
+        }
+
+        if ($this->isImage()) {
+            return '📷 Photo'.($this->body ? ': '.Str::limit($this->body, $limit) : '');
+        }
+
+        if ($this->isFile()) {
+            return '📎 '.($this->attachment_name ?: 'File');
+        }
+
+        return Str::limit($this->body ?? '', $limit);
     }
 }

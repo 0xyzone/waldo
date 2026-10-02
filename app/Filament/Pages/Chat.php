@@ -109,6 +109,19 @@ class Chat extends Page
 
     public bool $showTransferOwnershipModal = false;
 
+    public ?int $replyingToMessageId = null;
+
+    public ?int $forwardingMessageId = null;
+
+    public bool $showForwardModal = false;
+
+    public string $forwardSearch = '';
+
+    /**
+     * @var array<int>
+     */
+    public array $selectedForwardConversationIds = [];
+
     public static function getNavigationBadge(): ?string
     {
         $count = auth()->user()?->unreadMessagesCount() ?? 0;
@@ -144,6 +157,7 @@ class Chat extends Page
         $this->activeConversationId = $id;
         $this->attachment = null;
         $this->voiceNote = null;
+        $this->replyingToMessageId = null;
         $conversation->markAsReadFor(auth()->id());
 
         $this->dispatch('conversation-changed', conversationId: $id);
@@ -293,6 +307,7 @@ class Chat extends Page
 
         $message = Message::create([
             'conversation_id' => $conversation->id,
+            'reply_to_id' => $this->replyingToMessageId,
             'sender_id' => auth()->id(),
             'body' => $text,
             'type' => $type,
@@ -333,6 +348,7 @@ class Chat extends Page
         $this->messageText = '';
         $this->attachment = null;
         $this->voiceNote = null;
+        $this->replyingToMessageId = null;
 
         $this->dispatch('message-sent', messageId: $message->id);
         $this->dispatch('scroll-to-bottom');
@@ -659,7 +675,7 @@ class Chat extends Page
         }
 
         $query = Message::where('conversation_id', $this->activeConversationId)
-            ->with(['sender', 'pinnedBy', 'reactions.user'])
+            ->with(['sender', 'pinnedBy', 'reactions.user', 'replyTo.sender'])
             ->orderBy('created_at', 'asc');
 
         if (filled($this->messageSearch)) {
@@ -668,6 +684,157 @@ class Chat extends Page
         }
 
         return $query->get();
+    }
+
+    public function setReply(int $messageId): void
+    {
+        $message = Message::find($messageId);
+        if (! $message || $message->conversation_id !== $this->activeConversationId || $message->is_deleted) {
+            return;
+        }
+
+        $this->replyingToMessageId = $messageId;
+        $this->dispatch('focus-message-input');
+    }
+
+    public function cancelReply(): void
+    {
+        $this->replyingToMessageId = null;
+    }
+
+    public function getReplyingToMessageProperty(): ?Message
+    {
+        if (! $this->replyingToMessageId) {
+            return null;
+        }
+
+        return Message::with('sender')->find($this->replyingToMessageId);
+    }
+
+    public function openForwardModal(int $messageId): void
+    {
+        $message = Message::find($messageId);
+        if (! $message || $message->is_deleted) {
+            return;
+        }
+
+        $this->forwardingMessageId = $messageId;
+        $this->selectedForwardConversationIds = [];
+        $this->forwardSearch = '';
+        $this->showForwardModal = true;
+    }
+
+    public function closeForwardModal(): void
+    {
+        $this->showForwardModal = false;
+        $this->forwardingMessageId = null;
+        $this->selectedForwardConversationIds = [];
+        $this->forwardSearch = '';
+    }
+
+    public function toggleForwardConversation(int $conversationId): void
+    {
+        if (in_array($conversationId, $this->selectedForwardConversationIds, true)) {
+            $this->selectedForwardConversationIds = array_values(array_diff($this->selectedForwardConversationIds, [$conversationId]));
+        } else {
+            $this->selectedForwardConversationIds[] = $conversationId;
+        }
+    }
+
+    public function forwardMessage(): void
+    {
+        if (! $this->forwardingMessageId || empty($this->selectedForwardConversationIds)) {
+            Notification::make()
+                ->warning()
+                ->title('Please select at least one chat to forward to.')
+                ->send();
+
+            return;
+        }
+
+        $sourceMessage = Message::with('sender')->find($this->forwardingMessageId);
+        if (! $sourceMessage || $sourceMessage->is_deleted) {
+            Notification::make()
+                ->danger()
+                ->title('Message is no longer available.')
+                ->send();
+            $this->closeForwardModal();
+
+            return;
+        }
+
+        $currentUserId = auth()->id();
+        $forwardedCount = 0;
+
+        foreach ($this->selectedForwardConversationIds as $convId) {
+            $targetConv = Conversation::with('participants')->find($convId);
+            if (! $targetConv || ! $targetConv->participants->contains('user_id', $currentUserId)) {
+                continue;
+            }
+
+            if (! $targetConv->canUserSendMessage($currentUserId)) {
+                continue;
+            }
+
+            $newMsg = Message::create([
+                'conversation_id' => $targetConv->id,
+                'sender_id' => $currentUserId,
+                'body' => $sourceMessage->body,
+                'type' => $sourceMessage->type,
+                'is_forwarded' => true,
+                'attachment_path' => $sourceMessage->attachment_path,
+                'attachment_name' => $sourceMessage->attachment_name,
+                'file_type' => $sourceMessage->file_type,
+                'file_size' => $sourceMessage->file_size,
+            ]);
+
+            $targetConv->update(['last_message_at' => now()]);
+            $targetConv->markAsReadFor($currentUserId);
+
+            $this->safeBroadcast(new MessageSent($newMsg));
+            $forwardedCount++;
+        }
+
+        $this->closeForwardModal();
+
+        Notification::make()
+            ->success()
+            ->title("Message forwarded to {$forwardedCount} ".Str::plural('chat', $forwardedCount))
+            ->send();
+
+        $this->dispatch('scroll-to-bottom');
+    }
+
+    public function getForwardingMessageProperty(): ?Message
+    {
+        if (! $this->forwardingMessageId) {
+            return null;
+        }
+
+        return Message::with('sender')->find($this->forwardingMessageId);
+    }
+
+    public function getForwardableConversationsProperty()
+    {
+        $userId = auth()->id();
+        if (! $userId) {
+            return collect();
+        }
+
+        $conversations = Conversation::query()
+            ->whereHas('participants', fn ($q) => $q->where('user_id', $userId))
+            ->with(['users', 'latestMessage'])
+            ->orderByDesc('last_message_at')
+            ->get();
+
+        if (filled($this->forwardSearch)) {
+            $term = strtolower($this->forwardSearch);
+            $conversations = $conversations->filter(function ($conv) use ($userId, $term) {
+                return str_contains(strtolower($conv->getDisplayName($userId)), $term);
+            });
+        }
+
+        return $conversations->values();
     }
 
     public function getAvailableUsersProperty()

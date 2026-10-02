@@ -50,6 +50,12 @@
                 this.$nextTick(() => this.scrollToMessage(id));
             });
 
+            $wire.on('focus-floating-input', () => {
+                this.$nextTick(() => {
+                    this.$refs.floatMessageInput?.focus();
+                });
+            });
+
             window.addEventListener('voice-player-stop-all', () => {
                 if (this.isPlayingPreview) {
                     this.pausePreview();
@@ -815,12 +821,36 @@
                                     </div>
                                 @endif
 
+                                @if($msg->is_forwarded)
+                                    <div class="mb-1 flex items-center gap-1 text-[9px] italic {{ $isMe ? 'text-amber-200/90' : 'text-gray-500 dark:text-gray-400' }}">
+                                        <svg class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                                        </svg>
+                                        <span>Forwarded</span>
+                                    </div>
+                                @endif
+
                                 @if($isPinned)
                                     <div class="mb-1 flex items-center gap-1 text-[9px] font-bold {{ $isMe ? 'text-amber-200' : 'text-amber-600 dark:text-amber-400' }}">
                                         <span>📌 Pinned</span>
                                         @if($msg->pinned_until)
                                             <span class="opacity-75">({{ $msg->getPinnedTimeRemaining() }})</span>
                                         @endif
+                                    </div>
+                                @endif
+
+                                @if($msg->reply_to_id && $msg->replyTo)
+                                    <div 
+                                        @click="scrollToMessage({{ $msg->reply_to_id }})"
+                                        class="mb-1.5 cursor-pointer rounded-lg border-l-4 px-2 py-1 transition text-left select-none {{ $isMe ? 'border-amber-300 bg-black/15 hover:bg-black/25 text-white' : 'border-amber-500 bg-gray-50 hover:bg-gray-100 text-gray-800 dark:border-amber-400 dark:bg-gray-700/50 dark:hover:bg-gray-700/80 dark:text-gray-200' }}"
+                                        title="Jump to replied message"
+                                    >
+                                        <div class="flex items-center justify-between gap-1 text-[10px] font-bold {{ $isMe ? 'text-amber-200' : 'text-amber-600 dark:text-amber-400' }}">
+                                            <span>{{ $msg->replyTo->sender?->name ?? 'User' }}</span>
+                                        </div>
+                                        <p class="truncate text-[10px] opacity-90 font-normal">
+                                            {{ $msg->replyTo->getReplySnippet(45) }}
+                                        </p>
                                     </div>
                                 @endif
 
@@ -966,9 +996,32 @@
                                 </div>
                             </div>
 
-                            <!-- Message Actions (Pin, Delete) -->
+                            <!-- Message Actions (Reply, Forward, Pin, Delete) -->
                             @if(!$msg->is_deleted)
                                 <div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5 self-center">
+                                    <!-- Reply Button -->
+                                    <button
+                                        type="button"
+                                        wire:click="setReply({{ $msg->id }})"
+                                        class="rounded p-1 text-gray-400 hover:text-amber-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                                        title="Reply to message"
+                                    >
+                                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6-6m-6-6l6 6"/>
+                                        </svg>
+                                    </button>
+
+                                    <!-- Forward Button -->
+                                    <button
+                                        type="button"
+                                        wire:click="openForwardModal({{ $msg->id }})"
+                                        class="rounded p-1 text-gray-400 hover:text-amber-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                                        title="Forward message"
+                                    >
+                                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10H11a8 8 0 00-8 8v2m18-10l-6-6m6 6l-6 6"/>
+                                        </svg>
+                                    </button>
                                     <!-- Pin Message Button -->
                                     @if($isPinned)
                                         <button
@@ -1304,6 +1357,36 @@
                                 </button>
                             </template>
                         </div>
+                    </div>
+                @endif
+
+                <!-- Reply Preview Chip -->
+                @if($replyingToMessageId && $this->replyingToMessage)
+                    @php $repMsg = $this->replyingToMessage; @endphp
+                    <div class="mb-2 flex items-center justify-between rounded-xl bg-amber-500/10 border-l-4 border-amber-500 px-2.5 py-1.5 text-xs dark:bg-amber-950/30 dark:border-amber-400">
+                        <div class="flex items-center gap-1.5 min-w-0">
+                            <svg class="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6-6m-6-6l6 6"/>
+                            </svg>
+                            <div class="min-w-0">
+                                <span class="block font-bold text-amber-700 dark:text-amber-300 text-[10px]">
+                                    Replying to {{ $repMsg->sender?->name ?? 'User' }}
+                                </span>
+                                <p class="truncate text-gray-600 dark:text-gray-300 text-[10px]">
+                                    {{ $repMsg->getReplySnippet(60) }}
+                                </p>
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            wire:click="cancelReply"
+                            class="text-gray-400 hover:text-red-500 p-0.5 rounded transition"
+                            title="Cancel reply"
+                        >
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
                     </div>
                 @endif
 
@@ -2465,6 +2548,130 @@
             </div>
         </div>
     @endif
+
+    <!-- Forward Message Modal inside Floating Widget -->
+    @if($showForwardModal && $forwardingMessageId)
+        @php $fwdMsg = $this->forwardingMessage; @endphp
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 p-4 backdrop-blur-sm">
+            <div
+                @click.outside="$wire.closeForwardModal()"
+                class="relative w-full max-w-sm overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900 flex flex-col max-h-[80vh] animate-in fade-in zoom-in-95 duration-150"
+            >
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between border-b border-gray-100 px-3.5 py-2.5 dark:border-gray-800">
+                    <div class="flex items-center gap-1.5">
+                        <span class="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400 text-xs">
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10H11a8 8 0 00-8 8v2m18-10l-6-6m6 6l-6 6"/>
+                            </svg>
+                        </span>
+                        <h4 class="text-xs font-bold text-gray-900 dark:text-white">Forward Message</h4>
+                    </div>
+                    <button
+                        type="button"
+                        wire:click="closeForwardModal"
+                        class="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800"
+                    >
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                @if($fwdMsg)
+                    <!-- Forwarded Message Summary Card -->
+                    <div class="border-b border-gray-100 bg-gray-50/70 p-2.5 dark:border-gray-800 dark:bg-gray-950/40">
+                        <div class="rounded-xl border border-gray-200 bg-white p-2 text-xs shadow-sm dark:border-gray-700/80 dark:bg-gray-800">
+                            <div class="flex items-center gap-1 text-[10px] font-bold text-amber-600 dark:text-amber-400 mb-0.5">
+                                <span>{{ $fwdMsg->sender?->name ?? 'User' }}</span>
+                            </div>
+                            <p class="truncate text-gray-700 dark:text-gray-200 text-[11px]">
+                                {{ $fwdMsg->getReplySnippet(75) }}
+                            </p>
+                        </div>
+                    </div>
+                @endif
+
+                <!-- Search Input -->
+                <div class="border-b border-gray-100 p-2 dark:border-gray-800">
+                    <input
+                        type="text"
+                        wire:model.live.debounce.250ms="forwardSearch"
+                        placeholder="Search chats..."
+                        class="chat-input-field w-full rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+                    />
+                </div>
+
+                <!-- Conversations List -->
+                <div class="flex-1 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800 max-h-56">
+                    @forelse($this->forwardableConversations as $fConv)
+                        @php
+                            $fSelected = in_array($fConv->id, $selectedForwardConversationIds, true);
+                            $fTitle = $fConv->getDisplayName(auth()->id());
+                            $fAvatar = $fConv->getDisplayAvatar(auth()->id());
+                        @endphp
+                        <div
+                            wire:key="float-fwd-conv-{{ $fConv->id }}"
+                            wire:click="toggleForwardConversation({{ $fConv->id }})"
+                            class="flex cursor-pointer items-center justify-between p-2.5 transition hover:bg-amber-50/60 dark:hover:bg-gray-800/60 {{ $fSelected ? 'bg-amber-50/80 dark:bg-amber-950/40' : '' }}"
+                        >
+                            <div class="flex items-center gap-2 min-w-0">
+                                @if($fAvatar)
+                                    <img src="{{ $fAvatar }}" class="h-7 w-7 rounded-full object-cover flex-shrink-0" />
+                                @else
+                                    <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-tr {{ $fConv->isGroup() ? 'from-indigo-600 to-indigo-400' : 'from-amber-600 to-amber-400' }} text-[10px] font-bold text-white shadow-sm">
+                                        {{ strtoupper(substr($fTitle, 0, 1)) }}
+                                    </div>
+                                @endif
+                                <div class="min-w-0">
+                                    <span class="block truncate text-xs font-semibold text-gray-900 dark:text-white">{{ $fTitle }}</span>
+                                    <span class="text-[9px] text-gray-400">{{ $fConv->isGroup() ? 'Group' : 'Direct' }}</span>
+                                </div>
+                            </div>
+                            <input
+                                type="checkbox"
+                                class="rounded border-gray-300 text-amber-600 focus:ring-amber-500 dark:border-gray-700 dark:bg-gray-800"
+                                {{ $fSelected ? 'checked' : '' }}
+                                wire:click.stop="toggleForwardConversation({{ $fConv->id }})"
+                            />
+                        </div>
+                    @empty
+                        <div class="p-4 text-center text-xs text-gray-400 dark:text-gray-500">
+                            No conversations found.
+                        </div>
+                    @endforelse
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="flex items-center justify-between border-t border-gray-100 bg-gray-50/50 p-2.5 dark:border-gray-800 dark:bg-gray-900/50">
+                    <span class="text-[11px] text-gray-500 dark:text-gray-400">
+                        Selected: <strong>{{ count($selectedForwardConversationIds) }}</strong>
+                    </span>
+                    <div class="flex items-center gap-1.5">
+                        <button
+                            type="button"
+                            wire:click="closeForwardModal"
+                            class="rounded-xl px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            wire:click="forwardMessage"
+                            @disabled(empty($selectedForwardConversationIds))
+                            class="inline-flex items-center gap-1 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 px-3 py-1 text-xs font-bold text-white shadow hover:from-amber-500 hover:to-orange-500 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                        >
+                            <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10H11a8 8 0 00-8 8v2m18-10l-6-6m6 6l-6 6"/>
+                            </svg>
+                            <span>Forward ({{ count($selectedForwardConversationIds) }})</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
 
     <script>
     window.voicePlayer = function(url, rootEl = null) {
