@@ -5,6 +5,11 @@
 
     RewriteEngine On
 
+    # Force HTTPS for local waldo
+    RewriteCond %{HTTPS} off
+    RewriteCond %{HTTP_HOST} ^waldo(:[0-9]+)?$ [NC]
+    RewriteRule ^ https://waldo%{REQUEST_URI} [L,R=301]
+
     # Proxy WebSocket connections to Laravel Reverb
     RewriteCond %{HTTP:Upgrade} =websocket [NC]
     RewriteRule ^app/(.*) ws://127.0.0.1:8080/app/$1 [P,L]
