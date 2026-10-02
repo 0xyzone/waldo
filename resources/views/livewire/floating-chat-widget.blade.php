@@ -135,7 +135,13 @@
         },
 
         isCancelled: false,
+        isPaused: false,
         recordedMimeType: 'audio/webm',
+        analyserNode: null,
+        audioCtx: null,
+        vizBars: Array(32).fill(2),
+        vizRaf: null,
+        maxRecordingSeconds: 60,
 
         async startRecording() {
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -165,10 +171,25 @@
                 this.audioChunks = [];
                 this.recordingTime = 0;
                 this.isCancelled = false;
+                this.isPaused = false;
                 this.isRecording = true;
 
+                // Web Audio API for live mic visualization
+                this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const source = this.audioCtx.createMediaStreamSource(stream);
+                this.analyserNode = this.audioCtx.createAnalyser();
+                this.analyserNode.fftSize = 64;
+                source.connect(this.analyserNode);
+                this.startVizLoop();
+
+                // Timer + 60s auto-stop
                 this.recordingInterval = setInterval(() => {
-                    this.recordingTime++;
+                    if (!this.isPaused) {
+                        this.recordingTime++;
+                        if (this.recordingTime >= this.maxRecordingSeconds) {
+                            this.stopAndSendRecording();
+                        }
+                    }
                 }, 1000);
 
                 this.mediaRecorder.ondataavailable = (e) => {
@@ -179,6 +200,8 @@
 
                 this.mediaRecorder.onstop = () => {
                     clearInterval(this.recordingInterval);
+                    this.stopVizLoop();
+                    if (this.audioCtx) { this.audioCtx.close(); this.audioCtx = null; }
                     stream.getTracks().forEach(track => track.stop());
 
                     if (!this.isCancelled && this.audioChunks.length > 0) {
@@ -195,10 +218,10 @@
                     this.isCancelled = false;
                 };
 
-                // Use 200ms timeslice so ondataavailable fires periodically
                 this.mediaRecorder.start(200);
             } catch (err) {
                 this.isRecording = false;
+                this.isPaused = false;
                 clearInterval(this.recordingInterval);
                 if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
                     alert('Microphone access was denied. Please allow microphone access in your browser settings and try again.');
@@ -210,10 +233,47 @@
             }
         },
 
+        startVizLoop() {
+            const draw = () => {
+                if (!this.analyserNode) return;
+                const buf = new Uint8Array(this.analyserNode.frequencyBinCount);
+                this.analyserNode.getByteFrequencyData(buf);
+                // Map freq bins to our 32 bar slots
+                const bars = [];
+                const step = Math.floor(buf.length / 32);
+                for (let i = 0; i < 32; i++) {
+                    const val = buf[i * step] || 0;
+                    bars.push(Math.max(2, Math.round((val / 255) * 28)));
+                }
+                this.vizBars = bars;
+                this.vizRaf = requestAnimationFrame(draw);
+            };
+            this.vizRaf = requestAnimationFrame(draw);
+        },
+
+        stopVizLoop() {
+            if (this.vizRaf) { cancelAnimationFrame(this.vizRaf); this.vizRaf = null; }
+            this.vizBars = Array(32).fill(2);
+        },
+
+        togglePauseRecording() {
+            if (!this.mediaRecorder || !this.isRecording) return;
+            if (this.isPaused) {
+                this.mediaRecorder.resume();
+                this.isPaused = false;
+                this.startVizLoop();
+            } else {
+                this.mediaRecorder.pause();
+                this.isPaused = true;
+                this.stopVizLoop();
+            }
+        },
+
         stopAndSendRecording() {
             if (this.mediaRecorder && this.isRecording) {
                 this.isCancelled = false;
                 this.isRecording = false;
+                this.isPaused = false;
                 this.mediaRecorder.stop();
             }
         },
@@ -223,7 +283,10 @@
                 this.isCancelled = true;
                 this.audioChunks = [];
                 this.isRecording = false;
+                this.isPaused = false;
                 clearInterval(this.recordingInterval);
+                this.stopVizLoop();
+                if (this.audioCtx) { this.audioCtx.close(); this.audioCtx = null; }
                 this.mediaRecorder.stop();
             }
         },
@@ -1001,53 +1064,109 @@
                         <span class="font-medium">Only group admins can send messages.</span>
                     </div>
                 @else
-                    <!-- Modern Animated Recording Bar -->
-                    <div 
-                        x-show="isRecording" 
-                        class="flex items-center justify-between gap-2 rounded-xl bg-gradient-to-r from-red-500/10 via-red-500/5 to-amber-500/10 p-2 dark:from-red-950/40 dark:via-red-950/20 dark:to-amber-950/30 border border-red-200/80 dark:border-red-900/60 shadow-inner" 
+                    <!-- Live Waveform Recording Bar -->
+                    <div
+                        x-show="isRecording"
+                        class="rounded-xl border p-2 transition-all"
+                        :class="recordingTime >= maxRecordingSeconds - 10
+                            ? 'border-red-300 bg-red-50/80 dark:border-red-800/60 dark:bg-red-950/30'
+                            : 'border-red-200/80 bg-gradient-to-r from-red-500/8 via-transparent to-amber-500/8 dark:border-red-900/60 dark:bg-red-950/20'"
                         style="display: none;"
                     >
-                        <div class="flex items-center gap-2 min-w-0">
-                            <!-- Pulsing Red Recording Dot -->
-                            <div class="relative flex h-3 w-3 items-center justify-center flex-shrink-0">
-                                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
-                                <span class="relative inline-flex h-2 w-2 rounded-full bg-red-600"></span>
+                        <!-- Top row: dot + live bars + time + countdown -->
+                        <div class="flex items-center gap-2">
+                            <!-- Pulsing dot (pauses when paused) -->
+                            <div class="relative flex h-3 w-3 flex-shrink-0 items-center justify-center">
+                                <span
+                                    class="absolute inline-flex h-full w-full rounded-full opacity-75"
+                                    :class="isPaused ? 'bg-amber-400' : 'bg-red-400 animate-ping'"
+                                ></span>
+                                <span
+                                    class="relative inline-flex h-2 w-2 rounded-full"
+                                    :class="isPaused ? 'bg-amber-500' : 'bg-red-600'"
+                                ></span>
                             </div>
 
-                            <!-- Animated Live Sound Wave Visualizer -->
-                            <div class="flex items-center gap-[2.5px] h-4">
-                                <span class="w-[2.5px] bg-red-500 rounded-full animate-soundwave" style="animation-duration: 0.8s; animation-delay: 0s;"></span>
-                                <span class="w-[2.5px] bg-red-500 rounded-full animate-soundwave" style="animation-duration: 1.1s; animation-delay: 0.2s;"></span>
-                                <span class="w-[2.5px] bg-red-500 rounded-full animate-soundwave" style="animation-duration: 0.7s; animation-delay: 0.4s;"></span>
-                                <span class="w-[2.5px] bg-red-500 rounded-full animate-soundwave" style="animation-duration: 1.0s; animation-delay: 0.1s;"></span>
-                                <span class="w-[2.5px] bg-red-500 rounded-full animate-soundwave" style="animation-duration: 0.9s; animation-delay: 0.3s;"></span>
+                            <!-- Live microphone waveform bars -->
+                            <div class="flex flex-1 items-center gap-[1.5px] h-7 overflow-hidden">
+                                <template x-for="(h, i) in vizBars" :key="i">
+                                    <div
+                                        class="w-[3px] rounded-full transition-all duration-75"
+                                        :style="`height: ${h}px;`"
+                                        :class="isPaused
+                                            ? 'bg-amber-400/70'
+                                            : (recordingTime >= maxRecordingSeconds - 10 ? 'bg-red-500' : 'bg-red-400')"
+                                    ></div>
+                                </template>
                             </div>
 
-                            <span x-text="formatTime(recordingTime)" class="font-mono text-xs font-bold text-red-600 dark:text-red-300 bg-red-100/60 dark:bg-red-900/40 px-1.5 py-0.2 rounded">00:00</span>
+                            <!-- Timer -->
+                            <span
+                                class="font-mono text-xs font-bold tabular-nums px-1.5 py-0.5 rounded"
+                                :class="recordingTime >= maxRecordingSeconds - 10
+                                    ? 'text-red-700 bg-red-100 dark:text-red-300 dark:bg-red-900/50'
+                                    : 'text-red-600 bg-red-100/60 dark:text-red-300 dark:bg-red-900/40'"
+                                x-text="formatTime(recordingTime) + ' / 1:00'"
+                            >00:00 / 1:00</span>
                         </div>
 
-                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                        <!-- Progress bar for 60s limit -->
+                        <div class="mt-1.5 h-0.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                            <div
+                                class="h-full rounded-full transition-all duration-1000"
+                                :class="recordingTime >= maxRecordingSeconds - 10 ? 'bg-red-500' : 'bg-amber-500'"
+                                :style="`width: ${(recordingTime / maxRecordingSeconds) * 100}%`"
+                            ></div>
+                        </div>
+
+                        <!-- Action buttons row -->
+                        <div class="mt-2 flex items-center justify-between gap-1.5">
+                            <!-- Discard -->
                             <button
                                 type="button"
                                 @click="cancelRecording"
                                 class="flex items-center gap-1 rounded-lg border border-red-200 bg-white/80 px-2 py-1 text-[11px] font-semibold text-red-600 hover:bg-red-50 hover:border-red-300 dark:border-red-900/60 dark:bg-gray-800 dark:text-red-400 transition"
                                 title="Discard recording"
                             >
-                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                 </svg>
-                                <span>Discard</span>
+                                Discard
                             </button>
-                            <button
-                                type="button"
-                                @click="stopAndSendRecording"
-                                class="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-red-600 to-amber-600 px-2.5 py-1 text-xs font-bold text-white shadow hover:from-red-500 hover:to-amber-500 transition-transform active:scale-95"
-                            >
-                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                </svg>
-                                <span>Send</span>
-                            </button>
+
+                            <div class="flex items-center gap-1.5">
+                                <!-- Pause / Resume -->
+                                <button
+                                    type="button"
+                                    @click="togglePauseRecording"
+                                    class="flex h-7 w-7 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 transition active:scale-95"
+                                    :title="isPaused ? 'Resume recording' : 'Pause recording'"
+                                >
+                                    <template x-if="!isPaused">
+                                        <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                                        </svg>
+                                    </template>
+                                    <template x-if="isPaused">
+                                        <svg class="h-3 w-3 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M8 5v14l11-7z"/>
+                                        </svg>
+                                    </template>
+                                </button>
+
+                                <!-- Send -->
+                                <button
+                                    type="button"
+                                    @click="stopAndSendRecording"
+                                    class="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-red-600 to-amber-600 px-2.5 py-1 text-xs font-bold text-white shadow hover:from-red-500 hover:to-amber-500 transition-transform active:scale-95"
+                                    title="Stop and send"
+                                >
+                                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                                    </svg>
+                                    Send
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -2011,90 +2130,134 @@
     </style>
 
     <script>
-        if (typeof window.voicePlayer === 'undefined') {
-            window.voicePlayer = function(url) {
-                return {
-                    audio: null,
-                    isPlaying: false,
-                    currentTime: 0,
-                    duration: 0,
-                    progress: 0,
-                    speed: 1,
-                    speeds: [1, 1.5, 2],
-                    bars: [8, 14, 20, 12, 18, 22, 14, 24, 16, 20, 10, 14, 20, 24, 18, 12, 22, 16, 12, 8],
-                    
-                    init() {
-                        this.audio = new Audio(url);
-                        this.audio.preload = 'metadata';
-                        this.audio.addEventListener('loadedmetadata', () => {
-                            if (isFinite(this.audio.duration)) {
-                                this.duration = this.audio.duration;
-                            }
-                        });
-                        this.audio.addEventListener('timeupdate', () => {
-                            this.currentTime = this.audio.currentTime;
-                            if (this.duration > 0) {
-                                this.progress = (this.currentTime / this.duration) * 100;
-                            }
-                        });
-                        this.audio.addEventListener('ended', () => {
-                            this.isPlaying = false;
-                            this.currentTime = 0;
-                            this.progress = 0;
-                        });
-                    },
-                    
-                    togglePlay() {
-                        if (!this.audio) return;
-                        if (this.isPlaying) {
-                            this.audio.pause();
-                            this.isPlaying = false;
-                        } else {
-                            document.querySelectorAll('audio').forEach(a => { if (a !== this.audio) a.pause(); });
-                            this.audio.playbackRate = this.speed;
-                            this.audio.play().then(() => {
-                                this.isPlaying = true;
-                            }).catch(() => {});
-                        }
-                    },
-                    
-                    handleBarClick(e) {
-                        if (!this.audio) return;
-                        const rect = e.currentTarget.getBoundingClientRect();
-                        const clickX = e.clientX - rect.left;
-                        const percent = Math.max(0, Math.min(100, (clickX / rect.width) * 100));
-                        this.seek(percent);
-                    },
+    if (typeof window.voicePlayer === 'undefined') {
+        window.voicePlayer = function(url) {
+            return {
+                audio: null,
+                isPlaying: false,
+                currentTime: 0,
+                duration: 0,
+                progress: 0,
+                speed: 1,
+                speeds: [1, 1.5, 2],
+                bars: Array(20).fill(3),
+                audioCtx: null,
+                analyser: null,
+                vizRaf: null,
 
-                    seek(percent) {
-                        if (!this.audio) return;
-                        const dur = this.duration || this.audio.duration;
-                        if (dur && isFinite(dur)) {
-                            const targetTime = (percent / 100) * dur;
-                            this.audio.currentTime = targetTime;
-                            this.currentTime = targetTime;
-                            this.progress = percent;
+                init() {
+                    this.audio = new Audio(url);
+                    this.audio.preload = 'metadata';
+                    this.audio.addEventListener('loadedmetadata', () => {
+                        if (isFinite(this.audio.duration)) {
+                            this.duration = this.audio.duration;
                         }
-                    },
-                    
-                    cycleSpeed() {
-                        if (!this.audio) return;
-                        const curIdx = this.speeds.indexOf(this.speed);
-                        const nextIdx = (curIdx + 1) % this.speeds.length;
-                        this.speed = this.speeds[nextIdx];
-                        this.audio.playbackRate = this.speed;
-                    },
-                    
-                    formatSecs(s) {
-                        if (!s || isNaN(s) || !isFinite(s)) return '0:00';
-                        const mins = Math.floor(s / 60);
-                        const secs = Math.floor(s % 60);
-                        return mins + ':' + String(secs).padStart(2, '0');
+                    });
+                    this.audio.addEventListener('timeupdate', () => {
+                        this.currentTime = this.audio.currentTime;
+                        if (this.duration > 0) {
+                            this.progress = (this.currentTime / this.duration) * 100;
+                        }
+                    });
+                    this.audio.addEventListener('ended', () => {
+                        this.isPlaying = false;
+                        this.currentTime = 0;
+                        this.progress = 0;
+                        this.stopViz();
+                        this.bars = Array(20).fill(3);
+                    });
+                },
+
+                setupAnalyser() {
+                    if (this.audioCtx) return; // already set up
+                    try {
+                        this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                        const source = this.audioCtx.createMediaElementSource(this.audio);
+                        this.analyser = this.audioCtx.createAnalyser();
+                        this.analyser.fftSize = 64;
+                        source.connect(this.analyser);
+                        this.analyser.connect(this.audioCtx.destination);
+                    } catch(e) {
+                        this.audioCtx = null;
                     }
-                };
+                },
+
+                startViz() {
+                    if (!this.analyser) return;
+                    const draw = () => {
+                        if (!this.isPlaying || !this.analyser) return;
+                        const buf = new Uint8Array(this.analyser.frequencyBinCount);
+                        this.analyser.getByteFrequencyData(buf);
+                        const out = [];
+                        const step = Math.floor(buf.length / 20);
+                        for (let i = 0; i < 20; i++) {
+                            const val = buf[i * step] || 0;
+                            out.push(Math.max(2, Math.round((val / 255) * 18)));
+                        }
+                        this.bars = out;
+                        this.vizRaf = requestAnimationFrame(draw);
+                    };
+                    this.vizRaf = requestAnimationFrame(draw);
+                },
+
+                stopViz() {
+                    if (this.vizRaf) { cancelAnimationFrame(this.vizRaf); this.vizRaf = null; }
+                },
+
+                togglePlay() {
+                    if (!this.audio) return;
+                    if (this.isPlaying) {
+                        this.audio.pause();
+                        this.isPlaying = false;
+                        this.stopViz();
+                    } else {
+                        document.querySelectorAll('audio').forEach(a => { if (a !== this.audio) a.pause(); });
+                        this.setupAnalyser();
+                        this.audio.playbackRate = this.speed;
+                        this.audio.play().then(() => {
+                            this.isPlaying = true;
+                            this.startViz();
+                        }).catch(() => {});
+                    }
+                },
+
+                handleBarClick(e) {
+                    if (!this.audio) return;
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const clickX = e.clientX - rect.left;
+                    const percent = Math.max(0, Math.min(100, (clickX / rect.width) * 100));
+                    this.seek(percent);
+                },
+
+                seek(percent) {
+                    if (!this.audio) return;
+                    const dur = this.duration || this.audio.duration;
+                    if (dur && isFinite(dur)) {
+                        const targetTime = (percent / 100) * dur;
+                        this.audio.currentTime = targetTime;
+                        this.currentTime = targetTime;
+                        this.progress = percent;
+                    }
+                },
+
+                cycleSpeed() {
+                    if (!this.audio) return;
+                    const curIdx = this.speeds.indexOf(this.speed);
+                    const nextIdx = (curIdx + 1) % this.speeds.length;
+                    this.speed = this.speeds[nextIdx];
+                    this.audio.playbackRate = this.speed;
+                },
+
+                formatSecs(s) {
+                    if (!s || isNaN(s) || !isFinite(s)) return '0:00';
+                    const mins = Math.floor(s / 60);
+                    const secs = Math.floor(s % 60);
+                    return mins + ':' + String(secs).padStart(2, '0');
+                }
             };
-        }
-    </script>
+        };
+    }
+</script>
 
     <!-- Floating Action Button Launcher -->
     @php $unreadTotal = auth()->user()?->unreadMessagesCount() ?? 0; @endphp
