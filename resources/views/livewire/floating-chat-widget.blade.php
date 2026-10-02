@@ -5,15 +5,31 @@
         isOpen: @entangle('isOpen'),
         activeConversationId: @entangle('activeConversationId'),
         isRecording: false,
+        isRecordingEnded: false,
+        isCancelled: false,
+        isPaused: false,
+        shouldSendImmediately: false,
+        isUploadingVoice: false,
+        preparedVoiceFile: null,
+        recordedMimeType: 'audio/webm',
         mediaRecorder: null,
         audioChunks: [],
         recordingTime: 0,
         recordingInterval: null,
+        maxRecordingSeconds: 60,
+        audioCtx: null,
+        analyserNode: null,
+        micStream: null,
+        vizBars: Array(32).fill(3),
+        vizRaf: null,
 
         init() {
             this.initEcho();
 
             $wire.on('floating-conversation-changed', (event) => {
+                if (this.isRecording) {
+                    this.cancelRecording();
+                }
                 this.$nextTick(() => {
                     this.subscribeToConversation(event.conversationId);
                     this.scrollToBottom();
@@ -154,6 +170,7 @@
             }
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                this.micStream = stream;
 
                 // Detect best supported MIME type
                 const mimeType = [
@@ -169,9 +186,13 @@
 
                 this.mediaRecorder = new MediaRecorder(stream, options);
                 this.audioChunks = [];
+                this.preparedVoiceFile = null;
                 this.recordingTime = 0;
                 this.isCancelled = false;
                 this.isPaused = false;
+                this.isRecordingEnded = false;
+                this.shouldSendImmediately = false;
+                this.isUploadingVoice = false;
                 this.isRecording = true;
 
                 // Web Audio API for real-time reactive mic visualization
@@ -191,12 +212,12 @@
                     console.warn('Microphone analyser setup failed:', e);
                 }
 
-                // Timer + 60s auto-stop
+                // Timer + 60s auto-stop (stops mic & recording, waits for send click)
                 this.recordingInterval = setInterval(() => {
-                    if (!this.isPaused) {
+                    if (!this.isPaused && !this.isRecordingEnded) {
                         this.recordingTime++;
                         if (this.recordingTime >= this.maxRecordingSeconds) {
-                            this.stopAndSendRecording();
+                            this.handleRecordingTimerEnd();
                         }
                     }
                 }, 1000);
@@ -214,28 +235,32 @@
                         try { this.audioCtx.close(); } catch(e) {}
                         this.audioCtx = null;
                     }
-                    stream.getTracks().forEach(track => track.stop());
+                    if (this.micStream) {
+                        this.micStream.getTracks().forEach(track => track.stop());
+                        this.micStream = null;
+                    }
 
                     if (!this.isCancelled && this.audioChunks.length > 0) {
                         const mime = this.recordedMimeType;
                         const ext = mime.includes('ogg') ? 'ogg' : mime.includes('mp4') ? 'mp4' : 'webm';
                         const audioBlob = new Blob(this.audioChunks, { type: mime });
-                        const audioFile = new File([audioBlob], 'voice_note_' + Date.now() + '.' + ext, { type: mime });
+                        this.preparedVoiceFile = new File([audioBlob], 'voice_note_' + Date.now() + '.' + ext, { type: mime });
+                        this.audioChunks = [];
 
-                        @this.upload('voiceNote', audioFile, () => {
-                            $wire.sendMessage();
-                        }, () => {}, () => {});
+                        if (this.shouldSendImmediately) {
+                            this.sendPreparedVoiceFile();
+                        } else {
+                            this.isRecordingEnded = true;
+                            this.isPaused = true;
+                        }
+                    } else if (this.isCancelled) {
+                        this.resetRecordingState();
                     }
-                    this.audioChunks = [];
-                    this.isCancelled = false;
-                    this.isPaused = false;
                 };
 
                 this.mediaRecorder.start(200);
             } catch (err) {
-                this.isRecording = false;
-                this.isPaused = false;
-                clearInterval(this.recordingInterval);
+                this.resetRecordingState();
                 if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
                     alert('Microphone access was denied. Please allow microphone access in your browser settings and try again.');
                 } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
@@ -255,7 +280,7 @@
             const draw = () => {
                 if (!this.isRecording || !this.analyserNode) return;
 
-                if (this.isPaused) {
+                if (this.isPaused || this.isRecordingEnded) {
                     this.vizBars = Array(numBars).fill(3);
                     this.vizRaf = requestAnimationFrame(draw);
                     return;
@@ -303,8 +328,64 @@
             this.vizBars = Array(32).fill(3);
         },
 
+        handleRecordingTimerEnd() {
+            clearInterval(this.recordingInterval);
+            this.stopVizLoop();
+            if (this.audioCtx) {
+                try { this.audioCtx.close(); } catch(e) {}
+                this.audioCtx = null;
+            }
+            if (this.micStream) {
+                this.micStream.getTracks().forEach(track => track.stop());
+                this.micStream = null;
+            }
+            this.shouldSendImmediately = false;
+            this.isRecordingEnded = true;
+            this.isPaused = true;
+            if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+                this.mediaRecorder.stop();
+            }
+        },
+
+        sendPreparedVoiceFile() {
+            if (!this.preparedVoiceFile || this.isUploadingVoice) return;
+            this.isUploadingVoice = true;
+
+            @this.upload('voiceNote', this.preparedVoiceFile, () => {
+                $wire.sendMessage();
+                this.resetRecordingState();
+            }, (err) => {
+                console.error('Voice upload failed:', err);
+                alert('Failed to upload voice note. Please try again.');
+                this.isUploadingVoice = false;
+            }, () => {});
+        },
+
+        resetRecordingState() {
+            clearInterval(this.recordingInterval);
+            this.stopVizLoop();
+            if (this.audioCtx) {
+                try { this.audioCtx.close(); } catch(e) {}
+                this.audioCtx = null;
+            }
+            if (this.micStream) {
+                this.micStream.getTracks().forEach(track => track.stop());
+                this.micStream = null;
+            }
+            this.isRecording = false;
+            this.isRecordingEnded = false;
+            this.isPaused = false;
+            this.isCancelled = false;
+            this.isUploadingVoice = false;
+            this.shouldSendImmediately = false;
+            this.preparedVoiceFile = null;
+            this.audioChunks = [];
+            this.recordingTime = 0;
+            this.mediaRecorder = null;
+        },
+
         togglePauseRecording() {
-            if (!this.mediaRecorder || !this.isRecording) return;
+            if (!this.mediaRecorder || !this.isRecording || this.isRecordingEnded) return;
             if (this.isPaused) {
                 this.mediaRecorder.resume();
                 this.isPaused = false;
@@ -318,25 +399,26 @@
         },
 
         stopAndSendRecording() {
+            if (this.isUploadingVoice) return;
+
+            if (this.isRecordingEnded && this.preparedVoiceFile) {
+                this.sendPreparedVoiceFile();
+                return;
+            }
+
             if (this.mediaRecorder && this.isRecording) {
+                this.shouldSendImmediately = true;
                 this.isCancelled = false;
-                this.isRecording = false;
-                this.isPaused = false;
                 this.mediaRecorder.stop();
             }
         },
 
         cancelRecording() {
-            if (this.mediaRecorder && this.isRecording) {
-                this.isCancelled = true;
-                this.audioChunks = [];
-                this.isRecording = false;
-                this.isPaused = false;
-                clearInterval(this.recordingInterval);
-                this.stopVizLoop();
-                if (this.audioCtx) { this.audioCtx.close(); this.audioCtx = null; }
+            this.isCancelled = true;
+            if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
                 this.mediaRecorder.stop();
             }
+            this.resetRecordingState();
         },
 
         formatTime(seconds) {
@@ -1117,22 +1199,25 @@
                     <div
                         x-show="isRecording"
                         class="rounded-xl border p-2 transition-all"
-                        :class="recordingTime >= maxRecordingSeconds - 10
-                            ? 'border-red-300 bg-red-50/80 dark:border-red-800/60 dark:bg-red-950/30'
-                            : 'border-red-200/80 bg-gradient-to-r from-red-500/8 via-transparent to-amber-500/8 dark:border-red-900/60 dark:bg-red-950/20'"
+                        :class="isRecordingEnded
+                            ? 'border-emerald-300 bg-emerald-50/80 dark:border-emerald-800/60 dark:bg-emerald-950/30'
+                            : (recordingTime >= maxRecordingSeconds - 10
+                                ? 'border-red-300 bg-red-50/80 dark:border-red-800/60 dark:bg-red-950/30'
+                                : 'border-red-200/80 bg-gradient-to-r from-red-500/8 via-transparent to-amber-500/8 dark:border-red-900/60 dark:bg-red-950/20')"
                         style="display: none;"
                     >
                         <!-- Top row: dot + live bars + time + countdown -->
                         <div class="flex items-center gap-2">
-                            <!-- Pulsing dot (pauses when paused) -->
+                            <!-- Pulsing dot (pauses when paused, steady emerald when ended) -->
                             <div class="relative flex h-3 w-3 flex-shrink-0 items-center justify-center">
-                                <span
-                                    class="absolute inline-flex h-full w-full rounded-full opacity-75"
-                                    :class="isPaused ? 'bg-amber-400' : 'bg-red-400 animate-ping'"
-                                ></span>
+                                <template x-if="!isRecordingEnded && !isPaused">
+                                    <span class="absolute inline-flex h-full w-full rounded-full opacity-75 bg-red-400 animate-ping"></span>
+                                </template>
                                 <span
                                     class="relative inline-flex h-2 w-2 rounded-full"
-                                    :class="isPaused ? 'bg-amber-500' : 'bg-red-600'"
+                                    :class="isRecordingEnded 
+                                        ? 'bg-emerald-500' 
+                                        : (isPaused ? 'bg-amber-500' : 'bg-red-600')"
                                 ></span>
                             </div>
 
@@ -1142,9 +1227,11 @@
                                     <div
                                         class="w-[3px] rounded-full transition-all duration-75"
                                         :style="`height: ${h}px;`"
-                                        :class="isPaused
-                                            ? 'bg-amber-400/70'
-                                            : (recordingTime >= maxRecordingSeconds - 10 ? 'bg-red-500' : 'bg-red-400')"
+                                        :class="isRecordingEnded
+                                            ? 'bg-emerald-500/80 dark:bg-emerald-400'
+                                            : (isPaused
+                                                ? 'bg-amber-400/70'
+                                                : (recordingTime >= maxRecordingSeconds - 10 ? 'bg-red-500' : 'bg-red-400'))"
                                     ></div>
                                 </template>
                             </div>
@@ -1152,10 +1239,12 @@
                             <!-- Timer -->
                             <span
                                 class="font-mono text-xs font-bold tabular-nums px-1.5 py-0.5 rounded"
-                                :class="recordingTime >= maxRecordingSeconds - 10
-                                    ? 'text-red-700 bg-red-100 dark:text-red-300 dark:bg-red-900/50'
-                                    : 'text-red-600 bg-red-100/60 dark:text-red-300 dark:bg-red-900/40'"
-                                x-text="formatTime(recordingTime) + ' / 1:00'"
+                                :class="isRecordingEnded
+                                    ? 'text-emerald-700 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-900/50'
+                                    : (recordingTime >= maxRecordingSeconds - 10
+                                        ? 'text-red-700 bg-red-100 dark:text-red-300 dark:bg-red-900/50'
+                                        : 'text-red-600 bg-red-100/60 dark:text-red-300 dark:bg-red-900/40')"
+                                x-text="isRecordingEnded ? '1:00 (Ready)' : (formatTime(recordingTime) + ' / 1:00')"
                             >00:00 / 1:00</span>
                         </div>
 
@@ -1163,8 +1252,8 @@
                         <div class="mt-1.5 h-0.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                             <div
                                 class="h-full rounded-full transition-all duration-1000"
-                                :class="recordingTime >= maxRecordingSeconds - 10 ? 'bg-red-500' : 'bg-amber-500'"
-                                :style="`width: ${(recordingTime / maxRecordingSeconds) * 100}%`"
+                                :class="isRecordingEnded ? 'bg-emerald-500' : (recordingTime >= maxRecordingSeconds - 10 ? 'bg-red-500' : 'bg-amber-500')"
+                                :style="`width: ${isRecordingEnded ? 100 : ((recordingTime / maxRecordingSeconds) * 100)}%`"
                             ></div>
                         </div>
 
@@ -1174,7 +1263,8 @@
                             <button
                                 type="button"
                                 @click="cancelRecording"
-                                class="flex items-center gap-1 rounded-lg border border-red-200 bg-white/80 px-2 py-1 text-[11px] font-semibold text-red-600 hover:bg-red-50 hover:border-red-300 dark:border-red-900/60 dark:bg-gray-800 dark:text-red-400 transition"
+                                :disabled="isUploadingVoice"
+                                class="flex items-center gap-1 rounded-lg border border-red-200 bg-white/80 px-2 py-1 text-[11px] font-semibold text-red-600 hover:bg-red-50 hover:border-red-300 dark:border-red-900/60 dark:bg-gray-800 dark:text-red-400 transition disabled:opacity-50"
                                 title="Discard recording"
                             >
                                 <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1184,9 +1274,10 @@
                             </button>
 
                             <div class="flex items-center gap-1.5">
-                                <!-- Pause / Resume -->
+                                <!-- Pause / Resume (hidden when recording ended) -->
                                 <button
                                     type="button"
+                                    x-show="!isRecordingEnded"
                                     @click="togglePauseRecording"
                                     class="flex h-7 w-7 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 transition active:scale-95"
                                     :title="isPaused ? 'Resume recording' : 'Pause recording'"
@@ -1207,13 +1298,25 @@
                                 <button
                                     type="button"
                                     @click="stopAndSendRecording"
-                                    class="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-red-600 to-amber-600 px-2.5 py-1 text-xs font-bold text-white shadow hover:from-red-500 hover:to-amber-500 transition-transform active:scale-95"
-                                    title="Stop and send"
+                                    :disabled="isUploadingVoice"
+                                    class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-bold text-white shadow transition-transform active:scale-95 disabled:opacity-75 disabled:cursor-not-allowed"
+                                    :class="isRecordingEnded
+                                        ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500'
+                                        : 'bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500'"
+                                    title="Send voice note"
                                 >
-                                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-                                    </svg>
-                                    Send
+                                    <template x-if="isUploadingVoice">
+                                        <svg class="h-3.5 w-3.5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    </template>
+                                    <template x-if="!isUploadingVoice">
+                                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                                        </svg>
+                                    </template>
+                                    <span x-text="isUploadingVoice ? 'Sending...' : 'Send'">Send</span>
                                 </button>
                             </div>
                         </div>
