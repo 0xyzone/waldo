@@ -44,13 +44,19 @@ class MessageSent implements ShouldBroadcastNow
     /**
      * @var array<int>
      */
+    public array $mentionedUserIds = [];
+
+    /**
+     * @var array<int>
+     */
     protected array $recipientIds = [];
 
-    public function __construct(Message $message)
+    public function __construct(Message $message, array $mentionedUserIds = [])
     {
         $message->loadMissing('sender');
 
         $this->id = $message->id;
+        $this->mentionedUserIds = $mentionedUserIds;
         $this->conversationId = $message->conversation_id;
         $this->senderId = $message->sender_id;
         $this->senderName = $message->sender?->name ?? 'User';
@@ -115,6 +121,7 @@ class MessageSent implements ShouldBroadcastNow
             'file_type' => $this->fileType,
             'file_size' => $this->fileSize,
             'created_at' => $this->createdAt,
+            'mentioned_user_ids' => $this->mentionedUserIds,
         ];
     }
 }

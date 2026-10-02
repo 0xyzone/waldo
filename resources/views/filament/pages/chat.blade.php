@@ -576,12 +576,25 @@
                                     @endif
                                 @endif
 
-                                <div class="relative rounded-2xl px-4 py-2.5 text-xs shadow-sm transition-all {{ $isMe ? 'bg-amber-600 text-white rounded-br-sm' : 'bg-white text-gray-900 border border-gray-200 dark:border-slate-700/80 dark:bg-slate-800 dark:text-slate-100 rounded-bl-sm' }}">
-                                    <!-- Sender Name for Groups -->
+                                <div class="relative rounded-2xl px-4 py-2.5 text-xs shadow-sm transition-all {{ $isMe ? 'bg-amber-600 text-white rounded-br-sm' : 'bg-white text-gray-900 border border-gray-200 dark:border-slate-700/80 dark:bg-slate-800 dark:text-slate-100 rounded-bl-sm' }} {{ !$isMe && $msg->mentionsUser(auth()->id()) ? 'ring-2 ring-amber-500/80 dark:ring-amber-400/80 border-amber-400/60 dark:border-amber-500/60 bg-amber-50/50 dark:bg-amber-950/20' : '' }}">
+                                    <!-- Sender Name for Groups & Tagged You Badge -->
                                     @if($isGroup && !$isMe)
-                                        <span class="block text-[11px] font-bold text-amber-600 dark:text-amber-400 mb-1">
-                                            {{ $msg->sender?->name }}
-                                        </span>
+                                        <div class="flex items-center justify-between gap-2 mb-1">
+                                            <span class="block text-[11px] font-bold text-amber-600 dark:text-amber-400">
+                                                {{ $msg->sender?->name }}
+                                            </span>
+                                            @if($msg->mentionsUser(auth()->id()))
+                                                <span class="inline-flex items-center gap-1 rounded bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-extrabold text-amber-800 dark:bg-amber-400/20 dark:text-amber-300 ring-1 ring-amber-400/30">
+                                                    @ Tagged you
+                                                </span>
+                                            @endif
+                                        </div>
+                                    @elseif(!$isGroup && !$isMe && $msg->mentionsUser(auth()->id()))
+                                        <div class="mb-1">
+                                            <span class="inline-flex items-center gap-1 rounded bg-amber-500/20 px-1.5 py-0.5 text-[9px] font-extrabold text-amber-800 dark:bg-amber-400/20 dark:text-amber-300 ring-1 ring-amber-400/30">
+                                                @ Tagged you
+                                            </span>
+                                        </div>
                                     @endif
 
                                     @if($isPinned)
@@ -641,7 +654,7 @@
                                         @endif
 
                                         @if($msg->body && (!$msg->isImage() && !$msg->isAudio() && !$msg->isFile() || $msg->body !== $msg->attachment_name))
-                                            <p class="whitespace-pre-wrap break-words leading-relaxed">{{ $msg->body }}</p>
+                                            <p class="whitespace-pre-wrap break-words leading-relaxed">{!! $msg->getFormattedBodyHtml($isMe) !!}</p>
                                         @endif
                                     @endif
 
@@ -707,7 +720,224 @@
                 </div>
 
                 <!-- Input Footer Area -->
-                <div class="border-t border-gray-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900">
+                <div 
+                    x-data="{
+                        showMentionMenu: false,
+                        mentionQuery: '',
+                        mentionIndex: 0,
+                        mentionStartIndex: 0,
+                        mentionCursorPos: 0,
+                        members: @js($this->groupMembers),
+                        isGroup: {{ $isGroup ? 'true' : 'false' }},
+
+                        get filteredMembers() {
+                            if (!this.isGroup) return [];
+                            const q = (this.mentionQuery || '').toLowerCase().trim();
+                            const list = [];
+                            if (q === '' || 'all'.includes(q) || 'everyone'.includes(q)) {
+                                list.push({
+                                    id: 'all',
+                                    name: 'Everyone in this group',
+                                    username: 'all',
+                                    tag: 'all',
+                                    isAll: true,
+                                });
+                            }
+                            this.members.forEach(m => {
+                                if (
+                                    q === '' ||
+                                    (m.name && m.name.toLowerCase().includes(q)) ||
+                                    (m.username && m.username.toLowerCase().includes(q)) ||
+                                    (m.tag && m.tag.toLowerCase().includes(q))
+                                ) {
+                                    list.push(m);
+                                }
+                            });
+                            return list;
+                        },
+
+                        detectMention() {
+                            if (!this.isGroup) {
+                                this.showMentionMenu = false;
+                                return;
+                            }
+                            const input = this.$refs.messageInput;
+                            if (!input) return;
+                            const text = input.value || '';
+                            const pos = input.selectionStart ?? text.length;
+                            const upToCursor = text.slice(0, pos);
+                            const atIndex = upToCursor.lastIndexOf('@');
+                            if (atIndex === -1) {
+                                this.showMentionMenu = false;
+                                return;
+                            }
+                            if (atIndex > 0 && !/\s/.test(text[atIndex - 1])) {
+                                this.showMentionMenu = false;
+                                return;
+                            }
+                            const query = upToCursor.slice(atIndex + 1);
+                            if (/\s/.test(query)) {
+                                this.showMentionMenu = false;
+                                return;
+                            }
+                            this.mentionQuery = query;
+                            this.mentionStartIndex = atIndex;
+                            this.mentionCursorPos = pos;
+                            this.showMentionMenu = true;
+                            this.mentionIndex = 0;
+                        },
+
+                        selectMention(item) {
+                            const input = this.$refs.messageInput;
+                            if (!input) return;
+                            const text = input.value || '';
+                            const atIndex = this.mentionStartIndex;
+                            const cursorPos = this.mentionCursorPos;
+
+                            const before = text.slice(0, atIndex);
+                            const after = text.slice(cursorPos);
+                            const tag = '@' + item.tag + ' ';
+                            const newText = before + tag + after;
+
+                            input.value = newText;
+                            input.dispatchEvent(new Event('input', { bubbles: true }));
+                            $wire.set('messageText', newText);
+                            this.showMentionMenu = false;
+
+                            this.$nextTick(() => {
+                                input.focus();
+                                const newPos = before.length + tag.length;
+                                input.setSelectionRange(newPos, newPos);
+                            });
+                        },
+
+                        openMentionMenu() {
+                            if (!this.isGroup) return;
+                            const input = this.$refs.messageInput;
+                            if (!input) return;
+                            let text = input.value || '';
+                            if (text.length > 0 && !text.endsWith(' ')) {
+                                text += ' ';
+                            }
+                            text += '@';
+                            input.value = text;
+                            input.dispatchEvent(new Event('input', { bubbles: true }));
+                            $wire.set('messageText', text);
+                            this.$nextTick(() => {
+                                input.focus();
+                                input.setSelectionRange(text.length, text.length);
+                                this.detectMention();
+                            });
+                        },
+
+                        handleInputKeyDown(e) {
+                            if (this.showMentionMenu && this.filteredMembers.length > 0) {
+                                if (e.key === 'ArrowDown') {
+                                    e.preventDefault();
+                                    this.mentionIndex = (this.mentionIndex + 1) % this.filteredMembers.length;
+                                    return;
+                                }
+                                if (e.key === 'ArrowUp') {
+                                    e.preventDefault();
+                                    this.mentionIndex = (this.mentionIndex - 1 + this.filteredMembers.length) % this.filteredMembers.length;
+                                    return;
+                                }
+                                if (e.key === 'Enter' || e.key === 'Tab') {
+                                    e.preventDefault();
+                                    this.selectMention(this.filteredMembers[this.mentionIndex]);
+                                    return;
+                                }
+                                if (e.key === 'Escape') {
+                                    e.preventDefault();
+                                    this.showMentionMenu = false;
+                                    return;
+                                }
+                            }
+
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                this.showMentionMenu = false;
+                                if ($wire.messageText.trim().length > 0 || $wire.attachment) {
+                                    $wire.sendMessage();
+                                }
+                            }
+                        }
+                    }"
+                    class="relative border-t border-gray-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900"
+                >
+                    <!-- Mention Autocomplete Popover -->
+                    @if($isGroup)
+                        <div
+                            x-show="showMentionMenu && filteredMembers.length > 0"
+                            x-transition:enter="transition ease-out duration-150"
+                            x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                            x-transition:leave="transition ease-in duration-100"
+                            x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                            x-transition:leave-end="opacity-0 translate-y-2 scale-95"
+                            @click.outside="showMentionMenu = false"
+                            class="absolute bottom-full left-4 mb-2 w-72 sm:w-80 max-h-64 overflow-y-auto rounded-2xl border border-gray-200 bg-white/95 p-1.5 shadow-2xl backdrop-blur-md dark:border-slate-700/80 dark:bg-slate-900/95 z-50 divide-y divide-gray-100 dark:divide-slate-800"
+                            style="display: none;"
+                        >
+                            <div class="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-400 flex items-center justify-between">
+                                <span class="flex items-center gap-1">
+                                    <svg class="h-3 w-3 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                                    </svg>
+                                    Mention Member
+                                </span>
+                                <span class="text-[9px] font-normal lowercase opacity-70">↑↓ / ↵</span>
+                            </div>
+
+                            <div class="py-1 space-y-0.5">
+                                <template x-for="(member, idx) in filteredMembers" :key="member.id">
+                                    <button
+                                        type="button"
+                                        @mousedown.prevent="selectMention(member)"
+                                        @mouseenter="mentionIndex = idx"
+                                        class="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-xs transition-colors"
+                                        :class="mentionIndex === idx 
+                                            ? 'bg-amber-500/15 text-amber-900 dark:bg-amber-400/20 dark:text-amber-200 ring-1 ring-amber-400/30' 
+                                            : 'text-gray-800 hover:bg-gray-100/80 dark:text-slate-200 dark:hover:bg-slate-800/80'"
+                                    >
+                                        <!-- Avatar / Icon -->
+                                        <template x-if="member.isAll">
+                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-amber-500 text-white font-bold text-xs shadow-sm">
+                                                📢
+                                            </div>
+                                        </template>
+                                        <template x-if="!member.isAll && member.avatar">
+                                            <img :src="member.avatar" class="h-7 w-7 flex-shrink-0 rounded-full object-cover border border-gray-200 dark:border-slate-700" />
+                                        </template>
+                                        <template x-if="!member.isAll && !member.avatar">
+                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-800 dark:bg-slate-800 dark:text-amber-300 font-bold text-xs">
+                                                <span x-text="member.initial"></span>
+                                            </div>
+                                        </template>
+
+                                        <!-- Name & Tag -->
+                                        <div class="min-w-0 flex-1">
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="truncate font-semibold text-xs" x-text="member.name"></span>
+                                                <template x-if="member.isAll">
+                                                    <span class="rounded bg-amber-500/20 px-1 py-0.2 text-[9px] font-bold text-amber-800 dark:bg-amber-400/20 dark:text-amber-300">
+                                                        ALL
+                                                    </span>
+                                                </template>
+                                            </div>
+                                            <div class="text-[11px] text-gray-500 dark:text-slate-400 truncate">
+                                                <span class="text-amber-600 dark:text-amber-400 font-medium">@<span x-text="member.tag"></span></span>
+                                                <template x-if="member.isAll">
+                                                    <span class="text-[10px] ml-1 opacity-80">(Notify everyone)</span>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                    @endif
+
                     <!-- Attachment Preview Chip -->
                     @if($attachment)
                         <div class="mb-2 flex items-center justify-between rounded-xl bg-amber-50 p-2 text-xs dark:bg-slate-800/80 border border-amber-200 dark:border-slate-700">
@@ -795,13 +1025,29 @@
                             </svg>
                         </button>
 
+                        @if($isGroup)
+                            <!-- Quick Mention Button (@) -->
+                            <button
+                                type="button"
+                                @click="openMentionMenu"
+                                class="rounded-xl p-2 text-gray-400 hover:bg-gray-100 hover:text-amber-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-amber-400 transition"
+                                title="Mention group member (@all or @member)"
+                            >
+                                <span class="flex h-5 w-5 items-center justify-center text-sm font-black leading-none select-none">@</span>
+                            </button>
+                        @endif
+
                         <!-- Text Input -->
                         <div class="relative flex-1">
                             <input
                                 type="text"
+                                x-ref="messageInput"
                                 wire:model="messageText"
-                                @keydown="handleKeyDown"
-                                placeholder="Write a message... (Press Enter to send)"
+                                @input="detectMention"
+                                @click="detectMention"
+                                @keyup="detectMention"
+                                @keydown="handleInputKeyDown"
+                                placeholder="{{ $isGroup ? 'Write a message... (Type @ to mention, Enter to send)' : 'Write a message... (Press Enter to send)' }}"
                                 autocomplete="off"
                                 class="chat-input-field w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 dark:border-slate-700/80 dark:bg-slate-800 dark:text-gray-100 dark:placeholder-slate-400"
                             />

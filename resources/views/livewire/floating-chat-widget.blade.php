@@ -371,11 +371,24 @@
                                 @endif
                             @endif
 
-                            <div class="relative rounded-2xl px-3 py-2 text-xs shadow-sm transition-all {{ $isMe ? 'bg-amber-600 text-white rounded-br-sm' : 'bg-white text-gray-900 border border-gray-200 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-100 rounded-bl-sm' }}">
+                            <div class="relative rounded-2xl px-3 py-2 text-xs shadow-sm transition-all {{ $isMe ? 'bg-amber-600 text-white rounded-br-sm' : 'bg-white text-gray-900 border border-gray-200 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-100 rounded-bl-sm' }} {{ !$isMe && $msg->mentionsUser(auth()->id()) ? 'ring-2 ring-amber-500/80 dark:ring-amber-400/80 border-amber-400/60 dark:border-amber-500/60 bg-amber-50/50 dark:bg-amber-950/20' : '' }}">
                                 @if($this->activeConversation->isGroup() && !$isMe)
-                                    <span class="block text-[10px] font-semibold text-amber-600 dark:text-amber-400 mb-0.5">
-                                        {{ $msg->sender?->name }}
-                                    </span>
+                                    <div class="flex items-center justify-between gap-1 mb-0.5">
+                                        <span class="block text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                                            {{ $msg->sender?->name }}
+                                        </span>
+                                        @if($msg->mentionsUser(auth()->id()))
+                                            <span class="inline-flex items-center gap-0.5 rounded bg-amber-500/20 px-1 py-0.2 text-[8px] font-bold text-amber-800 dark:bg-amber-400/20 dark:text-amber-300 ring-1 ring-amber-400/30">
+                                                @ Tagged you
+                                            </span>
+                                        @endif
+                                    </div>
+                                @elseif(!$isMe && $msg->mentionsUser(auth()->id()))
+                                    <div class="mb-0.5">
+                                        <span class="inline-flex items-center gap-0.5 rounded bg-amber-500/20 px-1 py-0.2 text-[8px] font-bold text-amber-800 dark:bg-amber-400/20 dark:text-amber-300 ring-1 ring-amber-400/30">
+                                            @ Tagged you
+                                        </span>
+                                    </div>
                                 @endif
 
                                 @if($isPinned)
@@ -421,7 +434,7 @@
                                     @endif
 
                                     @if($msg->body && (!$msg->isImage() && !$msg->isAudio() && !$msg->isFile() || $msg->body !== $msg->attachment_name))
-                                        <p class="whitespace-pre-wrap break-words leading-relaxed">{{ $msg->body }}</p>
+                                        <p class="whitespace-pre-wrap break-words leading-relaxed">{!! $msg->getFormattedBodyHtml($isMe) !!}</p>
                                     @endif
                                 @endif
 
@@ -490,8 +503,218 @@
                 @endforelse
             </div>
 
+            @php $isFloatingGroup = $this->activeConversation->isGroup(); @endphp
             <!-- Mini Input Bar Area -->
-            <div class="border-t border-gray-100 bg-white p-2.5 dark:border-gray-800 dark:bg-gray-900">
+            <div 
+                x-data="{
+                    showMentionMenu: false,
+                    mentionQuery: '',
+                    mentionIndex: 0,
+                    mentionStartIndex: 0,
+                    mentionCursorPos: 0,
+                    members: @js($this->groupMembers),
+                    isGroup: {{ $isFloatingGroup ? 'true' : 'false' }},
+
+                    get filteredMembers() {
+                        if (!this.isGroup) return [];
+                        const q = (this.mentionQuery || '').toLowerCase().trim();
+                        const list = [];
+                        if (q === '' || 'all'.includes(q) || 'everyone'.includes(q)) {
+                            list.push({
+                                id: 'all',
+                                name: 'Everyone in this group',
+                                username: 'all',
+                                tag: 'all',
+                                isAll: true,
+                            });
+                        }
+                        this.members.forEach(m => {
+                            if (
+                                q === '' ||
+                                (m.name && m.name.toLowerCase().includes(q)) ||
+                                (m.username && m.username.toLowerCase().includes(q)) ||
+                                (m.tag && m.tag.toLowerCase().includes(q))
+                            ) {
+                                list.push(m);
+                            }
+                        });
+                        return list;
+                    },
+
+                    detectMention() {
+                        if (!this.isGroup) {
+                            this.showMentionMenu = false;
+                            return;
+                        }
+                        const input = this.$refs.floatMessageInput;
+                        if (!input) return;
+                        const text = input.value || '';
+                        const pos = input.selectionStart ?? text.length;
+                        const upToCursor = text.slice(0, pos);
+                        const atIndex = upToCursor.lastIndexOf('@');
+                        if (atIndex === -1) {
+                            this.showMentionMenu = false;
+                            return;
+                        }
+                        if (atIndex > 0 && !/\s/.test(text[atIndex - 1])) {
+                            this.showMentionMenu = false;
+                            return;
+                        }
+                        const query = upToCursor.slice(atIndex + 1);
+                        if (/\s/.test(query)) {
+                            this.showMentionMenu = false;
+                            return;
+                        }
+                        this.mentionQuery = query;
+                        this.mentionStartIndex = atIndex;
+                        this.mentionCursorPos = pos;
+                        this.showMentionMenu = true;
+                        this.mentionIndex = 0;
+                    },
+
+                    selectMention(item) {
+                        const input = this.$refs.floatMessageInput;
+                        if (!input) return;
+                        const text = input.value || '';
+                        const atIndex = this.mentionStartIndex;
+                        const cursorPos = this.mentionCursorPos;
+
+                        const before = text.slice(0, atIndex);
+                        const after = text.slice(cursorPos);
+                        const tag = '@' + item.tag + ' ';
+                        const newText = before + tag + after;
+
+                        input.value = newText;
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
+                        $wire.set('messageText', newText);
+                        this.showMentionMenu = false;
+
+                        this.$nextTick(() => {
+                            input.focus();
+                            const newPos = before.length + tag.length;
+                            input.setSelectionRange(newPos, newPos);
+                        });
+                    },
+
+                    openMentionMenu() {
+                        if (!this.isGroup) return;
+                        const input = this.$refs.floatMessageInput;
+                        if (!input) return;
+                        let text = input.value || '';
+                        if (text.length > 0 && !text.endsWith(' ')) {
+                            text += ' ';
+                        }
+                        text += '@';
+                        input.value = text;
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
+                        $wire.set('messageText', text);
+                        this.$nextTick(() => {
+                            input.focus();
+                            input.setSelectionRange(text.length, text.length);
+                            this.detectMention();
+                        });
+                    },
+
+                    handleFloatInputKeyDown(e) {
+                        if (this.showMentionMenu && this.filteredMembers.length > 0) {
+                            if (e.key === 'ArrowDown') {
+                                e.preventDefault();
+                                this.mentionIndex = (this.mentionIndex + 1) % this.filteredMembers.length;
+                                return;
+                            }
+                            if (e.key === 'ArrowUp') {
+                                e.preventDefault();
+                                this.mentionIndex = (this.mentionIndex - 1 + this.filteredMembers.length) % this.filteredMembers.length;
+                                return;
+                            }
+                            if (e.key === 'Enter' || e.key === 'Tab') {
+                                e.preventDefault();
+                                this.selectMention(this.filteredMembers[this.mentionIndex]);
+                                return;
+                            }
+                            if (e.key === 'Escape') {
+                                e.preventDefault();
+                                this.showMentionMenu = false;
+                                return;
+                            }
+                        }
+
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            this.showMentionMenu = false;
+                            if ($wire.messageText.trim().length > 0 || $wire.attachment) {
+                                $wire.sendMessage();
+                            }
+                        }
+                    }
+                }"
+                class="relative border-t border-gray-100 bg-white p-2.5 dark:border-gray-800 dark:bg-gray-900"
+            >
+                <!-- Mention Dropdown Popover in Floating Widget -->
+                @if($isFloatingGroup)
+                    <div
+                        x-show="showMentionMenu && filteredMembers.length > 0"
+                        x-transition:enter="transition ease-out duration-150"
+                        x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                        x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                        x-transition:leave="transition ease-in duration-100"
+                        x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                        x-transition:leave-end="opacity-0 translate-y-2 scale-95"
+                        @click.outside="showMentionMenu = false"
+                        class="absolute bottom-full left-2 right-2 mb-2 max-h-52 overflow-y-auto rounded-2xl border border-gray-200 bg-white/95 p-1 shadow-2xl backdrop-blur-md dark:border-gray-700 dark:bg-gray-800/95 z-50 divide-y divide-gray-100 dark:divide-gray-700"
+                        style="display: none;"
+                    >
+                        <div class="px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-400 flex items-center justify-between">
+                            <span class="flex items-center gap-1">
+                                <span class="text-amber-500 font-bold">@</span> Mention Member
+                            </span>
+                            <span class="text-[8px] font-normal lowercase opacity-70">↑↓ / ↵</span>
+                        </div>
+
+                        <div class="py-0.5 space-y-0.5">
+                            <template x-for="(member, idx) in filteredMembers" :key="member.id">
+                                <button
+                                    type="button"
+                                    @mousedown.prevent="selectMention(member)"
+                                    @mouseenter="mentionIndex = idx"
+                                    class="flex w-full items-center gap-2 rounded-xl px-2 py-1.5 text-left text-xs transition-colors"
+                                    :class="mentionIndex === idx 
+                                        ? 'bg-amber-500/15 text-amber-900 dark:bg-amber-400/20 dark:text-amber-200 ring-1 ring-amber-400/30' 
+                                        : 'text-gray-800 hover:bg-gray-100/80 dark:text-gray-200 dark:hover:bg-gray-700/80'"
+                                >
+                                    <template x-if="member.isAll">
+                                        <div class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-amber-500 text-white font-bold text-[10px] shadow-sm">
+                                            📢
+                                        </div>
+                                    </template>
+                                    <template x-if="!member.isAll && member.avatar">
+                                        <img :src="member.avatar" class="h-6 w-6 flex-shrink-0 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
+                                    </template>
+                                    <template x-if="!member.isAll && !member.avatar">
+                                        <div class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-800 dark:bg-gray-700 dark:text-amber-300 font-bold text-[10px]">
+                                            <span x-text="member.initial"></span>
+                                        </div>
+                                    </template>
+
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center gap-1">
+                                            <span class="truncate font-semibold text-[11px]" x-text="member.name"></span>
+                                            <template x-if="member.isAll">
+                                                <span class="rounded bg-amber-500/20 px-1 py-0.2 text-[8px] font-bold text-amber-800 dark:bg-amber-400/20 dark:text-amber-300">
+                                                    ALL
+                                                </span>
+                                            </template>
+                                        </div>
+                                        <div class="text-[10px] text-gray-500 dark:text-gray-400 truncate">
+                                            <span class="text-amber-600 dark:text-amber-400 font-medium">@<span x-text="member.tag"></span></span>
+                                        </div>
+                                    </div>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                @endif
+
                 <!-- Attachment Preview Chip -->
                 @if($attachment)
                     <div class="mb-2 flex items-center justify-between rounded-xl bg-amber-50 p-1.5 text-xs border border-amber-200 dark:bg-gray-800 dark:border-gray-700">
@@ -575,11 +798,28 @@
                         </svg>
                     </button>
 
+                    @if($isFloatingGroup)
+                        <!-- Quick Mention Button (@) -->
+                        <button
+                            type="button"
+                            @click="openMentionMenu"
+                            class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-amber-600 dark:hover:bg-gray-800 dark:hover:text-amber-400 transition"
+                            title="Mention group member (@all or @member)"
+                        >
+                            <span class="flex h-4 w-4 items-center justify-center text-xs font-black leading-none select-none">@</span>
+                        </button>
+                    @endif
+
                     <!-- Input Field (Dark Mode bullet-proof) -->
                     <input
                         type="text"
+                        x-ref="floatMessageInput"
                         wire:model="messageText"
-                        placeholder="Write a message..."
+                        @input="detectMention"
+                        @click="detectMention"
+                        @keyup="detectMention"
+                        @keydown="handleFloatInputKeyDown"
+                        placeholder="{{ $isFloatingGroup ? 'Write a message... (Type @ to mention)' : 'Write a message...' }}"
                         class="chat-input-field w-full rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
                     />
 

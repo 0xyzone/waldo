@@ -10,12 +10,14 @@ use App\Models\ConversationParticipant;
 use App\Models\Message;
 use App\Models\User;
 use BackedEnum;
+use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Url;
 use Livewire\WithFileUploads;
 
@@ -258,8 +260,30 @@ class Chat extends Page
         $conversation->update(['last_message_at' => now()]);
         $conversation->markAsReadFor(auth()->id());
 
+        $mentionedUserIds = [];
+        if ($conversation->isGroup()) {
+            $mentionedUserIds = $message->parseMentionedUserIds();
+            foreach ($mentionedUserIds as $uId) {
+                $targetUser = User::find($uId);
+                if ($targetUser) {
+                    Notification::make()
+                        ->title("Mentioned in {$conversation->title}")
+                        ->body(auth()->user()->name.': '.Str::limit($text, 80))
+                        ->icon('heroicon-o-at-symbol')
+                        ->iconColor('warning')
+                        ->actions([
+                            Action::make('view')
+                                ->label('Open Chat')
+                                ->url(url('/kamkaj/chat?c='.$conversation->id))
+                                ->markAsRead(),
+                        ])
+                        ->sendToDatabase($targetUser);
+                }
+            }
+        }
+
         // Broadcast over WebSockets via Reverb
-        broadcast(new MessageSent($message))->toOthers();
+        broadcast(new MessageSent($message, $mentionedUserIds))->toOthers();
 
         $this->messageText = '';
         $this->attachment = null;
@@ -554,5 +578,24 @@ class Chat extends Page
         }
 
         return $query->orderBy('name')->limit(30)->get();
+    }
+
+    public function getGroupMembersProperty()
+    {
+        if (! $this->activeConversation || ! $this->activeConversation->isGroup()) {
+            return collect();
+        }
+
+        return $this->activeConversation->users
+            ->where('id', '!=', auth()->id())
+            ->map(fn ($u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'username' => $u->username ?: Str::slug($u->name, ''),
+                'tag' => $u->username ?: Str::slug($u->name, ''),
+                'avatar' => $u->getFilamentAvatarUrl(),
+                'initial' => strtoupper(substr($u->name, 0, 1)),
+            ])
+            ->values();
     }
 }

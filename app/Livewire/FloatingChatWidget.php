@@ -9,10 +9,12 @@ use App\Models\Conversation;
 use App\Models\ConversationParticipant;
 use App\Models\Message;
 use App\Models\User;
+use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -235,7 +237,29 @@ class FloatingChatWidget extends Component
         $conversation->update(['last_message_at' => now()]);
         $conversation->markAsReadFor(auth()->id());
 
-        broadcast(new MessageSent($message))->toOthers();
+        $mentionedUserIds = [];
+        if ($conversation->isGroup()) {
+            $mentionedUserIds = $message->parseMentionedUserIds();
+            foreach ($mentionedUserIds as $uId) {
+                $targetUser = User::find($uId);
+                if ($targetUser) {
+                    Notification::make()
+                        ->title("Mentioned in {$conversation->title}")
+                        ->body(auth()->user()->name.': '.Str::limit($text, 80))
+                        ->icon('heroicon-o-at-symbol')
+                        ->iconColor('warning')
+                        ->actions([
+                            Action::make('view')
+                                ->label('Open Chat')
+                                ->url(url('/kamkaj/chat?c='.$conversation->id))
+                                ->markAsRead(),
+                        ])
+                        ->sendToDatabase($targetUser);
+                }
+            }
+        }
+
+        broadcast(new MessageSent($message, $mentionedUserIds))->toOthers();
 
         $this->messageText = '';
         $this->attachment = null;
@@ -528,6 +552,25 @@ class FloatingChatWidget extends Component
         }
 
         return $query->orderBy('name')->limit(30)->get();
+    }
+
+    public function getGroupMembersProperty()
+    {
+        if (! $this->activeConversation || ! $this->activeConversation->isGroup()) {
+            return collect();
+        }
+
+        return $this->activeConversation->users
+            ->where('id', '!=', auth()->id())
+            ->map(fn ($u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'username' => $u->username ?: Str::slug($u->name, ''),
+                'tag' => $u->username ?: Str::slug($u->name, ''),
+                'avatar' => $u->getFilamentAvatarUrl(),
+                'initial' => strtoupper(substr($u->name, 0, 1)),
+            ])
+            ->values();
     }
 
     public function render()
