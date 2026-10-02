@@ -135,11 +135,33 @@
         },
 
         isCancelled: false,
+        recordedMimeType: 'audio/webm',
 
         async startRecording() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert('Voice recording is not available. Please ensure you are using HTTPS and a supported browser (Chrome/Firefox).');
+                return;
+            }
+            if (!window.MediaRecorder) {
+                alert('Your browser does not support voice recording. Please use Chrome or Firefox.');
+                return;
+            }
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                this.mediaRecorder = new MediaRecorder(stream);
+
+                // Detect best supported MIME type
+                const mimeType = [
+                    'audio/webm;codecs=opus',
+                    'audio/webm',
+                    'audio/ogg;codecs=opus',
+                    'audio/ogg',
+                    'audio/mp4',
+                ].find(t => MediaRecorder.isTypeSupported(t)) || '';
+
+                this.recordedMimeType = mimeType || 'audio/webm';
+                const options = mimeType ? { mimeType } : {};
+
+                this.mediaRecorder = new MediaRecorder(stream, options);
                 this.audioChunks = [];
                 this.recordingTime = 0;
                 this.isCancelled = false;
@@ -150,7 +172,7 @@
                 }, 1000);
 
                 this.mediaRecorder.ondataavailable = (e) => {
-                    if (!this.isCancelled && e.data.size > 0) {
+                    if (!this.isCancelled && e.data && e.data.size > 0) {
                         this.audioChunks.push(e.data);
                     }
                 };
@@ -160,9 +182,11 @@
                     stream.getTracks().forEach(track => track.stop());
 
                     if (!this.isCancelled && this.audioChunks.length > 0) {
-                        const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
-                        const audioFile = new File([audioBlob], 'voice_note_' + Date.now() + '.webm', { type: 'audio/webm' });
-                        
+                        const mime = this.recordedMimeType;
+                        const ext = mime.includes('ogg') ? 'ogg' : mime.includes('mp4') ? 'mp4' : 'webm';
+                        const audioBlob = new Blob(this.audioChunks, { type: mime });
+                        const audioFile = new File([audioBlob], 'voice_note_' + Date.now() + '.' + ext, { type: mime });
+
                         @this.upload('voiceNote', audioFile, () => {
                             $wire.sendMessage();
                         }, () => {}, () => {});
@@ -171,9 +195,18 @@
                     this.isCancelled = false;
                 };
 
-                this.mediaRecorder.start();
+                // Use 200ms timeslice so ondataavailable fires periodically
+                this.mediaRecorder.start(200);
             } catch (err) {
-                alert('Microphone access is required to record voice messages.');
+                this.isRecording = false;
+                clearInterval(this.recordingInterval);
+                if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                    alert('Microphone access was denied. Please allow microphone access in your browser settings and try again.');
+                } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                    alert('No microphone found. Please connect a microphone and try again.');
+                } else {
+                    alert('Could not start recording: ' + (err.message || err.name));
+                }
             }
         },
 

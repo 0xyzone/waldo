@@ -240,8 +240,10 @@ class FloatingChatWidget extends Component
         if ($this->voiceNote) {
             $type = 'audio';
             $attachmentPath = $this->voiceNote->store('chat-voice', 'public');
-            $attachmentName = 'Voice message.webm';
-            $fileType = 'audio/webm';
+            $actualMime = $this->voiceNote->getMimeType() ?? 'audio/webm';
+            $ext = str_contains($actualMime, 'ogg') ? 'ogg' : (str_contains($actualMime, 'mp4') ? 'mp4' : 'webm');
+            $attachmentName = 'Voice message.'.$ext;
+            $fileType = $actualMime;
             $fileSize = $this->voiceNote->getSize();
             if (blank($text)) {
                 $text = 'Voice message';
