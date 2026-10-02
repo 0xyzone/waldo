@@ -223,6 +223,10 @@ class KamkajPanelProvider extends PanelProvider
                 '),
             )
             ->renderHook(
+                PanelsRenderHook::USER_MENU_BEFORE,
+                fn () => auth()->check() ? new HtmlString(Blade::render('@livewire(\App\Livewire\WebsocketStatusIndicator::class)')) : ''
+            )
+            ->renderHook(
                 PanelsRenderHook::BODY_END,
                 fn () => auth()->check() ? new HtmlString(Blade::render('@livewire(\App\Livewire\FloatingChatWidget::class)')) : ''
             );

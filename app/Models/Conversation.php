@@ -16,14 +16,19 @@ class Conversation extends Model
     protected $fillable = [
         'type',
         'title',
+        'description',
         'created_by',
         'avatar_url',
+        'only_admins_can_message',
+        'only_admins_can_edit_info',
         'last_message_at',
     ];
 
     protected function casts(): array
     {
         return [
+            'only_admins_can_message' => 'boolean',
+            'only_admins_can_edit_info' => 'boolean',
             'last_message_at' => 'datetime',
         ];
     }
@@ -36,7 +41,7 @@ class Conversation extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'conversation_participants')
-            ->withPivot(['last_read_at'])
+            ->withPivot(['last_read_at', 'role'])
             ->withTimestamps();
     }
 
@@ -176,10 +181,129 @@ class Conversation extends Model
         foreach ($allUserIds as $uId) {
             $conversation->participants()->create([
                 'user_id' => $uId,
+                'role' => ($uId === $creatorId) ? 'admin' : 'member',
                 'last_read_at' => ($uId === $creatorId) ? now() : null,
             ]);
         }
 
         return $conversation;
+    }
+
+    public function isOwner(?int $userId = null): bool
+    {
+        $userId = $userId ?? auth()->id();
+
+        return $this->isGroup() && $this->created_by === $userId;
+    }
+
+    public function isAdmin(?int $userId = null): bool
+    {
+        $userId = $userId ?? auth()->id();
+
+        if ($this->isOwner($userId)) {
+            return true;
+        }
+
+        if ($this->relationLoaded('participants')) {
+            $participant = $this->participants->firstWhere('user_id', $userId);
+            if ($participant) {
+                return $participant->isAdmin();
+            }
+        }
+
+        return $this->participants()->where('user_id', $userId)->where('role', 'admin')->exists();
+    }
+
+    public function getUserRole(?int $userId = null): string
+    {
+        $userId = $userId ?? auth()->id();
+
+        if ($this->isOwner($userId)) {
+            return 'owner';
+        }
+
+        $participant = $this->participants->firstWhere('user_id', $userId);
+
+        return $participant?->role ?? 'member';
+    }
+
+    public function canUserEditInfo(?int $userId = null): bool
+    {
+        if (! $this->isGroup()) {
+            return false;
+        }
+
+        if (! $this->only_admins_can_edit_info) {
+            return true;
+        }
+
+        return $this->isAdmin($userId);
+    }
+
+    public function canUserSendMessage(?int $userId = null): bool
+    {
+        if (! $this->isGroup()) {
+            return true;
+        }
+
+        if (! $this->only_admins_can_message) {
+            return true;
+        }
+
+        return $this->isAdmin($userId);
+    }
+
+    public function addMember(int $userId, string $role = 'member'): ConversationParticipant
+    {
+        return $this->participants()->firstOrCreate(
+            ['user_id' => $userId],
+            [
+                'role' => $role,
+                'last_read_at' => now(),
+            ]
+        );
+    }
+
+    public function removeMember(int $userId): bool
+    {
+        if ($this->created_by === $userId) {
+            return false; // Cannot remove owner
+        }
+
+        return (bool) $this->participants()->where('user_id', $userId)->delete();
+    }
+
+    public function setAdmin(int $userId, bool $isAdmin = true): bool
+    {
+        if ($this->created_by === $userId) {
+            return true; // Owner is always admin
+        }
+
+        $role = $isAdmin ? 'admin' : 'member';
+
+        return (bool) $this->participants()->where('user_id', $userId)->update(['role' => $role]);
+    }
+
+    public function transferOwnership(int $newOwnerId): bool
+    {
+        if ($newOwnerId === $this->created_by) {
+            return true;
+        }
+
+        $oldOwnerId = $this->created_by;
+
+        // Ensure new owner is in conversation and marked admin
+        $this->addMember($newOwnerId, 'admin');
+        $this->participants()->where('user_id', $newOwnerId)->update(['role' => 'admin']);
+
+        // Update created_by
+        $this->update(['created_by' => $newOwnerId]);
+
+        // Keep previous owner as admin
+        if ($oldOwnerId) {
+            $this->participants()->where('user_id', $oldOwnerId)->update(['role' => 'admin']);
+        }
+
+        return true;
     }
 }

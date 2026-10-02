@@ -6,6 +6,7 @@ use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Message extends Model
 {
@@ -54,10 +55,56 @@ class Message extends Model
         return $this->belongsTo(User::class, 'pinned_by');
     }
 
+    public function reactions(): HasMany
+    {
+        return $this->hasMany(MessageReaction::class);
+    }
+
+    public function getReactionsSummary(int $userId): array
+    {
+        if ($this->relationLoaded('reactions')) {
+            $reactions = $this->reactions;
+        } else {
+            $reactions = $this->reactions()->with('user')->get();
+        }
+
+        $grouped = [];
+
+        foreach ($reactions as $r) {
+            $emoji = $r->reaction;
+            if (! isset($grouped[$emoji])) {
+                $grouped[$emoji] = [
+                    'reaction' => $emoji,
+                    'count' => 0,
+                    'reacted_by_me' => false,
+                    'users' => [],
+                ];
+            }
+
+            $grouped[$emoji]['count']++;
+            if ($r->user_id === $userId) {
+                $grouped[$emoji]['reacted_by_me'] = true;
+            }
+            if ($r->relationLoaded('user') && $r->user) {
+                $grouped[$emoji]['users'][] = $r->user->name;
+            } elseif ($r->user) {
+                $grouped[$emoji]['users'][] = $r->user->name;
+            }
+        }
+
+        return array_values($grouped);
+    }
+
     public function canBeDeletedBy(int $userId): bool
     {
         if ($this->is_deleted) {
             return false;
+        }
+
+        // Group Admins / Owners can delete any message/attachment in the group
+        $conversation = $this->conversation ?? Conversation::find($this->conversation_id);
+        if ($conversation && $conversation->isGroup() && $conversation->isAdmin($userId)) {
+            return true;
         }
 
         if ($this->sender_id !== $userId) {
@@ -65,7 +112,7 @@ class Message extends Model
         }
 
         // Only valid till 15 minutes from the time the chat was sent
-        return $this->created_at !== null && $this->created_at->diffInMinutes(now()) <= 15;
+        return $this->created_at !== null && abs($this->created_at->diffInMinutes(now())) <= 15;
     }
 
     public function isCurrentlyPinned(): bool

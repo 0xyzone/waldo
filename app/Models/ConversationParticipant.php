@@ -13,10 +13,21 @@ class ConversationParticipant extends Model
     protected $fillable = [
         'conversation_id',
         'user_id',
+        'role',
         'last_read_at',
         'is_pinned',
         'pinned_until',
     ];
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isMember(): bool
+    {
+        return $this->role === 'member';
+    }
 
     protected function casts(): array
     {

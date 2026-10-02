@@ -24,6 +24,11 @@
                 this.$nextTick(() => this.scrollToBottom());
             });
 
+            $wire.on('scroll-to-message', (event) => {
+                const id = (typeof event === 'object' && event !== null && event.messageId) ? event.messageId : event;
+                this.$nextTick(() => this.scrollToMessage(id));
+            });
+
             window.addEventListener('EchoLoaded', () => {
                 this.initEcho();
             });
@@ -45,6 +50,9 @@
                 })
                 .listen('.message.pinned', (e) => {
                     $wire.$refresh();
+                })
+                .listen('.message.reacted', (e) => {
+                    $wire.$refresh();
                 });
 
             if (this.activeConversationId) {
@@ -59,6 +67,7 @@
                 .stopListening('.message.sent')
                 .stopListening('.message.deleted')
                 .stopListening('.message.pinned')
+                .stopListening('.message.reacted')
                 .listen('.message.sent', (payload) => {
                     if (payload.sender_id !== {{ auth()->id() }}) {
                         this.playTing();
@@ -71,6 +80,9 @@
                     $wire.$refresh();
                 })
                 .listen('.message.pinned', () => {
+                    $wire.$refresh();
+                })
+                .listen('.message.reacted', () => {
                     $wire.$refresh();
                 });
         },
@@ -122,12 +134,15 @@
             } catch(e) {}
         },
 
+        isCancelled: false,
+
         async startRecording() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 this.mediaRecorder = new MediaRecorder(stream);
                 this.audioChunks = [];
                 this.recordingTime = 0;
+                this.isCancelled = false;
                 this.isRecording = true;
 
                 this.recordingInterval = setInterval(() => {
@@ -135,7 +150,7 @@
                 }, 1000);
 
                 this.mediaRecorder.ondataavailable = (e) => {
-                    if (e.data.size > 0) {
+                    if (!this.isCancelled && e.data.size > 0) {
                         this.audioChunks.push(e.data);
                     }
                 };
@@ -144,7 +159,7 @@
                     clearInterval(this.recordingInterval);
                     stream.getTracks().forEach(track => track.stop());
 
-                    if (this.audioChunks.length > 0) {
+                    if (!this.isCancelled && this.audioChunks.length > 0) {
                         const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
                         const audioFile = new File([audioBlob], 'voice_note_' + Date.now() + '.webm', { type: 'audio/webm' });
                         
@@ -152,6 +167,8 @@
                             $wire.sendMessage();
                         }, () => {}, () => {});
                     }
+                    this.audioChunks = [];
+                    this.isCancelled = false;
                 };
 
                 this.mediaRecorder.start();
@@ -162,6 +179,7 @@
 
         stopAndSendRecording() {
             if (this.mediaRecorder && this.isRecording) {
+                this.isCancelled = false;
                 this.isRecording = false;
                 this.mediaRecorder.stop();
             }
@@ -169,6 +187,7 @@
 
         cancelRecording() {
             if (this.mediaRecorder && this.isRecording) {
+                this.isCancelled = true;
                 this.audioChunks = [];
                 this.isRecording = false;
                 clearInterval(this.recordingInterval);
@@ -214,9 +233,20 @@
                         <h4 class="truncate text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
                             {{ $this->activeConversation->getDisplayName(auth()->id()) }}
                             @if($this->activeConversation->isGroup())
-                                <span class="rounded bg-indigo-100 px-1 py-0.2 text-[9px] font-bold text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300">
-                                    Group
-                                </span>
+                                @php $myFloatingRole = $this->activeConversation->getUserRole(auth()->id()); @endphp
+                                @if($myFloatingRole === 'owner')
+                                    <span class="rounded-full bg-amber-500/20 px-1.5 py-0.2 text-[9px] font-bold text-amber-800 dark:bg-amber-400/20 dark:text-amber-300 ring-1 ring-amber-400/30">
+                                        👑 Owner
+                                    </span>
+                                @elseif($myFloatingRole === 'admin')
+                                    <span class="rounded-full bg-indigo-500/20 px-1.5 py-0.2 text-[9px] font-bold text-indigo-700 dark:bg-indigo-400/20 dark:text-indigo-300 ring-1 ring-indigo-400/30">
+                                        🛡️ Admin
+                                    </span>
+                                @else
+                                    <span class="rounded bg-gray-100 px-1 py-0.2 text-[9px] font-semibold text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                                        Group
+                                    </span>
+                                @endif
                             @endif
                         </h4>
                     </div>
@@ -229,6 +259,21 @@
             </div>
             <div class="flex items-center gap-1">
                 @if($this->activeConversation)
+                    @if($this->activeConversation->isGroup())
+                        <!-- Group Settings & Management -->
+                        <button
+                            type="button"
+                            wire:click="openGroupSettings"
+                            class="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-amber-600 dark:hover:bg-gray-700 dark:hover:text-amber-400"
+                            title="Group Settings & Members"
+                        >
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </button>
+                    @endif
+
                     <!-- Search In Chat Toggle -->
                     <button
                         type="button"
@@ -301,9 +346,13 @@
                     <div class="flex items-center justify-between gap-2">
                         <button
                             type="button"
-                            @click="scrollToMessage({{ $firstPinned->id }})"
+                            @if($pinnedMessages->count() > 1)
+                                wire:click="openPinnedMessagesModal"
+                            @else
+                                @click="scrollToMessage({{ $firstPinned->id }})"
+                            @endif
                             class="flex items-center gap-1.5 min-w-0 text-left hover:opacity-80 transition"
-                            title="Click to jump to pinned message"
+                            title="{{ $pinnedMessages->count() > 1 ? 'Click to view all pinned messages' : 'Click to jump to pinned message' }}"
                         >
                             <span class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md bg-amber-500 text-white text-[11px]">
                                 📌
@@ -324,9 +373,17 @@
                         </button>
                         <div class="flex items-center gap-1 flex-shrink-0">
                             @if($pinnedMessages->count() > 1)
-                                <span class="rounded-full bg-amber-200 px-1.5 py-0.2 text-[9px] font-bold text-amber-800 dark:bg-amber-900 dark:text-amber-200">
-                                    {{ $pinnedMessages->count() }} pinned
-                                </span>
+                                <button
+                                    type="button"
+                                    wire:click="openPinnedMessagesModal"
+                                    class="rounded-full bg-amber-200 hover:bg-amber-300 dark:bg-amber-900/70 dark:hover:bg-amber-800 px-2 py-0.5 text-[9px] font-bold text-amber-800 dark:text-amber-200 transition shadow-sm cursor-pointer flex items-center gap-1"
+                                    title="View all pinned messages"
+                                >
+                                    <span>{{ $pinnedMessages->count() }} pinned</span>
+                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
                             @endif
                             <button
                                 type="button"
@@ -410,26 +467,119 @@
                                     </div>
                                 @else
                                     @if($msg->isImage())
-                                        <a href="{{ $msg->getAttachmentUrl() }}" target="_blank">
-                                            <img src="{{ $msg->getAttachmentUrl() }}" class="max-h-48 max-w-full rounded-lg object-cover my-1" />
-                                        </a>
+                                        <div class="relative group/attachment my-1 overflow-hidden rounded-lg">
+                                            <a href="{{ $msg->getAttachmentUrl() }}" target="_blank">
+                                                <img src="{{ $msg->getAttachmentUrl() }}" class="max-h-48 max-w-full rounded-lg object-cover hover:opacity-95 transition" />
+                                            </a>
+                                            @if($canDelete)
+                                                <button
+                                                    type="button"
+                                                    wire:confirm="Delete this image attachment? It will be replaced with 'This message was deleted'."
+                                                    wire:click="deleteMessage({{ $msg->id }})"
+                                                    class="absolute top-1.5 right-1.5 flex items-center gap-1 rounded-md bg-black/60 px-1.5 py-0.5 text-[10px] font-bold text-white shadow backdrop-blur hover:bg-red-600 transition"
+                                                    title="Delete image (valid for 15 mins or admin)"
+                                                >
+                                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                    </svg>
+                                                    <span>Delete</span>
+                                                </button>
+                                            @endif
+                                        </div>
                                     @elseif($msg->isAudio())
-                                        <audio controls class="max-w-[210px] my-1 h-8">
-                                            <source src="{{ $msg->getAttachmentUrl() }}" type="{{ $msg->file_type ?? 'audio/webm' }}">
-                                        </audio>
+                                        <!-- Modern Waveform Voice Note Player -->
+                                        <div 
+                                            x-data="voicePlayer('{{ $msg->getAttachmentUrl() }}')"
+                                            class="my-1 flex items-center gap-2 rounded-xl px-2.5 py-1.5 transition-all {{ $isMe ? 'bg-amber-700/60 text-white' : 'bg-gray-100 dark:bg-gray-700/70 text-gray-900 dark:text-white' }} min-w-[210px] max-w-[250px] select-none"
+                                        >
+                                            <!-- Play/Pause Button -->
+                                            <button
+                                                type="button"
+                                                @click="togglePlay"
+                                                class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full shadow transition-transform active:scale-95 {{ $isMe ? 'bg-white text-amber-700 hover:bg-amber-50' : 'bg-amber-600 text-white hover:bg-amber-500' }}"
+                                                title="Play / Pause"
+                                            >
+                                                <template x-if="!isPlaying">
+                                                    <svg class="h-3.5 w-3.5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M8 5v14l11-7z"/>
+                                                    </svg>
+                                                </template>
+                                                <template x-if="isPlaying">
+                                                    <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                                                    </svg>
+                                                </template>
+                                            </button>
+
+                                            <!-- Waveform & Info -->
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center gap-[2px] h-5 cursor-pointer py-0.5" @click="handleBarClick($event)">
+                                                    <template x-for="(barHeight, idx) in bars.slice(0, 16)" :key="idx">
+                                                        <div 
+                                                            class="w-[2.5px] rounded-full transition-all duration-150"
+                                                            :style="`height: ${Math.max(4, Math.round(barHeight * 0.75))}px;`"
+                                                            :class="(idx / 16) <= (progress / 100) 
+                                                                ? '{{ $isMe ? 'bg-white' : 'bg-amber-600 dark:bg-amber-400' }}' 
+                                                                : '{{ $isMe ? 'bg-amber-300/40' : 'bg-gray-300 dark:bg-gray-500' }}'"
+                                                        ></div>
+                                                    </template>
+                                                </div>
+
+                                                <div class="flex items-center justify-between text-[9px] {{ $isMe ? 'text-amber-100/90' : 'text-gray-500 dark:text-gray-400' }} font-mono">
+                                                    <span x-text="formatSecs(isPlaying ? currentTime : (duration || currentTime))">0:00</span>
+                                                    <button 
+                                                        type="button" 
+                                                        @click="cycleSpeed" 
+                                                        class="rounded px-0.5 text-[8px] font-bold uppercase transition hover:bg-black/10 dark:hover:bg-white/10"
+                                                        x-text="speed + 'x'"
+                                                    >
+                                                        1x
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            @if($canDelete)
+                                                <button
+                                                    type="button"
+                                                    wire:confirm="Delete this voice message? It will be replaced with 'This message was deleted'."
+                                                    wire:click="deleteMessage({{ $msg->id }})"
+                                                    class="rounded p-1 transition {{ $isMe ? 'text-amber-200 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40' }}"
+                                                    title="Delete voice note (valid for 15 mins or admin)"
+                                                >
+                                                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                    </svg>
+                                                </button>
+                                            @endif
+                                        </div>
                                     @elseif($msg->isFile())
-                                        <div class="my-1 flex items-center justify-between gap-2 rounded-lg p-1.5 {{ $isMe ? 'bg-amber-700/50' : 'bg-gray-100 dark:bg-gray-700/60' }}">
+                                        <div class="my-1 flex items-center justify-between gap-2 rounded-lg p-1.5 {{ $isMe ? 'bg-amber-700/50 text-white' : 'bg-gray-100 dark:bg-gray-700/60 text-gray-900 dark:text-white' }}">
                                             <div class="flex items-center gap-1.5 min-w-0">
                                                 <svg class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                                 </svg>
                                                 <span class="truncate text-[11px] font-medium">{{ $msg->attachment_name }}</span>
                                             </div>
-                                            <a href="{{ $msg->getAttachmentUrl() }}" download="{{ $msg->attachment_name }}" class="p-1 hover:opacity-80">
-                                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                                                </svg>
-                                            </a>
+                                            <div class="flex items-center gap-1 flex-shrink-0">
+                                                <a href="{{ $msg->getAttachmentUrl() }}" download="{{ $msg->attachment_name }}" class="p-1 hover:opacity-80" title="Download">
+                                                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                                    </svg>
+                                                </a>
+                                                @if($canDelete)
+                                                    <button
+                                                        type="button"
+                                                        wire:confirm="Delete this file attachment? It will be replaced with 'This message was deleted'."
+                                                        wire:click="deleteMessage({{ $msg->id }})"
+                                                        class="p-1 text-red-500 hover:opacity-80"
+                                                        title="Delete file (valid for 15 mins or admin)"
+                                                    >
+                                                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                        </svg>
+                                                    </button>
+                                                @endif
+                                            </div>
                                         </div>
                                     @endif
 
@@ -481,7 +631,7 @@
                                             wire:confirm="Delete this message? It will be replaced with 'This message was deleted'."
                                             wire:click="deleteMessage({{ $msg->id }})"
                                             class="rounded p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"
-                                            title="Delete message (valid for 15 mins)"
+                                            title="Delete message (valid for 15 mins or admin)"
                                         >
                                             <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -491,6 +641,81 @@
                                 </div>
                             @endif
                         </div>
+
+                        <!-- Floating Quick Reaction Bar (on hover) -->
+                        @if(!$msg->is_deleted)
+                            <div 
+                                x-data="{ showExtraEmojis: false }"
+                                class="absolute -top-3 {{ $isMe ? 'right-3' : 'left-8' }} z-20 hidden group-hover:flex items-center gap-0.5 rounded-full border border-gray-200 bg-white/95 px-1 py-0.5 shadow-md backdrop-blur dark:border-gray-700 dark:bg-gray-800/95"
+                            >
+                                @php
+                                    $quickEmojis = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
+                                    $extraEmojis = ['🎉', '👏', '🙏', '💯', '🚀', '👀'];
+                                @endphp
+                                @foreach($quickEmojis as $qEmoji)
+                                    <button
+                                        type="button"
+                                        wire:click="toggleReaction({{ $msg->id }}, '{{ $qEmoji }}')"
+                                        class="rounded-full p-0.5 text-xs transition-transform hover:scale-125 active:scale-95"
+                                        title="React {{ $qEmoji }}"
+                                    >
+                                        {{ $qEmoji }}
+                                    </button>
+                                @endforeach
+
+                                <div class="relative">
+                                    <button
+                                        type="button"
+                                        @click="showExtraEmojis = !showExtraEmojis"
+                                        class="rounded-full p-0.5 text-[10px] text-gray-500 hover:text-amber-600 dark:text-gray-400 dark:hover:text-amber-400 transition"
+                                        title="More emojis"
+                                    >
+                                        ➕
+                                    </button>
+
+                                    <div
+                                        x-show="showExtraEmojis"
+                                        x-transition
+                                        @click.outside="showExtraEmojis = false"
+                                        class="absolute bottom-full mb-1 {{ $isMe ? 'right-0' : 'left-0' }} flex items-center gap-0.5 rounded-full border border-gray-200 bg-white/95 p-1 shadow-xl backdrop-blur dark:border-gray-700 dark:bg-gray-800/95 z-30"
+                                        style="display: none;"
+                                    >
+                                        @foreach($extraEmojis as $eEmoji)
+                                            <button
+                                                type="button"
+                                                wire:click="toggleReaction({{ $msg->id }}, '{{ $eEmoji }}')"
+                                                @click="showExtraEmojis = false"
+                                                class="rounded-full p-0.5 text-xs transition-transform hover:scale-125 active:scale-95"
+                                                title="React {{ $eEmoji }}"
+                                            >
+                                                {{ $eEmoji }}
+                                            </button>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- Reaction Summary Pills -->
+                        @if(!$msg->is_deleted)
+                            @php $reactionsSummary = $msg->getReactionsSummary(auth()->id()); @endphp
+                            @if(!empty($reactionsSummary))
+                                <div class="mt-0.5 flex flex-wrap items-center gap-1 {{ $isMe ? 'justify-end pr-1' : 'justify-start pl-7' }}">
+                                    @foreach($reactionsSummary as $rec)
+                                        <button
+                                            type="button"
+                                            wire:click="toggleReaction({{ $msg->id }}, '{{ $rec['reaction'] }}')"
+                                            class="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.2 text-[10px] transition-all shadow-xs cursor-pointer {{ $rec['reacted_by_me'] ? 'bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700/80 font-bold ring-1 ring-amber-400/40' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700' }}"
+                                            title="{{ implode(', ', $rec['users']) }} reacted"
+                                        >
+                                            <span class="text-xs leading-none">{{ $rec['reaction'] }}</span>
+                                            <span class="text-[10px] font-semibold">{{ $rec['count'] }}</span>
+                                        </button>
+                                    @endforeach
+                                </div>
+                            @endif
+                        @endif
+                    </div>
                     </div>
                 @empty
                     <div class="flex h-full items-center justify-center text-center p-4 text-gray-400 text-xs">
@@ -736,103 +961,134 @@
                     </div>
                 @endif
 
-                <!-- Recording Bar Active -->
-                <div x-show="isRecording" class="flex items-center justify-between rounded-xl bg-red-50/80 p-2 dark:bg-red-950/40 border border-red-200 dark:border-red-900" style="display: none;">
-                    <div class="flex items-center gap-2">
-                        <span class="h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse"></span>
-                        <span class="text-xs font-semibold text-red-700 dark:text-red-400">Recording</span>
-                        <span x-text="formatTime(recordingTime)" class="font-mono text-xs text-red-600 dark:text-red-300">00:00</span>
+                @if($isFloatingGroup && !$this->activeConversation->canUserSendMessage(auth()->id()))
+                    <div class="flex items-center justify-center gap-1.5 rounded-xl bg-amber-50 p-2.5 text-[11px] text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-900/40">
+                        <svg class="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                        <span class="font-medium">Only group admins can send messages.</span>
                     </div>
-                    <div class="flex items-center gap-1.5">
+                @else
+                    <!-- Modern Animated Recording Bar -->
+                    <div 
+                        x-show="isRecording" 
+                        class="flex items-center justify-between gap-2 rounded-xl bg-gradient-to-r from-red-500/10 via-red-500/5 to-amber-500/10 p-2 dark:from-red-950/40 dark:via-red-950/20 dark:to-amber-950/30 border border-red-200/80 dark:border-red-900/60 shadow-inner" 
+                        style="display: none;"
+                    >
+                        <div class="flex items-center gap-2 min-w-0">
+                            <!-- Pulsing Red Recording Dot -->
+                            <div class="relative flex h-3 w-3 items-center justify-center flex-shrink-0">
+                                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75"></span>
+                                <span class="relative inline-flex h-2 w-2 rounded-full bg-red-600"></span>
+                            </div>
+
+                            <!-- Animated Live Sound Wave Visualizer -->
+                            <div class="flex items-center gap-[2.5px] h-4">
+                                <span class="w-[2.5px] bg-red-500 rounded-full animate-soundwave" style="animation-duration: 0.8s; animation-delay: 0s;"></span>
+                                <span class="w-[2.5px] bg-red-500 rounded-full animate-soundwave" style="animation-duration: 1.1s; animation-delay: 0.2s;"></span>
+                                <span class="w-[2.5px] bg-red-500 rounded-full animate-soundwave" style="animation-duration: 0.7s; animation-delay: 0.4s;"></span>
+                                <span class="w-[2.5px] bg-red-500 rounded-full animate-soundwave" style="animation-duration: 1.0s; animation-delay: 0.1s;"></span>
+                                <span class="w-[2.5px] bg-red-500 rounded-full animate-soundwave" style="animation-duration: 0.9s; animation-delay: 0.3s;"></span>
+                            </div>
+
+                            <span x-text="formatTime(recordingTime)" class="font-mono text-xs font-bold text-red-600 dark:text-red-300 bg-red-100/60 dark:bg-red-900/40 px-1.5 py-0.2 rounded">00:00</span>
+                        </div>
+
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                            <button
+                                type="button"
+                                @click="cancelRecording"
+                                class="flex items-center gap-1 rounded-lg border border-red-200 bg-white/80 px-2 py-1 text-[11px] font-semibold text-red-600 hover:bg-red-50 hover:border-red-300 dark:border-red-900/60 dark:bg-gray-800 dark:text-red-400 transition"
+                                title="Discard recording"
+                            >
+                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                                <span>Discard</span>
+                            </button>
+                            <button
+                                type="button"
+                                @click="stopAndSendRecording"
+                                class="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-red-600 to-amber-600 px-2.5 py-1 text-xs font-bold text-white shadow hover:from-red-500 hover:to-amber-500 transition-transform active:scale-95"
+                            >
+                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span>Send</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Normal Input Form -->
+                    <form x-show="!isRecording" wire:submit.prevent="sendMessage" class="flex items-center gap-1.5">
+                        <!-- File input hidden -->
+                        <input
+                            type="file"
+                            x-ref="floatFileInput"
+                            wire:model="attachment"
+                            class="hidden"
+                        />
+
+                        <!-- Paperclip File Button -->
                         <button
                             type="button"
-                            @click="cancelRecording"
-                            class="rounded-lg p-1 text-gray-500 hover:text-red-600 dark:text-gray-400"
-                            title="Cancel"
+                            @click="$refs.floatFileInput.click()"
+                            class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-200 transition"
+                            title="Attach file or photo"
                         >
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
                             </svg>
                         </button>
+
+                        <!-- Microphone Voice Note Button -->
                         <button
                             type="button"
-                            @click="stopAndSendRecording"
-                            class="rounded-lg bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow hover:bg-red-500"
-                        >
-                            Send Voice
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Normal Input Form -->
-                <form x-show="!isRecording" wire:submit.prevent="sendMessage" class="flex items-center gap-1.5">
-                    <!-- File input hidden -->
-                    <input
-                        type="file"
-                        x-ref="floatFileInput"
-                        wire:model="attachment"
-                        class="hidden"
-                    />
-
-                    <!-- Paperclip File Button -->
-                    <button
-                        type="button"
-                        @click="$refs.floatFileInput.click()"
-                        class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-200 transition"
-                        title="Attach file or photo"
-                    >
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
-                        </svg>
-                    </button>
-
-                    <!-- Microphone Voice Note Button -->
-                    <button
-                        type="button"
-                        @click="startRecording"
-                        class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-amber-600 dark:hover:bg-gray-800 dark:hover:text-amber-400 transition"
-                        title="Record voice message"
-                    >
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
-                        </svg>
-                    </button>
-
-                    @if($isFloatingGroup)
-                        <!-- Quick Mention Button (@) -->
-                        <button
-                            type="button"
-                            @click="openMentionMenu"
+                            @click="startRecording"
                             class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-amber-600 dark:hover:bg-gray-800 dark:hover:text-amber-400 transition"
-                            title="Mention group member (@all or @member)"
+                            title="Record voice message"
                         >
-                            <span class="flex h-4 w-4 items-center justify-center text-xs font-black leading-none select-none">@</span>
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+                            </svg>
                         </button>
-                    @endif
 
-                    <!-- Input Field (Dark Mode bullet-proof) -->
-                    <input
-                        type="text"
-                        x-ref="floatMessageInput"
-                        wire:model="messageText"
-                        @input="detectMention"
-                        @click="detectMention"
-                        @keyup="detectMention"
-                        @keydown="handleFloatInputKeyDown"
-                        placeholder="{{ $isFloatingGroup ? 'Write a message... (Type @ to mention)' : 'Write a message...' }}"
-                        class="chat-input-field w-full rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
-                    />
+                        @if($isFloatingGroup)
+                            <!-- Quick Mention Button (@) -->
+                            <button
+                                type="button"
+                                @click="openMentionMenu"
+                                class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-amber-600 dark:hover:bg-gray-800 dark:hover:text-amber-400 transition"
+                                title="Mention group member (@all or @member)"
+                            >
+                                <span class="flex h-4 w-4 items-center justify-center text-xs font-black leading-none select-none">@</span>
+                            </button>
+                        @endif
 
-                    <!-- Send Button -->
-                    <button
-                        type="submit"
-                        class="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-amber-600 text-white shadow transition hover:bg-amber-500"
-                    >
-                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-                        </svg>
-                    </button>
-                </form>
+                        <!-- Input Field (Dark Mode bullet-proof) -->
+                        <input
+                            type="text"
+                            x-ref="floatMessageInput"
+                            wire:model="messageText"
+                            @input="detectMention"
+                            @click="detectMention"
+                            @keyup="detectMention"
+                            @keydown="handleFloatInputKeyDown"
+                            placeholder="{{ $isFloatingGroup ? 'Write a message... (Type @ to mention)' : 'Write a message...' }}"
+                            class="chat-input-field w-full rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
+                        />
+
+                        <!-- Send Button -->
+                        <button
+                            type="submit"
+                            class="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-amber-600 text-white shadow transition hover:bg-amber-500"
+                        >
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                            </svg>
+                        </button>
+                    </form>
+                @endif
             </div>
         @elseif($showNewChatModal)
             <!-- New Chat View Inside Floating Widget -->
@@ -1125,6 +1381,688 @@
             </div>
         </div>
     @endif
+
+    <!-- Group Settings & Management Modal (Floating) -->
+    @if($showGroupSettingsModal && $this->activeConversation && $this->activeConversation->isGroup())
+        @php
+            $isOwner = $this->activeConversation->isOwner(auth()->id());
+            $isAdmin = $this->activeConversation->isAdmin(auth()->id());
+            $canEditInfo = $this->activeConversation->canUserEditInfo(auth()->id());
+            $participants = $this->groupParticipantDetails;
+        @endphp
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 p-3 backdrop-blur-sm animate-in fade-in duration-150">
+            <div
+                @click.outside="$wire.set('showGroupSettingsModal', false)"
+                class="relative w-full max-w-sm overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900 flex flex-col max-h-[85vh]"
+            >
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-gray-800">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm">⚙️</span>
+                        <div>
+                            <h4 class="text-xs font-bold text-gray-900 dark:text-white">Group Settings</h4>
+                            <p class="text-[10px] text-gray-500 dark:text-gray-400 truncate max-w-[180px]">{{ $this->activeConversation->title }}</p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        wire:click="$set('showGroupSettingsModal', false)"
+                        class="rounded-lg p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                    >
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <div class="flex border-b border-gray-100 px-3 gap-2 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-950/40 text-[11px] font-semibold">
+                    <button
+                        type="button"
+                        wire:click="$set('groupSettingsTab', 'general')"
+                        class="py-2 border-b-2 transition {{ $groupSettingsTab === 'general' ? 'border-amber-600 text-amber-600 dark:border-amber-400 dark:text-amber-400' : 'border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-400' }}"
+                    >
+                        General
+                    </button>
+                    <button
+                        type="button"
+                        wire:click="$set('groupSettingsTab', 'members')"
+                        class="py-2 border-b-2 transition flex items-center gap-1 {{ $groupSettingsTab === 'members' ? 'border-amber-600 text-amber-600 dark:border-amber-400 dark:text-amber-400' : 'border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-400' }}"
+                    >
+                        <span>Members</span>
+                        <span class="rounded bg-gray-200 px-1 text-[9px] dark:bg-gray-800">{{ $participants->count() }}</span>
+                    </button>
+                    <button
+                        type="button"
+                        wire:click="$set('groupSettingsTab', 'permissions')"
+                        class="py-2 border-b-2 transition {{ $groupSettingsTab === 'permissions' ? 'border-amber-600 text-amber-600 dark:border-amber-400 dark:text-amber-400' : 'border-transparent text-gray-500 hover:text-gray-800 dark:text-gray-400' }}"
+                    >
+                        Rules
+                    </button>
+                    <button
+                        type="button"
+                        wire:click="$set('groupSettingsTab', 'danger')"
+                        class="py-2 border-b-2 transition text-red-600 dark:text-red-400 {{ $groupSettingsTab === 'danger' ? 'border-red-600 font-bold' : 'border-transparent' }}"
+                    >
+                        Actions
+                    </button>
+                </div>
+
+                <!-- Tab Content Body -->
+                <div class="flex-1 overflow-y-auto p-4 space-y-3.5">
+                    <!-- GENERAL TAB -->
+                    @if($groupSettingsTab === 'general')
+                        @if(!$canEditInfo)
+                            <div class="rounded-xl bg-amber-50 p-2.5 text-[11px] text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-900/40">
+                                ℹ️ Only group admins can change the group name, icon, and description.
+                            </div>
+                        @endif
+
+                        <!-- Group Photo -->
+                        <div class="flex items-center gap-3">
+                            <div class="relative flex-shrink-0">
+                                @if($settingsGroupAvatar)
+                                    <img src="{{ $settingsGroupAvatar->temporaryUrl() }}" class="h-12 w-12 rounded-full object-cover border-2 border-amber-500 shadow-md" />
+                                @elseif($this->activeConversation->avatar_url)
+                                    <img src="{{ Storage::url($this->activeConversation->avatar_url) }}" class="h-12 w-12 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700 shadow-md" />
+                                @else
+                                    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-tr from-amber-600 to-amber-400 text-base font-bold text-white shadow-md">
+                                        {{ strtoupper(substr($this->activeConversation->title, 0, 1)) }}
+                                    </div>
+                                @endif
+                            </div>
+
+                            @if($canEditInfo)
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-1.5">
+                                        <label class="cursor-pointer rounded-lg bg-gray-100 px-2.5 py-1 text-[11px] font-semibold text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300">
+                                            <span>Upload</span>
+                                            <input type="file" wire:model="settingsGroupAvatar" accept="image/*" class="hidden" />
+                                        </label>
+                                        @if($this->activeConversation->avatar_url || $settingsGroupAvatar)
+                                            <button
+                                                type="button"
+                                                wire:click="removeGroupAvatar"
+                                                class="rounded-lg px-2 py-1 text-[11px] font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"
+                                            >
+                                                Remove
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- Group Title -->
+                        <div class="space-y-1">
+                            <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300">Group Name</label>
+                            <input
+                                type="text"
+                                wire:model="settingsGroupTitle"
+                                {{ $canEditInfo ? '' : 'disabled' }}
+                                class="chat-input-field w-full rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white disabled:opacity-60"
+                            />
+                            @error('settingsGroupTitle') <span class="text-[10px] text-red-600">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Group Description -->
+                        <div class="space-y-1">
+                            <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300">Description</label>
+                            <textarea
+                                wire:model="settingsGroupDescription"
+                                rows="2"
+                                {{ $canEditInfo ? '' : 'disabled' }}
+                                placeholder="Group description..."
+                                class="chat-input-field w-full rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white disabled:opacity-60 resize-none"
+                            ></textarea>
+                            @error('settingsGroupDescription') <span class="text-[10px] text-red-600">{{ $message }}</span> @enderror
+                        </div>
+
+                        @if($canEditInfo)
+                            <div class="flex justify-end pt-1">
+                                <button
+                                    type="button"
+                                    wire:click="saveGroupSettings"
+                                    class="rounded-xl bg-amber-600 px-3.5 py-1.5 text-xs font-bold text-white shadow hover:bg-amber-500"
+                                >
+                                    Save Changes
+                                </button>
+                            </div>
+                        @endif
+                    @endif
+
+                    <!-- MEMBERS TAB -->
+                    @if($groupSettingsTab === 'members')
+                        <div class="flex items-center justify-between pb-1">
+                            <span class="text-[11px] font-bold text-gray-700 dark:text-gray-300">Members ({{ $participants->count() }})</span>
+                            @if($isAdmin)
+                                <button
+                                    type="button"
+                                    wire:click="openAddMembersModal"
+                                    class="inline-flex items-center gap-1 rounded-lg bg-amber-600 px-2.5 py-1 text-[11px] font-semibold text-white shadow hover:bg-amber-500"
+                                >
+                                    <span>+ Add</span>
+                                </button>
+                            @endif
+                        </div>
+
+                        <div class="divide-y divide-gray-100 dark:divide-gray-800 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+                            @foreach($participants as $p)
+                                <div class="flex items-center justify-between p-2.5 bg-white dark:bg-gray-900 hover:bg-gray-50/70 dark:hover:bg-gray-800/50 transition">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        @if($p['avatar'])
+                                            <img src="{{ $p['avatar'] }}" class="h-7 w-7 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
+                                        @else
+                                            <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-800 dark:bg-gray-800 dark:text-amber-300 font-bold text-[10px]">
+                                                {{ $p['initial'] }}
+                                            </div>
+                                        @endif
+                                        <div class="min-w-0">
+                                            <div class="flex items-center gap-1">
+                                                <span class="truncate text-[11px] font-bold text-gray-900 dark:text-white">{{ $p['name'] }}</span>
+                                                @if($p['is_me'])
+                                                    <span class="text-[9px] text-gray-400">(You)</span>
+                                                @endif
+                                            </div>
+                                            <div class="text-[9px] text-gray-400 truncate">
+                                                {{ $p['username'] ? '@' . $p['username'] : $p['email'] }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center gap-1.5 flex-shrink-0">
+                                        @if($p['role'] === 'owner')
+                                            <span class="rounded bg-amber-500/20 px-1.5 py-0.2 text-[9px] font-bold text-amber-800 dark:text-amber-300">
+                                                👑 Owner
+                                            </span>
+                                        @elseif($p['role'] === 'admin')
+                                            <span class="rounded bg-indigo-500/20 px-1.5 py-0.2 text-[9px] font-bold text-indigo-700 dark:text-indigo-300">
+                                                🛡️ Admin
+                                            </span>
+                                        @endif
+
+                                        @if(!$p['is_me'])
+                                            @if($isOwner)
+                                                <button
+                                                    type="button"
+                                                    wire:click="toggleAdminRole({{ $p['id'] }})"
+                                                    class="rounded p-1 text-[10px] text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+                                                    title="{{ $p['is_admin'] ? 'Dismiss Admin' : 'Make Admin' }}"
+                                                >
+                                                    {{ $p['is_admin'] ? 'Demote' : 'Promote' }}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    wire:click="openTransferOwnershipModal({{ $p['id'] }})"
+                                                    class="rounded p-1 text-[10px] text-gray-400 hover:text-amber-600"
+                                                    title="Transfer Ownership"
+                                                >
+                                                    👑
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    wire:confirm="Remove {{ $p['name'] }} from this group?"
+                                                    wire:click="removeMemberFromGroup({{ $p['id'] }})"
+                                                    class="rounded p-1 text-gray-400 hover:text-red-600"
+                                                    title="Remove"
+                                                >
+                                                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                    </svg>
+                                                </button>
+                                            @elseif($isAdmin && !$p['is_admin'] && !$p['is_owner'])
+                                                <button
+                                                    type="button"
+                                                    wire:confirm="Remove {{ $p['name'] }} from this group?"
+                                                    wire:click="removeMemberFromGroup({{ $p['id'] }})"
+                                                    class="rounded p-1 text-gray-400 hover:text-red-600"
+                                                    title="Remove"
+                                                >
+                                                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                    </svg>
+                                                </button>
+                                            @endif
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    <!-- RULES / PERMISSIONS TAB -->
+                    @if($groupSettingsTab === 'permissions')
+                        <div class="space-y-3">
+                            <!-- Rule 1: Send Messages -->
+                            <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3 space-y-1.5 bg-gray-50/50 dark:bg-gray-950/30">
+                                <h5 class="text-xs font-bold text-gray-900 dark:text-white">Send Messages</h5>
+                                <div class="grid grid-cols-2 gap-2 text-[11px]">
+                                    <button
+                                        type="button"
+                                        @if($isAdmin) wire:click="$set('settingsOnlyAdminsCanMessage', false)" @endif
+                                        class="flex items-center gap-1.5 rounded-lg border p-2 text-left transition {{ !$settingsOnlyAdminsCanMessage ? 'border-amber-500 bg-amber-50/60 dark:bg-amber-950/30 font-bold text-amber-900 dark:text-amber-200' : 'border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400' }} {{ $isAdmin ? 'cursor-pointer' : 'cursor-not-allowed opacity-60' }}"
+                                    >
+                                        <div class="flex h-3.5 w-3.5 flex-shrink-0 items-center justify-center rounded-full border {{ !$settingsOnlyAdminsCanMessage ? 'border-amber-600 bg-amber-600 text-white' : 'border-gray-300 dark:border-gray-600' }}">
+                                            @if(!$settingsOnlyAdminsCanMessage)
+                                                <div class="h-1 w-1 rounded-full bg-white"></div>
+                                            @endif
+                                        </div>
+                                        <span>All Members</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        @if($isAdmin) wire:click="$set('settingsOnlyAdminsCanMessage', true)" @endif
+                                        class="flex items-center gap-1.5 rounded-lg border p-2 text-left transition {{ $settingsOnlyAdminsCanMessage ? 'border-amber-500 bg-amber-50/60 dark:bg-amber-950/30 font-bold text-amber-900 dark:text-amber-200' : 'border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400' }} {{ $isAdmin ? 'cursor-pointer' : 'cursor-not-allowed opacity-60' }}"
+                                    >
+                                        <div class="flex h-3.5 w-3.5 flex-shrink-0 items-center justify-center rounded-full border {{ $settingsOnlyAdminsCanMessage ? 'border-amber-600 bg-amber-600 text-white' : 'border-gray-300 dark:border-gray-600' }}">
+                                            @if($settingsOnlyAdminsCanMessage)
+                                                <div class="h-1 w-1 rounded-full bg-white"></div>
+                                            @endif
+                                        </div>
+                                        <span>Only Admins</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Rule 2: Edit Info -->
+                            <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3 space-y-1.5 bg-gray-50/50 dark:bg-gray-950/30">
+                                <h5 class="text-xs font-bold text-gray-900 dark:text-white">Edit Group Info</h5>
+                                <div class="grid grid-cols-2 gap-2 text-[11px]">
+                                    <button
+                                        type="button"
+                                        @if($isAdmin) wire:click="$set('settingsOnlyAdminsCanEditInfo', false)" @endif
+                                        class="flex items-center gap-1.5 rounded-lg border p-2 text-left transition {{ !$settingsOnlyAdminsCanEditInfo ? 'border-amber-500 bg-amber-50/60 dark:bg-amber-950/30 font-bold text-amber-900 dark:text-amber-200' : 'border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400' }} {{ $isAdmin ? 'cursor-pointer' : 'cursor-not-allowed opacity-60' }}"
+                                    >
+                                        <div class="flex h-3.5 w-3.5 flex-shrink-0 items-center justify-center rounded-full border {{ !$settingsOnlyAdminsCanEditInfo ? 'border-amber-600 bg-amber-600 text-white' : 'border-gray-300 dark:border-gray-600' }}">
+                                            @if(!$settingsOnlyAdminsCanEditInfo)
+                                                <div class="h-1 w-1 rounded-full bg-white"></div>
+                                            @endif
+                                        </div>
+                                        <span>All Members</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        @if($isAdmin) wire:click="$set('settingsOnlyAdminsCanEditInfo', true)" @endif
+                                        class="flex items-center gap-1.5 rounded-lg border p-2 text-left transition {{ $settingsOnlyAdminsCanEditInfo ? 'border-amber-500 bg-amber-50/60 dark:bg-amber-950/30 font-bold text-amber-900 dark:text-amber-200' : 'border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400' }} {{ $isAdmin ? 'cursor-pointer' : 'cursor-not-allowed opacity-60' }}"
+                                    >
+                                        <div class="flex h-3.5 w-3.5 flex-shrink-0 items-center justify-center rounded-full border {{ $settingsOnlyAdminsCanEditInfo ? 'border-amber-600 bg-amber-600 text-white' : 'border-gray-300 dark:border-gray-600' }}">
+                                            @if($settingsOnlyAdminsCanEditInfo)
+                                                <div class="h-1 w-1 rounded-full bg-white"></div>
+                                            @endif
+                                        </div>
+                                        <span>Only Admins</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            @if($isAdmin)
+                                <div class="flex justify-end pt-1">
+                                    <button
+                                        type="button"
+                                        wire:click="saveGroupSettings"
+                                        class="rounded-xl bg-amber-600 px-3.5 py-1.5 text-xs font-bold text-white shadow hover:bg-amber-500"
+                                    >
+                                        Save Rules
+                                    </button>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+
+                    <!-- DANGER TAB -->
+                    @if($groupSettingsTab === 'danger')
+                        <div class="space-y-3">
+                            <div class="rounded-xl border border-gray-200 p-3 dark:border-gray-800 flex items-center justify-between">
+                                <div>
+                                    <h5 class="text-xs font-bold text-gray-900 dark:text-white">Leave Group</h5>
+                                    <p class="text-[10px] text-gray-500 dark:text-gray-400">Exit this conversation.</p>
+                                </div>
+                                <button
+                                    type="button"
+                                    wire:confirm="Are you sure you want to leave this group?"
+                                    wire:click="leaveGroup"
+                                    class="rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-bold text-red-600 hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-400"
+                                >
+                                    Leave
+                                </button>
+                            </div>
+
+                            @if($isOwner)
+                                <div class="rounded-xl border border-red-200 bg-red-50/40 p-3 dark:border-red-900/60 dark:bg-red-950/20 flex items-center justify-between">
+                                    <div>
+                                        <h5 class="text-xs font-bold text-red-700 dark:text-red-400">Delete Group</h5>
+                                        <p class="text-[10px] text-red-600/80 dark:text-red-400/80">Permanently delete group.</p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        wire:confirm="Are you sure you want to delete this group permanently?"
+                                        wire:click="deleteGroup"
+                                        class="rounded-lg bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow hover:bg-red-500"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Add Members Modal (Floating) -->
+    @if($showAddMembersModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 p-3 backdrop-blur-sm animate-in fade-in duration-150">
+            <div
+                @click.outside="$wire.set('showAddMembersModal', false)"
+                class="relative w-full max-w-sm overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900"
+            >
+                <div class="flex items-center justify-between border-b border-gray-100 p-3 dark:border-gray-800">
+                    <h4 class="text-xs font-bold text-gray-900 dark:text-white">Add Members to Group</h4>
+                    <button
+                        type="button"
+                        wire:click="$set('showAddMembersModal', false)"
+                        class="rounded p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                    >
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="p-2.5 border-b border-gray-100 dark:border-gray-800">
+                    <input
+                        type="text"
+                        wire:model.live.debounce.200ms="memberSearch"
+                        placeholder="Search users..."
+                        class="chat-input-field w-full rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                    />
+                </div>
+
+                <div class="max-h-60 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
+                    @forelse($this->addableUsers as $u)
+                        @php $isMarked = in_array($u->id, $newMemberIds, true); @endphp
+                        <div
+                            wire:click="toggleAddMember({{ $u->id }})"
+                            class="flex cursor-pointer items-center justify-between p-2.5 hover:bg-amber-50/60 dark:hover:bg-gray-800/60 transition {{ $isMarked ? 'bg-amber-50 dark:bg-amber-950/40' : '' }}"
+                        >
+                            <div class="flex items-center gap-2 min-w-0">
+                                @if($u->getFilamentAvatarUrl())
+                                    <img src="{{ $u->getFilamentAvatarUrl() }}" class="h-7 w-7 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
+                                @else
+                                    <div class="flex h-7 w-7 items-center justify-center rounded-full bg-amber-100 text-amber-800 dark:bg-gray-800 dark:text-amber-300 font-bold text-xs">
+                                        {{ strtoupper(substr($u->name, 0, 1)) }}
+                                    </div>
+                                @endif
+                                <div class="min-w-0">
+                                    <p class="truncate text-xs font-semibold text-gray-900 dark:text-white">{{ $u->name }}</p>
+                                    <p class="truncate text-[10px] text-gray-400">{{ $u->email }}</p>
+                                </div>
+                            </div>
+                            <input
+                                type="checkbox"
+                                class="rounded border-gray-300 text-amber-600 focus:ring-amber-500 dark:border-gray-700 dark:bg-gray-800"
+                                {{ $isMarked ? 'checked' : '' }}
+                                wire:click.stop="toggleAddMember({{ $u->id }})"
+                            />
+                        </div>
+                    @empty
+                        <div class="p-4 text-center text-xs text-gray-400">
+                            No eligible users found.
+                        </div>
+                    @endforelse
+                </div>
+
+                <div class="flex items-center justify-between border-t border-gray-100 p-2.5 bg-gray-50/50 dark:border-gray-800 dark:bg-gray-950/40">
+                    <span class="text-xs text-gray-500">Selected: <strong>{{ count($newMemberIds) }}</strong></span>
+                    <button
+                        type="button"
+                        wire:click="addMembersToGroup"
+                        {{ empty($newMemberIds) ? 'disabled' : '' }}
+                        class="rounded-xl bg-amber-600 px-3.5 py-1 text-xs font-bold text-white shadow hover:bg-amber-500 disabled:opacity-50"
+                    >
+                        Add to Group
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Transfer Ownership Modal (Floating) -->
+    @if($showTransferOwnershipModal)
+        @php $transferUser = \App\Models\User::find($transferOwnershipUserId); @endphp
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 p-3 backdrop-blur-sm animate-in fade-in duration-150">
+            <div
+                @click.outside="$wire.set('showTransferOwnershipModal', false)"
+                class="relative w-full max-w-xs overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 shadow-2xl dark:border-gray-800 dark:bg-gray-900"
+            >
+                <div class="flex items-center gap-2 text-amber-600 dark:text-amber-400 mb-2">
+                    <span class="text-xl">👑</span>
+                    <h4 class="text-xs font-bold text-gray-900 dark:text-white">Transfer Ownership</h4>
+                </div>
+
+                <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed mb-3">
+                    Transfer group ownership to <strong>{{ $transferUser?->name }}</strong>?
+                </p>
+
+                <div class="rounded-xl bg-amber-50 p-2 text-[10px] text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-900/40 mb-3">
+                    ⚠️ The new owner will have full control and can demote or remove you.
+                </div>
+
+                <div class="flex items-center justify-end gap-2">
+                    <button
+                        type="button"
+                        wire:click="$set('showTransferOwnershipModal', false)"
+                        class="rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        wire:click="confirmTransferOwnership"
+                        class="rounded-lg bg-amber-600 px-3 py-1 text-xs font-bold text-white shadow hover:bg-amber-500"
+                    >
+                        Confirm
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Pinned Messages List Modal in Floating Widget -->
+    @if($showPinnedMessagesModal)
+        <div 
+            class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 p-4 backdrop-blur-sm"
+            @click.self="$wire.set('showPinnedMessagesModal', false)"
+        >
+            <div
+                @click.outside="$wire.set('showPinnedMessagesModal', false)"
+                class="relative w-full max-w-sm overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900 flex flex-col max-h-[80vh]"
+            >
+                <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-gray-800">
+                    <div class="flex items-center gap-2">
+                        <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400 text-xs">
+                            📌
+                        </span>
+                        <div>
+                            <h4 class="text-xs font-bold text-gray-900 dark:text-white">Pinned Messages</h4>
+                            <p class="text-[10px] text-gray-400">{{ $this->pinnedMessages->count() }} pinned</p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        wire:click="closePinnedMessagesModal"
+                        class="rounded-lg p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                    >
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-3 divide-y divide-gray-100 dark:divide-gray-800 space-y-2.5">
+                    @forelse($this->pinnedMessages as $pm)
+                        <div class="pt-2.5 first:pt-0 flex items-start justify-between gap-2 group">
+                            <div class="flex items-start gap-2 min-w-0 flex-1">
+                                @if($pm->sender?->avatar_url)
+                                    <img src="{{ $pm->sender->getFilamentAvatarUrl() }}" class="h-7 w-7 rounded-full object-cover flex-shrink-0" />
+                                @else
+                                    <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-800 dark:bg-gray-800 dark:text-amber-300 font-bold text-[10px]">
+                                        {{ strtoupper(substr($pm->sender?->name ?? 'U', 0, 1)) }}
+                                    </div>
+                                @endif
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="font-bold text-[11px] text-gray-900 dark:text-white truncate">{{ $pm->sender?->name }}</span>
+                                        <span class="rounded bg-amber-100 px-1 py-0.2 text-[8px] font-semibold text-amber-800 dark:bg-amber-900/50 dark:text-amber-300">
+                                            {{ $pm->getPinnedTimeRemaining() }}
+                                        </span>
+                                    </div>
+                                    <div class="mt-0.5 text-[11px] text-gray-600 dark:text-gray-300">
+                                        @if($pm->isImage())
+                                            <div class="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                                                <span>🖼️</span> <span>Photo</span>
+                                            </div>
+                                        @elseif($pm->isAudio())
+                                            <div class="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                                                <span>🎤</span> <span>Voice note</span>
+                                            </div>
+                                        @elseif($pm->isFile())
+                                            <div class="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                                                <span>📎</span> <span class="truncate">{{ $pm->attachment_name }}</span>
+                                            </div>
+                                        @endif
+                                        @if($pm->body)
+                                            <p class="truncate line-clamp-2 mt-0.5">{{ $pm->body }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1 flex-shrink-0">
+                                <button
+                                    type="button"
+                                    wire:click="jumpToPinnedMessage({{ $pm->id }})"
+                                    class="rounded-lg bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-700 hover:bg-amber-100 hover:text-amber-800 dark:bg-gray-800 dark:text-gray-300 transition cursor-pointer"
+                                >
+                                    Jump
+                                </button>
+                                <button
+                                    type="button"
+                                    wire:click="unpinMessage({{ $pm->id }})"
+                                    class="rounded p-1 text-gray-400 hover:text-red-500 transition"
+                                    title="Unpin"
+                                >
+                                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="p-4 text-center text-xs text-gray-400">
+                            No pinned messages.
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <style>
+        @keyframes soundwave {
+            0%, 100% { height: 4px; }
+            50% { height: 18px; }
+        }
+        .animate-soundwave {
+            animation: soundwave 1s ease-in-out infinite;
+        }
+    </style>
+
+    <script>
+        if (typeof window.voicePlayer === 'undefined') {
+            window.voicePlayer = function(url) {
+                return {
+                    audio: null,
+                    isPlaying: false,
+                    currentTime: 0,
+                    duration: 0,
+                    progress: 0,
+                    speed: 1,
+                    speeds: [1, 1.5, 2],
+                    bars: [8, 14, 20, 12, 18, 22, 14, 24, 16, 20, 10, 14, 20, 24, 18, 12, 22, 16, 12, 8],
+                    
+                    init() {
+                        this.audio = new Audio(url);
+                        this.audio.preload = 'metadata';
+                        this.audio.addEventListener('loadedmetadata', () => {
+                            if (isFinite(this.audio.duration)) {
+                                this.duration = this.audio.duration;
+                            }
+                        });
+                        this.audio.addEventListener('timeupdate', () => {
+                            this.currentTime = this.audio.currentTime;
+                            if (this.duration > 0) {
+                                this.progress = (this.currentTime / this.duration) * 100;
+                            }
+                        });
+                        this.audio.addEventListener('ended', () => {
+                            this.isPlaying = false;
+                            this.currentTime = 0;
+                            this.progress = 0;
+                        });
+                    },
+                    
+                    togglePlay() {
+                        if (!this.audio) return;
+                        if (this.isPlaying) {
+                            this.audio.pause();
+                            this.isPlaying = false;
+                        } else {
+                            document.querySelectorAll('audio').forEach(a => { if (a !== this.audio) a.pause(); });
+                            this.audio.playbackRate = this.speed;
+                            this.audio.play().then(() => {
+                                this.isPlaying = true;
+                            }).catch(() => {});
+                        }
+                    },
+                    
+                    handleBarClick(e) {
+                        if (!this.audio) return;
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const clickX = e.clientX - rect.left;
+                        const percent = Math.max(0, Math.min(100, (clickX / rect.width) * 100));
+                        this.seek(percent);
+                    },
+
+                    seek(percent) {
+                        if (!this.audio) return;
+                        const dur = this.duration || this.audio.duration;
+                        if (dur && isFinite(dur)) {
+                            const targetTime = (percent / 100) * dur;
+                            this.audio.currentTime = targetTime;
+                            this.currentTime = targetTime;
+                            this.progress = percent;
+                        }
+                    },
+                    
+                    cycleSpeed() {
+                        if (!this.audio) return;
+                        const curIdx = this.speeds.indexOf(this.speed);
+                        const nextIdx = (curIdx + 1) % this.speeds.length;
+                        this.speed = this.speeds[nextIdx];
+                        this.audio.playbackRate = this.speed;
+                    },
+                    
+                    formatSecs(s) {
+                        if (!s || isNaN(s) || !isFinite(s)) return '0:00';
+                        const mins = Math.floor(s / 60);
+                        const secs = Math.floor(s % 60);
+                        return mins + ':' + String(secs).padStart(2, '0');
+                    }
+                };
+            };
+        }
+    </script>
 
     <!-- Floating Action Button Launcher -->
     @php $unreadTotal = auth()->user()?->unreadMessagesCount() ?? 0; @endphp
