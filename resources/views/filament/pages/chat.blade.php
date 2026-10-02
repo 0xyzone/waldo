@@ -2952,7 +2952,8 @@
 
                 async loadWaveformData() {
                     try {
-                        const response = await fetch(this.url);
+                        const fetchUrl = this.url + (this.url.includes('?') ? '&' : '?') + '_wf=1';
+                        const response = await fetch(fetchUrl, { cache: 'no-store' });
                         if (!response.ok) throw new Error('Fetch audio failed');
                         const arrayBuffer = await response.arrayBuffer();
 
