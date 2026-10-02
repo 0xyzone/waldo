@@ -174,13 +174,22 @@
                 this.isPaused = false;
                 this.isRecording = true;
 
-                // Web Audio API for live mic visualization
-                this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const source = this.audioCtx.createMediaStreamSource(stream);
-                this.analyserNode = this.audioCtx.createAnalyser();
-                this.analyserNode.fftSize = 64;
-                source.connect(this.analyserNode);
-                this.startVizLoop();
+                // Web Audio API for real-time reactive mic visualization
+                try {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    this.audioCtx = new AudioCtx();
+                    if (this.audioCtx.state === 'suspended') {
+                        await this.audioCtx.resume();
+                    }
+                    const source = this.audioCtx.createMediaStreamSource(stream);
+                    this.analyserNode = this.audioCtx.createAnalyser();
+                    this.analyserNode.fftSize = 128;
+                    this.analyserNode.smoothingTimeConstant = 0.35;
+                    source.connect(this.analyserNode);
+                    this.startVizLoop();
+                } catch (e) {
+                    console.warn('Microphone analyser setup failed:', e);
+                }
 
                 // Timer + 60s auto-stop
                 this.recordingInterval = setInterval(() => {
@@ -201,7 +210,10 @@
                 this.mediaRecorder.onstop = () => {
                     clearInterval(this.recordingInterval);
                     this.stopVizLoop();
-                    if (this.audioCtx) { this.audioCtx.close(); this.audioCtx = null; }
+                    if (this.audioCtx) {
+                        try { this.audioCtx.close(); } catch(e) {}
+                        this.audioCtx = null;
+                    }
                     stream.getTracks().forEach(track => track.stop());
 
                     if (!this.isCancelled && this.audioChunks.length > 0) {
@@ -216,6 +228,7 @@
                     }
                     this.audioChunks = [];
                     this.isCancelled = false;
+                    this.isPaused = false;
                 };
 
                 this.mediaRecorder.start(200);
@@ -234,26 +247,60 @@
         },
 
         startVizLoop() {
+            this.stopVizLoop();
+            const numBars = 32;
+            const timeBuf = new Uint8Array(this.analyserNode.fftSize);
+            const freqBuf = new Uint8Array(this.analyserNode.frequencyBinCount);
+
             const draw = () => {
-                if (!this.analyserNode) return;
-                const buf = new Uint8Array(this.analyserNode.frequencyBinCount);
-                this.analyserNode.getByteFrequencyData(buf);
-                // Map freq bins to our 32 bar slots
-                const bars = [];
-                const step = Math.floor(buf.length / 32);
-                for (let i = 0; i < 32; i++) {
-                    const val = buf[i * step] || 0;
-                    bars.push(Math.max(2, Math.round((val / 255) * 28)));
+                if (!this.isRecording || !this.analyserNode) return;
+
+                if (this.isPaused) {
+                    this.vizBars = Array(numBars).fill(3);
+                    this.vizRaf = requestAnimationFrame(draw);
+                    return;
                 }
-                this.vizBars = bars;
+
+                // 1. Measure voice amplitude from waveform time domain
+                this.analyserNode.getByteTimeDomainData(timeBuf);
+                let sumSquares = 0;
+                for (let i = 0; i < timeBuf.length; i++) {
+                    const norm = (timeBuf[i] - 128) / 128;
+                    sumSquares += norm * norm;
+                }
+                const volume = Math.sqrt(sumSquares / timeBuf.length);
+
+                // 2. Measure frequency distribution
+                this.analyserNode.getByteFrequencyData(freqBuf);
+
+                // Silence threshold
+                if (volume < 0.02) {
+                    this.vizBars = Array(numBars).fill(3);
+                } else {
+                    const amplifiedVol = Math.min(1, volume * 3.8);
+                    const bars = [];
+                    const step = Math.floor(freqBuf.length / numBars);
+
+                    for (let i = 0; i < numBars; i++) {
+                        const freqVal = (freqBuf[i * step] || 0) / 255;
+                        const energy = (freqVal * 0.55) + (amplifiedVol * 0.45);
+                        const distFromCenter = Math.abs(i - (numBars / 2)) / (numBars / 2);
+                        const curveFactor = 1 - (distFromCenter * 0.35);
+                        const height = Math.max(3, Math.min(26, Math.round(energy * curveFactor * 26 + 3)));
+                        bars.push(height);
+                    }
+                    this.vizBars = bars;
+                }
+
                 this.vizRaf = requestAnimationFrame(draw);
             };
+
             this.vizRaf = requestAnimationFrame(draw);
         },
 
         stopVizLoop() {
             if (this.vizRaf) { cancelAnimationFrame(this.vizRaf); this.vizRaf = null; }
-            this.vizBars = Array(32).fill(2);
+            this.vizBars = Array(32).fill(3);
         },
 
         togglePauseRecording() {
@@ -261,11 +308,12 @@
             if (this.isPaused) {
                 this.mediaRecorder.resume();
                 this.isPaused = false;
-                this.startVizLoop();
+                if (this.audioCtx && this.audioCtx.state === 'suspended') {
+                    this.audioCtx.resume();
+                }
             } else {
                 this.mediaRecorder.pause();
                 this.isPaused = true;
-                this.stopVizLoop();
             }
         },
 
@@ -610,11 +658,11 @@
                                             <!-- Waveform & Info -->
                                             <div class="flex-1 min-w-0">
                                                 <div class="flex items-center gap-[2px] h-5 cursor-pointer py-0.5" @click="handleBarClick($event)">
-                                                    <template x-for="(barHeight, idx) in bars.slice(0, 16)" :key="idx">
+                                                    <template x-for="(barHeight, idx) in bars" :key="idx">
                                                         <div 
-                                                            class="w-[2.5px] rounded-full transition-all duration-150"
-                                                            :style="`height: ${Math.max(4, Math.round(barHeight * 0.75))}px;`"
-                                                            :class="(idx / 16) <= (progress / 100) 
+                                                            class="w-[2.5px] rounded-full transition-all duration-75"
+                                                            :style="`height: ${barHeight}px;`"
+                                                            :class="(idx / (bars.length - 1)) <= (progress / 100) 
                                                                 ? '{{ $isMe ? 'bg-white' : 'bg-amber-600 dark:bg-amber-400' }}' 
                                                                 : '{{ $isMe ? 'bg-amber-300/40' : 'bg-gray-300 dark:bg-gray-500' }}'"
                                                         ></div>
@@ -2119,144 +2167,210 @@
         </div>
     @endif
 
-    <style>
-        @keyframes soundwave {
-            0%, 100% { height: 4px; }
-            50% { height: 18px; }
-        }
-        .animate-soundwave {
-            animation: soundwave 1s ease-in-out infinite;
-        }
-    </style>
-
     <script>
-    if (typeof window.voicePlayer === 'undefined') {
-        window.voicePlayer = function(url) {
-            return {
-                audio: null,
-                isPlaying: false,
-                currentTime: 0,
-                duration: 0,
-                progress: 0,
-                speed: 1,
-                speeds: [1, 1.5, 2],
-                bars: Array(20).fill(3),
-                audioCtx: null,
-                analyser: null,
-                vizRaf: null,
+    window.voicePlayer = function(url) {
+        return {
+            url: url,
+            audio: null,
+            isPlaying: false,
+            currentTime: 0,
+            duration: 0,
+            progress: 0,
+            speed: 1,
+            speeds: [1, 1.5, 2],
+            bars: Array(20).fill(4),
+            animRaf: null,
 
-                init() {
-                    this.audio = new Audio(url);
-                    this.audio.preload = 'metadata';
-                    this.audio.addEventListener('loadedmetadata', () => {
-                        if (isFinite(this.audio.duration)) {
-                            this.duration = this.audio.duration;
-                        }
-                    });
-                    this.audio.addEventListener('timeupdate', () => {
-                        this.currentTime = this.audio.currentTime;
-                        if (this.duration > 0) {
-                            this.progress = (this.currentTime / this.duration) * 100;
-                        }
-                    });
-                    this.audio.addEventListener('ended', () => {
-                        this.isPlaying = false;
-                        this.currentTime = 0;
-                        this.progress = 0;
-                        this.stopViz();
-                        this.bars = Array(20).fill(3);
-                    });
-                },
+            init() {
+                this.audio = new Audio();
+                this.audio.preload = 'auto';
+                this.audio.src = this.url;
 
-                setupAnalyser() {
-                    if (this.audioCtx) return; // already set up
-                    try {
-                        this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                        const source = this.audioCtx.createMediaElementSource(this.audio);
-                        this.analyser = this.audioCtx.createAnalyser();
-                        this.analyser.fftSize = 64;
-                        source.connect(this.analyser);
-                        this.analyser.connect(this.audioCtx.destination);
-                    } catch(e) {
-                        this.audioCtx = null;
+                // Decode real audio waveform and extract exact duration
+                this.loadWaveformData();
+
+                this.audio.addEventListener('timeupdate', () => {
+                    this.syncProgress();
+                });
+
+                this.audio.addEventListener('play', () => {
+                    this.isPlaying = true;
+                    this.startSmoothProgress();
+                });
+
+                this.audio.addEventListener('pause', () => {
+                    this.isPlaying = false;
+                    this.stopSmoothProgress();
+                });
+
+                this.audio.addEventListener('ended', () => {
+                    this.isPlaying = false;
+                    this.stopSmoothProgress();
+                    this.currentTime = 0;
+                    this.progress = 0;
+                });
+            },
+
+            async loadWaveformData() {
+                try {
+                    const response = await fetch(this.url);
+                    if (!response.ok) throw new Error('Fetch audio failed');
+                    const arrayBuffer = await response.arrayBuffer();
+
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (!AudioCtx) return;
+                    const audioCtx = new AudioCtx();
+
+                    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+                    if (audioBuffer && audioBuffer.duration && isFinite(audioBuffer.duration)) {
+                        this.duration = audioBuffer.duration;
                     }
-                },
 
-                startViz() {
-                    if (!this.analyser) return;
-                    const draw = () => {
-                        if (!this.isPlaying || !this.analyser) return;
-                        const buf = new Uint8Array(this.analyser.frequencyBinCount);
-                        this.analyser.getByteFrequencyData(buf);
-                        const out = [];
-                        const step = Math.floor(buf.length / 20);
-                        for (let i = 0; i < 20; i++) {
-                            const val = buf[i * step] || 0;
-                            out.push(Math.max(2, Math.round((val / 255) * 18)));
+                    // Compute authentic waveform peaks from raw PCM audio channel data
+                    const channelData = audioBuffer.getChannelData(0);
+                    const numBars = 20;
+                    const blockSize = Math.floor(channelData.length / numBars);
+                    const rawBars = [];
+                    let maxRms = 0;
+
+                    for (let i = 0; i < numBars; i++) {
+                        const start = i * blockSize;
+                        let sum = 0;
+                        let count = 0;
+                        const step = Math.max(1, Math.floor(blockSize / 40));
+                        for (let j = 0; j < blockSize; j += step) {
+                            const val = channelData[start + j] || 0;
+                            sum += val * val;
+                            count++;
                         }
-                        this.bars = out;
-                        this.vizRaf = requestAnimationFrame(draw);
-                    };
-                    this.vizRaf = requestAnimationFrame(draw);
-                },
-
-                stopViz() {
-                    if (this.vizRaf) { cancelAnimationFrame(this.vizRaf); this.vizRaf = null; }
-                },
-
-                togglePlay() {
-                    if (!this.audio) return;
-                    if (this.isPlaying) {
-                        this.audio.pause();
-                        this.isPlaying = false;
-                        this.stopViz();
-                    } else {
-                        document.querySelectorAll('audio').forEach(a => { if (a !== this.audio) a.pause(); });
-                        this.setupAnalyser();
-                        this.audio.playbackRate = this.speed;
-                        this.audio.play().then(() => {
-                            this.isPlaying = true;
-                            this.startViz();
-                        }).catch(() => {});
+                        const rms = Math.sqrt(sum / (count || 1));
+                        rawBars.push(rms);
+                        if (rms > maxRms) maxRms = rms;
                     }
-                },
 
-                handleBarClick(e) {
-                    if (!this.audio) return;
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    const clickX = e.clientX - rect.left;
-                    const percent = Math.max(0, Math.min(100, (clickX / rect.width) * 100));
-                    this.seek(percent);
-                },
+                    // Map RMS energy to heights: silence = 3px, voice = 6px to 22px
+                    this.bars = rawBars.map(rms => {
+                        if (maxRms <= 0.001 || rms < 0.01) {
+                            return 3; // true silence
+                        }
+                        const ratio = rms / maxRms;
+                        return Math.max(3, Math.min(20, Math.round(ratio * 17 + 3)));
+                    });
 
-                seek(percent) {
-                    if (!this.audio) return;
-                    const dur = this.duration || this.audio.duration;
-                    if (dur && isFinite(dur)) {
-                        const targetTime = (percent / 100) * dur;
-                        this.audio.currentTime = targetTime;
-                        this.currentTime = targetTime;
-                        this.progress = percent;
-                    }
-                },
-
-                cycleSpeed() {
-                    if (!this.audio) return;
-                    const curIdx = this.speeds.indexOf(this.speed);
-                    const nextIdx = (curIdx + 1) % this.speeds.length;
-                    this.speed = this.speeds[nextIdx];
-                    this.audio.playbackRate = this.speed;
-                },
-
-                formatSecs(s) {
-                    if (!s || isNaN(s) || !isFinite(s)) return '0:00';
-                    const mins = Math.floor(s / 60);
-                    const secs = Math.floor(s % 60);
-                    return mins + ':' + String(secs).padStart(2, '0');
+                    audioCtx.close();
+                } catch (e) {
+                    this.fixAudioDuration();
                 }
-            };
+            },
+
+            fixAudioDuration() {
+                if (this.duration > 0) return;
+                if (this.audio.duration && isFinite(this.audio.duration) && this.audio.duration > 0) {
+                    this.duration = this.audio.duration;
+                    return;
+                }
+                this.audio.addEventListener('loadedmetadata', () => {
+                    if (isFinite(this.audio.duration) && this.audio.duration > 0) {
+                        this.duration = this.audio.duration;
+                    } else {
+                        const onTime = () => {
+                            this.audio.removeEventListener('timeupdate', onTime);
+                            if (isFinite(this.audio.duration)) {
+                                this.duration = this.audio.duration;
+                            }
+                            this.audio.currentTime = 0;
+                        };
+                        this.audio.addEventListener('timeupdate', onTime);
+                        this.audio.currentTime = 1e101;
+                    }
+                }, { once: true });
+            },
+
+            syncProgress() {
+                if (!this.audio) return;
+                this.currentTime = this.audio.currentTime;
+                let dur = this.duration;
+                if ((!dur || !isFinite(dur) || dur <= 0) && isFinite(this.audio.duration) && this.audio.duration > 0) {
+                    dur = this.audio.duration;
+                    this.duration = dur;
+                }
+                if (!dur || !isFinite(dur) || dur <= 0) {
+                    dur = Math.max(this.currentTime + 1, 1);
+                }
+                this.progress = Math.min(100, Math.max(0, (this.currentTime / dur) * 100));
+            },
+
+            startSmoothProgress() {
+                this.stopSmoothProgress();
+                const step = () => {
+                    if (!this.isPlaying) return;
+                    this.syncProgress();
+                    this.animRaf = requestAnimationFrame(step);
+                };
+                this.animRaf = requestAnimationFrame(step);
+            },
+
+            stopSmoothProgress() {
+                if (this.animRaf) {
+                    cancelAnimationFrame(this.animRaf);
+                    this.animRaf = null;
+                }
+            },
+
+            togglePlay() {
+                if (!this.audio) return;
+                if (this.isPlaying) {
+                    this.audio.pause();
+                    this.isPlaying = false;
+                    this.stopSmoothProgress();
+                } else {
+                    document.querySelectorAll('audio').forEach(a => { if (a !== this.audio) a.pause(); });
+                    this.audio.playbackRate = this.speed;
+                    this.audio.play().then(() => {
+                        this.isPlaying = true;
+                        this.startSmoothProgress();
+                    }).catch(() => {});
+                }
+            },
+
+            handleBarClick(e) {
+                if (!this.audio) return;
+                const rect = e.currentTarget.getBoundingClientRect();
+                const clickX = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+                const percent = (clickX / rect.width) * 100;
+                this.seek(percent);
+            },
+
+            seek(percent) {
+                if (!this.audio) return;
+                let dur = this.duration;
+                if ((!dur || !isFinite(dur) || dur <= 0) && isFinite(this.audio.duration) && this.audio.duration > 0) {
+                    dur = this.audio.duration;
+                }
+                if (dur && isFinite(dur) && dur > 0) {
+                    const targetTime = (percent / 100) * dur;
+                    this.audio.currentTime = targetTime;
+                    this.currentTime = targetTime;
+                    this.progress = percent;
+                }
+            },
+
+            cycleSpeed() {
+                if (!this.audio) return;
+                const curIdx = this.speeds.indexOf(this.speed);
+                const nextIdx = (curIdx + 1) % this.speeds.length;
+                this.speed = this.speeds[nextIdx];
+                this.audio.playbackRate = this.speed;
+            },
+
+            formatSecs(s) {
+                if (!s || isNaN(s) || !isFinite(s) || s < 0) return '0:00';
+                const mins = Math.floor(s / 60);
+                const secs = Math.floor(s % 60);
+                return mins + ':' + String(secs).padStart(2, '0');
+            }
         };
-    }
+    };
 </script>
 
     <!-- Floating Action Button Launcher -->
