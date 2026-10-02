@@ -326,7 +326,7 @@ class Chat extends Page
         }
 
         // Broadcast over WebSockets via Reverb
-        broadcast(new MessageSent($message, $mentionedUserIds))->toOthers();
+        $this->safeBroadcast(new MessageSent($message, $mentionedUserIds));
 
         $this->messageText = '';
         $this->attachment = null;
@@ -388,7 +388,7 @@ class Chat extends Page
             'type' => 'text',
         ]);
 
-        broadcast(new MessageDeleted($message))->toOthers();
+        $this->safeBroadcast(new MessageDeleted($message));
 
         Notification::make()
             ->success()
@@ -425,7 +425,7 @@ class Chat extends Page
 
         $this->pinningMessageId = null;
 
-        broadcast(new MessagePinned($message))->toOthers();
+        $this->safeBroadcast(new MessagePinned($message));
 
         Notification::make()
             ->success()
@@ -448,7 +448,7 @@ class Chat extends Page
             'pinned_by' => null,
         ]);
 
-        broadcast(new MessagePinned($message))->toOthers();
+        $this->safeBroadcast(new MessagePinned($message));
 
         Notification::make()
             ->info()
@@ -502,7 +502,21 @@ class Chat extends Page
             }
         }
 
-        broadcast(new MessageReacted($message, $userId, $emoji))->toOthers();
+        $this->safeBroadcast(new MessageReacted($message, $userId, $emoji));
+    }
+
+    protected function safeBroadcast(mixed $event): void
+    {
+        try {
+            $socketId = request()->header('X-Socket-ID');
+            if ($socketId !== null && preg_match('/^\d+\.\d+$/', (string) $socketId)) {
+                broadcast($event)->toOthers();
+            } else {
+                broadcast($event);
+            }
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     public function openPinConversationModal(int $conversationId): void
