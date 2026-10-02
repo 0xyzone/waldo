@@ -345,7 +345,7 @@
             return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
         }
     }"
-    class="fixed bottom-5 right-5 z-40 font-sans"
+    class="fixed bottom-5 right-5 z-40 flex flex-col items-end font-sans"
 >
     <!-- Floating Window Popover -->
     <div

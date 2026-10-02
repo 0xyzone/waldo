@@ -99,11 +99,15 @@ class FloatingChatWidget extends Component
     {
         $this->isOpen = ! $this->isOpen;
 
-        if ($this->isOpen && ! $this->activeConversationId) {
-            $first = $this->getConversations()->first();
-            if ($first) {
-                $this->selectConversation($first->id);
-            }
+        if ($this->isOpen) {
+            $this->activeConversationId = null;
+            $this->showNewChatModal = false;
+            $this->showGroupSettingsModal = false;
+            $this->showPinnedMessagesModal = false;
+            $this->attachment = null;
+            $this->voiceNote = null;
+            $this->messageSearch = '';
+            $this->showMessageSearch = false;
         }
     }
 
