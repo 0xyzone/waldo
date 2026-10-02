@@ -31,13 +31,32 @@
 </IfModule>
 
 # Disable QUIC/HTTP3 for Livewire endpoints to prevent ERR_QUIC_GOAWAY errors
-# LiteSpeed's QUIC drops frequent POST connections (Livewire polling) with GOAWAY frames.
-# Alt-Svc: clear tells the browser to stop using QUIC for these specific URLs.
 <IfModule mod_headers.c>
     <If "%{REQUEST_URI} =~ m|^/livewire|">
         Header always set Alt-Svc "clear"
         Header always set Cache-Control "no-store, no-cache, must-revalidate"
     </If>
+</IfModule>
+
+# Fix 412 Precondition Failed for media files served from /storage/
+# LiteSpeed WAF blocks .webm and other media types by default.
+# Explicitly declare MIME types and allow direct file access.
+<IfModule mod_mime.c>
+    AddType audio/webm          .webm
+    AddType audio/ogg           .ogg .oga
+    AddType audio/mpeg          .mp3
+    AddType audio/wav           .wav
+    AddType video/webm          .webm
+    AddType video/mp4           .mp4
+    AddType image/webp          .webp
+</IfModule>
+
+<IfModule mod_headers.c>
+    # Allow media file range requests (required for audio/video seeking)
+    <FilesMatch "\.(webm|ogg|oga|mp3|mp4|wav|webp)$">
+        Header always set Accept-Ranges "bytes"
+        Header always set X-Content-Type-Options "nosniff"
+    </FilesMatch>
 </IfModule>
 
 # Increase upload size limits for Apache/LiteSpeed PHP
