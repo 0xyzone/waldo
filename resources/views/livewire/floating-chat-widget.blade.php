@@ -583,7 +583,7 @@
                                         </div>
                                     @endif
 
-                                    @if($msg->body && (!$msg->isImage() && !$msg->isAudio() && !$msg->isFile() || $msg->body !== $msg->attachment_name))
+                                    @if($msg->body && !$msg->is_deleted && !($msg->isImage() && $msg->body === $msg->attachment_name) && !($msg->isAudio() && $msg->body === 'Voice message') && !($msg->isFile() && $msg->body === $msg->attachment_name))
                                         <p class="whitespace-pre-wrap break-words leading-relaxed">{!! $msg->getFormattedBodyHtml($isMe) !!}</p>
                                     @endif
                                 @endif
@@ -646,7 +646,7 @@
                         @if(!$msg->is_deleted)
                             <div 
                                 x-data="{ showExtraEmojis: false }"
-                                class="absolute -top-3 {{ $isMe ? 'right-3' : 'left-8' }} z-20 hidden group-hover:flex items-center gap-0.5 rounded-full border border-gray-200 bg-white/95 px-1 py-0.5 shadow-md backdrop-blur dark:border-gray-700 dark:bg-gray-800/95"
+                                class="absolute -top-3 {{ $isMe ? 'right-3' : 'left-8' }} z-20 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity duration-150 flex items-center gap-0.5 rounded-full border border-gray-200 bg-white/95 px-1 py-0.5 shadow-md backdrop-blur dark:border-gray-700 dark:bg-gray-800/95"
                             >
                                 @php
                                     $quickEmojis = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
@@ -715,7 +715,6 @@
                                 </div>
                             @endif
                         @endif
-                    </div>
                     </div>
                 @empty
                     <div class="flex h-full items-center justify-center text-center p-4 text-gray-400 text-xs">
