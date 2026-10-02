@@ -10,6 +10,11 @@
             shouldSendImmediately: false,
             isUploadingVoice: false,
             preparedVoiceFile: null,
+            isPlayingPreview: false,
+            previewAudio: null,
+            previewUrl: null,
+            previewCurrentTime: 0,
+            previewProgressRatio: 0,
             recordedMimeType: 'audio/webm',
             mediaRecorder: null,
             audioChunks: [],
@@ -43,6 +48,12 @@
                 $wire.on('scroll-to-message', (event) => {
                     const id = (typeof event === 'object' && event !== null && event.messageId) ? event.messageId : event;
                     this.$nextTick(() => this.scrollToMessage(id));
+                });
+
+                window.addEventListener('voice-player-stop-all', () => {
+                    if (this.isPlayingPreview) {
+                        this.pausePreview();
+                    }
                 });
 
                 window.addEventListener('EchoLoaded', () => {
@@ -350,7 +361,115 @@
                 this.vizBars = Array(28).fill(3);
             },
 
+            setStaticWaveform() {
+                const samplePattern = [6, 10, 16, 12, 20, 24, 18, 14, 22, 16, 10, 18, 24, 20, 14, 18, 22, 16, 12, 20, 16, 10, 14, 18, 12, 8, 10, 6];
+                this.vizBars = samplePattern.slice(0, 28);
+            },
+
+            togglePlayPreview() {
+                if (this.isPlayingPreview) {
+                    this.pausePreview();
+                } else {
+                    this.startPlayPreview();
+                }
+            },
+
+            startPlayPreview() {
+                window.dispatchEvent(new CustomEvent('voice-player-stop-all'));
+
+                if (this.previewAudio && this.previewUrl) {
+                    this.previewAudio.play().then(() => {
+                        this.isPlayingPreview = true;
+                    }).catch(err => {
+                        console.warn('Resume preview audio failed, rebuilding:', err);
+                        this.buildAndPlayPreview();
+                    });
+                    return;
+                }
+
+                this.buildAndPlayPreview();
+            },
+
+            buildAndPlayPreview() {
+                this.cleanupPreview();
+
+                let blob = null;
+                if (this.preparedVoiceFile) {
+                    blob = this.preparedVoiceFile;
+                } else if (this.audioChunks && this.audioChunks.length > 0) {
+                    const mime = this.recordedMimeType || 'audio/webm';
+                    blob = new Blob(this.audioChunks, { type: mime });
+                }
+
+                if (!blob || blob.size === 0) {
+                    console.warn('No recorded voice data to preview.');
+                    return;
+                }
+
+                try {
+                    this.previewUrl = URL.createObjectURL(blob);
+                    this.previewAudio = new Audio(this.previewUrl);
+
+                    this.previewAudio.ontimeupdate = () => {
+                        if (!this.previewAudio) return;
+                        const duration = this.recordingTime || this.previewAudio.duration || 1;
+                        this.previewProgressRatio = Math.min(1, this.previewAudio.currentTime / duration);
+                        this.previewCurrentTime = Math.floor(this.previewAudio.currentTime);
+                    };
+
+                    this.previewAudio.onended = () => {
+                        this.isPlayingPreview = false;
+                        this.previewCurrentTime = 0;
+                        this.previewProgressRatio = 0;
+                        if (this.previewAudio) {
+                            this.previewAudio.currentTime = 0;
+                        }
+                    };
+
+                    this.previewAudio.onerror = (e) => {
+                        console.error('Preview audio error:', e);
+                        this.isPlayingPreview = false;
+                    };
+
+                    this.previewAudio.play().then(() => {
+                        this.isPlayingPreview = true;
+                    }).catch(err => {
+                        console.error('Playback error:', err);
+                        this.isPlayingPreview = false;
+                    });
+                } catch(err) {
+                    console.error('Error starting preview playback:', err);
+                    this.isPlayingPreview = false;
+                }
+            },
+
+            pausePreview() {
+                if (this.previewAudio) {
+                    this.previewAudio.pause();
+                }
+                this.isPlayingPreview = false;
+            },
+
+            cleanupPreview() {
+                if (this.previewAudio) {
+                    this.previewAudio.pause();
+                    this.previewAudio.ontimeupdate = null;
+                    this.previewAudio.onended = null;
+                    this.previewAudio.onerror = null;
+                    this.previewAudio.src = '';
+                    this.previewAudio = null;
+                }
+                if (this.previewUrl) {
+                    try { URL.revokeObjectURL(this.previewUrl); } catch(e) {}
+                    this.previewUrl = null;
+                }
+                this.isPlayingPreview = false;
+                this.previewCurrentTime = 0;
+                this.previewProgressRatio = 0;
+            },
+
             handleRecordingTimerEnd() {
+                this.cleanupPreview();
                 clearInterval(this.recordingInterval);
                 this.stopVizLoop();
                 if (this.audioCtx) {
@@ -364,6 +483,7 @@
                 this.shouldSendImmediately = false;
                 this.isRecordingEnded = true;
                 this.isPaused = true;
+                this.setStaticWaveform();
                 if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
                     this.mediaRecorder.stop();
                 }
@@ -371,6 +491,7 @@
 
             sendPreparedVoiceFile() {
                 if (!this.preparedVoiceFile || this.isUploadingVoice) return;
+                this.cleanupPreview();
                 this.isUploadingVoice = true;
 
                 @this.upload('voiceNote', this.preparedVoiceFile, () => {
@@ -384,6 +505,7 @@
             },
 
             resetRecordingState() {
+                this.cleanupPreview();
                 clearInterval(this.recordingInterval);
                 this.stopVizLoop();
                 if (this.audioCtx) {
@@ -409,19 +531,37 @@
             togglePauseRecording() {
                 if (!this.mediaRecorder || !this.isRecording || this.isRecordingEnded) return;
                 if (this.isPaused) {
-                    this.mediaRecorder.resume();
-                    this.isPaused = false;
-                    if (this.audioCtx && this.audioCtx.state === 'suspended') {
-                        this.audioCtx.resume();
-                    }
+                    this.resumeRecording();
                 } else {
-                    this.mediaRecorder.pause();
-                    this.isPaused = true;
+                    this.pauseRecording();
+                }
+            },
+
+            pauseRecording() {
+                if (!this.mediaRecorder || !this.isRecording || this.isRecordingEnded || this.isPaused) return;
+                try {
+                    if (this.mediaRecorder.state === 'recording') {
+                        this.mediaRecorder.requestData();
+                    }
+                } catch(e) {}
+                this.mediaRecorder.pause();
+                this.isPaused = true;
+                this.setStaticWaveform();
+            },
+
+            resumeRecording() {
+                if (!this.mediaRecorder || !this.isRecording || this.isRecordingEnded || !this.isPaused) return;
+                this.cleanupPreview();
+                this.mediaRecorder.resume();
+                this.isPaused = false;
+                if (this.audioCtx && this.audioCtx.state === 'suspended') {
+                    this.audioCtx.resume();
                 }
             },
 
             stopAndSendRecording() {
                 if (this.isUploadingVoice) return;
+                this.cleanupPreview();
 
                 if (this.isRecordingEnded && this.preparedVoiceFile) {
                     this.sendPreparedVoiceFile();
@@ -436,6 +576,7 @@
             },
 
             cancelRecording() {
+                this.cleanupPreview();
                 this.isCancelled = true;
                 if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
                     this.mediaRecorder.stop();
@@ -1422,9 +1563,11 @@
                             class="flex flex-col gap-2 rounded-2xl p-3 border shadow-inner transition-all"
                             :class="isRecordingEnded
                                 ? 'border-emerald-300 bg-emerald-50/80 dark:border-emerald-800/60 dark:bg-emerald-950/30'
-                                : (recordingTime >= maxRecordingSeconds - 10
-                                    ? 'border-red-300 bg-red-50/80 dark:border-red-800/60 dark:bg-red-950/30'
-                                    : 'border-red-200/80 bg-gradient-to-r from-red-500/10 via-red-500/5 to-amber-500/10 dark:border-red-900/60 dark:bg-red-950/20')"
+                                : (isPaused 
+                                    ? 'border-amber-300 bg-amber-50/80 dark:border-amber-800/60 dark:bg-amber-950/30'
+                                    : (recordingTime >= maxRecordingSeconds - 10
+                                        ? 'border-red-300 bg-red-50/80 dark:border-red-800/60 dark:bg-red-950/30'
+                                        : 'border-red-200/80 bg-gradient-to-r from-red-500/10 via-red-500/5 to-amber-500/10 dark:border-red-900/60 dark:bg-red-950/20'))"
                             style="display: none;"
                         >
                             <div class="flex items-center justify-between gap-3 min-w-0">
@@ -1436,37 +1579,53 @@
                                         </template>
                                         <span 
                                             class="relative inline-flex h-2.5 w-2.5 rounded-full"
-                                            :class="isRecordingEnded 
-                                                ? 'bg-emerald-500' 
-                                                : (isPaused ? 'bg-amber-500' : 'bg-red-600')"
+                                            :class="isPlayingPreview
+                                                ? 'bg-indigo-500 animate-pulse'
+                                                : (isRecordingEnded 
+                                                    ? 'bg-emerald-500' 
+                                                    : (isPaused ? 'bg-amber-500' : 'bg-red-600'))"
                                         ></span>
                                     </div>
 
-                                    <!-- Live Reactive Waveform Bars -->
+                                    <!-- Waveform Bars: Live mic when recording, audio progress when previewing -->
                                     <div class="flex flex-1 items-center gap-[2.5px] h-7 overflow-hidden">
                                         <template x-for="(h, i) in vizBars" :key="i">
                                             <div 
                                                 class="w-[3px] rounded-full transition-all duration-75"
                                                 :style="`height: ${h}px;`"
-                                                :class="isRecordingEnded
-                                                    ? 'bg-emerald-500/80 dark:bg-emerald-400'
-                                                    : (isPaused 
-                                                        ? 'bg-amber-400/80' 
-                                                        : (recordingTime >= maxRecordingSeconds - 10 ? 'bg-red-500' : 'bg-red-500/90 dark:bg-red-400'))"
+                                                :class="isPlayingPreview
+                                                    ? (i <= Math.floor(previewProgressRatio * vizBars.length)
+                                                        ? 'bg-indigo-600 dark:bg-indigo-400'
+                                                        : 'bg-indigo-200 dark:bg-indigo-950')
+                                                    : (isRecordingEnded
+                                                        ? 'bg-emerald-500/80 dark:bg-emerald-400'
+                                                        : (isPaused 
+                                                            ? 'bg-amber-500/80 dark:bg-amber-400' 
+                                                            : (recordingTime >= maxRecordingSeconds - 10 ? 'bg-red-500' : 'bg-red-500/90 dark:bg-red-400')))"
                                             ></div>
                                         </template>
                                     </div>
 
-                                    <!-- Timer + 60s limit indicator -->
+                                    <!-- Timer + Status indicator -->
                                     <div class="flex items-center gap-2 flex-shrink-0">
                                         <span 
                                             class="font-mono text-xs font-bold tabular-nums px-2 py-0.5 rounded-md"
-                                            :class="isRecordingEnded
-                                                ? 'text-emerald-700 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-900/50'
-                                                : (recordingTime >= maxRecordingSeconds - 10
-                                                    ? 'text-red-700 bg-red-100 dark:text-red-300 dark:bg-red-900/50'
-                                                    : 'text-red-600 bg-red-100/60 dark:text-red-300 dark:bg-red-900/40')"
-                                            x-text="isRecordingEnded ? '01:00 (Ready to send)' : (formatTime(recordingTime) + ' / 1:00')"
+                                            :class="isPlayingPreview
+                                                ? 'text-indigo-700 bg-indigo-100 dark:text-indigo-300 dark:bg-indigo-900/50'
+                                                : (isRecordingEnded
+                                                    ? 'text-emerald-700 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-900/50'
+                                                    : (isPaused
+                                                        ? 'text-amber-700 bg-amber-100 dark:text-amber-300 dark:bg-amber-900/50'
+                                                        : (recordingTime >= maxRecordingSeconds - 10
+                                                            ? 'text-red-700 bg-red-100 dark:text-red-300 dark:bg-red-900/50'
+                                                            : 'text-red-600 bg-red-100/60 dark:text-red-300 dark:bg-red-900/40')))"
+                                            x-text="isPlayingPreview
+                                                ? (formatTime(previewCurrentTime) + ' / ' + formatTime(recordingTime))
+                                                : (isRecordingEnded
+                                                    ? '01:00 (Ready)'
+                                                    : (isPaused
+                                                        ? (formatTime(recordingTime) + ' (Paused)')
+                                                        : (formatTime(recordingTime) + ' / 1:00')))"
                                         >00:00 / 1:00</span>
                                     </div>
                                 </div>
@@ -1486,25 +1645,59 @@
                                         <span class="text-xs">Discard</span>
                                     </button>
 
-                                    <!-- Pause / Resume Recording Button -->
-                                    <button
-                                        type="button"
-                                        x-show="!isRecordingEnded"
-                                        @click="togglePauseRecording"
-                                        class="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-300 transition active:scale-95"
-                                        :title="isPaused ? 'Resume recording' : 'Pause recording'"
-                                    >
-                                        <template x-if="!isPaused">
+                                    <!-- Play / Pause Preview Button (when paused or recording ended) -->
+                                    <template x-if="isPaused || isRecordingEnded">
+                                        <button
+                                            type="button"
+                                            @click="togglePlayPreview"
+                                            class="flex h-8 w-8 items-center justify-center rounded-full border shadow-sm transition active:scale-95"
+                                            :class="isPlayingPreview 
+                                                ? 'bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700' 
+                                                : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200'"
+                                            :title="isPlayingPreview ? 'Pause preview' : 'Play preview'"
+                                        >
+                                            <template x-if="!isPlayingPreview">
+                                                <svg class="h-3.5 w-3.5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M8 5v14l11-7z"/>
+                                                </svg>
+                                            </template>
+                                            <template x-if="isPlayingPreview">
+                                                <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                                                </svg>
+                                            </template>
+                                        </button>
+                                    </template>
+
+                                    <!-- Resume Recording Button (only when paused before timer ended) -->
+                                    <template x-if="isPaused && !isRecordingEnded">
+                                        <button
+                                            type="button"
+                                            @click="resumeRecording"
+                                            class="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-xl border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-950/60 dark:text-amber-200 text-xs font-semibold shadow-sm transition active:scale-95"
+                                            title="Resume recording"
+                                        >
+                                            <svg class="h-3.5 w-3.5 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                                                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                                            </svg>
+                                            <span>Resume</span>
+                                        </button>
+                                    </template>
+
+                                    <!-- Pause Button (only while actively recording) -->
+                                    <template x-if="!isPaused && !isRecordingEnded">
+                                        <button
+                                            type="button"
+                                            @click="pauseRecording"
+                                            class="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-300 transition active:scale-95"
+                                            title="Pause recording"
+                                        >
                                             <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
                                                 <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
                                             </svg>
-                                        </template>
-                                        <template x-if="isPaused">
-                                            <svg class="h-3.5 w-3.5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                                                <path d="M8 5v14l11-7z"/>
-                                            </svg>
-                                        </template>
-                                    </button>
+                                        </button>
+                                    </template>
 
                                     <!-- Stop and Send Voice Recording Button -->
                                     <button
@@ -1533,12 +1726,18 @@
                                 </div>
                             </div>
 
-                            <!-- 60-Second Limit Progress Bar -->
+                            <!-- 60-Second Limit Progress Bar / Preview Progress Bar -->
                             <div class="h-1 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-slate-700">
                                 <div 
-                                    class="h-full rounded-full transition-all duration-1000"
-                                    :class="isRecordingEnded ? 'bg-emerald-500' : (recordingTime >= maxRecordingSeconds - 10 ? 'bg-red-500' : 'bg-gradient-to-r from-amber-500 to-red-500')"
-                                    :style="`width: ${isRecordingEnded ? 100 : ((recordingTime / maxRecordingSeconds) * 100)}%`"
+                                    class="h-full rounded-full transition-all duration-300"
+                                    :class="isPlayingPreview 
+                                        ? 'bg-indigo-500' 
+                                        : (isRecordingEnded 
+                                            ? 'bg-emerald-500' 
+                                            : (recordingTime >= maxRecordingSeconds - 10 ? 'bg-red-500' : 'bg-gradient-to-r from-amber-500 to-red-500'))"
+                                    :style="isPlayingPreview 
+                                        ? `width: ${previewProgressRatio * 100}%` 
+                                        : `width: ${isRecordingEnded ? 100 : ((recordingTime / maxRecordingSeconds) * 100)}%`"
                                 ></div>
                             </div>
                         </div>
