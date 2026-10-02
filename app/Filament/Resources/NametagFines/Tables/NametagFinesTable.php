@@ -24,8 +24,8 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 class NametagFinesTable
 {
@@ -63,7 +63,7 @@ class NametagFinesTable
                 TextColumn::make('reason')
                     ->label('Reason')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'Lost' => 'danger',
                         'Damaged' => 'warning',
                         default => 'gray',
@@ -76,7 +76,7 @@ class NametagFinesTable
                     ->sortable(),
                 TextColumn::make('for_month')
                     ->label('Target Month')
-                    ->formatStateUsing(fn($state, NametagFine $record): string => ucfirst((string) $state) . ' ' . $record->for_year)
+                    ->formatStateUsing(fn ($state, NametagFine $record): string => ucfirst((string) $state).' '.$record->for_year)
                     ->sortable(),
                 TextColumn::make('creator.name')
                     ->label('Initiated By')
@@ -88,26 +88,26 @@ class NametagFinesTable
                     ->label('Acknowledged')
                     ->boolean()
                     ->tooltip(function (NametagFine $record): string {
-                        if (!$record->acknowledged) {
+                        if (! $record->acknowledged) {
                             return 'Pending Acknowledgement';
                         }
                         $by = $record->acknowledger?->name ? " by {$record->acknowledger->name}" : '';
-                        $when = $record->acknowledged_at ? ' on ' . $record->acknowledged_at->format('M d, Y h:i A') : '';
+                        $when = $record->acknowledged_at ? ' on '.$record->acknowledged_at->format('M d, Y h:i A') : '';
 
                         return "Acknowledged{$by}{$when}";
                     })
-                    ->color(fn(NametagFine $record): string => $record->acknowledged ? 'success' : 'gray'),
+                    ->color(fn (NametagFine $record): string => $record->acknowledged ? 'success' : 'gray'),
                 TextColumn::make('acknowledged_at')
                     ->label('Acknowledged At')
                     ->dateTime('M d, Y h:i A')
                     ->placeholder('Pending')
-                    ->color(fn(NametagFine $record): string => $record->acknowledged ? 'success' : 'gray')
+                    ->color(fn (NametagFine $record): string => $record->acknowledged ? 'success' : 'gray')
                     ->sortable()
                     ->toggleable(),
                 TextColumn::make('acknowledger.name')
                     ->label('Acknowledged By')
                     ->badge()
-                    ->color(fn(NametagFine $record): string => $record->acknowledged ? 'success' : 'gray')
+                    ->color(fn (NametagFine $record): string => $record->acknowledged ? 'success' : 'gray')
                     ->placeholder('Pending')
                     ->sortable()
                     ->toggleable(),
@@ -115,31 +115,31 @@ class NametagFinesTable
                     ->label('Finance Ack.')
                     ->boolean()
                     ->tooltip(function (NametagFine $record): string {
-                        if (!$record->finance_acknowledged) {
+                        if (! $record->finance_acknowledged) {
                             return 'Pending Finance Acknowledgement';
                         }
                         $by = $record->financeAcknowledger?->name ? " by {$record->financeAcknowledger->name}" : '';
-                        $when = $record->finance_acknowledged_at ? ' on ' . $record->finance_acknowledged_at->format('M d, Y h:i A') : '';
+                        $when = $record->finance_acknowledged_at ? ' on '.$record->finance_acknowledged_at->format('M d, Y h:i A') : '';
 
                         return "Finance Acknowledged{$by}{$when}";
                     })
-                    ->color(fn(NametagFine $record): string => $record->finance_acknowledged ? 'success' : 'gray'),
+                    ->color(fn (NametagFine $record): string => $record->finance_acknowledged ? 'success' : 'gray'),
                 TextColumn::make('financeAcknowledger.name')
                     ->label('Finance Ack. By')
                     ->badge()
-                    ->color(fn(NametagFine $record): string => $record->finance_acknowledged ? 'success' : 'gray')
+                    ->color(fn (NametagFine $record): string => $record->finance_acknowledged ? 'success' : 'gray')
                     ->placeholder('Pending')
                     ->sortable(),
                 TextColumn::make('finance_acknowledged_at')
                     ->label('Finance Ack. Time')
                     ->dateTime('M d, Y h:i A')
                     ->placeholder('Pending')
-                    ->color(fn(NametagFine $record): string => $record->finance_acknowledged ? 'success' : 'gray')
+                    ->color(fn (NametagFine $record): string => $record->finance_acknowledged ? 'success' : 'gray')
                     ->sortable(),
                 TextColumn::make('remarks')
                     ->label('Remarks')
                     ->limit(20)
-                    ->tooltip(fn(NametagFine $record): ?string => $record->remarks)
+                    ->tooltip(fn (NametagFine $record): ?string => $record->remarks)
                     ->placeholder('—')
                     ->toggleable(),
                 TextColumn::make('created_at')
@@ -149,7 +149,7 @@ class NametagFinesTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('id', 'desc')
-            ->recordClasses(fn(NametagFine $record) => match (true) {
+            ->recordClasses(fn (NametagFine $record) => match (true) {
                 $record->finance_acknowledged && $record->acknowledged => 'border-l-4 border-emerald-500',
                 $record->finance_acknowledged => 'border-l-4 border-blue-500',
                 $record->acknowledged => 'border-l-4 border-teal-500',
@@ -193,22 +193,22 @@ class NametagFinesTable
                     ->native(false),
                 SelectFilter::make('department_id')
                     ->label('Department')
-                    ->options(fn() => Department::pluck('name', 'id')->toArray())
+                    ->options(fn () => Department::pluck('name', 'id')->toArray())
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
                             $data['value'],
-                            fn(Builder $query, $deptId) => $query->whereHas('employee', fn(Builder $q) => $q->where('department_id', $deptId))
+                            fn (Builder $query, $deptId) => $query->whereHas('employee', fn (Builder $q) => $q->where('department_id', $deptId))
                         );
                     })
                     ->searchable()
                     ->preload(),
                 SelectFilter::make('designation_id')
                     ->label('Designation')
-                    ->options(fn() => Designation::pluck('name', 'id')->toArray())
+                    ->options(fn () => Designation::pluck('name', 'id')->toArray())
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
                             $data['value'],
-                            fn(Builder $query, $desigId) => $query->whereHas('employee', fn(Builder $q) => $q->where('designation_id', $desigId))
+                            fn (Builder $query, $desigId) => $query->whereHas('employee', fn (Builder $q) => $q->where('designation_id', $desigId))
                         );
                     })
                     ->searchable()
@@ -222,13 +222,13 @@ class NametagFinesTable
                     ->button()
                     ->requiresConfirmation()
                     ->modalHeading('Acknowledge NameTag Fine')
-                    ->modalDescription(fn(NametagFine $record): string => "Confirm acknowledgement of the {$record->reason} nametag fine for {$record->employee?->name} ({$record->employee_id}) for {$record->for_month} {$record->for_year}.")
+                    ->modalDescription(fn (NametagFine $record): string => "Confirm acknowledgement of the {$record->reason} nametag fine for {$record->employee?->name} ({$record->employee_id}) for {$record->for_month} {$record->for_year}.")
                     ->modalSubmitActionLabel('Confirm Acknowledge')
                     ->visible(function (NametagFine $record): bool {
                         /** @var User|null $user */
                         $user = Auth::user();
 
-                        return !$record->acknowledged && ($user?->hasRole(['super_admin', 'HR', 'HR Assist']) ?? false);
+                        return ! $record->acknowledged && ($user?->hasRole(['super_admin', 'HR', 'HR Assist']) ?? false);
                     })
                     ->action(function (NametagFine $record): void {
                         $record->update([
@@ -250,13 +250,13 @@ class NametagFinesTable
                     ->button()
                     ->requiresConfirmation()
                     ->modalHeading('Finance Acknowledge NameTag Fine')
-                    ->modalDescription(fn(NametagFine $record): string => "Confirm finance acknowledgement of NPR {$record->amount} ({$record->reason}) for {$record->employee?->name} ({$record->employee_id}) for {$record->for_month} {$record->for_year}.")
+                    ->modalDescription(fn (NametagFine $record): string => "Confirm finance acknowledgement of NPR {$record->amount} ({$record->reason}) for {$record->employee?->name} ({$record->employee_id}) for {$record->for_month} {$record->for_year}.")
                     ->modalSubmitActionLabel('Confirm Finance Acknowledge')
                     ->visible(function (NametagFine $record): bool {
                         /** @var User|null $user */
                         $user = Auth::user();
 
-                        return !$record->finance_acknowledged && ($user?->hasRole(['Finance', 'super_admin']) ?? false);
+                        return ! $record->finance_acknowledged && ($user?->hasRole(['Finance', 'super_admin']) ?? false);
                     })
                     ->action(function (NametagFine $record): void {
                         $record->update([
@@ -335,7 +335,7 @@ class NametagFinesTable
                             return $user?->hasRole(['Finance', 'super_admin']) ?? false;
                         })
                         ->action(function (Collection $records): void {
-                            $pendingRecords = $records->filter(fn(NametagFine $record): bool => !$record->finance_acknowledged);
+                            $pendingRecords = $records->filter(fn (NametagFine $record): bool => ! $record->finance_acknowledged);
 
                             if ($pendingRecords->isEmpty()) {
                                 Notification::make()
@@ -376,7 +376,7 @@ class NametagFinesTable
                             return $user?->hasRole(['super_admin', 'HR', 'HR Assist']) ?? false;
                         })
                         ->action(function (Collection $records): void {
-                            $pendingRecords = $records->filter(fn(NametagFine $record): bool => !$record->acknowledged);
+                            $pendingRecords = $records->filter(fn (NametagFine $record): bool => ! $record->acknowledged);
 
                             if ($pendingRecords->isEmpty()) {
                                 Notification::make()

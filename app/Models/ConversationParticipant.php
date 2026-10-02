@@ -14,13 +14,30 @@ class ConversationParticipant extends Model
         'conversation_id',
         'user_id',
         'last_read_at',
+        'is_pinned',
+        'pinned_until',
     ];
 
     protected function casts(): array
     {
         return [
             'last_read_at' => 'datetime',
+            'is_pinned' => 'boolean',
+            'pinned_until' => 'datetime',
         ];
+    }
+
+    public function isCurrentlyPinned(): bool
+    {
+        if (! $this->is_pinned) {
+            return false;
+        }
+
+        if ($this->pinned_until !== null && $this->pinned_until->isPast()) {
+            return false;
+        }
+
+        return true;
     }
 
     public function conversation(): BelongsTo

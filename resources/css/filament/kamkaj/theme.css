@@ -3,6 +3,10 @@
 
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
+@source '../../../../resources/views/livewire/**/*';
+@source '../../../../app/Livewire/**/*';
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* Thin & attractive scrollbar styling globally */
 ::-webkit-scrollbar {
@@ -50,4 +54,22 @@ input[type="number"] {
     -moz-appearance: textfield !important;
     appearance: textfield !important;
 }
+
+/* Chat bubble & messenger dark mode text/field clarity */
+:is(.dark, :root.dark, html.dark) .chat-input-field {
+    background-color: #1e293b !important;
+    color: #f8fafc !important;
+    border-color: #334155 !important;
+}
+
+:is(.dark, :root.dark, html.dark) .chat-input-field::placeholder {
+    color: #94a3b8 !important;
+}
+
+:is(.dark, :root.dark, html.dark) .chat-input-field:focus {
+    background-color: #0f172a !important;
+    border-color: #f59e0b !important;
+    color: #ffffff !important;
+}
+
 

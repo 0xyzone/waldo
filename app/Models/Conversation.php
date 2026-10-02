@@ -50,6 +50,24 @@ class Conversation extends Model
         return $this->hasOne(Message::class)->latestOfMany();
     }
 
+    public function pinnedMessages(): HasMany
+    {
+        return $this->hasMany(Message::class)
+            ->where('is_pinned', true)
+            ->where(function ($q) {
+                $q->whereNull('pinned_until')
+                    ->orWhere('pinned_until', '>', now());
+            })
+            ->orderByDesc('pinned_at');
+    }
+
+    public function isPinnedFor(int $userId): bool
+    {
+        $participant = $this->participants->firstWhere('user_id', $userId);
+
+        return $participant?->isCurrentlyPinned() ?? false;
+    }
+
     /**
      * Get the other user in a direct conversation.
      */

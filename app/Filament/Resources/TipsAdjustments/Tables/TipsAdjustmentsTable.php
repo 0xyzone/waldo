@@ -49,7 +49,7 @@ class TipsAdjustmentsTable
                     ->sortable(),
                 TextColumn::make('for_month')
                     ->label('For Month')
-                    ->formatStateUsing(fn ($state) => ucfirst((string) $state) . ' Release')
+                    ->formatStateUsing(fn ($state) => ucfirst((string) $state).' Release')
                     ->sortable(),
                 TextColumn::make('year')
                     ->label('Year')

@@ -2,8 +2,11 @@
 
 namespace App\Filament\Pages;
 
+use App\Events\MessageDeleted;
+use App\Events\MessagePinned;
 use App\Events\MessageSent;
 use App\Models\Conversation;
+use App\Models\ConversationParticipant;
 use App\Models\Message;
 use App\Models\User;
 use BackedEnum;
@@ -11,6 +14,8 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Url;
 use Livewire\WithFileUploads;
 
@@ -38,6 +43,14 @@ class Chat extends Page
     public string $search = '';
 
     public string $userSearch = '';
+
+    public string $messageSearch = '';
+
+    public bool $showMessageSearch = false;
+
+    public ?int $pinningMessageId = null;
+
+    public ?int $pinningConversationId = null;
 
     public bool $showNewChatModal = false;
 
@@ -267,6 +280,186 @@ class Chat extends Page
         }
     }
 
+    public function calculatePinnedUntil(string $duration): ?Carbon
+    {
+        return match ($duration) {
+            '8_hours' => now()->addHours(8),
+            '1_day' => now()->addDay(),
+            '1_week' => now()->addWeek(),
+            '1_month' => now()->addMonth(),
+            '1_year' => now()->addYear(),
+            default => null, // 'never_ending'
+        };
+    }
+
+    public function deleteMessage(int $messageId): void
+    {
+        $message = Message::find($messageId);
+
+        if (! $message || ! $message->canBeDeletedBy(auth()->id())) {
+            Notification::make()
+                ->danger()
+                ->title('Cannot delete message')
+                ->body('Messages can only be deleted within 15 minutes of sending.')
+                ->send();
+
+            return;
+        }
+
+        if ($message->attachment_path) {
+            Storage::disk('public')->delete($message->attachment_path);
+        }
+
+        $message->update([
+            'is_deleted' => true,
+            'deleted_at' => now(),
+            'body' => 'This message was deleted',
+            'attachment_path' => null,
+            'attachment_name' => null,
+            'file_type' => null,
+            'file_size' => null,
+            'type' => 'text',
+        ]);
+
+        broadcast(new MessageDeleted($message))->toOthers();
+
+        Notification::make()
+            ->success()
+            ->title('Message deleted')
+            ->send();
+    }
+
+    public function openPinMessageModal(int $messageId): void
+    {
+        $this->pinningMessageId = $messageId;
+    }
+
+    public function closePinMessageModal(): void
+    {
+        $this->pinningMessageId = null;
+    }
+
+    public function pinMessage(int $messageId, string $duration = 'never_ending'): void
+    {
+        $message = Message::with('conversation.participants')->find($messageId);
+
+        if (! $message || ! $message->conversation?->participants->contains('user_id', auth()->id())) {
+            return;
+        }
+
+        $pinnedUntil = $this->calculatePinnedUntil($duration);
+
+        $message->update([
+            'is_pinned' => true,
+            'pinned_at' => now(),
+            'pinned_until' => $pinnedUntil,
+            'pinned_by' => auth()->id(),
+        ]);
+
+        $this->pinningMessageId = null;
+
+        broadcast(new MessagePinned($message))->toOthers();
+
+        Notification::make()
+            ->success()
+            ->title('Message pinned successfully')
+            ->send();
+    }
+
+    public function unpinMessage(int $messageId): void
+    {
+        $message = Message::with('conversation.participants')->find($messageId);
+
+        if (! $message || ! $message->conversation?->participants->contains('user_id', auth()->id())) {
+            return;
+        }
+
+        $message->update([
+            'is_pinned' => false,
+            'pinned_at' => null,
+            'pinned_until' => null,
+            'pinned_by' => null,
+        ]);
+
+        broadcast(new MessagePinned($message))->toOthers();
+
+        Notification::make()
+            ->info()
+            ->title('Message unpinned')
+            ->send();
+    }
+
+    public function openPinConversationModal(int $conversationId): void
+    {
+        $this->pinningConversationId = $conversationId;
+    }
+
+    public function closePinConversationModal(): void
+    {
+        $this->pinningConversationId = null;
+    }
+
+    public function pinConversation(int $conversationId, string $duration = 'never_ending'): void
+    {
+        $participant = ConversationParticipant::where('conversation_id', $conversationId)
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if (! $participant) {
+            return;
+        }
+
+        $pinnedUntil = $this->calculatePinnedUntil($duration);
+
+        $participant->update([
+            'is_pinned' => true,
+            'pinned_until' => $pinnedUntil,
+        ]);
+
+        $this->pinningConversationId = null;
+
+        Notification::make()
+            ->success()
+            ->title('Chat pinned to top')
+            ->send();
+    }
+
+    public function unpinConversation(int $conversationId): void
+    {
+        $participant = ConversationParticipant::where('conversation_id', $conversationId)
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if (! $participant) {
+            return;
+        }
+
+        $participant->update([
+            'is_pinned' => false,
+            'pinned_until' => null,
+        ]);
+
+        $this->pinningConversationId = null;
+
+        Notification::make()
+            ->info()
+            ->title('Chat unpinned')
+            ->send();
+    }
+
+    public function toggleMessageSearch(): void
+    {
+        $this->showMessageSearch = ! $this->showMessageSearch;
+        if (! $this->showMessageSearch) {
+            $this->messageSearch = '';
+        }
+    }
+
+    public function clearMessageSearch(): void
+    {
+        $this->messageSearch = '';
+    }
+
     public function getConversations()
     {
         $userId = auth()->id();
@@ -275,21 +468,30 @@ class Chat extends Page
             return collect();
         }
 
-        return Conversation::query()
+        $conversations = Conversation::query()
             ->whereHas('participants', fn ($q) => $q->where('user_id', $userId))
             ->with(['users', 'latestMessage.sender', 'participants'])
             ->orderByDesc('last_message_at')
-            ->get()
-            ->filter(function ($conv) use ($userId) {
-                if (blank($this->search)) {
+            ->get();
+
+        if (filled($this->search)) {
+            $term = strtolower($this->search);
+            $conversations = $conversations->filter(function ($conv) use ($userId, $term) {
+                $title = strtolower($conv->getDisplayName($userId));
+                if (str_contains($title, $term)) {
                     return true;
                 }
 
-                $title = $conv->getDisplayName($userId);
-                $query = strtolower($this->search);
+                if ($conv->latestMessage && str_contains(strtolower($conv->latestMessage->body ?? ''), $term)) {
+                    return true;
+                }
 
-                return str_contains(strtolower($title), $query);
+                return $conv->messages()->whereRaw('LOWER(body) LIKE ?', ['%'.$term.'%'])->exists();
             });
+        }
+
+        // Sort pinned conversations to the very top
+        return $conversations->sortByDesc(fn ($conv) => $conv->isPinnedFor($userId))->values();
     }
 
     public function getActiveConversationProperty(): ?Conversation
@@ -301,16 +503,39 @@ class Chat extends Page
         return Conversation::with(['users', 'participants'])->find($this->activeConversationId);
     }
 
-    public function getMessagesProperty(): Collection
+    public function getPinnedMessagesProperty(): Collection
     {
         if (! $this->activeConversationId) {
             return new Collection;
         }
 
         return Message::where('conversation_id', $this->activeConversationId)
-            ->with('sender')
-            ->orderBy('created_at', 'asc')
+            ->where('is_pinned', true)
+            ->where(function ($q) {
+                $q->whereNull('pinned_until')
+                    ->orWhere('pinned_until', '>', now());
+            })
+            ->with(['sender', 'pinnedBy'])
+            ->orderByDesc('pinned_at')
             ->get();
+    }
+
+    public function getMessagesProperty(): Collection
+    {
+        if (! $this->activeConversationId) {
+            return new Collection;
+        }
+
+        $query = Message::where('conversation_id', $this->activeConversationId)
+            ->with(['sender', 'pinnedBy'])
+            ->orderBy('created_at', 'asc');
+
+        if (filled($this->messageSearch)) {
+            $term = '%'.strtolower($this->messageSearch).'%';
+            $query->whereRaw('LOWER(body) LIKE ?', [$term]);
+        }
+
+        return $query->get();
     }
 
     public function getAvailableUsersProperty()

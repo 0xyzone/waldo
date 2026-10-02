@@ -38,6 +38,7 @@ class ListNametagDistributions extends ListRecords
                 ->icon('heroicon-o-plus')
                 ->mutateFormDataUsing(function (array $data) {
                     $data['created_by'] = auth()->id();
+
                     return $data;
                 }),
         ];
