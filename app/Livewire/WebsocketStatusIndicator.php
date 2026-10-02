@@ -17,10 +17,13 @@ class WebsocketStatusIndicator extends Component
 
     public ?string $lastCheckedAt = null;
 
+    public bool $isLocal = false;
+
     public function mount(): void
     {
         $this->port = (int) config('reverb.servers.reverb.port', 8080);
         $this->host = '127.0.0.1';
+        $this->isLocal = app()->environment('local');
         $this->checkStatus();
     }
 
