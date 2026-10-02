@@ -11,6 +11,7 @@ use Filament\Facades\Filament;
 use Filament\Support\Facades\FilamentView;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\ServiceProvider;
 
@@ -30,6 +31,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
+
+        if (str_starts_with(config('app.url'), 'https://')) {
+            URL::forceScheme('https');
+        }
 
         Model::unguard();
         Employee::observe(EmployeeObserver::class);
