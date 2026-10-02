@@ -47,6 +47,7 @@
 # LiteSpeed WAF blocks .webm and other media types by default.
 # Explicitly declare MIME types and allow direct file access.
 <IfModule mod_mime.c>
+    AddType application/manifest+json .webmanifest
     AddType audio/webm          .webm
     AddType audio/ogg           .ogg .oga
     AddType audio/mpeg          .mp3

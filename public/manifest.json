@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json.schemastore.org/web-manifest-combined.json",
+  "name": "Kamkaj - Waldo Dynasty",
+  "short_name": "Kamkaj",
+  "description": "Internal operations command center, HR management, document studio, and reports for Waldo Dynasty.",
+  "start_url": "/kamkaj",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "any",
+  "background_color": "#0f172a",
+  "theme_color": "#d97706",
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "categories": [
+    "business",
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Kamkaj Dashboard",
+      "short_name": "Dashboard",
+      "url": "/kamkaj",
+      "description": "Open Kamkaj main control panel"
+    },
+    {
+      "name": "Letters & Templates",
+      "short_name": "Letters",
+      "url": "/letters",
+      "description": "Document generation and templates"
+    },
+    {
+      "name": "Employee SSID Search",
+      "short_name": "SSF IDs",
+      "url": "/employee-ssids",
+      "description": "Employee SSF search directory"
+    }
+  ]
+}

@@ -42,6 +42,10 @@ class KamkajPanelProvider extends PanelProvider
             ->profile(EditProfile::class)
             ->favicon(fn () => request()->isSecure() ? asset('img/logo.ico') : asset('img/logo-http.ico'))
             ->renderHook(
+                PanelsRenderHook::HEAD_START,
+                fn () => view('filament.pwa-scripts')
+            )
+            ->renderHook(
                 PanelsRenderHook::HEAD_END,
                 fn () => new HtmlString('<script>
                     (function() {
@@ -221,6 +225,10 @@ class KamkajPanelProvider extends PanelProvider
                         })();
                     </script>
                 '),
+            )
+            ->renderHook(
+                PanelsRenderHook::USER_MENU_BEFORE,
+                fn () => view('filament.pwa-install-button')
             )
             ->renderHook(
                 PanelsRenderHook::USER_MENU_BEFORE,
