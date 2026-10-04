@@ -245,13 +245,29 @@
                 },
 
                 syncSoundPreference(enabled) {
+                    const isEnabled = !!enabled;
+
+                    // 1. Post to active service worker controller
                     if (navigator.serviceWorker && navigator.serviceWorker.controller) {
                         navigator.serviceWorker.controller.postMessage({
                             type: 'SET_PUSH_SOUND',
-                            enabled: enabled
+                            enabled: isEnabled
                         });
                     }
 
+                    // 2. Also post to ready registration (in case controller was temporarily unattached)
+                    if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+                        navigator.serviceWorker.ready.then((reg) => {
+                            if (reg.active) {
+                                reg.active.postMessage({
+                                    type: 'SET_PUSH_SOUND',
+                                    enabled: isEnabled
+                                });
+                            }
+                        }).catch(() => {});
+                    }
+
+                    // 3. Persist to IndexedDB
                     try {
                         const req = indexedDB.open('kamkaj_push_settings', 1);
                         req.onupgradeneeded = (e) => {
@@ -265,9 +281,14 @@
                             if (!db.objectStoreNames.contains('settings')) return;
                             const tx = db.transaction('settings', 'readwrite');
                             const store = tx.objectStore('settings');
-                            store.put(!!enabled, 'sound_enabled');
+                            store.put(isEnabled, 'sound_enabled');
                         };
                     } catch (e) {}
+
+                    // 4. Notify open window components
+                    window.dispatchEvent(new CustomEvent('kamkaj-sound-changed', {
+                        detail: { enabled: isEnabled }
+                    }));
                 },
 
                 playChime() {

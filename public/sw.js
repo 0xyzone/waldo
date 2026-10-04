@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kamkaj-pwa-v1.2.0';
+const CACHE_NAME = 'kamkaj-pwa-v1.3.0';
 const OFFLINE_URL = '/offline.html';
 
 const PRECACHE_ASSETS = [
@@ -122,6 +122,8 @@ self.addEventListener('fetch', (event) => {
 });
 
 // Sound preference persistence using IndexedDB (accessible in Service Worker)
+let swSoundEnabled = false;
+
 function getSoundPreference() {
     return new Promise((resolve) => {
         try {
@@ -135,23 +137,28 @@ function getSoundPreference() {
             req.onsuccess = (e) => {
                 const db = e.target.result;
                 if (!db.objectStoreNames.contains('settings')) {
-                    resolve(false);
+                    resolve(swSoundEnabled);
                     return;
                 }
                 const tx = db.transaction('settings', 'readonly');
                 const store = tx.objectStore('settings');
                 const getReq = store.get('sound_enabled');
-                getReq.onsuccess = () => resolve(!!getReq.result);
-                getReq.onerror = () => resolve(false);
+                getReq.onsuccess = () => {
+                    const result = !!getReq.result;
+                    swSoundEnabled = result;
+                    resolve(result);
+                };
+                getReq.onerror = () => resolve(swSoundEnabled);
             };
-            req.onerror = () => resolve(false);
+            req.onerror = () => resolve(swSoundEnabled);
         } catch (e) {
-            resolve(false);
+            resolve(swSoundEnabled);
         }
     });
 }
 
 function saveSoundPreference(enabled) {
+    swSoundEnabled = !!enabled;
     try {
         const req = indexedDB.open('kamkaj_push_settings', 1);
         req.onupgradeneeded = (e) => {
@@ -194,9 +201,18 @@ self.addEventListener('push', (event) => {
     const actionUrl = payload.action_url || (payload.data && payload.data.url) || '/kamkaj';
 
     event.waitUntil((async () => {
-        const isSoundEnabled = await getSoundPreference();
-        // Allow explicit override if payload provides sound property, otherwise fallback to user preference
-        const isSoundOn = payload.sound !== undefined ? !!payload.sound : isSoundEnabled;
+        let isSoundEnabled = false;
+        try {
+            isSoundEnabled = await Promise.race([
+                getSoundPreference(),
+                new Promise((r) => setTimeout(() => r(swSoundEnabled), 250))
+            ]);
+        } catch (e) {
+            isSoundEnabled = swSoundEnabled;
+        }
+
+        // STRICT ENFORCEMENT: sound is ONLY allowed if user has explicitly turned it ON
+        const isSoundOn = (isSoundEnabled === true);
 
         const options = {
             body: payload.body || '',
@@ -204,13 +220,25 @@ self.addEventListener('push', (event) => {
             badge: payload.badge || '/icons/favicon-32x32.png',
             image: payload.image || undefined,
             tag: payload.tag || 'kamkaj-notification',
-            renotify: payload.renotify !== false,
             requireInteraction: payload.requireInteraction || false,
-            silent: !isSoundOn,
-            vibrate: isSoundOn ? (payload.vibrate || [100, 50, 100]) : [],
             data: Object.assign({ url: actionUrl }, payload.data || {}),
             actions: Array.isArray(payload.actions) ? payload.actions : []
         };
+
+        if (isSoundOn) {
+            options.silent = false;
+            options.renotify = payload.renotify !== false;
+            options.vibrate = payload.vibrate || [100, 50, 100];
+            if (payload.sound) {
+                options.sound = payload.sound;
+            }
+        } else {
+            // Absolute silence: strict silent flag, no vibration, no sound property, no renotify sound trigger
+            options.silent = true;
+            options.renotify = false;
+            delete options.vibrate;
+            delete options.sound;
+        }
 
         return self.registration.showNotification(title, options);
     })());

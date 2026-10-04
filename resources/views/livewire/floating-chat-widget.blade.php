@@ -124,7 +124,9 @@
 
             window.Echo.private(`chat.user.{{ auth()->id() }}`)
                 .listen('.message.sent', (e) => {
-                    this.playTing();
+                    if (this.isSoundNotificationEnabled()) {
+                        this.playTing();
+                    }
                     $wire.$refresh();
                     if (this.isOpen && this.activeConversationId === e.conversation_id) {
                         this.$nextTick(() => this.scrollToBottom());
@@ -158,7 +160,7 @@
                 .stopListening('.message.reacted')
                 .stopListening('.message.status')
                 .listen('.message.sent', (payload) => {
-                    if (payload.sender_id !== {{ auth()->id() }}) {
+                    if (payload.sender_id !== {{ auth()->id() }} && this.isSoundNotificationEnabled()) {
                         this.playTing();
                     }
                     $wire.incomingMessage(payload);
@@ -197,7 +199,14 @@
             }
         },
 
+        isSoundNotificationEnabled() {
+            return localStorage.getItem('kamkaj_push_sound') === '1';
+        },
+
         playTing() {
+            if (!this.isSoundNotificationEnabled()) {
+                return;
+            }
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
                 const now = ctx.currentTime;
