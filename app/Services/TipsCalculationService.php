@@ -166,7 +166,7 @@ class TipsCalculationService
                             $adjustedBase = $baseTipsAmount * $multiplier;
 
                             $rawCalculatedTips = ($adjustedBase * $effectivePercentage) / 100;
-                            $calculatedTips = $rawCalculatedTips > 0 ? (float) (ceil($rawCalculatedTips / 100) * 100) : 0.0;
+                            $calculatedTips = self::roundUpToNearest100($rawCalculatedTips);
 
                             $rawFinalDistribution = $rawCalculatedTips + $amountToAdjust - $amountToDeduct;
 
@@ -174,8 +174,8 @@ class TipsCalculationService
                                 $finalDistribution = 0.0;
                                 $unroundedAmount = 0.0;
                             } else {
-                                $finalDistribution = (float) (ceil($rawFinalDistribution / 100) * 100);
-                                $unroundedAmount = $finalDistribution;
+                                $finalDistribution = self::roundUpToNearest100($rawFinalDistribution);
+                                $unroundedAmount = round($rawFinalDistribution, 2);
                             }
                         }
 
@@ -256,8 +256,8 @@ class TipsCalculationService
                         } else {
                             $rawDist = ($baseTips * $tipsPct) / 100;
                         }
-                        $finalDist = $rawDist > 0 ? (float) (ceil($rawDist / 100) * 100) : 0.0;
-                        $unroundedAmount = $finalDist;
+                        $finalDist = $rawDist > 0 ? self::roundUpToNearest100($rawDist) : 0.0;
+                        $unroundedAmount = round($rawDist, 2);
                         $calculatedTips = $finalDist;
                     }
 
@@ -308,7 +308,7 @@ class TipsCalculationService
                 $baseAmount = (float) ($nonEmp->distribution_amount ?? 0);
 
                 $finalAmt = ($baseAmount * $tipsPct) / 100;
-                $roundedAmt = $finalAmt > 0 ? (float) (ceil($finalAmt / 100) * 100) : 0.0;
+                $roundedAmt = $finalAmt > 0 ? self::roundUpToNearest100($finalAmt) : 0.0;
 
                 TipsReportItem::create([
                     'tips_report_id' => $report->id,
@@ -340,7 +340,7 @@ class TipsCalculationService
                     'amount_to_deduct' => 0,
                     'percentage_to_deduct' => 0,
                     'calculated_tips' => $roundedAmt,
-                    'unrounded_amount' => $roundedAmt,
+                    'unrounded_amount' => round($finalAmt, 2),
                     'final_distribution_amount' => $roundedAmt,
                     'is_left_out' => false,
                 ]);
@@ -671,5 +671,22 @@ class TipsCalculationService
         $tipsPercentage = max(0.0, 100.0 - $penalty);
 
         return round($tipsPercentage, 2);
+    }
+
+    /**
+     * Round up to the nearest 100, mitigating IEEE 754 floating-point precision noise.
+     */
+    public static function roundUpToNearest100(float|int|string|null $amount): float
+    {
+        if ($amount === null || $amount === '') {
+            return 0.0;
+        }
+
+        $clean = round((float) $amount, 2);
+        if ($clean <= 0.0) {
+            return 0.0;
+        }
+
+        return (float) (ceil(round($clean / 100, 4)) * 100);
     }
 }

@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Services\TipsCalculationService;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -70,6 +72,45 @@ class TipsReportItem extends Model
             'final_distribution_amount' => 'decimal:2',
             'is_left_out' => 'boolean',
         ];
+    }
+
+    protected function finalDistributionAmount(): Attribute
+    {
+        return Attribute::make(
+            get: function ($value, $attributes) {
+                if (($attributes['is_blank'] ?? false) || $value === null) {
+                    return null;
+                }
+                $amt = isset($attributes['unrounded_amount']) && $attributes['unrounded_amount'] !== null
+                    ? (float) $attributes['unrounded_amount']
+                    : (float) $value;
+
+                return TipsCalculationService::roundUpToNearest100($amt);
+            },
+            set: fn ($value) => $value !== null ? TipsCalculationService::roundUpToNearest100($value) : null,
+        );
+    }
+
+    protected function calculatedTips(): Attribute
+    {
+        return Attribute::make(
+            get: function ($value, $attributes) {
+                if (($attributes['is_blank'] ?? false) || $value === null) {
+                    return null;
+                }
+
+                if (isset($attributes['unrounded_amount']) && $attributes['unrounded_amount'] !== null) {
+                    $rawCalc = (float) $attributes['unrounded_amount']
+                        - (float) ($attributes['amount_to_adjust'] ?? 0)
+                        + (float) ($attributes['amount_to_deduct'] ?? 0);
+
+                    return TipsCalculationService::roundUpToNearest100($rawCalc);
+                }
+
+                return TipsCalculationService::roundUpToNearest100($value);
+            },
+            set: fn ($value) => $value !== null ? TipsCalculationService::roundUpToNearest100($value) : null,
+        );
     }
 
     public function tipsReport(): BelongsTo

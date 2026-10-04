@@ -98,12 +98,13 @@ class ViewTipsReport extends ViewRecord implements HasTable
                 $q
                     ->where('is_left_out', true)
                     ->orWhere('department', 'Left Outs');
-            })->sum('final_distribution_amount');
+            })->get()->sum('final_distribution_amount');
         }
 
         return (float) $query
             ->where('department', $dept)
             ->where('is_left_out', false)
+            ->get()
             ->sum('final_distribution_amount');
     }
 
@@ -124,7 +125,7 @@ class ViewTipsReport extends ViewRecord implements HasTable
 
     public function getTotalToDistributeProperty(): float
     {
-        return (float) $this->record->items()->sum('final_distribution_amount');
+        return (float) $this->record->items->sum('final_distribution_amount');
     }
 
     public function getLeftOutsTotalProperty(): float
@@ -133,7 +134,7 @@ class ViewTipsReport extends ViewRecord implements HasTable
             ->where(function ($q) {
                 $q->where('is_left_out', true)
                     ->orWhere('department', 'Left Outs');
-            })->sum('final_distribution_amount');
+            })->get()->sum('final_distribution_amount');
     }
 
     public function getCompanyShouldAddProperty(): float
@@ -250,7 +251,7 @@ class ViewTipsReport extends ViewRecord implements HasTable
 
                 TextColumn::make('final_distribution_amount')
                     ->label('Actual Payout')
-                    ->formatStateUsing(fn ($record, $state) => ($record->is_blank || $state === null) ? '-' : number_format((float) (ceil((float) $state / 100) * 100), 0))
+                    ->formatStateUsing(fn ($record, $state) => ($record->is_blank || $state === null) ? '-' : number_format((float) $state, 0))
                     ->weight('bold')
                     ->badge()
                     ->color(fn ($record, $state) => ($record->is_blank || $state === null) ? 'gray' : (strtoupper((string) $record->tips_status) === 'HOLD' ? 'danger' : 'primary'))

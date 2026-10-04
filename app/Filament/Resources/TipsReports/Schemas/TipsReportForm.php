@@ -4,6 +4,7 @@ namespace App\Filament\Resources\TipsReports\Schemas;
 
 use App\Models\Employee;
 use App\Models\TipsDepartmentMapping;
+use App\Services\TipsCalculationService;
 use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -248,7 +249,7 @@ class TipsReportForm
                                                 if ($isHold) {
                                                     $set('final_distribution_amount', 0);
                                                 } else {
-                                                    $set('final_distribution_amount', $base > 0 ? (ceil($base / 100) * 100) : 0);
+                                                    $set('final_distribution_amount', TipsCalculationService::roundUpToNearest100($base));
                                                 }
 
                                                 $pageName = TipsDepartmentMapping::resolvePageName($emp->department_id, $emp->department?->name);
@@ -299,7 +300,7 @@ class TipsReportForm
                                             $base = (float) ($get('base_tips_amount') ?? 0);
                                             $pct = (float) ($get('tips_percentage') ?? 100);
                                             $raw = ($base * $pct) / 100;
-                                            $set('final_distribution_amount', $raw > 0 ? (ceil($raw / 100) * 100) : 0);
+                                            $set('final_distribution_amount', TipsCalculationService::roundUpToNearest100($raw));
                                         })
                                         ->columnSpan(1),
 
@@ -322,7 +323,7 @@ class TipsReportForm
                                             $base = (float) ($get('base_tips_amount') ?? 0);
                                             $pct = (float) ($get('tips_percentage') ?? 100);
                                             $raw = ($base * $pct) / 100;
-                                            $set('final_distribution_amount', $raw > 0 ? (ceil($raw / 100) * 100) : 0);
+                                            $set('final_distribution_amount', TipsCalculationService::roundUpToNearest100($raw));
                                         })
                                         ->columnSpan(1),
 

@@ -195,22 +195,19 @@ class TipsReportPrintController extends Controller
             'Back Office',
         ];
 
-        $itemsByDept = $report->items()
-            ->selectRaw('department, is_left_out, sum(final_distribution_amount) as total')
-            ->groupBy('department', 'is_left_out')
-            ->get();
+        $allItems = $report->items()->get();
 
-        $leftOutsTotal = (float) $itemsByDept->where('is_left_out', true)->sum('total');
-        if ($leftOutsTotal == 0) {
-            $leftOutsTotal = (float) $itemsByDept->where('department', 'Left Outs')->sum('total');
-        }
+        $leftOutsTotal = (float) $allItems->filter(function ($item) {
+            return (bool) $item->is_left_out || $item->department === 'Left Outs';
+        })->sum('final_distribution_amount');
 
         $deptTotals = [];
-        foreach ($itemsByDept->where('is_left_out', false) as $row) {
+        foreach ($allItems->where('is_left_out', false) as $row) {
             if ($row->department === 'Left Outs') {
                 continue;
             }
-            $deptTotals[$row->department] = (float) $row->total;
+            $deptName = (string) $row->department;
+            $deptTotals[$deptName] = ($deptTotals[$deptName] ?? 0.0) + (float) $row->final_distribution_amount;
         }
 
         $takeMatching = function (array $keywords) use (&$deptTotals): float {
