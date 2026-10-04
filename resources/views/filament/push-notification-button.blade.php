@@ -355,12 +355,31 @@
                             return;
                         }
 
-                        let sub = await reg.pushManager.getSubscription();
-                        if (!sub) {
+                        // Clear any old/mismatched subscription to prevent "push service error"
+                        try {
+                            const existingSub = await reg.pushManager.getSubscription();
+                            if (existingSub) {
+                                await existingSub.unsubscribe();
+                            }
+                        } catch (e) {
+                            console.warn('[WebPush] Error unsubscribing previous subscription:', e);
+                        }
+
+                        const appServerKey = this.urlBase64ToUint8Array(vapidKey);
+
+                        let sub;
+                        try {
                             sub = await reg.pushManager.subscribe({
                                 userVisibleOnly: true,
-                                applicationServerKey: this.urlBase64ToUint8Array(vapidKey)
+                                applicationServerKey: appServerKey
                             });
+                        } catch (subErr) {
+                            console.error('[WebPush] PushManager subscribe error:', subErr);
+                            const isBrave = (navigator.brave && typeof navigator.brave.isBrave === 'function') || navigator.userAgent.includes('Brave');
+                            if (isBrave) {
+                                throw new Error('Brave blocked push service. Go to brave://settings/privacy, enable "Use Google services for push messaging", then restart Brave.');
+                            }
+                            throw subErr;
                         }
 
                         await this.saveSubscription(sub, true);
