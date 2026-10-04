@@ -1,4 +1,37 @@
 <x-filament-panels::page class="chat-page-container">
+    <style>
+        /* Mobile Chat Native Responsive Optimization */
+        @media (max-width: 768px) {
+            .fi-page:has(.chat-page-container) .fi-header,
+            .chat-page-container > header {
+                display: none !important;
+            }
+            .fi-page:has(.chat-page-container) {
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .fi-page:has(.chat-page-container) > section,
+            .fi-page:has(.chat-page-container) .fi-page-content {
+                padding: 0 !important;
+                margin: 0 !important;
+                gap: 0 !important;
+                max-width: 100vw !important;
+            }
+            .chat-main-card {
+                height: calc(100dvh - 3.75rem) !important;
+                min-height: 0 !important;
+                border-radius: 0 !important;
+                border-width: 0 !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+                width: 100vw !important;
+                max-width: 100vw !important;
+            }
+            .chat-messages-feed {
+                overscroll-behavior: contain;
+            }
+        }
+    </style>
     <div 
         x-data="{
             activeConversationId: @entangle('activeConversationId'),
@@ -603,7 +636,7 @@
                 return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
             }
         }"
-        class="flex h-[calc(100vh-13rem)] min-h-[560px] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900"
+        class="chat-main-card flex h-[calc(100dvh-3.75rem)] md:h-[calc(100vh-13rem)] md:min-h-[560px] w-full overflow-hidden rounded-none md:rounded-2xl border-0 md:border border-gray-200 bg-white shadow-none md:shadow-xl dark:border-slate-800 dark:bg-slate-900"
     >
         <!-- Left: Conversations Sidebar -->
         <div class="flex w-full md:w-80 lg:w-96 flex-col border-r border-gray-200 dark:border-slate-800 {{ $activeConversationId ? 'hidden md:flex' : 'flex' }}">
@@ -798,12 +831,13 @@
                     $recipient = $isGroup ? null : $this->activeConversation->getRecipientUser(auth()->id());
                 @endphp
                 <!-- Chat Header -->
-                <div class="flex items-center justify-between border-b border-gray-200 bg-white/90 p-3.5 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90">
-                    <div class="flex items-center gap-3">
+                <div class="flex items-center justify-between gap-1.5 sm:gap-2 border-b border-gray-200 bg-white/95 px-2.5 py-2 sm:p-3.5 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
+                    <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                         <button
                             type="button"
                             wire:click="$set('activeConversationId', null)"
-                            class="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 md:hidden dark:text-gray-400 dark:hover:bg-slate-800"
+                            class="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 md:hidden dark:text-gray-400 dark:hover:bg-slate-800 flex-shrink-0"
+                            title="Back to conversations"
                         >
                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
@@ -812,11 +846,11 @@
 
                         <div class="relative flex-shrink-0">
                             @if($activeAvatar)
-                                <img src="{{ $activeAvatar }}" class="h-10 w-10 rounded-full object-cover shadow-sm border border-gray-100 dark:border-slate-700" />
+                                <img src="{{ $activeAvatar }}" class="h-9 w-9 sm:h-10 sm:w-10 rounded-full object-cover shadow-sm border border-gray-100 dark:border-slate-700" />
                             @else
-                                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-tr {{ $isGroup ? 'from-indigo-600 to-indigo-400' : 'from-amber-600 to-amber-400' }} text-sm font-bold text-white shadow-sm">
+                                <div class="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-gradient-to-tr {{ $isGroup ? 'from-indigo-600 to-indigo-400' : 'from-amber-600 to-amber-400' }} text-xs sm:text-sm font-bold text-white shadow-sm">
                                     @if($isGroup)
-                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                                         </svg>
                                     @else
@@ -833,45 +867,45 @@
                             @endif
                         </div>
 
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <h3 class="text-sm font-bold text-gray-900 dark:text-white">
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-1.5 min-w-0">
+                                <h3 class="truncate text-xs sm:text-sm font-bold text-gray-900 dark:text-white">
                                     {{ $activeName }}
                                 </h3>
                                 @if($isGroup)
                                     @php $myRole = $this->activeConversation->getUserRole(auth()->id()); @endphp
                                     @if($myRole === 'owner')
-                                        <span class="rounded-full bg-amber-500/20 px-2 py-0.5 text-[9px] font-extrabold text-amber-800 dark:bg-amber-400/20 dark:text-amber-300 ring-1 ring-amber-400/30">👑 Owner</span>
+                                        <span class="rounded-full bg-amber-500/20 px-1.5 py-0.2 text-[9px] font-extrabold text-amber-800 dark:bg-amber-400/20 dark:text-amber-300 ring-1 ring-amber-400/30 flex-shrink-0">👑 Owner</span>
                                     @elseif($myRole === 'admin')
-                                        <span class="rounded-full bg-indigo-500/20 px-2 py-0.5 text-[9px] font-extrabold text-indigo-800 dark:bg-indigo-400/20 dark:text-indigo-300 ring-1 ring-indigo-400/30">🛡️ Admin</span>
+                                        <span class="rounded-full bg-indigo-500/20 px-1.5 py-0.2 text-[9px] font-extrabold text-indigo-800 dark:bg-indigo-400/20 dark:text-indigo-300 ring-1 ring-indigo-400/30 flex-shrink-0">🛡️ Admin</span>
                                     @endif
                                 @endif
                             </div>
-                            <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400">
+                            <div class="flex items-center gap-1.5 text-[11px] sm:text-xs text-gray-500 dark:text-slate-400 truncate">
                                 @if($isGroup)
-                                    <span>{{ $this->activeConversation->participants->count() }} members</span>
+                                    <span class="flex-shrink-0">{{ $this->activeConversation->participants->count() }} members</span>
                                     @if($this->activeConversation->description)
-                                        <span>•</span>
-                                        <span class="truncate max-w-[200px] sm:max-w-[320px] italic">{{ $this->activeConversation->description }}</span>
+                                        <span class="flex-shrink-0">•</span>
+                                        <span class="truncate italic">{{ $this->activeConversation->description }}</span>
                                     @endif
                                 @else
                                     @if($recipient?->username)
-                                        <span>@<span>{{ $recipient->username }}</span></span>
-                                        <span>•</span>
+                                        <span class="truncate">@<span>{{ $recipient->username }}</span></span>
+                                        <span class="flex-shrink-0">•</span>
                                     @endif
-                                    <span x-show="isUserOnline({{ $recipient?->id ?? 0 }})" class="font-medium text-emerald-600 dark:text-emerald-400">Online</span>
-                                    <span x-show="!isUserOnline({{ $recipient?->id ?? 0 }})">Offline</span>
+                                    <span x-show="isUserOnline({{ $recipient?->id ?? 0 }})" class="font-medium text-emerald-600 dark:text-emerald-400 flex-shrink-0">Online</span>
+                                    <span x-show="!isUserOnline({{ $recipient?->id ?? 0 }})" class="flex-shrink-0">Offline</span>
                                 @endif
                             </div>
                         </div>
                     </div>
 
                     <!-- Header Actions (Read Receipts, Search & Group Settings) -->
-                    <div class="flex items-center gap-1.5">
+                    <div class="flex items-center gap-0.5 sm:gap-1.5 flex-shrink-0">
                         <button
                             type="button"
                             wire:click="toggleReadReceipts"
-                            class="rounded-xl p-2 transition {{ auth()->user()?->read_receipts_enabled ? 'text-sky-500 hover:bg-sky-50 dark:hover:bg-slate-800' : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800' }}"
+                            class="rounded-xl p-1.5 sm:p-2 transition {{ auth()->user()?->read_receipts_enabled ? 'text-sky-500 hover:bg-sky-50 dark:hover:bg-slate-800' : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800' }}"
                             title="{{ auth()->user()?->read_receipts_enabled ? 'Read receipts: ON (Blue ticks shared). Click to toggle off.' : 'Read receipts: OFF (Blue ticks hidden for both). Click to toggle on.' }}"
                         >
                             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -883,7 +917,7 @@
                         <button
                             type="button"
                             wire:click="toggleMessageSearch"
-                            class="rounded-xl p-2 text-gray-400 transition hover:bg-gray-100 hover:text-amber-600 dark:hover:bg-slate-800 dark:hover:text-amber-400 {{ $showMessageSearch ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400' : '' }}"
+                            class="rounded-xl p-1.5 sm:p-2 text-gray-400 transition hover:bg-gray-100 hover:text-amber-600 dark:hover:bg-slate-800 dark:hover:text-amber-400 {{ $showMessageSearch ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400' : '' }}"
                             title="Search in this conversation"
                         >
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -895,7 +929,7 @@
                             <button
                                 type="button"
                                 wire:click="openGroupSettings"
-                                class="rounded-xl p-2 text-gray-400 transition hover:bg-gray-100 hover:text-amber-600 dark:hover:bg-slate-800 dark:hover:text-amber-400"
+                                class="rounded-xl p-1.5 sm:p-2 text-gray-400 transition hover:bg-gray-100 hover:text-amber-600 dark:hover:bg-slate-800 dark:hover:text-amber-400"
                                 title="Group Settings & Members"
                             >
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -999,7 +1033,7 @@
                 <!-- Messages Feed -->
                 <div
                     x-ref="messagesFeed"
-                    class="flex-1 overflow-y-auto p-4 space-y-3"
+                    class="chat-messages-feed flex-1 overflow-y-auto p-2.5 sm:p-4 space-y-2 sm:space-y-3"
                 >
                     @php $messages = $this->messages; @endphp
                     @forelse($messages as $msg)
@@ -1013,18 +1047,18 @@
                             wire:key="msg-{{ $msg->id }}"
                             class="group relative flex flex-col {{ $isMe ? 'items-end' : 'items-start' }}"
                         >
-                            <div class="flex items-end gap-2 max-w-[85%] sm:max-w-[70%] {{ $isMe ? 'flex-row-reverse' : 'flex-row' }}">
+                            <div class="flex items-end gap-1.5 sm:gap-2 max-w-[88%] sm:max-w-[75%] {{ $isMe ? 'flex-row-reverse' : 'flex-row' }}">
                                 @if(!$isMe)
                                     @if($msg->sender?->avatar_url)
-                                        <img src="{{ $msg->sender->getFilamentAvatarUrl() }}" class="h-7 w-7 rounded-full object-cover flex-shrink-0 border border-gray-200 dark:border-slate-700" />
+                                        <img src="{{ $msg->sender->getFilamentAvatarUrl() }}" class="h-6 w-6 sm:h-7 sm:w-7 rounded-full object-cover flex-shrink-0 border border-gray-200 dark:border-slate-700" />
                                     @else
-                                        <div class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                        <div class="flex h-6 w-6 sm:h-7 sm:w-7 flex-shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                                             {{ strtoupper(substr($msg->sender?->name ?? 'U', 0, 1)) }}
                                         </div>
                                     @endif
                                 @endif
 
-                                <div class="relative rounded-2xl px-4 py-2.5 text-xs shadow-sm transition-all {{ $isMe ? 'bg-amber-600 text-white rounded-br-sm' : 'bg-white text-gray-900 border border-gray-200 dark:border-slate-700/80 dark:bg-slate-800 dark:text-slate-100 rounded-bl-sm' }} {{ !$isMe && $msg->mentionsUser(auth()->id()) ? 'ring-2 ring-amber-500/80 dark:ring-amber-400/80 border-amber-400/60 dark:border-amber-500/60 bg-amber-50/50 dark:bg-amber-950/20' : '' }}">
+                                <div class="relative rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-xs shadow-sm transition-all {{ $isMe ? 'bg-amber-600 text-white rounded-br-sm' : 'bg-white text-gray-900 border border-gray-200 dark:border-slate-700/80 dark:bg-slate-800 dark:text-slate-100 rounded-bl-sm' }} {{ !$isMe && $msg->mentionsUser(auth()->id()) ? 'ring-2 ring-amber-500/80 dark:ring-amber-400/80 border-amber-400/60 dark:border-amber-500/60 bg-amber-50/50 dark:bg-amber-950/20' : '' }}">
                                     <!-- Sender Name for Groups & Tagged You Badge -->
                                     @if($isGroup && !$isMe)
                                         <div class="flex items-center justify-between gap-2 mb-1">
@@ -1113,13 +1147,13 @@
                                             <div 
                                                 x-data="voicePlayer('{{ $msg->getAttachmentUrl() }}', $el)"
                                                 data-voice-player
-                                                class="my-1.5 flex items-center gap-2.5 rounded-2xl px-3 py-2 transition-all {{ $isMe ? 'bg-amber-700/60 text-white' : 'bg-gray-100 dark:bg-slate-700/70 text-gray-900 dark:text-white' }} min-w-[240px] max-w-[280px] sm:max-w-[320px] select-none"
+                                                class="my-1 flex items-center gap-2 sm:gap-2.5 rounded-2xl px-2.5 py-1.5 sm:px-3 sm:py-2 transition-all {{ $isMe ? 'bg-amber-700/60 text-white' : 'bg-gray-100 dark:bg-slate-700/70 text-gray-900 dark:text-white' }} min-w-[190px] sm:min-w-[240px] max-w-full select-none"
                                             >
                                                 <!-- Play/Pause Button -->
                                                 <button
                                                     type="button"
                                                     @click="togglePlay"
-                                                    class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full shadow-md transition-transform active:scale-95 {{ $isMe ? 'bg-white text-amber-700 hover:bg-amber-50' : 'bg-amber-600 text-white hover:bg-amber-500' }}"
+                                                    class="flex h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0 items-center justify-center rounded-full shadow-md transition-transform active:scale-95 {{ $isMe ? 'bg-white text-amber-700 hover:bg-amber-50' : 'bg-amber-600 text-white hover:bg-amber-500' }}"
                                                     title="Play / Pause"
                                                 >
                                                     <template x-if="!isPlaying">
@@ -1137,10 +1171,10 @@
                                                 <!-- Waveform & Info -->
                                                 <div class="flex-1 min-w-0">
                                                     <!-- Waveform visualizer bars with scrub -->
-                                                    <div class="flex items-center gap-[3px] h-6 cursor-pointer py-1" @click="handleBarClick($event)">
+                                                    <div class="flex items-center justify-between gap-[2px] sm:gap-[3px] h-6 cursor-pointer py-1 w-full overflow-hidden" @click="handleBarClick($event)">
                                                         <template x-for="(barHeight, idx) in bars" :key="idx">
                                                             <div 
-                                                                class="w-[3px] rounded-full transition-all duration-150"
+                                                                class="w-[2px] sm:w-[3px] rounded-full transition-all duration-150 flex-shrink-0"
                                                                 :style="`height: ${barHeight}px;`"
                                                                 :class="(idx / bars.length) <= (progress / 100) 
                                                                     ? '{{ $isMe ? 'bg-white' : 'bg-amber-600 dark:bg-amber-400' }}' 
@@ -1547,7 +1581,7 @@
                             }
                         }
                     }"
-                    class="relative border-t border-gray-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900"
+                    class="relative border-t border-gray-200 bg-white p-2 sm:p-3 dark:border-slate-800 dark:bg-slate-900 flex-shrink-0"
                 >
                     <!-- Mention Autocomplete Popover -->
                     @if($isGroup)
@@ -1694,8 +1728,8 @@
                                         : 'border-red-200/80 bg-gradient-to-r from-red-500/10 via-red-500/5 to-amber-500/10 dark:border-red-900/60 dark:bg-red-950/20'))"
                             style="display: none;"
                         >
-                            <div class="flex items-center justify-between gap-3 min-w-0">
-                                <div class="flex items-center gap-3 min-w-0 flex-1">
+                            <div class="flex items-center justify-between gap-1.5 sm:gap-3 min-w-0">
+                                <div class="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-1">
                                     <!-- Pulsing Recording Indicator -->
                                     <div class="relative flex h-3.5 w-3.5 items-center justify-center flex-shrink-0">
                                         <template x-if="!isRecordingEnded && !isPaused">
@@ -1712,10 +1746,10 @@
                                     </div>
 
                                     <!-- Waveform Bars: Live mic when recording, audio progress when previewing -->
-                                    <div class="flex flex-1 items-center gap-[2.5px] h-7 overflow-hidden">
+                                    <div class="flex flex-1 items-center gap-[1.5px] sm:gap-[2.5px] h-7 overflow-hidden min-w-0">
                                         <template x-for="(h, i) in vizBars" :key="i">
                                             <div 
-                                                class="w-[3px] rounded-full transition-all duration-75"
+                                                class="w-[2px] sm:w-[3px] rounded-full transition-all duration-75 flex-shrink-0"
                                                 :style="`height: ${h}px;`"
                                                 :class="isPlayingPreview
                                                     ? (i <= Math.floor(previewProgressRatio * vizBars.length)
@@ -1731,9 +1765,9 @@
                                     </div>
 
                                     <!-- Timer + Status indicator -->
-                                    <div class="flex items-center gap-2 flex-shrink-0">
+                                    <div class="flex items-center gap-1.5 flex-shrink-0">
                                         <span 
-                                            class="font-mono text-xs font-bold tabular-nums px-2 py-0.5 rounded-md"
+                                            class="font-mono text-[11px] sm:text-xs font-bold tabular-nums px-1.5 sm:px-2 py-0.5 rounded-md"
                                             :class="isPlayingPreview
                                                 ? 'text-indigo-700 bg-indigo-100 dark:text-indigo-300 dark:bg-indigo-900/50'
                                                 : (isRecordingEnded
@@ -1754,19 +1788,19 @@
                                     </div>
                                 </div>
 
-                                <div class="flex items-center gap-2 flex-shrink-0">
+                                <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
                                     <!-- Discard Recording Button -->
                                     <button
                                         type="button"
                                         @click="cancelRecording"
                                         :disabled="isUploadingVoice"
-                                        class="flex items-center gap-1.5 rounded-xl border border-red-200 bg-white/90 px-2.5 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 hover:border-red-300 dark:border-red-900/60 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-red-950/60 transition shadow-sm disabled:opacity-50"
+                                        class="flex items-center gap-1 rounded-xl border border-red-200 bg-white/90 px-2 sm:px-2.5 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 hover:border-red-300 dark:border-red-900/60 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-red-950/60 transition shadow-sm disabled:opacity-50 flex-shrink-0"
                                         title="Discard recording"
                                     >
                                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                         </svg>
-                                        <span class="text-xs">Discard</span>
+                                        <span class="text-xs hidden sm:inline">Discard</span>
                                     </button>
 
                                     <!-- Play / Pause Preview Button (when paused or recording ended) -->
@@ -1774,7 +1808,7 @@
                                         <button
                                             type="button"
                                             @click="togglePlayPreview"
-                                            class="flex h-8 w-8 items-center justify-center rounded-full border shadow-sm transition active:scale-95"
+                                            class="flex h-8 w-8 items-center justify-center rounded-full border shadow-sm transition active:scale-95 flex-shrink-0"
                                             :class="isPlayingPreview 
                                                 ? 'bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700' 
                                                 : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200'"
@@ -1798,14 +1832,14 @@
                                         <button
                                             type="button"
                                             @click="resumeRecording"
-                                            class="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-xl border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-950/60 dark:text-amber-200 text-xs font-semibold shadow-sm transition active:scale-95"
+                                            class="inline-flex items-center gap-1 h-8 px-2 sm:px-2.5 rounded-xl border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-950/60 dark:text-amber-200 text-xs font-semibold shadow-sm transition active:scale-95 flex-shrink-0"
                                             title="Resume recording"
                                         >
                                             <svg class="h-3.5 w-3.5 text-red-600" fill="currentColor" viewBox="0 0 24 24">
                                                 <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
                                                 <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
                                             </svg>
-                                            <span>Resume</span>
+                                            <span class="hidden sm:inline">Resume</span>
                                         </button>
                                     </template>
 
@@ -1814,7 +1848,7 @@
                                         <button
                                             type="button"
                                             @click="pauseRecording"
-                                            class="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-300 transition active:scale-95"
+                                            class="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-300 transition active:scale-95 flex-shrink-0"
                                             title="Pause recording"
                                         >
                                             <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
@@ -1828,7 +1862,7 @@
                                         type="button"
                                         @click="stopAndSendRecording"
                                         :disabled="isUploadingVoice"
-                                        class="inline-flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-bold text-white shadow-md transition-transform active:scale-95 disabled:opacity-75 disabled:cursor-not-allowed"
+                                        class="inline-flex items-center gap-1 sm:gap-1.5 rounded-xl px-2.5 sm:px-3.5 py-1.5 text-xs font-bold text-white shadow-md transition-transform active:scale-95 disabled:opacity-75 disabled:cursor-not-allowed flex-shrink-0"
                                         :class="isRecordingEnded 
                                             ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500' 
                                             : 'bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500'"
@@ -1845,7 +1879,8 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                                             </svg>
                                         </template>
-                                        <span x-text="isUploadingVoice ? 'Sending...' : 'Send Voice'">Send Voice</span>
+                                        <span class="hidden sm:inline" x-text="isUploadingVoice ? 'Sending...' : 'Send Voice'">Send Voice</span>
+                                        <span class="sm:hidden" x-text="isUploadingVoice ? '...' : 'Send'">Send</span>
                                     </button>
                                 </div>
                             </div>
@@ -1866,7 +1901,7 @@
                             </div>
                         </div>
 
-                        <form x-show="!isRecording" wire:submit.prevent="sendMessage" class="flex items-center gap-2">
+                        <form x-show="!isRecording" wire:submit.prevent="sendMessage" class="flex items-center gap-1.5 sm:gap-2 w-full min-w-0">
                             <!-- Attachment File Input (Hidden) -->
                             <input
                                 type="file"
@@ -1879,7 +1914,7 @@
                             <button
                                 type="button"
                                 @click="$refs.fileInput.click()"
-                                class="rounded-xl p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition"
+                                class="flex-shrink-0 rounded-xl p-1.5 sm:p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition"
                                 title="Attach image or file"
                             >
                                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1891,7 +1926,7 @@
                             <button
                                 type="button"
                                 @click="startRecording"
-                                class="rounded-xl p-2 text-gray-400 hover:bg-gray-100 hover:text-amber-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-amber-400 transition"
+                                class="flex-shrink-0 rounded-xl p-1.5 sm:p-2 text-gray-400 hover:bg-gray-100 hover:text-amber-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-amber-400 transition"
                                 title="Record voice message"
                             >
                                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1904,7 +1939,7 @@
                                 <button
                                     type="button"
                                     @click="openMentionMenu"
-                                    class="rounded-xl p-2 text-gray-400 hover:bg-gray-100 hover:text-amber-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-amber-400 transition"
+                                    class="flex-shrink-0 rounded-xl p-1.5 sm:p-2 text-gray-400 hover:bg-gray-100 hover:text-amber-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-amber-400 transition"
                                     title="Mention group member (@all or @member)"
                                 >
                                     <span class="flex h-5 w-5 items-center justify-center text-sm font-black leading-none select-none">@</span>
@@ -1912,7 +1947,7 @@
                             @endif
 
                             <!-- Text Input -->
-                            <div class="relative flex-1">
+                            <div class="relative flex-1 min-w-0">
                                 <input
                                     type="text"
                                     x-ref="messageInput"
@@ -1921,9 +1956,9 @@
                                     @click="detectMention"
                                     @keyup="detectMention"
                                     @keydown="handleInputKeyDown"
-                                    placeholder="{{ $isGroup ? 'Write a message... (Type @ to mention, Enter to send)' : 'Write a message... (Press Enter to send)' }}"
+                                    placeholder="{{ $isGroup ? 'Message (@ to mention)...' : 'Write a message...' }}"
                                     autocomplete="off"
-                                    class="chat-input-field w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 dark:border-slate-700/80 dark:bg-slate-800 dark:text-gray-100 dark:placeholder-slate-400"
+                                    class="chat-input-field w-full rounded-xl border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 dark:border-slate-700/80 dark:bg-slate-800 dark:text-gray-100 dark:placeholder-slate-400"
                                 />
                             </div>
 
@@ -1931,7 +1966,7 @@
                             <button
                                 type="submit"
                                 wire:loading.attr="disabled"
-                                class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-amber-600 text-white shadow-md transition hover:bg-amber-500 active:scale-95 disabled:opacity-50"
+                                class="flex-shrink-0 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-amber-600 text-white shadow-md transition hover:bg-amber-500 active:scale-95 disabled:opacity-50"
                             >
                                 <svg wire:loading.remove wire:target="sendMessage,attachment" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>

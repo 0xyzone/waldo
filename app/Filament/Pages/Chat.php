@@ -40,6 +40,16 @@ class Chat extends Page
 
     protected string $view = 'filament.pages.chat';
 
+    public function getHeading(): string
+    {
+        return '';
+    }
+
+    public function getBreadcrumbs(): array
+    {
+        return [];
+    }
+
     #[Url(as: 'c')]
     public ?int $activeConversationId = null;
 

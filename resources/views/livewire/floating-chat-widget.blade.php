@@ -593,7 +593,7 @@
         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
         x-transition:leave-end="opacity-0 translate-y-4 scale-95"
         style="display: none;"
-        class="mb-3 flex h-[540px] max-h-[84vh] w-[370px] sm:w-[410px] flex-col overflow-hidden rounded-2xl border border-gray-200/90 bg-white shadow-2xl backdrop-blur-xl dark:border-gray-800 dark:bg-gray-900"
+        class="mb-3 flex h-[540px] max-h-[84vh] w-[calc(100vw-1.5rem)] sm:w-[410px] max-w-[410px] flex-col overflow-hidden rounded-2xl border border-gray-200/90 bg-white shadow-2xl backdrop-blur-xl dark:border-gray-800 dark:bg-gray-900"
     >
         <!-- Window Top Bar -->
         <div class="flex items-center justify-between border-b border-gray-100 bg-gray-50/90 px-3.5 py-2.5 dark:border-gray-800/80 dark:bg-gray-800/80">
@@ -1656,7 +1656,7 @@
                         <button
                             type="button"
                             @click="$refs.floatFileInput.click()"
-                            class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-200 transition"
+                            class="flex-shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-200 transition"
                             title="Attach file or photo"
                         >
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1668,7 +1668,7 @@
                         <button
                             type="button"
                             @click="startRecording"
-                            class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-amber-600 dark:hover:bg-gray-800 dark:hover:text-amber-400 transition"
+                            class="flex-shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-amber-600 dark:hover:bg-gray-800 dark:hover:text-amber-400 transition"
                             title="Record voice message"
                         >
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1681,7 +1681,7 @@
                             <button
                                 type="button"
                                 @click="openMentionMenu"
-                                class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-amber-600 dark:hover:bg-gray-800 dark:hover:text-amber-400 transition"
+                                class="flex-shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-amber-600 dark:hover:bg-gray-800 dark:hover:text-amber-400 transition"
                                 title="Mention group member (@all or @member)"
                             >
                                 <span class="flex h-4 w-4 items-center justify-center text-xs font-black leading-none select-none">@</span>
@@ -1689,17 +1689,19 @@
                         @endif
 
                         <!-- Input Field (Dark Mode bullet-proof) -->
-                        <input
-                            type="text"
-                            x-ref="floatMessageInput"
-                            wire:model="messageText"
-                            @input="detectMention"
-                            @click="detectMention"
-                            @keyup="detectMention"
-                            @keydown="handleFloatInputKeyDown"
-                            placeholder="{{ $isFloatingGroup ? 'Write a message... (Type @ to mention)' : 'Write a message...' }}"
-                            class="chat-input-field w-full rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
-                        />
+                        <div class="relative flex-1 min-w-0">
+                            <input
+                                type="text"
+                                x-ref="floatMessageInput"
+                                wire:model="messageText"
+                                @input="detectMention"
+                                @click="detectMention"
+                                @keyup="detectMention"
+                                @keydown="handleFloatInputKeyDown"
+                                placeholder="{{ $isFloatingGroup ? 'Write a message... (Type @ to mention)' : 'Write a message...' }}"
+                                class="chat-input-field w-full rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
+                            />
+                        </div>
 
                         <!-- Send Button -->
                         <button
