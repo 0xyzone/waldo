@@ -425,7 +425,7 @@
                 </div>
 
                 <p class="memo-preamble">
-                    The Human Resources Department is pleased to congratulate the following {{ Str::plural('employee', $selectedCount) }} on their well-deserved {{ Str::plural('promotion', $selectedCount) }}. We appreciate your dedication and valuable contributions to the organization.
+                    The Management is pleased to congratulate the following {{ Str::plural('employee', $selectedCount) }} on their well-deserved {{ Str::plural('promotion', $selectedCount) }}. We appreciate your dedication and valuable contributions to the organization.
                 </p>
 
                 <table class="promotions-table">
@@ -434,7 +434,7 @@
                             <th class="col-code">Emp. Code</th>
                             <th class="col-name">Name</th>
                             <th class="col-date">Promotion Date</th>
-                            <th class="col-changes">Change Types</th>
+                            <th class="col-changes">Changes</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -475,7 +475,7 @@
                     <div class="signature-row">
                         <div class="signature-box">
                             <div class="signature-line"></div>
-                            <div class="signer-title">Human Resources Department</div>
+                            <div class="signer-title">Waldo Dynasty Entertainment Pvt. Ltd.</div>
                             <div class="signer-sub">Authorized Signatory</div>
                         </div>
                     </div>
