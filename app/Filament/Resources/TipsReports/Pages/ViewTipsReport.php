@@ -248,14 +248,9 @@ class ViewTipsReport extends ViewRecord implements HasTable
                     ->numeric(2)
                     ->color('danger'),
 
-                TextColumn::make('unrounded_amount')
-                    ->label('Actual Payout')
-                    ->formatStateUsing(fn ($record, $state) => ($record->is_blank || $state === null) ? '-' : ($state == (int) $state ? number_format((float) $state, 0) : number_format((float) $state, 2)))
-                    ->sortable(),
-
                 TextColumn::make('final_distribution_amount')
-                    ->label('Final Payout (Rounded)')
-                    ->formatStateUsing(fn ($record, $state) => ($record->is_blank || $state === null) ? '-' : number_format((float) $state, 0))
+                    ->label('Actual Payout')
+                    ->formatStateUsing(fn ($record, $state) => ($record->is_blank || $state === null) ? '-' : number_format((float) (ceil((float) $state / 100) * 100), 0))
                     ->weight('bold')
                     ->badge()
                     ->color(fn ($record, $state) => ($record->is_blank || $state === null) ? 'gray' : (strtoupper((string) $record->tips_status) === 'HOLD' ? 'danger' : 'primary'))

@@ -169,12 +169,13 @@ class TipsCalculationService
                             $calculatedTips = $rawCalculatedTips > 0 ? (float) (ceil($rawCalculatedTips / 100) * 100) : 0.0;
 
                             $rawFinalDistribution = $rawCalculatedTips + $amountToAdjust - $amountToDeduct;
-                            $unroundedAmount = max(0.0, round($rawFinalDistribution, 2));
 
                             if ($rawFinalDistribution <= 0) {
                                 $finalDistribution = 0.0;
+                                $unroundedAmount = 0.0;
                             } else {
                                 $finalDistribution = (float) (ceil($rawFinalDistribution / 100) * 100);
+                                $unroundedAmount = $finalDistribution;
                             }
                         }
 
@@ -255,8 +256,8 @@ class TipsCalculationService
                         } else {
                             $rawDist = ($baseTips * $tipsPct) / 100;
                         }
-                        $unroundedAmount = max(0.0, round($rawDist, 2));
                         $finalDist = $rawDist > 0 ? (float) (ceil($rawDist / 100) * 100) : 0.0;
+                        $unroundedAmount = $finalDist;
                         $calculatedTips = $finalDist;
                     }
 
@@ -339,7 +340,7 @@ class TipsCalculationService
                     'amount_to_deduct' => 0,
                     'percentage_to_deduct' => 0,
                     'calculated_tips' => $roundedAmt,
-                    'unrounded_amount' => $finalAmt,
+                    'unrounded_amount' => $roundedAmt,
                     'final_distribution_amount' => $roundedAmt,
                     'is_left_out' => false,
                 ]);
