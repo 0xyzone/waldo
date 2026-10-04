@@ -7,6 +7,7 @@ use App\Http\Controllers\FontController;
 use App\Http\Controllers\IdCardPrintReportPrintController;
 use App\Http\Controllers\LetterController;
 use App\Http\Controllers\LetterGlobalVariableController;
+use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SalaryIncrementRequestPrintController;
 use App\Http\Controllers\TipsReportPrintController;
@@ -98,3 +99,10 @@ Route::get('/salary-increment-requests/{record}/print', [SalaryIncrementRequestP
 // API Documentation & Testing Console
 Route::get('/api-docs', [ApiDocsController::class, 'index'])->name('api.docs');
 Route::get('/api-docs/spec', [ApiDocsController::class, 'spec'])->name('api.docs.spec');
+
+// Push Notifications
+Route::middleware('auth')->group(function () {
+    Route::post('/push-subscriptions', [PushSubscriptionController::class, 'store'])->name('push.store');
+    Route::post('/push-subscriptions/delete', [PushSubscriptionController::class, 'destroy'])->name('push.destroy');
+    Route::post('/push-subscriptions/test', [PushSubscriptionController::class, 'test'])->name('push.test');
+});

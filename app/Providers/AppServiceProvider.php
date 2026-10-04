@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Events\MessageSent;
+use App\Listeners\SendWebPushOnChatMessage;
+use App\Listeners\SendWebPushOnDatabaseNotification;
 use App\Models\BiometricAllotment;
 use App\Models\Employee;
 use App\Observers\BiometricAllotmentObserver;
@@ -10,7 +13,9 @@ use Filament\Auth\Notifications\VerifyEmail;
 use Filament\Facades\Filament;
 use Filament\Support\Facades\FilamentView;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\ServiceProvider;
@@ -32,6 +37,14 @@ class AppServiceProvider extends ServiceProvider
     {
         error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
 
+        if (! getenv('OPENSSL_CONF')) {
+            $defaultConf = 'D:\\wamp64\\bin\\php\\php8.4.15\\extras\\ssl\\openssl.cnf';
+            if (file_exists($defaultConf)) {
+                putenv('OPENSSL_CONF='.$defaultConf);
+                $_ENV['OPENSSL_CONF'] = $defaultConf;
+            }
+        }
+
         if (str_starts_with(config('app.url'), 'https://')) {
             URL::forceScheme('https');
         }
@@ -39,6 +52,9 @@ class AppServiceProvider extends ServiceProvider
         Model::unguard();
         Employee::observe(EmployeeObserver::class);
         BiometricAllotment::observe(BiometricAllotmentObserver::class);
+
+        Event::listen(NotificationSent::class, SendWebPushOnDatabaseNotification::class);
+        Event::listen(MessageSent::class, SendWebPushOnChatMessage::class);
 
         // Inject custom CSS to style employees table rows based on status
         FilamentView::registerRenderHook(

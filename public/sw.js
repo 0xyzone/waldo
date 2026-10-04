@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kamkaj-pwa-v1.0.0';
+const CACHE_NAME = 'kamkaj-pwa-v1.1.0';
 const OFFLINE_URL = '/offline.html';
 
 const PRECACHE_ASSETS = [
@@ -120,3 +120,68 @@ self.addEventListener('fetch', (event) => {
         );
     }
 });
+
+// Push notification received in background
+self.addEventListener('push', (event) => {
+    let payload = {};
+    if (event.data) {
+        try {
+            payload = event.data.json();
+        } catch (e) {
+            payload = {
+                title: 'Kamkaj Notification',
+                body: event.data.text()
+            };
+        }
+    }
+
+    const title = payload.title || 'Kamkaj Notification';
+    const actionUrl = payload.action_url || (payload.data && payload.data.url) || '/kamkaj';
+
+    const options = {
+        body: payload.body || '',
+        icon: payload.icon || '/icons/icon-192x192.png',
+        badge: payload.badge || '/icons/favicon-32x32.png',
+        image: payload.image || undefined,
+        tag: payload.tag || 'kamkaj-notification',
+        renotify: payload.renotify !== false,
+        requireInteraction: payload.requireInteraction || false,
+        vibrate: payload.vibrate || [100, 50, 100],
+        data: Object.assign({ url: actionUrl }, payload.data || {}),
+        actions: Array.isArray(payload.actions) ? payload.actions : []
+    };
+
+    event.waitUntil(
+        self.registration.showNotification(title, options)
+    );
+});
+
+// User clicked on a notification
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+
+    const targetUrl = (event.notification.data && event.notification.data.url) 
+        ? event.notification.data.url 
+        : '/kamkaj';
+
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+            // If already open, focus it and navigate
+            for (let i = 0; i < clientList.length; i++) {
+                const client = clientList[i];
+                if (client.url.includes('/kamkaj') && 'focus' in client) {
+                    if ('navigate' in client && !client.url.includes(targetUrl)) {
+                        client.navigate(targetUrl);
+                    }
+                    return client.focus();
+                }
+            }
+
+            // Otherwise open a new window
+            if (clients.openWindow) {
+                return clients.openWindow(targetUrl);
+            }
+        })
+    );
+});
+

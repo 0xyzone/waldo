@@ -10,6 +10,8 @@
 <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('icons/favicon-16x16.png') }}">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#d97706">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f172a">
+<meta name="vapid-public-key" content="{{ config('webpush.vapid.public_key') }}">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 
 <script>
     (function () {

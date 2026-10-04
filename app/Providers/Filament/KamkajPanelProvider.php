@@ -232,6 +232,10 @@ class KamkajPanelProvider extends PanelProvider
             )
             ->renderHook(
                 PanelsRenderHook::USER_MENU_BEFORE,
+                fn () => auth()->check() ? view('filament.push-notification-button') : ''
+            )
+            ->renderHook(
+                PanelsRenderHook::USER_MENU_BEFORE,
                 fn () => auth()->check() ? new HtmlString(Blade::render('@livewire(\App\Livewire\WebsocketStatusIndicator::class)')) : ''
             )
             ->renderHook(

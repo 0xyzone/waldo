@@ -55,7 +55,7 @@ class MessageSent implements ShouldBroadcastNow
     /**
      * @var array<int>
      */
-    protected array $recipientIds = [];
+    public array $recipientIds = [];
 
     public function __construct(Message $message, array $mentionedUserIds = [])
     {
