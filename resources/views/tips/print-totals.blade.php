@@ -137,7 +137,7 @@
                     @endif
 
                     @if($index === $span2Start)
-                        <td rowspan="{{ $span2Count }}" class="stat-label">Adjustments / Left Outs</td>
+                        <td rowspan="{{ $span2Count }}" class="stat-label">Left Outs</td>
                         <td rowspan="{{ $span2Count }}" class="stat-value">{{ number_format($adjustmentsLeftOuts, 0, '', '') }}</td>
                     @endif
 

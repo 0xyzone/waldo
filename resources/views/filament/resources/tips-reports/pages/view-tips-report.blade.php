@@ -56,15 +56,15 @@
             </div>
             <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center justify-between">
                 <span>Subsidy to cover payout</span>
-                <span class="text-gray-400">Collection + Adj - Distribute</span>
+                <span class="text-gray-400">Collection + Left Outs - Distribute</span>
             </div>
         </div>
 
-        {{-- Card 4: Adjustments / Left Outs --}}
+        {{-- Card 4: Left Outs --}}
         <div class="fi-section rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
-            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Adjustments / Left Outs</span>
+            <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Left Outs</span>
             <div class="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">
-                Rs. {{ number_format($this->adjustmentsAndLeftOuts, 0) }}
+                Rs. {{ number_format($this->leftOutsTotal, 0) }}
             </div>
             <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center justify-between">
                 <span>{{ $this->leftOutsCount }} Left Out Staff</span>

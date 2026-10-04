@@ -249,13 +249,9 @@ class TipsReportPrintController extends Controller
 
         $totalToDistribute = collect($deptList)->sum('amount');
 
-        $adjustmentsTotal = (float) $report->items()->sum('amount_to_adjust') - (float) $report->items()->sum('amount_to_deduct');
-        $adjustmentsLeftOuts = $leftOutsTotal + max(0, $adjustmentsTotal);
-        if ($adjustmentsLeftOuts == 0 && $leftOutsTotal > 0) {
-            $adjustmentsLeftOuts = $leftOutsTotal;
-        }
+        $adjustmentsLeftOuts = $leftOutsTotal;
 
-        $companyShouldAdd = abs($actualTotalCollection + $adjustmentsLeftOuts - $totalToDistribute);
+        $companyShouldAdd = abs($actualTotalCollection + $leftOutsTotal - $totalToDistribute);
 
         $n = count($deptList);
         if ($n === 9) {

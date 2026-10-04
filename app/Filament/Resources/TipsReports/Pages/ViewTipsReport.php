@@ -127,25 +127,23 @@ class ViewTipsReport extends ViewRecord implements HasTable
         return (float) $this->record->items()->sum('final_distribution_amount');
     }
 
-    public function getCompanyShouldAddProperty(): float
+    public function getLeftOutsTotalProperty(): float
     {
-        return (float) abs($this->actualCollection + $this->adjustmentsAndLeftOuts - $this->totalToDistribute);
-    }
-
-    public function getAdjustmentsAndLeftOutsProperty(): float
-    {
-        $leftOuts = (float) TipsReportItem::where('tips_report_id', $this->record->id)
+        return (float) TipsReportItem::where('tips_report_id', $this->record->id)
             ->where(function ($q) {
                 $q->where('is_left_out', true)
                     ->orWhere('department', 'Left Outs');
             })->sum('final_distribution_amount');
+    }
 
-        $adjustmentsTotal = (float) TipsReportItem::where('tips_report_id', $this->record->id)->sum('amount_to_adjust')
-            - (float) TipsReportItem::where('tips_report_id', $this->record->id)->sum('amount_to_deduct');
+    public function getCompanyShouldAddProperty(): float
+    {
+        return (float) abs($this->actualCollection + $this->leftOutsTotal - $this->totalToDistribute);
+    }
 
-        $result = $leftOuts + max(0.0, $adjustmentsTotal);
-
-        return $result > 0 ? $result : $leftOuts;
+    public function getAdjustmentsAndLeftOutsProperty(): float
+    {
+        return $this->leftOutsTotal;
     }
 
     public function getLeftOutsCountProperty(): int
