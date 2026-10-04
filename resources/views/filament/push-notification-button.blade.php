@@ -39,6 +39,20 @@
         ></span>
     </button>
 
+    <!-- Mobile Backdrop -->
+    <div
+        x-show="showMenu"
+        x-cloak
+        x-transition:enter="transition ease-out duration-150"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-100"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        @click="showMenu = false"
+        class="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs sm:hidden"
+    ></div>
+
     <!-- Dropdown Popover Menu -->
     <div
         x-show="showMenu"
@@ -50,21 +64,33 @@
         x-transition:leave-end="opacity-0 scale-95"
         @click.outside="showMenu = false"
         x-cloak
-        class="absolute right-0 top-full mt-2 w-80 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 text-left text-xs"
+        class="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-16 sm:top-full mt-1 sm:mt-2 w-auto sm:w-80 max-w-sm sm:max-w-none mx-auto sm:mx-0 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-xl shadow-2xl sm:shadow-xl z-50 text-left text-xs"
     >
         <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-slate-800">
             <div class="flex items-center gap-2">
                 <span
-                    class="w-2.5 h-2.5 rounded-full"
+                    class="w-2.5 h-2.5 rounded-full shrink-0"
                     :class="isSubscribed ? 'bg-emerald-500' : (permission === 'denied' ? 'bg-rose-500' : 'bg-slate-400')"
                 ></span>
                 <span class="font-semibold text-slate-800 dark:text-slate-100 text-sm">Device Push Alerts</span>
             </div>
-            <span
-                class="px-1.5 py-0.5 text-[10px] font-semibold uppercase rounded tracking-wider"
-                :class="isSubscribed ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : (permission === 'denied' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' : 'bg-slate-500/10 text-slate-500')"
-                x-text="isSubscribed ? 'Active' : (permission === 'denied' ? 'Blocked' : 'Off')"
-            ></span>
+            <div class="flex items-center gap-2">
+                <span
+                    class="px-1.5 py-0.5 text-[10px] font-semibold uppercase rounded tracking-wider"
+                    :class="isSubscribed ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : (permission === 'denied' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' : 'bg-slate-500/10 text-slate-500')"
+                    x-text="isSubscribed ? 'Active' : (permission === 'denied' ? 'Blocked' : 'Off')"
+                ></span>
+                <button
+                    type="button"
+                    @click="showMenu = false"
+                    class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    title="Close"
+                >
+                    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
         </div>
 
         <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-3 leading-relaxed">
