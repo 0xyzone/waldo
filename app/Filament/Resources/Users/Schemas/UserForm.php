@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Users\Schemas;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
 class UserForm
@@ -20,7 +21,12 @@ class UserForm
                     ->disk('public')
                     ->directory('avatars')
                     ->maxSize(2048)
+                    ->imageEditor()
+                    ->circleCropper()
                     ->alignCenter(),
+                Toggle::make('read_receipts_enabled')
+                    ->label('Read Receipts (Blue Ticks)')
+                    ->default(true),
                 TextInput::make('name')
                     ->required(),
                 TextInput::make('username')

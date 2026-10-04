@@ -6,6 +6,7 @@ use App\Events\MessageDeleted;
 use App\Events\MessagePinned;
 use App\Events\MessageReacted;
 use App\Events\MessageSent;
+use App\Events\MessageStatusUpdated;
 use App\Models\Conversation;
 use App\Models\ConversationParticipant;
 use App\Models\Message;
@@ -108,11 +109,17 @@ class FloatingChatWidget extends Component
      */
     public array $selectedForwardConversationIds = [];
 
+    public function mount(): void
+    {
+        $this->markPendingConversationsDelivered();
+    }
+
     public function toggleWidget(): void
     {
         $this->isOpen = ! $this->isOpen;
 
         if ($this->isOpen) {
+            $this->markPendingConversationsDelivered();
             $this->activeConversationId = null;
             $this->showNewChatModal = false;
             $this->showGroupSettingsModal = false;
@@ -141,6 +148,7 @@ class FloatingChatWidget extends Component
         $this->showNewChatModal = false;
 
         $conversation->markAsReadFor(auth()->id());
+        $this->safeBroadcast(new MessageStatusUpdated($id, auth()->id(), 'seen'));
 
         $this->dispatch('floating-conversation-changed', conversationId: $id);
         $this->dispatch('scroll-floating-chat');
@@ -576,15 +584,70 @@ class FloatingChatWidget extends Component
         $this->messageSearch = '';
     }
 
+    public function markPendingConversationsDelivered(): void
+    {
+        $userId = auth()->id();
+        if (! $userId) {
+            return;
+        }
+
+        $conversations = Conversation::query()
+            ->whereHas('participants', fn ($q) => $q->where('user_id', $userId))
+            ->with('participants')
+            ->get();
+
+        foreach ($conversations as $conv) {
+            $conv->markAsDeliveredFor($userId);
+            $this->safeBroadcast(new MessageStatusUpdated($conv->id, $userId, 'delivered'));
+        }
+    }
+
+    public function markConversationDelivered(int $conversationId): void
+    {
+        $userId = auth()->id();
+        if (! $userId) {
+            return;
+        }
+
+        $conv = Conversation::find($conversationId);
+        if ($conv) {
+            $conv->markAsDeliveredFor($userId);
+            $this->safeBroadcast(new MessageStatusUpdated($conversationId, $userId, 'delivered'));
+        }
+    }
+
     public function incomingMessage(array $payload): void
     {
         $convId = (int) ($payload['conversation_id'] ?? 0);
+        $userId = auth()->id();
 
         if ($this->isOpen && $convId === $this->activeConversationId) {
             $conversation = Conversation::find($convId);
-            $conversation?->markAsReadFor(auth()->id());
+            $conversation?->markAsReadFor($userId);
+            $this->safeBroadcast(new MessageStatusUpdated($convId, $userId, 'seen'));
             $this->dispatch('scroll-floating-chat');
+        } elseif ($convId) {
+            $this->markConversationDelivered($convId);
         }
+    }
+
+    public function toggleReadReceipts(): void
+    {
+        $user = auth()->user();
+        if (! $user) {
+            return;
+        }
+
+        $user->update([
+            'read_receipts_enabled' => ! $user->read_receipts_enabled,
+        ]);
+
+        Notification::make()
+            ->title($user->read_receipts_enabled ? 'Read receipts enabled' : 'Read receipts disabled')
+            ->body($user->read_receipts_enabled ? 'Others can see when you have read messages, and you can see their read status.' : 'If turned off, you won\'t send or receive Read receipts.')
+            ->icon($user->read_receipts_enabled ? 'heroicon-o-check-badge' : 'heroicon-o-eye-slash')
+            ->iconColor($user->read_receipts_enabled ? 'success' : 'gray')
+            ->send();
     }
 
     public function getConversations()
@@ -653,7 +716,7 @@ class FloatingChatWidget extends Component
         }
 
         $query = Message::where('conversation_id', $this->activeConversationId)
-            ->with(['sender', 'pinnedBy', 'reactions.user', 'replyTo.sender'])
+            ->with(['sender', 'pinnedBy', 'reactions.user', 'replyTo.sender', 'conversation.participants.user'])
             ->orderBy('created_at', 'asc');
 
         if (filled($this->messageSearch)) {

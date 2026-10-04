@@ -19,6 +19,7 @@ class Message extends Model
         'sender_id',
         'body',
         'is_forwarded',
+        'delivered_at',
         'type',
         'attachment_path',
         'attachment_name',
@@ -36,12 +37,93 @@ class Message extends Model
     {
         return [
             'is_forwarded' => 'boolean',
+            'delivered_at' => 'datetime',
             'is_deleted' => 'boolean',
             'deleted_at' => 'datetime',
             'is_pinned' => 'boolean',
             'pinned_at' => 'datetime',
             'pinned_until' => 'datetime',
         ];
+    }
+
+    /**
+     * Get the delivery status of this message for the viewer.
+     * Returns: 'sent' | 'delivered' | 'seen'
+     */
+    public function getDeliveryStatus(int $viewerUserId): string
+    {
+        if ($this->sender_id !== $viewerUserId || $this->is_deleted) {
+            return 'sent';
+        }
+
+        $conversation = $this->conversation;
+        if (! $conversation) {
+            return 'sent';
+        }
+
+        $viewer = auth()->user() && auth()->id() === $viewerUserId ? auth()->user() : User::find($viewerUserId);
+        $viewerSharesReceipts = (bool) ($viewer?->read_receipts_enabled ?? true);
+
+        // Direct 1-on-1 chat
+        if ($conversation->type === 'direct') {
+            $otherParticipant = $conversation->participants->firstWhere('user_id', '!=', $viewerUserId)
+                ?? $conversation->participants()->where('user_id', '!=', $viewerUserId)->first();
+
+            if (! $otherParticipant) {
+                return 'sent';
+            }
+
+            // Check if seen (read)
+            if ($otherParticipant->last_read_at && $otherParticipant->last_read_at >= $this->created_at) {
+                // If viewer has disabled read receipts, viewer cannot see blue ticks (WhatsApp rule)
+                if (! $viewerSharesReceipts) {
+                    return 'delivered';
+                }
+
+                $recipientUser = $otherParticipant->user ?? User::find($otherParticipant->user_id);
+                $recipientSharesReceipts = (bool) ($recipientUser?->read_receipts_enabled ?? true);
+
+                // If recipient disabled read receipts, sender cannot see blue ticks either
+                if (! $recipientSharesReceipts) {
+                    return 'delivered';
+                }
+
+                return 'seen';
+            }
+
+            // Check if delivered
+            if ($this->delivered_at !== null || ($otherParticipant->last_delivered_at && $otherParticipant->last_delivered_at >= $this->created_at)) {
+                return 'delivered';
+            }
+
+            return 'sent';
+        }
+
+        // Group chat
+        $otherParticipants = $conversation->participants->where('user_id', '!=', $viewerUserId);
+        if ($otherParticipants->isEmpty()) {
+            $otherParticipants = $conversation->participants()->where('user_id', '!=', $viewerUserId)->get();
+        }
+
+        if ($otherParticipants->isEmpty()) {
+            return 'sent';
+        }
+
+        $allRead = $otherParticipants->every(fn ($p) => $p->last_read_at && $p->last_read_at >= $this->created_at);
+        if ($allRead) {
+            if (! $viewerSharesReceipts) {
+                return 'delivered';
+            }
+
+            return 'seen';
+        }
+
+        $anyDelivered = $this->delivered_at !== null || $otherParticipants->contains(fn ($p) => $p->last_delivered_at && $p->last_delivered_at >= $this->created_at);
+        if ($anyDelivered) {
+            return 'delivered';
+        }
+
+        return 'sent';
     }
 
     public function replyTo(): BelongsTo

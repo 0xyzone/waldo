@@ -6,6 +6,7 @@ use App\Events\MessageDeleted;
 use App\Events\MessagePinned;
 use App\Events\MessageReacted;
 use App\Events\MessageSent;
+use App\Events\MessageStatusUpdated;
 use App\Models\Conversation;
 use App\Models\ConversationParticipant;
 use App\Models\Message;
@@ -136,6 +137,8 @@ class Chat extends Page
 
     public function mount(?int $c = null): void
     {
+        $this->markPendingConversationsDelivered();
+
         if ($c) {
             $this->selectConversation($c);
         } else {
@@ -159,6 +162,7 @@ class Chat extends Page
         $this->voiceNote = null;
         $this->replyingToMessageId = null;
         $conversation->markAsReadFor(auth()->id());
+        $this->safeBroadcast(new MessageStatusUpdated($id, auth()->id(), 'seen'));
 
         $this->dispatch('conversation-changed', conversationId: $id);
         $this->dispatch('scroll-to-bottom');
@@ -361,8 +365,58 @@ class Chat extends Page
         if ($convId === $this->activeConversationId) {
             $conversation = Conversation::find($convId);
             $conversation?->markAsReadFor(auth()->id());
+            $this->safeBroadcast(new MessageStatusUpdated($convId, auth()->id(), 'seen'));
             $this->dispatch('scroll-to-bottom');
+        } else {
+            $conversation = Conversation::find($convId);
+            $conversation?->markAsDeliveredFor(auth()->id());
+            $this->safeBroadcast(new MessageStatusUpdated($convId, auth()->id(), 'delivered'));
         }
+    }
+
+    public function markConversationDelivered(int $convId): void
+    {
+        $userId = auth()->id();
+        if (! $userId) {
+            return;
+        }
+
+        $conversation = Conversation::find($convId);
+        if ($conversation) {
+            $conversation->markAsDeliveredFor($userId);
+            $this->safeBroadcast(new MessageStatusUpdated($convId, $userId, 'delivered'));
+        }
+    }
+
+    public function markPendingConversationsDelivered(): void
+    {
+        $userId = auth()->id();
+        if (! $userId) {
+            return;
+        }
+
+        $conversations = Conversation::whereHas('participants', fn ($q) => $q->where('user_id', $userId))->get();
+        foreach ($conversations as $conv) {
+            $conv->markAsDeliveredFor($userId);
+            $this->safeBroadcast(new MessageStatusUpdated($conv->id, $userId, 'delivered'));
+        }
+    }
+
+    public function toggleReadReceipts(): void
+    {
+        $user = auth()->user();
+        if (! $user) {
+            return;
+        }
+
+        $newState = ! (bool) ($user->read_receipts_enabled ?? true);
+        $user->update(['read_receipts_enabled' => $newState]);
+
+        Notification::make()
+            ->success()
+            ->title($newState ? 'Read receipts enabled' : 'Read receipts disabled')
+            ->body($newState ? 'Others can now see your seen status (blue ticks), and you can see theirs.' : "You won't send seen status, and you won't see other users' seen status.")
+            ->send();
     }
 
     public function calculatePinnedUntil(string $duration): ?Carbon
@@ -675,7 +729,7 @@ class Chat extends Page
         }
 
         $query = Message::where('conversation_id', $this->activeConversationId)
-            ->with(['sender', 'pinnedBy', 'reactions.user', 'replyTo.sender'])
+            ->with(['sender', 'pinnedBy', 'reactions.user', 'replyTo.sender', 'conversation.participants.user'])
             ->orderBy('created_at', 'asc');
 
         if (filled($this->messageSearch)) {

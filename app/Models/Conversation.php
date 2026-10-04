@@ -41,7 +41,7 @@ class Conversation extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'conversation_participants')
-            ->withPivot(['last_read_at', 'role'])
+            ->withPivot(['last_read_at', 'last_delivered_at', 'role'])
             ->withTimestamps();
     }
 
@@ -82,13 +82,36 @@ class Conversation extends Model
     }
 
     /**
+     * Mark conversation as delivered for a given user.
+     */
+    public function markAsDeliveredFor(int $userId): void
+    {
+        $this->participants()
+            ->where('user_id', $userId)
+            ->update(['last_delivered_at' => now()]);
+
+        $this->messages()
+            ->where('sender_id', '!=', $userId)
+            ->whereNull('delivered_at')
+            ->update(['delivered_at' => now()]);
+    }
+
+    /**
      * Mark conversation as read for a given user.
      */
     public function markAsReadFor(int $userId): void
     {
         $this->participants()
             ->where('user_id', $userId)
-            ->update(['last_read_at' => now()]);
+            ->update([
+                'last_read_at' => now(),
+                'last_delivered_at' => now(),
+            ]);
+
+        $this->messages()
+            ->where('sender_id', '!=', $userId)
+            ->whereNull('delivered_at')
+            ->update(['delivered_at' => now()]);
     }
 
     /**

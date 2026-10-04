@@ -18,7 +18,7 @@ use Laravel\Sanctum\HasApiTokens;
 use NotificationChannels\WebPush\HasPushSubscriptions;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'username', 'email', 'phone', 'avatar_url', 'password', 'must_change_password'])]
+#[Fillable(['name', 'username', 'email', 'phone', 'avatar_url', 'password', 'must_change_password', 'read_receipts_enabled'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerifyEmail
 {
@@ -52,6 +52,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'must_change_password' => 'boolean',
+            'read_receipts_enabled' => 'boolean',
         ];
     }
 

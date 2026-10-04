@@ -86,6 +86,9 @@
                 })
                 .listen('.message.reacted', (e) => {
                     $wire.$refresh();
+                })
+                .listen('.message.status', () => {
+                    $wire.$refresh();
                 });
 
             if (this.activeConversationId) {
@@ -101,6 +104,7 @@
                 .stopListening('.message.deleted')
                 .stopListening('.message.pinned')
                 .stopListening('.message.reacted')
+                .stopListening('.message.status')
                 .listen('.message.sent', (payload) => {
                     if (payload.sender_id !== {{ auth()->id() }}) {
                         this.playTing();
@@ -116,6 +120,9 @@
                     $wire.$refresh();
                 })
                 .listen('.message.reacted', () => {
+                    $wire.$refresh();
+                })
+                .listen('.message.status', () => {
                     $wire.$refresh();
                 });
         },
@@ -647,6 +654,19 @@
                         </button>
                     @endif
 
+                    <!-- Read Receipts Toggle -->
+                    <button
+                        type="button"
+                        wire:click="toggleReadReceipts"
+                        class="rounded-lg p-1.5 transition {{ auth()->user()?->read_receipts_enabled ? 'text-sky-500 hover:bg-sky-50 dark:hover:bg-gray-700' : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
+                        title="{{ auth()->user()?->read_receipts_enabled ? 'Read receipts: ON (Blue ticks shared). Click to toggle off.' : 'Read receipts: OFF (Blue ticks hidden for both). Click to toggle on.' }}"
+                    >
+                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M2 13l4 4L14 7"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M8 13l4 4L20 7"/>
+                        </svg>
+                    </button>
+
                     <!-- Search In Chat Toggle -->
                     <button
                         type="button"
@@ -989,9 +1009,31 @@
                                 <div class="mt-0.5 flex items-center justify-end gap-1 text-[9px] {{ $isMe ? 'text-amber-100/75' : 'text-gray-400' }}">
                                     <span>{{ $msg->created_at?->format('h:i A') }}</span>
                                     @if($isMe && !$msg->is_deleted)
-                                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                        </svg>
+                                        @php $deliveryStatus = $msg->getDeliveryStatus(auth()->id()); @endphp
+                                        @if($deliveryStatus === 'seen')
+                                            <!-- Double Blue Tick (Seen / Read) -->
+                                            <span title="Read" class="inline-flex items-center text-sky-400 dark:text-sky-300">
+                                                <svg class="h-3 w-3 drop-shadow-[0_0_2px_rgba(56,189,248,0.6)]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M2 13l4 4L14 7"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M8 13l4 4L20 7"/>
+                                                </svg>
+                                            </span>
+                                        @elseif($deliveryStatus === 'delivered')
+                                            <!-- Double Gray Tick (Delivered) -->
+                                            <span title="Delivered" class="inline-flex items-center text-amber-200/90 dark:text-slate-300">
+                                                <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 13l4 4L14 7"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 13l4 4L20 7"/>
+                                                </svg>
+                                            </span>
+                                        @else
+                                            <!-- Single Gray Tick (Sent) -->
+                                            <span title="Sent" class="inline-flex items-center text-amber-200/70 dark:text-slate-400">
+                                                <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                </svg>
+                                            </span>
+                                        @endif
                                     @endif
                                 </div>
                             </div>

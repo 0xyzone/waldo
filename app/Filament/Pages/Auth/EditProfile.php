@@ -5,6 +5,7 @@ namespace App\Filament\Pages\Auth;
 use Filament\Auth\Pages\EditProfile as BaseEditProfile;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Schema;
 
@@ -19,6 +20,7 @@ class EditProfile extends BaseEditProfile
                 $this->getUsernameFormComponent(),
                 $this->getEmailFormComponent(),
                 $this->getPhoneFormComponent(),
+                $this->getReadReceiptsFormComponent(),
                 $this->getPasswordFormComponent(),
                 $this->getPasswordConfirmationFormComponent(),
                 $this->getCurrentPasswordFormComponent(),
@@ -34,8 +36,17 @@ class EditProfile extends BaseEditProfile
             ->disk('public')
             ->directory('avatars')
             ->maxSize(2048)
+            ->imageEditor()
             ->circleCropper()
             ->alignCenter();
+    }
+
+    protected function getReadReceiptsFormComponent(): Component
+    {
+        return Toggle::make('read_receipts_enabled')
+            ->label('Read Receipts (Blue Ticks)')
+            ->helperText("If turned off, you won't send read receipts, and you won't be able to see other users' seen status.")
+            ->default(true);
     }
 
     protected function getUsernameFormComponent(): Component

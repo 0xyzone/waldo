@@ -15,6 +15,7 @@ class ConversationParticipant extends Model
         'user_id',
         'role',
         'last_read_at',
+        'last_delivered_at',
         'is_pinned',
         'pinned_until',
     ];
@@ -33,6 +34,7 @@ class ConversationParticipant extends Model
     {
         return [
             'last_read_at' => 'datetime',
+            'last_delivered_at' => 'datetime',
             'is_pinned' => 'boolean',
             'pinned_until' => 'datetime',
         ];
