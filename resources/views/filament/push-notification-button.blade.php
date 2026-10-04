@@ -39,155 +39,163 @@
         ></span>
     </button>
 
-    <!-- Mobile Backdrop -->
-    <div
-        x-show="showMenu"
-        x-cloak
-        x-transition:enter="transition ease-out duration-150"
-        x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100"
-        x-transition:leave="transition ease-in duration-100"
-        x-transition:leave-start="opacity-100"
-        x-transition:leave-end="opacity-0"
-        @click="showMenu = false"
-        class="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs sm:hidden"
-    ></div>
+    <!-- Teleported Modal (Centered and immune to topbar clipping/transforms) -->
+    <template x-teleport="body">
+        <div
+            x-show="showMenu"
+            x-cloak
+            class="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style="display: none;"
+        >
+            <!-- Backdrop -->
+            <div
+                x-show="showMenu"
+                x-transition:enter="ease-out duration-200"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="ease-in duration-150"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                @click="showMenu = false"
+                class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity"
+            ></div>
 
-    <!-- Dropdown Popover Menu -->
-    <div
-        x-show="showMenu"
-        x-transition:enter="transition ease-out duration-150"
-        x-transition:enter-start="opacity-0 scale-95"
-        x-transition:enter-end="opacity-100 scale-100"
-        x-transition:leave="transition ease-in duration-100"
-        x-transition:leave-start="opacity-100 scale-100"
-        x-transition:leave-end="opacity-0 scale-95"
-        @click.outside="showMenu = false"
-        x-cloak
-        class="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-16 sm:top-full mt-1 sm:mt-2 w-auto sm:w-80 max-w-sm sm:max-w-none mx-auto sm:mx-0 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-xl shadow-2xl sm:shadow-xl z-50 text-left text-xs"
-    >
-        <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-slate-800">
-            <div class="flex items-center gap-2">
-                <span
-                    class="w-2.5 h-2.5 rounded-full shrink-0"
-                    :class="isSubscribed ? 'bg-emerald-500' : (permission === 'denied' ? 'bg-rose-500' : 'bg-slate-400')"
-                ></span>
-                <span class="font-semibold text-slate-800 dark:text-slate-100 text-sm">Device Push Alerts</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <span
-                    class="px-1.5 py-0.5 text-[10px] font-semibold uppercase rounded tracking-wider"
-                    :class="isSubscribed ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : (permission === 'denied' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' : 'bg-slate-500/10 text-slate-500')"
-                    x-text="isSubscribed ? 'Active' : (permission === 'denied' ? 'Blocked' : 'Off')"
-                ></span>
-                <button
-                    type="button"
-                    @click="showMenu = false"
-                    class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                    title="Close"
-                >
-                    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-
-        <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-3 leading-relaxed">
-            Get instant desktop and mobile OS alerts for chat messages and system notifications even when Kamkaj is closed.
-        </p>
-
-        <!-- Status message banner -->
-        <template x-if="statusText">
-            <div class="mb-3 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-[11px]" x-text="statusText"></div>
-        </template>
-
-        <!-- Blocked notice -->
-        <template x-if="permission === 'denied'">
-            <div class="mb-3 p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-300 text-[11px]">
-                ⚠️ Notifications are blocked in your browser settings. Click the site settings / lock icon in your browser URL bar to allow notifications for this site.
-            </div>
-        </template>
-
-        <!-- Action Buttons -->
-        <div class="space-y-2">
-            <template x-if="!isSubscribed && permission !== 'denied'">
-                <button
-                    type="button"
-                    @click="subscribe()"
-                    :disabled="isLoading"
-                    class="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-500 active:bg-amber-700 rounded-lg shadow-sm transition-all disabled:opacity-50 cursor-pointer"
-                >
-                    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 0 1 7.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 0 1 1.06 0Z" />
-                    </svg>
-                    <span x-text="isLoading ? 'Enabling...' : 'Enable on this Device'"></span>
-                </button>
-            </template>
-
-            <template x-if="isSubscribed">
-                <div class="space-y-2">
-                    <button
-                        type="button"
-                        @click="sendTest()"
-                        :disabled="isLoading"
-                        class="w-full inline-flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-semibold text-amber-700 dark:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/25 border border-amber-500/30 rounded-lg transition-all disabled:opacity-50 cursor-pointer"
-                    >
-                        <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
-                        </svg>
-                        <span x-text="isLoading ? 'Sending...' : 'Send Test Notification'"></span>
-                    </button>
-
-                    <button
-                        type="button"
-                        @click="unsubscribe()"
-                        :disabled="isLoading"
-                        class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
-                    >
-                        <span>Disable on this device</span>
-                    </button>
-                </div>
-            </template>
-        </div>
-
-        <!-- Sound Control Settings (Muted by default to avoid annoyance) -->
-        <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-            <div class="flex items-center justify-between gap-2">
-                <div class="flex items-center gap-2">
-                    <template x-if="soundEnabled">
-                        <svg class="w-4 h-4 text-amber-500 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.757 3.63 8.25 4.51 8.25H6.75Z" />
-                        </svg>
-                    </template>
-                    <template x-if="!soundEnabled">
-                        <svg class="w-4 h-4 text-slate-400 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 9.75 19.5 12m0 0 2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-1.5-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.757 3.63 8.25 4.51 8.25H6.75l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H6.75Z" />
-                        </svg>
-                    </template>
-                    <div>
-                        <div class="font-medium text-slate-700 dark:text-slate-200 text-xs">Notification Sound</div>
-                        <div class="text-[10px] text-slate-400" x-text="soundEnabled ? 'Alert chime enabled' : 'Muted (Silent by default)'"></div>
+            <!-- Modal Content Box -->
+            <div
+                x-show="showMenu"
+                x-transition:enter="transition ease-out duration-200 transform"
+                x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                x-transition:leave="transition ease-in duration-150 transform"
+                x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+                @click.outside="showMenu = false"
+                class="relative w-full max-w-sm p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-10 text-left text-xs"
+            >
+                <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <span
+                            class="w-2.5 h-2.5 rounded-full shrink-0"
+                            :class="isSubscribed ? 'bg-emerald-500' : (permission === 'denied' ? 'bg-rose-500' : 'bg-slate-400')"
+                        ></span>
+                        <span class="font-semibold text-slate-800 dark:text-slate-100 text-sm">Device Push Alerts</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span
+                            class="px-1.5 py-0.5 text-[10px] font-semibold uppercase rounded tracking-wider"
+                            :class="isSubscribed ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : (permission === 'denied' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' : 'bg-slate-500/10 text-slate-500')"
+                            x-text="isSubscribed ? 'Active' : (permission === 'denied' ? 'Blocked' : 'Off')"
+                        ></span>
+                        <button
+                            type="button"
+                            @click="showMenu = false"
+                            class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                            title="Close"
+                        >
+                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                            </svg>
+                        </button>
                     </div>
                 </div>
 
-                <button
-                    type="button"
-                    role="switch"
-                    :aria-checked="soundEnabled"
-                    @click="toggleSound()"
-                    class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden"
-                    :class="soundEnabled ? 'bg-amber-500' : 'bg-slate-300 dark:bg-slate-700'"
-                    :title="soundEnabled ? 'Disable notification sound' : 'Enable notification sound'"
-                >
-                    <span
-                        class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out"
-                        :class="soundEnabled ? 'translate-x-4' : 'translate-x-0'"
-                    ></span>
-                </button>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-3 leading-relaxed">
+                    Get instant desktop and mobile OS alerts for chat messages and system notifications even when Kamkaj is closed.
+                </p>
+
+                <!-- Status message banner -->
+                <template x-if="statusText">
+                    <div class="mb-3 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-[11px]" x-text="statusText"></div>
+                </template>
+
+                <!-- Blocked notice -->
+                <template x-if="permission === 'denied'">
+                    <div class="mb-3 p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-300 text-[11px]">
+                        ⚠️ Notifications are blocked in your browser settings. Click the site settings / lock icon in your browser URL bar to allow notifications for this site.
+                    </div>
+                </template>
+
+                <!-- Action Buttons -->
+                <div class="space-y-2">
+                    <template x-if="!isSubscribed && permission !== 'denied'">
+                        <button
+                            type="button"
+                            @click="subscribe()"
+                            :disabled="isLoading"
+                            class="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-500 active:bg-amber-700 rounded-lg shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+                        >
+                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 0 1 7.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 0 1 1.06 0Z" />
+                            </svg>
+                            <span x-text="isLoading ? 'Enabling...' : 'Enable on this Device'"></span>
+                        </button>
+                    </template>
+
+                    <template x-if="isSubscribed">
+                        <div class="space-y-2">
+                            <button
+                                type="button"
+                                @click="sendTest()"
+                                :disabled="isLoading"
+                                class="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-amber-700 dark:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/25 border border-amber-500/30 rounded-lg transition-all disabled:opacity-50 cursor-pointer"
+                            >
+                                <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+                                </svg>
+                                <span x-text="isLoading ? 'Sending...' : 'Send Test Notification'"></span>
+                            </button>
+
+                            <button
+                                type="button"
+                                @click="unsubscribe()"
+                                :disabled="isLoading"
+                                class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
+                            >
+                                <span>Disable on this device</span>
+                            </button>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Sound Control Settings (Muted by default to avoid annoyance) -->
+                <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <template x-if="soundEnabled">
+                                <svg class="w-4 h-4 text-amber-500 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.757 3.63 8.25 4.51 8.25H6.75Z" />
+                                </svg>
+                            </template>
+                            <template x-if="!soundEnabled">
+                                <svg class="w-4 h-4 text-slate-400 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 9.75 19.5 12m0 0 2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-1.5-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.757 3.63 8.25 4.51 8.25H6.75l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H6.75Z" />
+                                </svg>
+                            </template>
+                            <div>
+                                <div class="font-medium text-slate-700 dark:text-slate-200 text-xs">Notification Sound</div>
+                                <div class="text-[10px] text-slate-400" x-text="soundEnabled ? 'Alert chime enabled' : 'Muted (Silent by default)'"></div>
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            role="switch"
+                            :aria-checked="soundEnabled"
+                            @click="toggleSound()"
+                            class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden"
+                            :class="soundEnabled ? 'bg-amber-500' : 'bg-slate-300 dark:bg-slate-700'"
+                            :title="soundEnabled ? 'Disable notification sound' : 'Enable notification sound'"
+                        >
+                            <span
+                                class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out"
+                                :class="soundEnabled ? 'translate-x-4' : 'translate-x-0'"
+                            ></span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+    </template>
 </div>
 
 <script>
