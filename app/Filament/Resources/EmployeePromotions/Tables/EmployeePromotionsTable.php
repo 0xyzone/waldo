@@ -167,6 +167,13 @@ class EmployeePromotionsTable
                             ->color($isSyncing ? 'info' : 'warning')
                             ->send();
                     }),
+                Action::make('printCongratulations')
+                    ->label('Congratulation Note')
+                    ->icon('heroicon-o-printer')
+                    ->color('warning')
+                    ->tooltip('Print Congratulatory Note (A4 Letterhead)')
+                    ->url(fn (EmployeePromotion $record): string => route('employee-promotions.print-congratulations', ['ids' => $record->id]))
+                    ->openUrlInNewTab(),
             ])
             ->toolbarActions([
                 Action::make('exportExcel')
@@ -191,6 +198,26 @@ class EmployeePromotionsTable
                         return $service->export($promotions);
                     }),
                 BulkActionGroup::make([
+                    Action::make('printCongratulations')
+                        ->label('Print Congratulation Note')
+                        ->icon('heroicon-o-printer')
+                        ->color('warning')
+                        ->accessSelectedRecords()
+                        ->action(function (Collection $records, HasTable $livewire) {
+                            if ($records->isEmpty()) {
+                                Notification::make()
+                                    ->title('No records selected')
+                                    ->warning()
+                                    ->send();
+
+                                return null;
+                            }
+
+                            $ids = $records->pluck('id')->join(',');
+                            $url = route('employee-promotions.print-congratulations', ['ids' => $ids]);
+
+                            $livewire->js("window.open('{$url}', '_blank');");
+                        }),
                     Action::make('exportSelectedExcel')
                         ->label('Download Selected Excel')
                         ->icon('heroicon-o-arrow-down-tray')

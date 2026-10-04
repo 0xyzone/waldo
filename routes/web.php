@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ApiDocsController;
 use App\Http\Controllers\CandidatePrintController;
+use App\Http\Controllers\EmployeePromotionPrintController;
 use App\Http\Controllers\EmployeeSsidController;
 use App\Http\Controllers\FontController;
 use App\Http\Controllers\IdCardPrintReportPrintController;
@@ -94,6 +95,11 @@ Route::get('/salary-increment-requests/print-blank', [SalaryIncrementRequestPrin
 
 Route::get('/salary-increment-requests/{record}/print', [SalaryIncrementRequestPrintController::class, 'printRecord'])
     ->name('salary-increment-requests.print-record')
+    ->middleware('auth');
+
+// Employee Promotions Congratulations Letterhead Print
+Route::get('/employee-promotions/print-congratulations', [EmployeePromotionPrintController::class, 'printCongratulations'])
+    ->name('employee-promotions.print-congratulations')
     ->middleware('auth');
 
 // API Documentation & Testing Console
