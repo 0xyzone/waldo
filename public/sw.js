@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kamkaj-pwa-v1.3.0';
+const CACHE_NAME = 'kamkaj-pwa-v1.3.1';
 const OFFLINE_URL = '/offline.html';
 
 const PRECACHE_ASSETS = [
@@ -211,15 +211,19 @@ self.addEventListener('push', (event) => {
             isSoundEnabled = swSoundEnabled;
         }
 
-        // STRICT ENFORCEMENT: sound is ONLY allowed if user has explicitly turned it ON
+        // Sound is allowed ONLY if user has explicitly turned it ON
         const isSoundOn = (isSoundEnabled === true);
+
+        // Always provide a non-empty tag so renotify: true is valid across all browsers
+        const notificationTag = payload.tag || ('kamkaj-notif-' + Date.now());
 
         const options = {
             body: payload.body || '',
             icon: payload.icon || '/icons/icon-192x192.png',
             badge: payload.badge || '/icons/favicon-32x32.png',
             image: payload.image || undefined,
-            tag: payload.tag || 'kamkaj-notification',
+            tag: notificationTag,
+            renotify: true,
             requireInteraction: payload.requireInteraction || false,
             data: Object.assign({ url: actionUrl }, payload.data || {}),
             actions: Array.isArray(payload.actions) ? payload.actions : []
@@ -227,16 +231,15 @@ self.addEventListener('push', (event) => {
 
         if (isSoundOn) {
             options.silent = false;
-            options.renotify = payload.renotify !== false;
             options.vibrate = payload.vibrate || [100, 50, 100];
             if (payload.sound) {
                 options.sound = payload.sound;
             }
         } else {
-            // Absolute silence: strict silent flag, no vibration, no sound property, no renotify sound trigger
+            // Muted sound: silent flag prevents audio chime, empty vibration prevents buzzing noise.
+            // But renotify: true ensures the push notification STILL PUSHES and displays its visual popup banner!
             options.silent = true;
-            options.renotify = false;
-            delete options.vibrate;
+            options.vibrate = [];
             delete options.sound;
         }
 

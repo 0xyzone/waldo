@@ -63,6 +63,13 @@
         Header always set Accept-Ranges "bytes"
         Header always set X-Content-Type-Options "nosniff"
     </FilesMatch>
+
+    # Ensure Service Worker is never cached by HTTP headers
+    <FilesMatch "^sw\.js$">
+        Header always set Cache-Control "no-cache, no-store, must-revalidate"
+        Header always set Pragma "no-cache"
+        Header always set Expires "0"
+    </FilesMatch>
 </IfModule>
 
 # Increase upload size limits for Apache/LiteSpeed PHP

@@ -20,6 +20,7 @@
             window.addEventListener('load', function () {
                 navigator.serviceWorker.register('/sw.js', { scope: '/' })
                     .then(function (registration) {
+                        registration.update().catch(function() {});
                         // Check for updates
                         registration.addEventListener('updatefound', function () {
                             var installingWorker = registration.installing;
