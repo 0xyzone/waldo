@@ -183,6 +183,8 @@ class EmployeeForm
                                                 name: 'designation',
                                                 titleAttribute: 'name',
                                                 modifyQueryUsing: fn ($query, callable $get) => $query
+                                                    ->where('is_active', true)
+                                                    ->orderBy('rank')
                                                     ->when($get('department_id'), fn ($q, $deptId) => $q->where('department_id', $deptId))
                                             )
                                             ->searchable()

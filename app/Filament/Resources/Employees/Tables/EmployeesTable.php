@@ -205,7 +205,7 @@ class EmployeesTable
                     ->preload(),
                 SelectFilter::make('designation_id')
                     ->label('Designation')
-                    ->relationship('designation', 'name')
+                    ->relationship('designation', 'name', fn ($query) => $query->where('is_active', true)->orderBy('rank'))
                     ->searchable()
                     ->preload()
                     ->multiple(),

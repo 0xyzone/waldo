@@ -92,11 +92,12 @@ class EmployeePromotionForm
                                     ->label('New Designation')
                                     ->options(function (callable $get) {
                                         $deptId = $get('to_department_id');
-                                        if (! $deptId) {
-                                            return Designation::pluck('name', 'id')->toArray();
+                                        $query = Designation::active()->ordered();
+                                        if ($deptId) {
+                                            $query->where('department_id', $deptId);
                                         }
 
-                                        return Designation::where('department_id', $deptId)->pluck('name', 'id')->toArray();
+                                        return $query->pluck('name', 'id')->toArray();
                                     })
                                     ->searchable()
                                     ->preload()

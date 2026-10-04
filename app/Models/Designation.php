@@ -40,4 +40,23 @@ class Designation extends Model
     {
         return $this->belongsTo(Department::class);
     }
+
+    /**
+     * Scope a query to only include active designations.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope a query to order designations by rank.
+     */
+    public function scopeOrdered($query)
+    {
+        return $query
+            ->orderByRaw('CASE WHEN `designations`.`rank` IS NULL THEN 1 ELSE 0 END ASC')
+            ->orderBy('rank')
+            ->orderBy('name');
+    }
 }

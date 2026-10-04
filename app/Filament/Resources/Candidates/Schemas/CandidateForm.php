@@ -102,8 +102,8 @@ class CandidateForm
                             ->nullable()
                             ->hidden(fn (callable $get) => blank($get('department_id')))
                             ->options(fn (callable $get) => Designation::where('department_id', $get('department_id'))
-                                ->where('is_active', true)
-                                ->orderBy('rank')
+                                ->active()
+                                ->ordered()
                                 ->pluck('name', 'id')
                                 ->toArray()),
                         TextInput::make('reference')

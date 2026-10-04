@@ -91,7 +91,7 @@ class EmployeePromotionsTable
                     ->preload(),
                 SelectFilter::make('to_designation_id')
                     ->label('New Designation')
-                    ->options(fn () => Designation::pluck('name', 'id')->toArray())
+                    ->options(fn () => Designation::active()->ordered()->pluck('name', 'id')->toArray())
                     ->searchable()
                     ->preload(),
                 TernaryFilter::make('acknowledged')
