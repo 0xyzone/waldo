@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kamkaj-pwa-v1.1.0';
+const CACHE_NAME = 'kamkaj-pwa-v1.2.0';
 const OFFLINE_URL = '/offline.html';
 
 const PRECACHE_ASSETS = [
@@ -121,6 +121,61 @@ self.addEventListener('fetch', (event) => {
     }
 });
 
+// Sound preference persistence using IndexedDB (accessible in Service Worker)
+function getSoundPreference() {
+    return new Promise((resolve) => {
+        try {
+            const req = indexedDB.open('kamkaj_push_settings', 1);
+            req.onupgradeneeded = (e) => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains('settings')) {
+                    db.createObjectStore('settings');
+                }
+            };
+            req.onsuccess = (e) => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains('settings')) {
+                    resolve(false);
+                    return;
+                }
+                const tx = db.transaction('settings', 'readonly');
+                const store = tx.objectStore('settings');
+                const getReq = store.get('sound_enabled');
+                getReq.onsuccess = () => resolve(!!getReq.result);
+                getReq.onerror = () => resolve(false);
+            };
+            req.onerror = () => resolve(false);
+        } catch (e) {
+            resolve(false);
+        }
+    });
+}
+
+function saveSoundPreference(enabled) {
+    try {
+        const req = indexedDB.open('kamkaj_push_settings', 1);
+        req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('settings')) {
+                db.createObjectStore('settings');
+            }
+        };
+        req.onsuccess = (e) => {
+            const db = e.target.result;
+            const tx = db.transaction('settings', 'readwrite');
+            const store = tx.objectStore('settings');
+            store.put(!!enabled, 'sound_enabled');
+        };
+    } catch (e) {}
+}
+
+// Listen for messages from client (sound toggling)
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SET_PUSH_SOUND') {
+        saveSoundPreference(event.data.enabled);
+    }
+});
+
 // Push notification received in background
 self.addEventListener('push', (event) => {
     let payload = {};
@@ -138,22 +193,27 @@ self.addEventListener('push', (event) => {
     const title = payload.title || 'Kamkaj Notification';
     const actionUrl = payload.action_url || (payload.data && payload.data.url) || '/kamkaj';
 
-    const options = {
-        body: payload.body || '',
-        icon: payload.icon || '/icons/icon-192x192.png',
-        badge: payload.badge || '/icons/favicon-32x32.png',
-        image: payload.image || undefined,
-        tag: payload.tag || 'kamkaj-notification',
-        renotify: payload.renotify !== false,
-        requireInteraction: payload.requireInteraction || false,
-        vibrate: payload.vibrate || [100, 50, 100],
-        data: Object.assign({ url: actionUrl }, payload.data || {}),
-        actions: Array.isArray(payload.actions) ? payload.actions : []
-    };
+    event.waitUntil((async () => {
+        const isSoundEnabled = await getSoundPreference();
+        // Allow explicit override if payload provides sound property, otherwise fallback to user preference
+        const isSoundOn = payload.sound !== undefined ? !!payload.sound : isSoundEnabled;
 
-    event.waitUntil(
-        self.registration.showNotification(title, options)
-    );
+        const options = {
+            body: payload.body || '',
+            icon: payload.icon || '/icons/icon-192x192.png',
+            badge: payload.badge || '/icons/favicon-32x32.png',
+            image: payload.image || undefined,
+            tag: payload.tag || 'kamkaj-notification',
+            renotify: payload.renotify !== false,
+            requireInteraction: payload.requireInteraction || false,
+            silent: !isSoundOn,
+            vibrate: isSoundOn ? (payload.vibrate || [100, 50, 100]) : [],
+            data: Object.assign({ url: actionUrl }, payload.data || {}),
+            actions: Array.isArray(payload.actions) ? payload.actions : []
+        };
+
+        return self.registration.showNotification(title, options);
+    })());
 });
 
 // User clicked on a notification

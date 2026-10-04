@@ -100,4 +100,16 @@ class PushSubscriptionController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Return the VAPID public key.
+     */
+    public function vapidPublicKey(): JsonResponse
+    {
+        $key = config('webpush.vapid.public_key') ?: env('VAPID_PUBLIC_KEY', '');
+
+        return response()->json([
+            'publicKey' => (string) $key,
+        ]);
+    }
 }

@@ -102,6 +102,7 @@ Route::get('/api-docs/spec', [ApiDocsController::class, 'spec'])->name('api.docs
 
 // Push Notifications
 Route::middleware('auth')->group(function () {
+    Route::get('/push-subscriptions/vapid-key', [PushSubscriptionController::class, 'vapidPublicKey'])->name('push.vapid-key');
     Route::post('/push-subscriptions', [PushSubscriptionController::class, 'store'])->name('push.store');
     Route::post('/push-subscriptions/delete', [PushSubscriptionController::class, 'destroy'])->name('push.destroy');
     Route::post('/push-subscriptions/test', [PushSubscriptionController::class, 'test'])->name('push.test');

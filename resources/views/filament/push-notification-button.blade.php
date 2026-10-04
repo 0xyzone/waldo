@@ -1,30 +1,30 @@
 <div
-    x-data="pushNotificationComponent()"
+    x-data="pushNotificationComponent({{ Js::from(config('webpush.vapid.public_key') ?: env('VAPID_PUBLIC_KEY', '')) }})"
     x-show="supported"
     x-cloak
     class="relative inline-flex items-center"
 >
-    <!-- Trigger Button -->
+    <!-- Trigger Button (Broadcast / Signal Icon to distinguish from in-app notifications bell) -->
     <button
         type="button"
         @click="showMenu = !showMenu"
-        :title="isSubscribed ? 'Push Notifications: Active (Click to manage)' : 'Push Notifications: Inactive (Click to enable)'"
+        :title="isSubscribed ? 'Device Push Alerts: Active (Click to manage)' : 'Device Push Alerts: Inactive (Click to enable)'"
         class="relative inline-flex items-center justify-center w-9 h-9 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors focus:outline-hidden"
     >
-        <!-- Bell Icon -->
+        <!-- Broadcast Signal Waves Icon (Distinct from Bell) -->
         <template x-if="isSubscribed">
             <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 0 1 7.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 0 1 1.06 0Z" />
             </svg>
         </template>
         <template x-if="!isSubscribed && permission === 'denied'">
             <svg class="w-5 h-5 text-rose-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9.143 17.082a24.248 24.248 0 0 0 3.844.148m-5.46-1.57A8.967 8.967 0 0 1 6 9.75V9a6 6 0 0 1 6-6c1.332 0 2.56.435 3.55 1.174M18 9.75V9a6 6 0 0 0-.683-2.793M3 3l18 18" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 0 1 7.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 0 1 1.06 0ZM3 3l18 18" />
             </svg>
         </template>
         <template x-if="!isSubscribed && permission !== 'denied'">
             <svg class="w-5 h-5 text-slate-400 dark:text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 0 1 7.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 0 1 1.06 0Z" />
             </svg>
         </template>
 
@@ -50,7 +50,7 @@
         x-transition:leave-end="opacity-0 scale-95"
         @click.outside="showMenu = false"
         x-cloak
-        class="absolute right-0 top-full mt-2 w-72 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 text-left text-xs"
+        class="absolute right-0 top-full mt-2 w-80 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 text-left text-xs"
     >
         <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-slate-800">
             <div class="flex items-center gap-2">
@@ -58,7 +58,7 @@
                     class="w-2.5 h-2.5 rounded-full"
                     :class="isSubscribed ? 'bg-emerald-500' : (permission === 'denied' ? 'bg-rose-500' : 'bg-slate-400')"
                 ></span>
-                <span class="font-semibold text-slate-800 dark:text-slate-100 text-sm">Push Notifications</span>
+                <span class="font-semibold text-slate-800 dark:text-slate-100 text-sm">Device Push Alerts</span>
             </div>
             <span
                 class="px-1.5 py-0.5 text-[10px] font-semibold uppercase rounded tracking-wider"
@@ -79,7 +79,7 @@
         <!-- Blocked notice -->
         <template x-if="permission === 'denied'">
             <div class="mb-3 p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-300 text-[11px]">
-                ⚠️ Notifications are blocked in your browser settings. Click the lock/tune icon in your browser URL bar to allow notifications for this site.
+                ⚠️ Notifications are blocked in your browser settings. Click the site settings / lock icon in your browser URL bar to allow notifications for this site.
             </div>
         </template>
 
@@ -90,10 +90,10 @@
                     type="button"
                     @click="subscribe()"
                     :disabled="isLoading"
-                    class="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-500 active:bg-amber-700 rounded-lg shadow-sm transition-all disabled:opacity-50"
+                    class="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-white bg-amber-600 hover:bg-amber-500 active:bg-amber-700 rounded-lg shadow-sm transition-all disabled:opacity-50 cursor-pointer"
                 >
                     <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 0 1 7.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 0 1 1.06 0Z" />
                     </svg>
                     <span x-text="isLoading ? 'Enabling...' : 'Enable on this Device'"></span>
                 </button>
@@ -105,7 +105,7 @@
                         type="button"
                         @click="sendTest()"
                         :disabled="isLoading"
-                        class="w-full inline-flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-semibold text-amber-700 dark:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/25 border border-amber-500/30 rounded-lg transition-all disabled:opacity-50"
+                        class="w-full inline-flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-semibold text-amber-700 dark:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/25 border border-amber-500/30 rounded-lg transition-all disabled:opacity-50 cursor-pointer"
                     >
                         <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
@@ -117,12 +117,49 @@
                         type="button"
                         @click="unsubscribe()"
                         :disabled="isLoading"
-                        class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors disabled:opacity-50"
+                        class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
                     >
                         <span>Disable on this device</span>
                     </button>
                 </div>
             </template>
+        </div>
+
+        <!-- Sound Control Settings (Muted by default to avoid annoyance) -->
+        <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                    <template x-if="soundEnabled">
+                        <svg class="w-4 h-4 text-amber-500 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.757 3.63 8.25 4.51 8.25H6.75Z" />
+                        </svg>
+                    </template>
+                    <template x-if="!soundEnabled">
+                        <svg class="w-4 h-4 text-slate-400 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 9.75 19.5 12m0 0 2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-1.5-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.757 3.63 8.25 4.51 8.25H6.75l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H6.75Z" />
+                        </svg>
+                    </template>
+                    <div>
+                        <div class="font-medium text-slate-700 dark:text-slate-200 text-xs">Notification Sound</div>
+                        <div class="text-[10px] text-slate-400" x-text="soundEnabled ? 'Alert chime enabled' : 'Muted (Silent by default)'"></div>
+                    </div>
+                </div>
+
+                <button
+                    type="button"
+                    role="switch"
+                    :aria-checked="soundEnabled"
+                    @click="toggleSound()"
+                    class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden"
+                    :class="soundEnabled ? 'bg-amber-500' : 'bg-slate-300 dark:bg-slate-700'"
+                    :title="soundEnabled ? 'Disable notification sound' : 'Enable notification sound'"
+                >
+                    <span
+                        class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out"
+                        :class="soundEnabled ? 'translate-x-4' : 'translate-x-0'"
+                    ></span>
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -132,20 +169,24 @@
         function initPushNotificationComponent() {
             if (!window.Alpine) return;
 
-            window.Alpine.data('pushNotificationComponent', () => ({
+            window.Alpine.data('pushNotificationComponent', (initialVapidKey = '') => ({
                 supported: ('serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window),
                 permission: typeof Notification !== 'undefined' ? Notification.permission : 'default',
                 isSubscribed: false,
                 isLoading: false,
                 showMenu: false,
                 statusText: '',
-                vapidKey: @json(config('webpush.vapid.public_key')),
+                soundEnabled: localStorage.getItem('kamkaj_push_sound') === '1', // default false (silent)
+                vapidKey: initialVapidKey || @json(config('webpush.vapid.public_key') ?: env('VAPID_PUBLIC_KEY', '')),
                 csrfToken: @json(csrf_token()),
 
                 init() {
                     if (!this.supported) {
                         return;
                     }
+
+                    // Synchronize sound preference to Service Worker & IndexedDB
+                    this.syncSoundPreference(this.soundEnabled);
 
                     this.checkSubscription();
 
@@ -154,6 +195,62 @@
                             this.permission = Notification.permission;
                         }
                     });
+                },
+
+                toggleSound() {
+                    this.soundEnabled = !this.soundEnabled;
+                    localStorage.setItem('kamkaj_push_sound', this.soundEnabled ? '1' : '0');
+                    this.syncSoundPreference(this.soundEnabled);
+                    if (this.soundEnabled) {
+                        this.playChime();
+                        this.statusText = 'Notification sound turned ON.';
+                    } else {
+                        this.statusText = 'Notification sound muted.';
+                    }
+                    setTimeout(() => { if (this.statusText.includes('sound')) this.statusText = ''; }, 3000);
+                },
+
+                syncSoundPreference(enabled) {
+                    if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+                        navigator.serviceWorker.controller.postMessage({
+                            type: 'SET_PUSH_SOUND',
+                            enabled: enabled
+                        });
+                    }
+
+                    try {
+                        const req = indexedDB.open('kamkaj_push_settings', 1);
+                        req.onupgradeneeded = (e) => {
+                            const db = e.target.result;
+                            if (!db.objectStoreNames.contains('settings')) {
+                                db.createObjectStore('settings');
+                            }
+                        };
+                        req.onsuccess = (e) => {
+                            const db = e.target.result;
+                            if (!db.objectStoreNames.contains('settings')) return;
+                            const tx = db.transaction('settings', 'readwrite');
+                            const store = tx.objectStore('settings');
+                            store.put(!!enabled, 'sound_enabled');
+                        };
+                    } catch (e) {}
+                },
+
+                playChime() {
+                    try {
+                        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+                        osc.frequency.setValueAtTime(880, ctx.currentTime + 0.08);
+                        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+                        osc.start(ctx.currentTime);
+                        osc.stop(ctx.currentTime + 0.3);
+                    } catch (e) {}
                 },
 
                 async getRegistration() {
@@ -174,12 +271,34 @@
                     return outputArray;
                 },
 
-                getVapidKey() {
-                    if (this.vapidKey && String(this.vapidKey).trim().length > 0) {
-                        return String(this.vapidKey).trim();
-                    }
+                async getVapidKey() {
+                    let key = (this.vapidKey || '').trim();
+                    if (key.length > 0) return key;
+
                     const el = document.querySelector('meta[name="vapid-public-key"]');
-                    return el ? (el.getAttribute('content') || '').trim() : '';
+                    if (el) {
+                        key = (el.getAttribute('content') || '').trim();
+                        if (key.length > 0) {
+                            this.vapidKey = key;
+                            return key;
+                        }
+                    }
+
+                    // Dynamic fetch fallback from backend
+                    try {
+                        const res = await fetch('/push-subscriptions/vapid-key');
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data.publicKey && String(data.publicKey).trim().length > 0) {
+                                this.vapidKey = String(data.publicKey).trim();
+                                return this.vapidKey;
+                            }
+                        }
+                    } catch (err) {
+                        console.warn('[WebPush] Error fetching VAPID key from backend:', err);
+                    }
+
+                    return '';
                 },
 
                 getCsrfToken() {
@@ -229,7 +348,7 @@
                             return;
                         }
 
-                        const vapidKey = this.getVapidKey();
+                        const vapidKey = await this.getVapidKey();
                         if (!vapidKey) {
                             this.statusText = 'VAPID public key is missing.';
                             this.isLoading = false;
@@ -316,6 +435,10 @@
                     this.isLoading = true;
                     this.statusText = 'Dispatching test push notification...';
                     try {
+                        if (this.soundEnabled) {
+                            this.playChime();
+                        }
+
                         const res = await fetch('/push-subscriptions/test', {
                             method: 'POST',
                             headers: {
