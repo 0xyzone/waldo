@@ -42,7 +42,7 @@ class SendWebPushOnChatMessage
         };
 
         $actionUrl = url('/kamkaj/chat?c='.$event->conversationId);
-        $icon = $event->senderAvatar ?: asset('icons/icon-192x192.png');
+        $icon = $event->senderAvatar ?: asset('pwa-icons/icon-192x192.png');
         $tag = 'chat-conversation-'.$event->conversationId;
 
         $recipients = User::whereIn('id', $recipientIds)->get();

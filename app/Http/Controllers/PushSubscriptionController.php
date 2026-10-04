@@ -82,7 +82,7 @@ class PushSubscriptionController extends Controller
                 title: '🎉 Push Notifications Active!',
                 body: 'You will now receive instant alerts for chat messages and system notifications even when Kamkaj is closed.',
                 actionUrl: url('/kamkaj'),
-                icon: asset('icons/icon-192x192.png'),
+                icon: asset('pwa-icons/icon-192x192.png'),
                 tag: 'test-push-notification-'.time(),
                 data: ['test' => true]
             ));

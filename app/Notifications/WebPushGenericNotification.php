@@ -44,8 +44,8 @@ class WebPushGenericNotification extends Notification implements ShouldQueue
         $message = (new WebPushMessage)
             ->title($this->title)
             ->body($this->body)
-            ->icon($this->icon ?: asset('icons/icon-192x192.png'))
-            ->badge(asset('icons/favicon-32x32.png'))
+            ->icon($this->icon ?: asset('pwa-icons/icon-192x192.png'))
+            ->badge(asset('pwa-icons/favicon-32x32.png'))
             ->renotify()
             ->vibrate([100, 50, 100])
             ->data([

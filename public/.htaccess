@@ -29,6 +29,9 @@
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]
 
+    # Route icons to pwa-icons folder (bypass Apache default /icons/ alias)
+    RewriteRule ^icons/(.*)$ pwa-icons/$1 [L]
+
     # Send Requests To Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f

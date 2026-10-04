@@ -67,7 +67,7 @@ class SendWebPushOnDatabaseNotification
                 title: $title ?: 'Kamkaj Notification',
                 body: $body,
                 actionUrl: $actionUrl,
-                icon: asset('icons/icon-192x192.png'),
+                icon: asset('pwa-icons/icon-192x192.png'),
                 tag: $tag,
                 data: $data
             ));

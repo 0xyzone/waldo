@@ -1,24 +1,28 @@
-const CACHE_NAME = 'kamkaj-pwa-v1.3.1';
+const CACHE_NAME = 'kamkaj-pwa-v1.3.2';
 const OFFLINE_URL = '/offline.html';
 
 const PRECACHE_ASSETS = [
     OFFLINE_URL,
     '/manifest.webmanifest',
     '/favicon.ico',
-    '/icons/icon-192x192.png',
-    '/icons/icon-512x512.png',
-    '/icons/apple-touch-icon.png',
-    '/icons/icon-maskable-192x192.png',
-    '/icons/icon-maskable-512x512.png',
-    '/icons/favicon-32x32.png',
-    '/icons/favicon-16x16.png'
+    '/pwa-icons/icon-192x192.png',
+    '/pwa-icons/icon-512x512.png',
+    '/pwa-icons/apple-touch-icon.png',
+    '/pwa-icons/icon-maskable-192x192.png',
+    '/pwa-icons/icon-maskable-512x512.png',
+    '/pwa-icons/favicon-32x32.png',
+    '/pwa-icons/favicon-16x16.png'
 ];
 
-// Install: Cache critical shell assets
+// Install: Cache critical shell assets gracefully (never fail install on any single asset)
 self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(PRECACHE_ASSETS);
+        caches.open(CACHE_NAME).then(async (cache) => {
+            await Promise.allSettled(
+                PRECACHE_ASSETS.map((asset) => cache.add(asset).catch((err) => {
+                    console.warn('[SW] Could not precache:', asset, err);
+                }))
+            );
         }).then(() => {
             return self.skipWaiting();
         })
@@ -83,6 +87,7 @@ self.addEventListener('fetch', (event) => {
     const isStaticAsset = (
         url.pathname.match(/\.(css|js|woff2?|ttf|eot|svg|png|jpg|jpeg|gif|webp|ico)$/i) ||
         url.pathname.startsWith('/build/') ||
+        url.pathname.startsWith('/pwa-icons/') ||
         url.pathname.startsWith('/icons/') ||
         url.pathname.startsWith('/fonts/')
     );
@@ -219,15 +224,18 @@ self.addEventListener('push', (event) => {
 
         const options = {
             body: payload.body || '',
-            icon: payload.icon || '/icons/icon-192x192.png',
-            badge: payload.badge || '/icons/favicon-32x32.png',
-            image: payload.image || undefined,
+            icon: payload.icon || '/pwa-icons/icon-192x192.png',
+            badge: payload.badge || '/pwa-icons/favicon-32x32.png',
             tag: notificationTag,
             renotify: true,
             requireInteraction: payload.requireInteraction || false,
             data: Object.assign({ url: actionUrl }, payload.data || {}),
             actions: Array.isArray(payload.actions) ? payload.actions : []
         };
+
+        if (payload.image) {
+            options.image = payload.image;
+        }
 
         if (isSoundOn) {
             options.silent = false;
@@ -243,7 +251,17 @@ self.addEventListener('push', (event) => {
             delete options.sound;
         }
 
-        return self.registration.showNotification(title, options);
+        try {
+            return await self.registration.showNotification(title, options);
+        } catch (err) {
+            console.warn('[SW] Primary showNotification failed, trying basic fallback:', err);
+            return await self.registration.showNotification(title, {
+                body: options.body || '',
+                tag: notificationTag,
+                renotify: true,
+                data: options.data
+            });
+        }
     })());
 });
 
