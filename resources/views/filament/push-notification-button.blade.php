@@ -1,220 +1,5 @@
 <div
-    x-data="{
-        supported: ('serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window),
-        permission: typeof Notification !== 'undefined' ? Notification.permission : 'default',
-        isSubscribed: false,
-        isLoading: false,
-        showMenu: false,
-        statusText: '',
-
-        init() {
-            if (!this.supported) {
-                return;
-            }
-
-            this.checkSubscription();
-
-            // Re-check when window regains focus
-            window.addEventListener('focus', () => {
-                if (typeof Notification !== 'undefined') {
-                    this.permission = Notification.permission;
-                }
-            });
-        },
-
-        async getRegistration() {
-            if (!('serviceWorker' in navigator)) return null;
-            return await navigator.serviceWorker.ready;
-        },
-
-        urlBase64ToUint8Array(base64String) {
-            const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-            const base64 = (base64String + padding)
-                .replace(/-/g, '+')
-                .replace(/_/g, '/');
-            const rawData = window.atob(base64);
-            const outputArray = new Uint8Array(rawData.length);
-            for (let i = 0; i < rawData.length; ++i) {
-                outputArray[i] = rawData.charCodeAt(i);
-            }
-            return outputArray;
-        },
-
-        vapidKey: '{{ (string) config('webpush.vapid.public_key') }}',
-
-        getVapidKey() {
-            if (this.vapidKey && this.vapidKey.trim().length > 0) {
-                return this.vapidKey.trim();
-            }
-            const el = document.querySelector('meta[name="vapid-public-key"]');
-            return el ? (el.getAttribute('content') || '').trim() : '';
-        },
-
-        getCsrfToken() {
-            const el = document.querySelector('meta[name=\'csrf-token\']');
-            return el ? el.getAttribute('content') : '{{ csrf_token() }}';
-        },
-
-        async checkSubscription() {
-            try {
-                const reg = await this.getRegistration();
-                if (!reg) return;
-                const sub = await reg.pushManager.getSubscription();
-                this.isSubscribed = !!sub;
-
-                // If permission is already granted and subscription exists, ensure backend has it
-                if (this.isSubscribed && this.permission === 'granted') {
-                    this.saveSubscription(sub, false);
-                }
-            } catch (err) {
-                console.warn('[WebPush] Error checking subscription:', err);
-            }
-        },
-
-        async toggleSubscription() {
-            if (this.isSubscribed) {
-                await this.unsubscribe();
-            } else {
-                await this.subscribe();
-            }
-        },
-
-        async subscribe() {
-            this.isLoading = true;
-            this.statusText = '';
-            try {
-                if (!this.supported) {
-                    alert('Push notifications are not supported on this browser.');
-                    this.isLoading = false;
-                    return;
-                }
-
-                // Request user permission
-                const result = await Notification.requestPermission();
-                this.permission = result;
-
-                if (result !== 'granted') {
-                    this.statusText = 'Permission was denied. Please allow notifications in your browser settings.';
-                    this.isLoading = false;
-                    return;
-                }
-
-                const reg = await this.getRegistration();
-                if (!reg) {
-                    this.statusText = 'Service Worker not ready yet.';
-                    this.isLoading = false;
-                    return;
-                }
-
-                const vapidKey = this.getVapidKey();
-                if (!vapidKey) {
-                    this.statusText = 'VAPID public key is missing.';
-                    this.isLoading = false;
-                    return;
-                }
-
-                let sub = await reg.pushManager.getSubscription();
-                if (!sub) {
-                    sub = await reg.pushManager.subscribe({
-                        userVisibleOnly: true,
-                        applicationServerKey: this.urlBase64ToUint8Array(vapidKey)
-                    });
-                }
-
-                await this.saveSubscription(sub, true);
-                this.isSubscribed = true;
-                this.statusText = 'Notifications enabled successfully!';
-                setTimeout(() => { this.statusText = ''; }, 4000);
-            } catch (err) {
-                console.error('[WebPush] Failed to subscribe:', err);
-                this.statusText = 'Failed to enable notifications: ' + (err.message || 'Unknown error');
-            } finally {
-                this.isLoading = false;
-            }
-        },
-
-        async saveSubscription(sub, notifyUser = false) {
-            const key = sub.getKey ? sub.getKey('p256dh') : null;
-            const token = sub.getKey ? sub.getKey('auth') : null;
-            const contentEncoding = (PushManager.supportedContentEncodings || ['aes128gcm'])[0];
-
-            const response = await fetch('/push-subscriptions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': this.getCsrfToken(),
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    endpoint: sub.endpoint,
-                    public_key: key ? btoa(String.fromCharCode.apply(null, new Uint8Array(key))) : null,
-                    auth_token: token ? btoa(String.fromCharCode.apply(null, new Uint8Array(token))) : null,
-                    content_encoding: contentEncoding
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Server returned ' + response.status);
-            }
-        },
-
-        async unsubscribe() {
-            this.isLoading = true;
-            this.statusText = '';
-            try {
-                const reg = await this.getRegistration();
-                if (reg) {
-                    const sub = await reg.pushManager.getSubscription();
-                    if (sub) {
-                        await fetch('/push-subscriptions/delete', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': this.getCsrfToken(),
-                                'Accept': 'application/json'
-                            },
-                            body: JSON.stringify({ endpoint: sub.endpoint })
-                        });
-                        await sub.unsubscribe();
-                    }
-                }
-                this.isSubscribed = false;
-                this.statusText = 'Notifications disabled on this device.';
-                setTimeout(() => { this.statusText = ''; }, 4000);
-            } catch (err) {
-                console.error('[WebPush] Failed to unsubscribe:', err);
-                this.statusText = 'Error disabling notifications.';
-            } finally {
-                this.isLoading = false;
-            }
-        },
-
-        async sendTest() {
-            this.isLoading = true;
-            this.statusText = 'Dispatching test push notification...';
-            try {
-                const res = await fetch('/push-subscriptions/test', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': this.getCsrfToken(),
-                        'Accept': 'application/json'
-                    }
-                });
-                const data = await res.json();
-                if (res.ok && data.success) {
-                    this.statusText = 'Test sent! Check your device notifications.';
-                } else {
-                    this.statusText = data.message || 'Failed to dispatch test notification.';
-                }
-            } catch (err) {
-                this.statusText = 'Request failed: ' + err.message;
-            } finally {
-                this.isLoading = false;
-                setTimeout(() => { this.statusText = ''; }, 6000);
-            }
-        }
-    }"
+    x-data="pushNotificationComponent()"
     x-show="supported"
     x-cloak
     class="relative inline-flex items-center"
@@ -294,7 +79,7 @@
         <!-- Blocked notice -->
         <template x-if="permission === 'denied'">
             <div class="mb-3 p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-300 text-[11px]">
-                ⚠️ Notifications are blocked in your browser settings. Click the tune/lock icon in your browser URL bar to allow notifications for this site.
+                ⚠️ Notifications are blocked in your browser settings. Click the lock/tune icon in your browser URL bar to allow notifications for this site.
             </div>
         </template>
 
@@ -341,3 +126,224 @@
         </div>
     </div>
 </div>
+
+<script>
+    (function () {
+        function initPushNotificationComponent() {
+            if (!window.Alpine) return;
+
+            window.Alpine.data('pushNotificationComponent', () => ({
+                supported: ('serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window),
+                permission: typeof Notification !== 'undefined' ? Notification.permission : 'default',
+                isSubscribed: false,
+                isLoading: false,
+                showMenu: false,
+                statusText: '',
+                vapidKey: @json(config('webpush.vapid.public_key')),
+                csrfToken: @json(csrf_token()),
+
+                init() {
+                    if (!this.supported) {
+                        return;
+                    }
+
+                    this.checkSubscription();
+
+                    window.addEventListener('focus', () => {
+                        if (typeof Notification !== 'undefined') {
+                            this.permission = Notification.permission;
+                        }
+                    });
+                },
+
+                async getRegistration() {
+                    if (!('serviceWorker' in navigator)) return null;
+                    return await navigator.serviceWorker.ready;
+                },
+
+                urlBase64ToUint8Array(base64String) {
+                    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+                    const base64 = (base64String + padding)
+                        .replace(/-/g, '+')
+                        .replace(/_/g, '/');
+                    const rawData = window.atob(base64);
+                    const outputArray = new Uint8Array(rawData.length);
+                    for (let i = 0; i < rawData.length; ++i) {
+                        outputArray[i] = rawData.charCodeAt(i);
+                    }
+                    return outputArray;
+                },
+
+                getVapidKey() {
+                    if (this.vapidKey && String(this.vapidKey).trim().length > 0) {
+                        return String(this.vapidKey).trim();
+                    }
+                    const el = document.querySelector('meta[name="vapid-public-key"]');
+                    return el ? (el.getAttribute('content') || '').trim() : '';
+                },
+
+                getCsrfToken() {
+                    if (this.csrfToken) return this.csrfToken;
+                    const el = document.querySelector('meta[name="csrf-token"]');
+                    return el ? el.getAttribute('content') : '';
+                },
+
+                async checkSubscription() {
+                    try {
+                        const reg = await this.getRegistration();
+                        if (!reg) return;
+                        const sub = await reg.pushManager.getSubscription();
+                        this.isSubscribed = !!sub;
+
+                        if (this.isSubscribed && this.permission === 'granted') {
+                            this.saveSubscription(sub, false);
+                        }
+                    } catch (err) {
+                        console.warn('[WebPush] Error checking subscription:', err);
+                    }
+                },
+
+                async subscribe() {
+                    this.isLoading = true;
+                    this.statusText = '';
+                    try {
+                        if (!this.supported) {
+                            alert('Push notifications are not supported on this browser.');
+                            this.isLoading = false;
+                            return;
+                        }
+
+                        const result = await Notification.requestPermission();
+                        this.permission = result;
+
+                        if (result !== 'granted') {
+                            this.statusText = 'Permission was denied. Please allow notifications in your browser settings.';
+                            this.isLoading = false;
+                            return;
+                        }
+
+                        const reg = await this.getRegistration();
+                        if (!reg) {
+                            this.statusText = 'Service Worker not ready yet.';
+                            this.isLoading = false;
+                            return;
+                        }
+
+                        const vapidKey = this.getVapidKey();
+                        if (!vapidKey) {
+                            this.statusText = 'VAPID public key is missing.';
+                            this.isLoading = false;
+                            return;
+                        }
+
+                        let sub = await reg.pushManager.getSubscription();
+                        if (!sub) {
+                            sub = await reg.pushManager.subscribe({
+                                userVisibleOnly: true,
+                                applicationServerKey: this.urlBase64ToUint8Array(vapidKey)
+                            });
+                        }
+
+                        await this.saveSubscription(sub, true);
+                        this.isSubscribed = true;
+                        this.statusText = 'Notifications enabled successfully!';
+                        setTimeout(() => { this.statusText = ''; }, 4000);
+                    } catch (err) {
+                        console.error('[WebPush] Failed to subscribe:', err);
+                        this.statusText = 'Failed to enable notifications: ' + (err.message || 'Unknown error');
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+
+                async saveSubscription(sub, notifyUser = false) {
+                    const key = sub.getKey ? sub.getKey('p256dh') : null;
+                    const token = sub.getKey ? sub.getKey('auth') : null;
+                    const contentEncoding = (PushManager.supportedContentEncodings || ['aes128gcm'])[0];
+
+                    const response = await fetch('/push-subscriptions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': this.getCsrfToken(),
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            endpoint: sub.endpoint,
+                            public_key: key ? btoa(String.fromCharCode.apply(null, new Uint8Array(key))) : null,
+                            auth_token: token ? btoa(String.fromCharCode.apply(null, new Uint8Array(token))) : null,
+                            content_encoding: contentEncoding
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Server returned ' + response.status);
+                    }
+                },
+
+                async unsubscribe() {
+                    this.isLoading = true;
+                    this.statusText = '';
+                    try {
+                        const reg = await this.getRegistration();
+                        if (reg) {
+                            const sub = await reg.pushManager.getSubscription();
+                            if (sub) {
+                                await fetch('/push-subscriptions/delete', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': this.getCsrfToken(),
+                                        'Accept': 'application/json'
+                                    },
+                                    body: JSON.stringify({ endpoint: sub.endpoint })
+                                });
+                                await sub.unsubscribe();
+                            }
+                        }
+                        this.isSubscribed = false;
+                        this.statusText = 'Notifications disabled on this device.';
+                        setTimeout(() => { this.statusText = ''; }, 4000);
+                    } catch (err) {
+                        console.error('[WebPush] Failed to unsubscribe:', err);
+                        this.statusText = 'Error disabling notifications.';
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+
+                async sendTest() {
+                    this.isLoading = true;
+                    this.statusText = 'Dispatching test push notification...';
+                    try {
+                        const res = await fetch('/push-subscriptions/test', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': this.getCsrfToken(),
+                                'Accept': 'application/json'
+                            }
+                        });
+                        const data = await res.json();
+                        if (res.ok && data.success) {
+                            this.statusText = 'Test sent! Check your device notifications.';
+                        } else {
+                            this.statusText = data.message || 'Failed to dispatch test notification.';
+                        }
+                    } catch (err) {
+                        this.statusText = 'Request failed: ' + err.message;
+                    } finally {
+                        this.isLoading = false;
+                        setTimeout(() => { this.statusText = ''; }, 6000);
+                    }
+                }
+            }));
+        }
+
+        if (window.Alpine) {
+            initPushNotificationComponent();
+        } else {
+            document.addEventListener('alpine:init', initPushNotificationComponent);
+        }
+    })();
+</script>
