@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Promotions Congratulatory Announcement - A4 Letterhead Print</title>
     <style>
+        :root {
+            --primary: #d97706;        /* Amber 600 */
+            --primary-hover: #b45309;  /* Amber 700 */
+            --primary-light: #fef3c7;  /* Amber 100 */
+            --primary-text: #92400e;   /* Amber 800 */
+            --primary-border: #fde68a; /* Amber 200 */
+            --letterhead-margin-top: 100px; /* Default top margin for letterhead */
+        }
+
         /* A4 Page & Print Media Setup */
         @page {
             size: A4 portrait;
@@ -20,9 +29,9 @@
         html, body {
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            color: #0f172a;
-            background-color: #f1f5f9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: #1e293b;
+            background-color: #f8fafc;
             -webkit-font-smoothing: antialiased;
         }
 
@@ -31,64 +40,118 @@
             max-width: 210mm;
             margin: 16px auto 14px auto;
             background: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
             padding: 12px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            gap: 16px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+            flex-wrap: wrap;
         }
 
-        .toolbar-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: #0f172a;
+        .toolbar-left {
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
+        .toolbar-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .toolbar-badge {
-            background-color: #e0f2fe;
-            color: #0369a1;
-            font-size: 12px;
-            font-weight: 600;
+            background-color: var(--primary-light);
+            color: var(--primary-text);
+            font-size: 11.5px;
+            font-weight: 700;
             padding: 2px 8px;
             border-radius: 9999px;
-            border: 1px solid #bae6fd;
+            border: 1px solid var(--primary-border);
+        }
+
+        /* Margin Control in Toolbar */
+        .margin-controller {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 4px 10px;
+        }
+
+        .margin-controller label {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: #475569;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .margin-slider {
+            width: 90px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .margin-input {
+            width: 52px;
+            padding: 3px 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #0f172a;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            text-align: center;
+            background: #ffffff;
+        }
+
+        .margin-unit {
+            font-size: 11px;
+            font-weight: 600;
+            color: #64748b;
         }
 
         .toolbar-actions {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .btn {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 8px 16px;
-            font-size: 12.5px;
+            padding: 7px 14px;
+            font-size: 12px;
             font-weight: 600;
             border-radius: 6px;
             cursor: pointer;
             border: none;
             text-decoration: none;
             transition: all 0.15s ease-in-out;
+            white-space: nowrap;
         }
 
         .btn-primary {
-            background-color: #0284c7;
+            background-color: var(--primary);
             color: #ffffff;
         }
         .btn-primary:hover {
-            background-color: #0369a1;
+            background-color: var(--primary-hover);
         }
 
         .btn-secondary {
-            background-color: #f8fafc;
+            background-color: #ffffff;
             color: #334155;
             border: 1px solid #cbd5e1;
         }
@@ -98,12 +161,13 @@
         }
 
         .btn-guide {
-            background-color: #fef3c7;
-            color: #92400e;
-            border: 1px solid #fde68a;
+            background-color: #f8fafc;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
         }
         .btn-guide:hover {
-            background-color: #fde68a;
+            background-color: #f1f5f9;
+            color: #334155;
         }
 
         /* Printable A4 Document Container */
@@ -112,20 +176,21 @@
             min-height: 297mm;
             margin: 0 auto 30px auto;
             background: #ffffff;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
             box-sizing: border-box;
             position: relative;
             display: flex;
             flex-direction: column;
         }
 
-        /* First Page Letterhead Spacer (Exact 50px Margin Top) */
+        /* First Page Letterhead Spacer (Controlled dynamically by slider/input) */
         .first-page-letterhead-spacer {
-            height: 50px;
-            min-height: 50px;
+            height: var(--letterhead-margin-top);
+            min-height: var(--letterhead-margin-top);
             width: 100%;
             position: relative;
             box-sizing: border-box;
+            transition: height 0.1s ease;
         }
 
         /* Visual guide for screen preview only */
@@ -134,13 +199,13 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 50px;
-            border-bottom: 2px dashed #f59e0b;
-            background-color: rgba(254, 243, 199, 0.35);
+            bottom: 0;
+            border-bottom: 2px dashed var(--primary);
+            background-color: rgba(254, 243, 199, 0.28);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #b45309;
+            color: var(--primary-text);
             font-size: 11px;
             font-weight: 600;
             letter-spacing: 0.5px;
@@ -162,28 +227,28 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            border-bottom: 1.5px solid #cbd5e1;
-            padding-bottom: 10px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 8px;
             margin-bottom: 18px;
-            font-size: 12px;
-            color: #475569;
+            font-size: 11.5px;
+            color: #64748b;
         }
 
         .memo-ref {
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
             font-weight: 600;
-            color: #1e293b;
+            color: #334155;
         }
 
         .memo-date {
             font-weight: 600;
-            color: #1e293b;
+            color: #334155;
         }
 
         /* Title Block */
         .memo-heading-container {
             text-align: center;
-            margin-bottom: 22px;
+            margin-bottom: 18px;
         }
 
         .memo-classification {
@@ -192,54 +257,53 @@
             font-weight: 800;
             letter-spacing: 1.5px;
             text-transform: uppercase;
-            color: #0284c7;
-            background-color: #f0f9ff;
-            border: 1px solid #bae6fd;
-            padding: 3px 12px;
+            color: var(--primary-text);
+            background-color: var(--primary-light);
+            border: 1px solid var(--primary-border);
+            padding: 2.5px 10px;
             border-radius: 4px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .memo-main-title {
-            font-size: 20px;
+            font-size: 19px;
             font-weight: 800;
             color: #0f172a;
-            margin: 0 0 4px 0;
+            margin: 0 0 3px 0;
             letter-spacing: 0.2px;
             text-transform: uppercase;
         }
 
         .memo-sub-title {
-            font-size: 12.5px;
-            font-weight: 600;
+            font-size: 12px;
+            font-weight: 500;
             color: #64748b;
             margin: 0;
         }
 
         .title-accent-bar {
-            width: 80px;
-            height: 3px;
-            background: linear-gradient(90deg, #0284c7, #38bdf8);
-            margin: 10px auto 0 auto;
+            width: 60px;
+            height: 2.5px;
+            background: linear-gradient(90deg, #d97706, #f59e0b);
+            margin: 8px auto 0 auto;
             border-radius: 2px;
         }
 
-        /* Preamble / Congratulatory Note */
+        /* Short, Dignified Preamble */
         .memo-preamble {
             font-size: 12.5px;
-            line-height: 1.65;
+            line-height: 1.6;
             color: #334155;
-            margin-bottom: 20px;
-            text-align: justify;
+            margin-bottom: 16px;
         }
 
         .memo-preamble p {
-            margin: 0 0 8px 0;
+            margin: 0;
         }
 
-        /* Table Styling */
+        /* Sleek Modern Table Design (Light & Elegant, not bulky) */
         .table-container {
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             width: 100%;
         }
 
@@ -247,138 +311,133 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 12px;
-            border: 1px solid #cbd5e1;
         }
 
         .promotions-table thead th {
-            background-color: #f8fafc;
-            color: #1e293b;
+            background-color: #fafaf9;
+            color: #475569;
             font-weight: 700;
-            font-size: 11.5px;
+            font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 10px 12px;
-            border: 1px solid #cbd5e1;
+            letter-spacing: 0.6px;
+            padding: 9px 12px;
+            border-top: 1.5px solid #cbd5e1;
+            border-bottom: 1.5px solid #cbd5e1;
             text-align: left;
         }
 
         .promotions-table tbody td {
-            padding: 10px 12px;
-            border: 1px solid #e2e8f0;
+            padding: 11px 12px;
+            border-bottom: 1px solid #f1f5f9;
             vertical-align: middle;
             color: #1e293b;
         }
 
-        .promotions-table tbody tr:nth-child(even) {
-            background-color: #fcfdfe;
+        .promotions-table tbody tr:last-child td {
+            border-bottom: 1.5px solid #cbd5e1;
         }
 
+        /* Column Specifics */
         .col-code {
             width: 18%;
+        }
+
+        .code-pill {
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 11px;
             font-weight: 700;
-            color: #0369a1;
+            color: var(--primary-text);
+            background-color: var(--primary-light);
+            border: 1px solid var(--primary-border);
+            padding: 2px 7px;
+            border-radius: 4px;
+            display: inline-block;
         }
 
         .col-name {
-            width: 28%;
+            width: 27%;
+        }
+
+        .employee-name {
             font-weight: 700;
             color: #0f172a;
             font-size: 12.5px;
+            letter-spacing: -0.01em;
         }
 
         .col-date {
             width: 18%;
             color: #475569;
             font-weight: 500;
+            font-size: 11.5px;
             white-space: nowrap;
         }
 
         .col-changes {
-            width: 36%;
+            width: 37%;
         }
 
-        /* Change Type Display Styles */
-        .change-category {
-            font-weight: 700;
-            color: #0f172a;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
+        /* Change Type Details */
         .change-category-tag {
             display: inline-block;
             font-size: 10px;
             font-weight: 700;
-            padding: 1px 6px;
+            padding: 1.5px 7px;
             border-radius: 3px;
             text-transform: uppercase;
             letter-spacing: 0.3px;
+            background-color: var(--primary-light);
+            color: var(--primary-text);
+            border: 1px solid var(--primary-border);
+            margin-bottom: 2px;
         }
 
-        .tag-promotion {
-            background-color: #dcfce7;
-            color: #15803d;
-            border: 1px solid #bbf7d0;
-        }
-
-        .tag-transfer {
-            background-color: #fef3c7;
-            color: #b45309;
-            border: 1px solid #fde68a;
-        }
-
-        .change-detail-line {
+        .change-transition {
             font-size: 11px;
             color: #475569;
-            margin-top: 3px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            flex-wrap: wrap;
+            margin-top: 2px;
+            line-height: 1.4;
         }
 
-        .change-detail-line .from-label {
+        .change-transition .from-val {
             color: #64748b;
         }
 
-        .change-detail-line .arrow-icon {
-            color: #94a3b8;
+        .change-transition .arrow-icon {
+            color: var(--primary);
             font-weight: bold;
+            padding: 0 3px;
         }
 
-        .change-detail-line .to-label {
+        .change-transition .to-val {
             font-weight: 600;
             color: #0f172a;
         }
 
-        /* Concluding Remarks */
+        /* Short Concluding Note */
         .memo-closing {
-            font-size: 12.5px;
-            line-height: 1.65;
-            color: #334155;
-            margin-bottom: 30px;
-            text-align: justify;
+            font-size: 12px;
+            line-height: 1.55;
+            color: #475569;
+            margin-bottom: 35px;
         }
 
         .memo-closing p {
-            margin: 0 0 8px 0;
+            margin: 0;
         }
 
-        /* Sign-off Blocks */
-        .signatures-container {
+        /* HR Signature Block Only (Right Aligned) */
+        .signature-wrapper {
             margin-top: auto;
-            padding-top: 15px;
+            padding-top: 20px;
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             page-break-inside: avoid;
             break-inside: avoid;
         }
 
-        .signature-box {
-            width: 42%;
+        .hr-signature-box {
+            width: 220px;
             text-align: center;
         }
 
@@ -393,7 +452,7 @@
             font-weight: 700;
             color: #0f172a;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.4px;
         }
 
         .signer-sub {
@@ -406,17 +465,6 @@
             font-size: 10.5px;
             color: #94a3b8;
             margin-top: 8px;
-        }
-
-        /* Footer */
-        .memo-footer {
-            margin-top: 20px;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 8px;
-            font-size: 10px;
-            color: #94a3b8;
-            text-align: center;
-            letter-spacing: 0.4px;
         }
 
         /* Empty state notification */
@@ -457,10 +505,10 @@
                 page-break-after: auto;
             }
 
-            /* The first page margin-top of 50px for letterhead */
+            /* Custom Dynamic Margin Top for Letterhead on Print */
             .first-page-letterhead-spacer {
-                height: 50px !important;
-                min-height: 50px !important;
+                height: var(--letterhead-margin-top) !important;
+                min-height: var(--letterhead-margin-top) !important;
                 display: block !important;
             }
 
@@ -477,7 +525,7 @@
                 display: table-header-group;
             }
 
-            .signatures-container {
+            .signature-wrapper {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
             }
@@ -488,20 +536,36 @@
 
     <!-- Screen-only Floating Controls -->
     <div class="screen-toolbar no-print">
-        <div class="toolbar-title">
-            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="color: #0284c7;">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            <span>Promotions Congratulatory Announcement</span>
-            <span class="toolbar-badge">{{ $selectedCount }} {{ Str::plural('Record', $selectedCount) }} Selected</span>
+        <div class="toolbar-left">
+            <div class="toolbar-title">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="color: var(--primary);">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Promotions Congratulatory Note</span>
+                <span class="toolbar-badge">{{ $selectedCount }} {{ Str::plural('Record', $selectedCount) }} Selected</span>
+            </div>
         </div>
+
+        <!-- Manual Margin-Top Controller -->
+        <div class="margin-controller">
+            <label for="margin-input">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="color: var(--primary);">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                </svg>
+                <span>Top Margin:</span>
+            </label>
+            <input type="range" class="margin-slider" id="margin-slider" min="0" max="300" step="5" value="100" oninput="updateMarginFromSlider(this.value)">
+            <input type="number" class="margin-input" id="margin-input" min="0" max="300" step="5" value="100" oninput="updateMarginFromInput(this.value)">
+            <span class="margin-unit">px</span>
+        </div>
+
         <div class="toolbar-actions">
             <button type="button" class="btn btn-guide" id="btn-toggle-guide" onclick="toggleLetterheadGuide()">
                 <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
-                <span>Letterhead Guide (50px)</span>
+                <span>Toggle Guide</span>
             </button>
             <button type="button" class="btn btn-primary" onclick="window.print()">
                 <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -518,7 +582,7 @@
     @if($promotions->isEmpty())
         <!-- Empty Records Warning -->
         <div class="empty-records-card no-print">
-            <svg width="44" height="44" fill="none" viewBox="0 0 24 24" stroke="#f59e0b" stroke-width="1.5" style="margin: 0 auto 12px auto; display: block;">
+            <svg width="44" height="44" fill="none" viewBox="0 0 24 24" stroke="var(--primary)" stroke-width="1.5" style="margin: 0 auto 12px auto; display: block;">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
             <h2 style="font-size: 16px; font-weight: 700; margin: 0 0 8px 0; color: #0f172a;">No Promotions Selected</h2>
@@ -532,10 +596,10 @@
     @else
         <!-- A4 Page Container -->
         <div class="page-sheet">
-            <!-- First Page 50px Margin Top Spacer for Letterhead -->
-            <div class="first-page-letterhead-spacer">
+            <!-- First Page Top Margin Spacer for Letterhead (Adjustable) -->
+            <div class="first-page-letterhead-spacer" id="letterhead-spacer">
                 <div class="letterhead-screen-guide" id="screen-guide">
-                    Pre-printed Letterhead Clearance (50px Margin-Top) &bull; Content Begins Below
+                    Pre-printed Letterhead Clearance (<span id="guide-margin-text">100px</span> Margin-Top) &bull; Content Begins Below
                 </div>
             </div>
 
@@ -554,17 +618,14 @@
                 <div class="memo-heading-container">
                     <div class="memo-classification">Official Announcement</div>
                     <h1 class="memo-main-title">Congratulations On Your Promotion</h1>
-                    <p class="memo-sub-title">Celebrating Staff Excellence, Dedication & Career Milestones</p>
+                    <p class="memo-sub-title">Internal Circular &bull; Employee Promotion Announcement</p>
                     <div class="title-accent-bar"></div>
                 </div>
 
-                <!-- Congratulatory Opening Message -->
+                <!-- Short, Crisp Opening Message -->
                 <div class="memo-preamble">
                     <p>
-                        The Management and Human Resources Department are delighted to formally announce and celebrate the promotions of our esteemed team members. Through consistent dedication, exemplary work ethic, and professional commitment, they have distinguished themselves and achieved significant milestones in their respective careers within our organization.
-                    </p>
-                    <p>
-                        We extend our warmest congratulations to each of the following individuals on their well-deserved appointments:
+                        Management and the Human Resources Department are pleased to congratulate the following employee(s) on their well-deserved promotions and new appointments. We commend their dedication and valuable contributions to the organization.
                     </p>
                 </div>
 
@@ -586,61 +647,45 @@
                                     $isDesigChanged = $promotion->from_designation_id !== $promotion->to_designation_id;
 
                                     if ($isDesigChanged && $isDeptChanged) {
-                                        $categoryTitle = 'Designation & Department Promotion';
-                                        $showPromotionTag = true;
-                                        $showTransferTag = true;
+                                        $categoryTag = 'Promotion & Transfer';
                                     } elseif ($isDesigChanged) {
-                                        $categoryTitle = 'Designation Promotion';
-                                        $showPromotionTag = true;
-                                        $showTransferTag = false;
+                                        $categoryTag = 'Promotion';
                                     } elseif ($isDeptChanged) {
-                                        $categoryTitle = 'Department Transfer';
-                                        $showPromotionTag = false;
-                                        $showTransferTag = true;
+                                        $categoryTag = 'Transfer';
                                     } else {
-                                        $categoryTitle = 'Promotion';
-                                        $showPromotionTag = true;
-                                        $showTransferTag = false;
+                                        $categoryTag = 'Promotion';
                                     }
                                 @endphp
                                 <tr>
                                     <td class="col-code">
-                                        {{ $promotion->employee_id }}
+                                        <span class="code-pill">{{ $promotion->employee_id }}</span>
                                     </td>
                                     <td class="col-name">
-                                        {{ $promotion->employee?->name ?? 'N/A' }}
+                                        <div class="employee-name">{{ $promotion->employee?->name ?? 'N/A' }}</div>
                                     </td>
                                     <td class="col-date">
                                         {{ $promotion->promotion_date ? $promotion->promotion_date->format('d M, Y') : '-' }}
                                     </td>
                                     <td class="col-changes">
-                                        <div class="change-category">
-                                            <span>{{ $categoryTitle }}</span>
-                                            @if($showPromotionTag)
-                                                <span class="change-category-tag tag-promotion">Promotion</span>
-                                            @endif
-                                            @if($showTransferTag)
-                                                <span class="change-category-tag tag-transfer">Transfer</span>
-                                            @endif
-                                        </div>
+                                        <span class="change-category-tag">{{ $categoryTag }}</span>
 
                                         @if($isDesigChanged)
-                                            <div class="change-detail-line">
-                                                <span class="from-label">{{ $promotion->fromDesignation?->name ?? 'Designation' }}</span>
+                                            <div class="change-transition">
+                                                <span class="from-val">{{ $promotion->fromDesignation?->name ?? 'Designation' }}</span>
                                                 <span class="arrow-icon">&rarr;</span>
-                                                <span class="to-label">{{ $promotion->toDesignation?->name ?? 'Designation' }}</span>
+                                                <span class="to-val">{{ $promotion->toDesignation?->name ?? 'Designation' }}</span>
                                             </div>
                                         @elseif($promotion->toDesignation)
-                                            <div class="change-detail-line">
-                                                <span class="to-label">{{ $promotion->toDesignation->name }}</span>
+                                            <div class="change-transition">
+                                                <span class="to-val">{{ $promotion->toDesignation->name }}</span>
                                             </div>
                                         @endif
 
                                         @if($isDeptChanged)
-                                            <div class="change-detail-line">
-                                                <span class="from-label">{{ $promotion->fromDepartment?->name ?? 'Dept' }}</span>
+                                            <div class="change-transition">
+                                                <span class="from-val">{{ $promotion->fromDepartment?->name ?? 'Dept' }}</span>
                                                 <span class="arrow-icon">&rarr;</span>
-                                                <span class="to-label">{{ $promotion->toDepartment?->name ?? 'Dept' }}</span>
+                                                <span class="to-val">{{ $promotion->toDepartment?->name ?? 'Dept' }}</span>
                                             </div>
                                         @endif
                                     </td>
@@ -650,41 +695,57 @@
                     </table>
                 </div>
 
-                <!-- Congratulatory Closing Remarks -->
+                <!-- Short Concluding Remarks -->
                 <div class="memo-closing">
                     <p>
-                        Your perseverance, leadership, and positive contributions continue to inspire your colleagues and strengthen our team. We are confident that in your new roles, you will reach even greater heights and continue to foster an environment of excellence and collaboration.
-                    </p>
-                    <p>
-                        Please join us in extending our heartfelt congratulations and wishing them every success in their elevated responsibilities.
+                        We extend our best wishes for their continued success as they assume their new responsibilities.
                     </p>
                 </div>
 
-                <!-- Official Sign-off Blocks -->
-                <div class="signatures-container">
-                    <div class="signature-box">
+                <!-- Only Human Resources Department Signature (Right Aligned) -->
+                <div class="signature-wrapper">
+                    <div class="hr-signature-box">
                         <div class="signature-line"></div>
                         <div class="signer-title">Human Resources Department</div>
-                        <div class="signer-sub">Authorized Issuing Authority</div>
-                        <div class="signer-date">Date: ________________________</div>
-                    </div>
-                    <div class="signature-box">
-                        <div class="signature-line"></div>
-                        <div class="signer-title">Executive Management</div>
-                        <div class="signer-sub">Approval & Endorsement</div>
+                        <div class="signer-sub">Authorized Signatory</div>
                         <div class="signer-date">Date: ________________________</div>
                     </div>
                 </div>
 
-                <!-- Memo Footer -->
-                <div class="memo-footer">
-                    Waldo Management System &bull; Internal Circular &bull; Official Employee Record
-                </div>
             </div>
         </div>
     @endif
 
     <script>
+        // Initialize top margin from localStorage if set
+        const savedMargin = localStorage.getItem('waldo_promo_print_margin_top');
+        if (savedMargin) {
+            setMarginTop(parseInt(savedMargin, 10));
+        }
+
+        function setMarginTop(val) {
+            val = Math.max(0, Math.min(300, parseInt(val, 10) || 0));
+            document.documentElement.style.setProperty('--letterhead-margin-top', val + 'px');
+            
+            const slider = document.getElementById('margin-slider');
+            const input = document.getElementById('margin-input');
+            const guideText = document.getElementById('guide-margin-text');
+
+            if (slider && slider.value != val) slider.value = val;
+            if (input && input.value != val) input.value = val;
+            if (guideText) guideText.textContent = val + 'px';
+
+            localStorage.setItem('waldo_promo_print_margin_top', val);
+        }
+
+        function updateMarginFromSlider(val) {
+            setMarginTop(val);
+        }
+
+        function updateMarginFromInput(val) {
+            setMarginTop(val);
+        }
+
         function toggleLetterheadGuide() {
             const guide = document.getElementById('screen-guide');
             if (guide) {
