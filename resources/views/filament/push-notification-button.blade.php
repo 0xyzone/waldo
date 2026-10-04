@@ -40,9 +40,14 @@
             return outputArray;
         },
 
+        vapidKey: '{{ (string) config('webpush.vapid.public_key') }}',
+
         getVapidKey() {
-            const el = document.querySelector('meta[name=\'vapid-public-key\']');
-            return el ? el.getAttribute('content') : '{{ config('webpush.vapid.public_key') }}';
+            if (this.vapidKey && this.vapidKey.trim().length > 0) {
+                return this.vapidKey.trim();
+            }
+            const el = document.querySelector('meta[name="vapid-public-key"]');
+            return el ? (el.getAttribute('content') || '').trim() : '';
         },
 
         getCsrfToken() {
