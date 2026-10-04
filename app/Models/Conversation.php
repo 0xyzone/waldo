@@ -81,6 +81,11 @@ class Conversation extends Model
         return $this->users->firstWhere('id', '!=', $currentUserId);
     }
 
+    public function getRecipient(int $currentUserId): ?User
+    {
+        return $this->getRecipientUser($currentUserId);
+    }
+
     /**
      * Mark conversation as delivered for a given user.
      */

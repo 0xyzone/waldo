@@ -4,6 +4,10 @@
     x-data="{
         isOpen: @entangle('isOpen'),
         activeConversationId: @entangle('activeConversationId'),
+        onlineUserIds: [],
+        viewerOnlineStatusEnabled: {{ (auth()->user()?->online_status_enabled ?? true) ? 'true' : 'false' }},
+        userOnlinePrivacyMap: {},
+        userLastActiveMap: {},
         isRecording: false,
         isRecordingEnded: false,
         isCancelled: false,
@@ -27,6 +31,30 @@
         micStream: null,
         vizBars: Array(32).fill(3),
         vizRaf: null,
+
+        canViewUserOnline(userId) {
+            if (!this.viewerOnlineStatusEnabled) return false;
+            if (!userId) return false;
+            if (this.userOnlinePrivacyMap[userId] === false) return false;
+            return true;
+        },
+
+        isUserOnline(userId) {
+            if (!this.canViewUserOnline(userId)) return false;
+            return this.onlineUserIds.includes(userId);
+        },
+
+        getUserLastActiveText(userId, initialFallback) {
+            if (!this.canViewUserOnline(userId)) return '';
+            if (this.isUserOnline(userId)) return 'Online';
+            if (this.userLastActiveMap[userId]) {
+                return 'Last seen ' + this.userLastActiveMap[userId];
+            }
+            if (initialFallback) {
+                return 'Last seen ' + initialFallback;
+            }
+            return 'Offline';
+        },
 
         init() {
             this.initEcho();
@@ -69,6 +97,30 @@
 
         initEcho() {
             if (!window.Echo) return;
+
+            // Track presence with WhatsApp-style privacy controls
+            window.Echo.join('chat.presence')
+                .here((users) => {
+                    this.onlineUserIds = [];
+                    users.forEach(u => {
+                        const enabled = (u.online_status_enabled !== false);
+                        this.userOnlinePrivacyMap[u.id] = enabled;
+                        if (enabled && !this.onlineUserIds.includes(u.id)) {
+                            this.onlineUserIds.push(u.id);
+                        }
+                    });
+                })
+                .joining((user) => {
+                    const enabled = (user.online_status_enabled !== false);
+                    this.userOnlinePrivacyMap[user.id] = enabled;
+                    if (enabled && !this.onlineUserIds.includes(user.id)) {
+                        this.onlineUserIds.push(user.id);
+                    }
+                })
+                .leaving((user) => {
+                    this.onlineUserIds = this.onlineUserIds.filter(id => id !== user.id);
+                    this.userLastActiveMap[user.id] = 'Just now';
+                });
 
             window.Echo.private(`chat.user.{{ auth()->id() }}`)
                 .listen('.message.sent', (e) => {
@@ -597,22 +649,57 @@
     >
         <!-- Window Top Bar -->
         <div class="flex items-center justify-between border-b border-gray-100 bg-gray-50/90 px-3.5 py-2.5 dark:border-gray-800/80 dark:bg-gray-800/80">
-            <div class="flex items-center gap-2 min-w-0">
+            <div class="flex items-center gap-2 min-w-0 flex-1">
                 @if($this->activeConversation)
+                    @php
+                        $floatIsGroup = $this->activeConversation->isGroup();
+                        $floatRecipient = $floatIsGroup ? null : $this->activeConversation->getRecipient(auth()->id());
+                        $floatAvatar = $this->activeConversation->getDisplayAvatar(auth()->id());
+                        $floatDisplayName = $this->activeConversation->getDisplayName(auth()->id());
+                    @endphp
+                    @if(!$floatIsGroup && $floatRecipient)
+                        <span x-init="userOnlinePrivacyMap[{{ $floatRecipient->id }}] = {{ ($floatRecipient->online_status_enabled ?? true) ? 'true' : 'false' }}; @if($floatRecipient->last_active_at) userLastActiveMap[{{ $floatRecipient->id }}] = '{{ $floatRecipient->getLastActiveFormatted() }}'; @endif" class="hidden"></span>
+                    @endif
                     <button
                         type="button"
                         wire:click="$set('activeConversationId', null)"
-                        class="rounded-lg p-1 text-gray-500 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700"
+                        class="rounded-lg p-1 text-gray-500 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 flex-shrink-0"
                         title="Back to conversations"
                     >
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                         </svg>
                     </button>
-                    <div class="min-w-0">
+
+                    <!-- Avatar in Floating Chat Heading -->
+                    <div class="relative flex-shrink-0">
+                        @if($floatAvatar)
+                            <img src="{{ $floatAvatar }}" class="h-7 w-7 rounded-full object-cover border border-gray-200 dark:border-gray-700 shadow-xs" />
+                        @else
+                            <div class="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-tr {{ $floatIsGroup ? 'from-indigo-600 to-indigo-400' : 'from-amber-600 to-amber-400' }} text-[11px] font-bold text-white shadow-xs">
+                                @if($floatIsGroup)
+                                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                    </svg>
+                                @else
+                                    {{ strtoupper(substr($floatDisplayName, 0, 1)) }}
+                                @endif
+                            </div>
+                        @endif
+
+                        @if(!$floatIsGroup && $floatRecipient)
+                            <span 
+                                x-show="isUserOnline({{ $floatRecipient->id }})"
+                                class="absolute bottom-0 right-0 h-2 w-2 rounded-full border border-white bg-emerald-500 dark:border-gray-900"
+                                title="Online"
+                            ></span>
+                        @endif
+                    </div>
+
+                    <div class="min-w-0 flex-1">
                         <h4 class="truncate text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
-                            {{ $this->activeConversation->getDisplayName(auth()->id()) }}
-                            @if($this->activeConversation->isGroup())
+                            {{ $floatDisplayName }}
+                            @if($floatIsGroup)
                                 @php $myFloatingRole = $this->activeConversation->getUserRole(auth()->id()); @endphp
                                 @if($myFloatingRole === 'owner')
                                     <span class="rounded-full bg-amber-500/20 px-1.5 py-0.2 text-[9px] font-bold text-amber-800 dark:bg-amber-400/20 dark:text-amber-300 ring-1 ring-amber-400/30">
@@ -629,6 +716,23 @@
                                 @endif
                             @endif
                         </h4>
+                        <div class="text-[10px] text-gray-500 dark:text-gray-400 truncate flex items-center gap-1">
+                            @if($floatIsGroup)
+                                <span>{{ $this->activeConversation->participants->count() }} members</span>
+                            @else
+                                <template x-if="canViewUserOnline({{ $floatRecipient?->id ?? 0 }})">
+                                    <span class="flex items-center gap-1">
+                                        <span x-show="isUserOnline({{ $floatRecipient?->id ?? 0 }})" class="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                            Online
+                                        </span>
+                                        <span x-show="!isUserOnline({{ $floatRecipient?->id ?? 0 }})" class="text-gray-400 dark:text-gray-400" x-text="getUserLastActiveText({{ $floatRecipient?->id ?? 0 }}, '{{ $floatRecipient?->getLastActiveFormatted() ?? '' }}')">
+                                            {{ $floatRecipient?->getLastActiveFormatted() ? 'Last seen '.$floatRecipient->getLastActiveFormatted() : 'Offline' }}
+                                        </span>
+                                    </span>
+                                </template>
+                            @endif
+                        </div>
                     </div>
                 @else
                     <h4 class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
@@ -637,7 +741,7 @@
                     </h4>
                 @endif
             </div>
-            <div class="flex items-center gap-1">
+            <div class="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
                 @if($this->activeConversation)
                     @if($this->activeConversation->isGroup())
                         <!-- Group Settings & Management -->
@@ -653,6 +757,22 @@
                             </svg>
                         </button>
                     @endif
+
+                    <!-- Online Status Toggle -->
+                    <button
+                        type="button"
+                        wire:click="toggleOnlineStatus"
+                        class="rounded-lg p-1.5 transition {{ auth()->user()?->online_status_enabled ?? true ? 'text-emerald-500 hover:bg-emerald-50 dark:hover:bg-gray-700' : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700' }}"
+                        title="{{ auth()->user()?->online_status_enabled ?? true ? 'Online status: VISIBLE (Online dot & Last active shared). Click to hide.' : 'Online status: HIDDEN (Hidden for both). Click to make visible.' }}"
+                    >
+                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            @if(auth()->user()?->online_status_enabled ?? true)
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z"/>
+                            @else
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 01.263 12.465M5.636 5.636a9 9 0 00-.263 12.465M8.464 8.464a5 5 0 000 7.072m7.072-7.072a5 5 0 010 7.072M3 3l18 18"/>
+                            @endif
+                        </svg>
+                    </button>
 
                     <!-- Read Receipts Toggle -->
                     <button
@@ -1853,6 +1973,7 @@
                         $unread = $conv->unreadCountFor(auth()->id());
                         $latest = $conv->latestMessage;
                         $isPinned = $conv->isPinnedFor(auth()->id());
+                        $convRecipient = $conv->isGroup() ? null : $conv->getRecipient(auth()->id());
                     @endphp
                     <div
                         wire:key="float-conv-{{ $conv->id }}"
@@ -1871,6 +1992,14 @@
                                 <span class="absolute -top-1 -left-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[9px] text-white shadow">
                                     📌
                                 </span>
+                            @endif
+                            @if(!$conv->isGroup() && $convRecipient)
+                                <span x-init="userOnlinePrivacyMap[{{ $convRecipient->id }}] = {{ ($convRecipient->online_status_enabled ?? true) ? 'true' : 'false' }}; @if($convRecipient->last_active_at) userLastActiveMap[{{ $convRecipient->id }}] = '{{ $convRecipient->getLastActiveFormatted() }}'; @endif" class="hidden"></span>
+                                <span 
+                                    x-show="isUserOnline({{ $convRecipient->id }})"
+                                    class="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-500 dark:border-gray-900"
+                                    title="Online"
+                                ></span>
                             @endif
                         </div>
                         <div class="min-w-0 flex-1">

@@ -27,6 +27,9 @@ class UserForm
                 Toggle::make('read_receipts_enabled')
                     ->label('Read Receipts (Blue Ticks)')
                     ->default(true),
+                Toggle::make('online_status_enabled')
+                    ->label('Show Online Status & Last Active')
+                    ->default(true),
                 TextInput::make('name')
                     ->required(),
                 TextInput::make('username')

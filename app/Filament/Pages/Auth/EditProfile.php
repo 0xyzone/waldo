@@ -21,6 +21,7 @@ class EditProfile extends BaseEditProfile
                 $this->getEmailFormComponent(),
                 $this->getPhoneFormComponent(),
                 $this->getReadReceiptsFormComponent(),
+                $this->getOnlineStatusFormComponent(),
                 $this->getPasswordFormComponent(),
                 $this->getPasswordConfirmationFormComponent(),
                 $this->getCurrentPasswordFormComponent(),
@@ -46,6 +47,14 @@ class EditProfile extends BaseEditProfile
         return Toggle::make('read_receipts_enabled')
             ->label('Read Receipts (Blue Ticks)')
             ->helperText("If turned off, you won't send read receipts, and you won't be able to see other users' seen status.")
+            ->default(true);
+    }
+
+    protected function getOnlineStatusFormComponent(): Component
+    {
+        return Toggle::make('online_status_enabled')
+            ->label('Show Online Status & Last Active')
+            ->helperText("If turned off, others won't be able to see when you are online or your last active time, and you won't see theirs.")
             ->default(true);
     }
 

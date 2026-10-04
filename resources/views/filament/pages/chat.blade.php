@@ -36,6 +36,9 @@
         x-data="{
             activeConversationId: @entangle('activeConversationId'),
             onlineUserIds: [],
+            viewerOnlineStatusEnabled: {{ (auth()->user()?->online_status_enabled ?? true) ? 'true' : 'false' }},
+            userOnlinePrivacyMap: {},
+            userLastActiveMap: {},
             isRecording: false,
             isRecordingEnded: false,
             isCancelled: false,
@@ -103,18 +106,28 @@
             initEcho() {
                 if (!window.Echo) return;
 
-                // Track presence
+                // Track presence with WhatsApp-style privacy controls
                 window.Echo.join('chat.presence')
                     .here((users) => {
-                        this.onlineUserIds = users.map(u => u.id);
+                        this.onlineUserIds = [];
+                        users.forEach(u => {
+                            const enabled = (u.online_status_enabled !== false);
+                            this.userOnlinePrivacyMap[u.id] = enabled;
+                            if (enabled && !this.onlineUserIds.includes(u.id)) {
+                                this.onlineUserIds.push(u.id);
+                            }
+                        });
                     })
                     .joining((user) => {
-                        if (!this.onlineUserIds.includes(user.id)) {
+                        const enabled = (user.online_status_enabled !== false);
+                        this.userOnlinePrivacyMap[user.id] = enabled;
+                        if (enabled && !this.onlineUserIds.includes(user.id)) {
                             this.onlineUserIds.push(user.id);
                         }
                     })
                     .leaving((user) => {
                         this.onlineUserIds = this.onlineUserIds.filter(id => id !== user.id);
+                        this.userLastActiveMap[user.id] = 'Just now';
                     });
 
                 // User's personal channel
@@ -199,8 +212,28 @@
                 }
             },
 
+            canViewUserOnline(userId) {
+                if (!this.viewerOnlineStatusEnabled) return false;
+                if (!userId) return false;
+                if (this.userOnlinePrivacyMap[userId] === false) return false;
+                return true;
+            },
+
             isUserOnline(userId) {
+                if (!this.canViewUserOnline(userId)) return false;
                 return this.onlineUserIds.includes(userId);
+            },
+
+            getUserLastActiveText(userId, initialFallback) {
+                if (!this.canViewUserOnline(userId)) return '';
+                if (this.isUserOnline(userId)) return 'Online';
+                if (this.userLastActiveMap[userId]) {
+                    return 'Last seen ' + this.userLastActiveMap[userId];
+                }
+                if (initialFallback) {
+                    return 'Last seen ' + initialFallback;
+                }
+                return 'Offline';
             },
 
             playTing() {
@@ -721,6 +754,7 @@
                             @endif
 
                             @if(!$isGroup && $recipient)
+                                <span x-init="userOnlinePrivacyMap[{{ $recipient->id }}] = {{ ($recipient->online_status_enabled ?? true) ? 'true' : 'false' }}; @if($recipient->last_active_at) userLastActiveMap[{{ $recipient->id }}] = '{{ $recipient->getLastActiveFormatted() }}'; @endif" class="hidden"></span>
                                 <span 
                                     x-show="isUserOnline({{ $recipient->id }})"
                                     class="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-500 dark:border-slate-900"
@@ -860,6 +894,7 @@
                             @endif
 
                             @if(!$isGroup && $recipient)
+                                <span x-init="userOnlinePrivacyMap[{{ $recipient->id }}] = {{ ($recipient->online_status_enabled ?? true) ? 'true' : 'false' }}; @if($recipient->last_active_at) userLastActiveMap[{{ $recipient->id }}] = '{{ $recipient->getLastActiveFormatted() }}'; @endif" class="hidden"></span>
                                 <span 
                                     x-show="isUserOnline({{ $recipient->id }})"
                                     class="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-500 dark:border-slate-900"
@@ -891,17 +926,42 @@
                                 @else
                                     @if($recipient?->username)
                                         <span class="truncate">@<span>{{ $recipient->username }}</span></span>
-                                        <span class="flex-shrink-0">•</span>
+                                        <span class="flex-shrink-0" x-show="canViewUserOnline({{ $recipient?->id ?? 0 }})">•</span>
                                     @endif
-                                    <span x-show="isUserOnline({{ $recipient?->id ?? 0 }})" class="font-medium text-emerald-600 dark:text-emerald-400 flex-shrink-0">Online</span>
-                                    <span x-show="!isUserOnline({{ $recipient?->id ?? 0 }})" class="flex-shrink-0">Offline</span>
+                                    <template x-if="canViewUserOnline({{ $recipient?->id ?? 0 }})">
+                                        <div class="flex items-center gap-1 min-w-0 flex-shrink-0">
+                                            <span x-show="isUserOnline({{ $recipient?->id ?? 0 }})" class="font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1 flex-shrink-0">
+                                                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                                Online
+                                            </span>
+                                            <span x-show="!isUserOnline({{ $recipient?->id ?? 0 }})" class="flex-shrink-0 truncate text-gray-500 dark:text-slate-400" x-text="getUserLastActiveText({{ $recipient?->id ?? 0 }}, '{{ $recipient?->getLastActiveFormatted() ?? '' }}')">
+                                                {{ $recipient?->getLastActiveFormatted() ? 'Last seen '.$recipient->getLastActiveFormatted() : 'Offline' }}
+                                            </span>
+                                        </div>
+                                    </template>
                                 @endif
                             </div>
                         </div>
                     </div>
 
-                    <!-- Header Actions (Read Receipts, Search & Group Settings) -->
+                    <!-- Header Actions (Online Privacy, Read Receipts, Search & Group Settings) -->
                     <div class="flex items-center gap-0.5 sm:gap-1.5 flex-shrink-0">
+                        <!-- Online Status & Last Active Privacy Toggle -->
+                        <button
+                            type="button"
+                            wire:click="toggleOnlineStatus"
+                            class="rounded-xl p-1.5 sm:p-2 transition {{ auth()->user()?->online_status_enabled ?? true ? 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-slate-800' : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800' }}"
+                            title="{{ auth()->user()?->online_status_enabled ?? true ? 'Online status: VISIBLE (Online dot & Last active shared). Click to hide.' : 'Online status: HIDDEN (Hidden for both). Click to make visible.' }}"
+                        >
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                @if(auth()->user()?->online_status_enabled ?? true)
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.636 18.364a9 9 0 010-12.728m12.728 0a9 9 0 010 12.728m-9.9-2.829a5 5 0 010-7.07m7.072 0a5 5 0 010 7.07M13 12a1 1 0 11-2 0 1 1 0 012 0z"/>
+                                @else
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 01.263 12.465M5.636 5.636a9 9 0 00-.263 12.465M8.464 8.464a5 5 0 000 7.072m7.072-7.072a5 5 0 010 7.072M3 3l18 18"/>
+                                @endif
+                            </svg>
+                        </button>
+
                         <button
                             type="button"
                             wire:click="toggleReadReceipts"

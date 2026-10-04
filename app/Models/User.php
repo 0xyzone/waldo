@@ -18,7 +18,7 @@ use Laravel\Sanctum\HasApiTokens;
 use NotificationChannels\WebPush\HasPushSubscriptions;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'username', 'email', 'phone', 'avatar_url', 'password', 'must_change_password', 'read_receipts_enabled'])]
+#[Fillable(['name', 'username', 'email', 'phone', 'avatar_url', 'password', 'must_change_password', 'read_receipts_enabled', 'online_status_enabled', 'last_active_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerifyEmail
 {
@@ -53,7 +53,56 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
             'password' => 'hashed',
             'must_change_password' => 'boolean',
             'read_receipts_enabled' => 'boolean',
+            'online_status_enabled' => 'boolean',
+            'last_active_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Check if this user and another user can mutually view online & last active status.
+     * Follows WhatsApp / Messenger privacy model: if either disables online status, it is hidden for both.
+     */
+    public function canViewUserOnlineStatus(?User $otherUser): bool
+    {
+        if (! $otherUser) {
+            return false;
+        }
+
+        $viewerEnabled = (bool) ($this->online_status_enabled ?? true);
+        $otherEnabled = (bool) ($otherUser->online_status_enabled ?? true);
+
+        return $viewerEnabled && $otherEnabled;
+    }
+
+    /**
+     * Human readable last active timestamp.
+     */
+    public function getLastActiveFormatted(): ?string
+    {
+        if (! $this->last_active_at) {
+            return null;
+        }
+
+        $now = now();
+        $diffSeconds = $this->last_active_at->diffInSeconds($now);
+
+        if ($diffSeconds < 60) {
+            return 'Just now';
+        }
+
+        if ($this->last_active_at->isToday()) {
+            return 'Today at '.$this->last_active_at->format('g:i A');
+        }
+
+        if ($this->last_active_at->isYesterday()) {
+            return 'Yesterday at '.$this->last_active_at->format('g:i A');
+        }
+
+        if ($this->last_active_at->year === $now->year) {
+            return $this->last_active_at->format('M j \a\t g:i A');
+        }
+
+        return $this->last_active_at->format('M j, Y \a\t g:i A');
     }
 
     /**

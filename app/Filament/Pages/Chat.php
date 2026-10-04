@@ -429,6 +429,24 @@ class Chat extends Page
             ->send();
     }
 
+    public function toggleOnlineStatus(): void
+    {
+        $user = auth()->user();
+        if (! $user) {
+            return;
+        }
+
+        $newState = ! (bool) ($user->online_status_enabled ?? true);
+        $user->update(['online_status_enabled' => $newState]);
+
+        Notification::make()
+            ->title($newState ? 'Online status enabled' : 'Online status hidden')
+            ->body($newState ? 'Others can now see when you are online and your last active time, and you can see theirs.' : "If turned off, you won't see or share online and last active status.")
+            ->icon($newState ? 'heroicon-o-signal' : 'heroicon-o-signal-slash')
+            ->iconColor($newState ? 'success' : 'gray')
+            ->send();
+    }
+
     public function calculatePinnedUntil(string $duration): ?Carbon
     {
         return match ($duration) {

@@ -18,9 +18,14 @@ Broadcast::channel('chat.user.{userId}', function ($user, $userId) {
 });
 
 Broadcast::channel('chat.presence', function ($user) {
+    $user->timestamps = false;
+    $user->updateQuietly(['last_active_at' => now()]);
+
     return [
         'id' => $user->id,
         'name' => $user->name,
         'username' => $user->username,
+        'online_status_enabled' => (bool) ($user->online_status_enabled ?? true),
+        'last_active_at' => $user->last_active_at?->toIso8601String(),
     ];
 });
