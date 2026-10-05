@@ -14,10 +14,13 @@
     {{-- Vite Directive (Tailwind CSS v4 & App JS) --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    {{-- html-to-image library for crisp client-side JPG generation --}}
+    {{-- html2canvas & html-to-image libraries for crisp pixel-perfect client-side JPG generation --}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
 
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap');
+
         body {
             font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
             margin: 0;
@@ -213,7 +216,7 @@
                         <div class="flex flex-col items-end gap-1.5">
                             <div class="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-slate-900/90 border border-amber-400/40 shadow-xl shadow-amber-950/40 backdrop-blur-md">
                                 <span class="w-3 h-3 rounded-full bg-amber-400 animate-pulse"></span>
-                                <span class="font-display text-3xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-300 to-yellow-400">
+                                <span class="font-display text-3xl font-black tracking-wide text-amber-300 drop-shadow">
                                     {{ strtoupper($monthName) }} {{ $evaluatedYear ?? $report->year }}
                                 </span>
                             </div>
@@ -428,9 +431,10 @@
         async function downloadCardAsJpg() {
             const btn = document.getElementById('downloadBtn');
             const btnText = document.getElementById('downloadBtnText');
+            const wrapper = document.querySelector('.canvas-scale-wrapper');
             const targetEl = document.getElementById('master-wish-card-canvas');
 
-            if (!targetEl) {
+            if (!targetEl || !wrapper) {
                 alert('Card canvas element not found.');
                 return;
             }
@@ -438,18 +442,81 @@
             btn.disabled = true;
             btnText.textContent = 'Generating High-Res JPG...';
 
+            // Save original styling
+            const origWrapperTransform = wrapper.style.transform;
+            const origWrapperMargin = wrapper.style.marginBottom;
+            const origTargetPosition = targetEl.style.position;
+            const origTargetLeft = targetEl.style.left;
+            const origTargetTop = targetEl.style.top;
+            const origTargetZIndex = targetEl.style.zIndex;
+            const origTargetWidth = targetEl.style.width;
+            const origTargetHeight = targetEl.style.height;
+
             try {
-                // Generate high-resolution JPG directly using html-to-image
-                const dataUrl = await htmlToImage.toJpeg(targetEl, {
-                    quality: 0.96,
-                    width: 2400,
-                    height: 1350,
-                    pixelRatio: 1, // Canvas is already 2400x1350 QHD
-                    style: {
-                        transform: 'none',
-                        margin: '0',
+                // Temporarily disable wrapper scale transform and bring target canvas to 1:1 scale
+                wrapper.style.transform = 'none';
+                wrapper.style.marginBottom = '0';
+                targetEl.style.position = 'fixed';
+                targetEl.style.left = '0';
+                targetEl.style.top = '0';
+                targetEl.style.width = '2400px';
+                targetEl.style.height = '1350px';
+                targetEl.style.zIndex = '999999';
+
+                // Ensure all Google fonts are fully loaded into memory before capture
+                if (document.fonts && document.fonts.ready) {
+                    try { await document.fonts.ready; } catch(e) {}
+                }
+                await new Promise(r => setTimeout(r, 250));
+
+                let dataUrl = null;
+
+                // 1. Try html2canvas first (renders raster directly from browser's live computed layout)
+                if (typeof window.html2canvas !== 'undefined') {
+                    try {
+                        const canvas = await window.html2canvas(targetEl, {
+                            width: 2400,
+                            height: 1350,
+                            scale: 1,
+                            useCORS: true,
+                            allowTaint: true,
+                            backgroundColor: '#020617',
+                            logging: false,
+                            windowWidth: 2400,
+                            windowHeight: 1350,
+                            x: 0,
+                            y: 0,
+                        });
+                        dataUrl = canvas.toDataURL('image/jpeg', 0.96);
+                    } catch (canvasErr) {
+                        console.warn('html2canvas capture failed, falling back to htmlToImage:', canvasErr);
                     }
-                });
+                }
+
+                // 2. Fallback to htmlToImage if html2canvas is unavailable or failed
+                if (!dataUrl && typeof window.htmlToImage !== 'undefined') {
+                    try {
+                        dataUrl = await window.htmlToImage.toJpeg(targetEl, {
+                            quality: 0.96,
+                            width: 2400,
+                            height: 1350,
+                            canvasWidth: 2400,
+                            canvasHeight: 1350,
+                            pixelRatio: 1,
+                            style: {
+                                transform: 'none',
+                                margin: '0',
+                                position: 'static'
+                            }
+                        });
+                    } catch (imageErr) {
+                        console.warn('htmlToImage capture failed:', imageErr);
+                    }
+                }
+
+                if (!dataUrl) {
+                    throw new Error('Failed to generate image data.');
+                }
 
                 const filename = 'EOM-GOM-WishCard-{{ \Illuminate\Support\Str::slug($monthName) }}-{{ $evaluatedYear ?? $report->year }}.jpg';
                 const link = document.createElement('a');
@@ -460,8 +527,18 @@
                 document.body.removeChild(link);
             } catch (err) {
                 console.error('Error generating card image:', err);
-                alert('Could not generate JPG automatically. You can still use the "Print" button to save as PDF or image.');
+                alert('Could not generate JPG automatically. You can use the "Print" button to save as PDF or image.');
             } finally {
+                // Restore original preview scale
+                wrapper.style.transform = origWrapperTransform;
+                wrapper.style.marginBottom = origWrapperMargin;
+                targetEl.style.position = origTargetPosition;
+                targetEl.style.left = origTargetLeft;
+                targetEl.style.top = origTargetTop;
+                targetEl.style.zIndex = origTargetZIndex;
+                targetEl.style.width = origTargetWidth;
+                targetEl.style.height = origTargetHeight;
+
                 btn.disabled = false;
                 btnText.textContent = 'Download Card (JPG)';
             }
