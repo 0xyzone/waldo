@@ -7,8 +7,8 @@
     <x-favicon />
     <style>
         @page {
-            size: A4 portrait;
-            margin: 12mm 15mm;
+            size: A4 landscape;
+            margin: 10mm 15mm;
         }
 
         body {
@@ -230,13 +230,13 @@
     <table class="report-table">
         <thead>
             <tr>
-                <th style="width: 35px;" class="text-center">S.N.</th>
-                <th style="width: 180px;">Award Category</th>
-                <th style="width: 160px;">Department</th>
-                <th style="width: 90px;" class="text-center">Emp Code</th>
-                <th style="width: 220px;">Employee Name</th>
-                <th style="width: 180px;">Designation</th>
-                <th style="width: 120px;" class="text-center">Signature</th>
+                <th style="width: 45px;" class="text-center">S.N.</th>
+                <th style="width: 200px;">Award Category</th>
+                <th style="width: 200px;">Department</th>
+                <th style="width: 110px;" class="text-center">Emp Code</th>
+                <th style="width: 260px;">Employee Name</th>
+                <th style="width: 220px;">Designation</th>
+                <th style="width: 160px;" class="text-center">Signature</th>
             </tr>
         </thead>
         <tbody>
