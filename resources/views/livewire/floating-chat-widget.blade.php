@@ -1331,6 +1331,37 @@
                     members: @js($this->groupMembers),
                     isGroup: {{ $isFloatingGroup ? 'true' : 'false' }},
 
+                    init() {
+                        this.$nextTick(() => this.resizeInput());
+                        this.$watch('$wire.messageText', () => {
+                            this.$nextTick(() => this.resizeInput());
+                        });
+                        $wire.on('floating-conversation-changed', () => {
+                            this.$nextTick(() => this.resizeInput());
+                        });
+                        $wire.on('focus-floating-input', () => {
+                            this.$nextTick(() => {
+                                this.$refs.floatMessageInput?.focus();
+                                this.resizeInput();
+                            });
+                        });
+                    },
+
+                    resizeInput() {
+                        const el = this.$refs.floatMessageInput;
+                        if (!el) return;
+                        el.style.height = 'auto';
+                        const maxHeight = 110;
+                        const scrollH = el.scrollHeight;
+                        if (scrollH > maxHeight) {
+                            el.style.height = maxHeight + 'px';
+                            el.style.overflowY = 'auto';
+                        } else {
+                            el.style.height = Math.max(scrollH, 34) + 'px';
+                            el.style.overflowY = 'hidden';
+                        }
+                    },
+
                     get filteredMembers() {
                         if (!this.isGroup) return [];
                         const q = (this.mentionQuery || '').toLowerCase().trim();
@@ -1409,6 +1440,7 @@
                             input.focus();
                             const newPos = before.length + tag.length;
                             input.setSelectionRange(newPos, newPos);
+                            this.resizeInput();
                         });
                     },
 
@@ -1428,6 +1460,7 @@
                             input.focus();
                             input.setSelectionRange(text.length, text.length);
                             this.detectMention();
+                            this.resizeInput();
                         });
                     },
 
@@ -1460,7 +1493,18 @@
                             this.showMentionMenu = false;
                             if ($wire.messageText.trim().length > 0 || $wire.attachment) {
                                 $wire.sendMessage();
+                                const input = this.$refs.floatMessageInput;
+                                if (input) {
+                                    input.value = '';
+                                }
+                                this.$nextTick(() => {
+                                    this.resizeInput();
+                                });
                             }
+                        } else if (e.key === 'Enter' && e.shiftKey) {
+                            this.$nextTick(() => {
+                                this.resizeInput();
+                            });
                         }
                     }
                 }"
@@ -1772,7 +1816,7 @@
                     </div>
 
                     <!-- Normal Input Form -->
-                    <form x-show="!isRecording" wire:submit.prevent="sendMessage" class="flex items-center gap-1.5">
+                    <form x-show="!isRecording" wire:submit.prevent="sendMessage" class="flex items-end gap-1.5">
                         <!-- File input hidden -->
                         <input
                             type="file"
@@ -1785,7 +1829,7 @@
                         <button
                             type="button"
                             @click="$refs.floatFileInput.click()"
-                            class="flex-shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-200 transition"
+                            class="flex-shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-200 transition mb-0.5"
                             title="Attach file or photo"
                         >
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1797,7 +1841,7 @@
                         <button
                             type="button"
                             @click="startRecording"
-                            class="flex-shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-amber-600 dark:hover:bg-gray-800 dark:hover:text-amber-400 transition"
+                            class="flex-shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-amber-600 dark:hover:bg-gray-800 dark:hover:text-amber-400 transition mb-0.5"
                             title="Record voice message"
                         >
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1810,32 +1854,35 @@
                             <button
                                 type="button"
                                 @click="openMentionMenu"
-                                class="flex-shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-amber-600 dark:hover:bg-gray-800 dark:hover:text-amber-400 transition"
+                                class="flex-shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-amber-600 dark:hover:bg-gray-800 dark:hover:text-amber-400 transition mb-0.5"
                                 title="Mention group member (@all or @member)"
                             >
                                 <span class="flex h-4 w-4 items-center justify-center text-xs font-black leading-none select-none">@</span>
                             </button>
                         @endif
 
-                        <!-- Input Field (Dark Mode bullet-proof) -->
+                        <!-- Input Field (Autosizing Textarea according to text wrapping) -->
                         <div class="relative flex-1 min-w-0">
-                            <input
-                                type="text"
+                            <textarea
                                 x-ref="floatMessageInput"
                                 wire:model="messageText"
-                                @input="detectMention"
+                                rows="1"
+                                @input="detectMention(); resizeInput();"
                                 @click="detectMention"
                                 @keyup="detectMention"
                                 @keydown="handleFloatInputKeyDown"
+                                @paste="$nextTick(() => resizeInput())"
+                                @cut="$nextTick(() => resizeInput())"
                                 placeholder="{{ $isFloatingGroup ? 'Write a message... (Type @ to mention)' : 'Write a message...' }}"
-                                class="chat-input-field w-full rounded-xl border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
-                            />
+                                class="chat-input-field block w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-xs leading-normal text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 resize-none transition-[height] duration-75 ease-out"
+                                style="min-height: 34px; max-height: 110px; overflow-y: hidden;"
+                            ></textarea>
                         </div>
 
                         <!-- Send Button -->
                         <button
                             type="submit"
-                            class="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-amber-600 text-white shadow transition hover:bg-amber-500"
+                            class="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-amber-600 text-white shadow transition hover:bg-amber-500 mb-0.5"
                         >
                             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
