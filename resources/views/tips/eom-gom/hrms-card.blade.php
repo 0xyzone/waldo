@@ -9,7 +9,7 @@
     <!-- Google Fonts for Luxury Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <!-- htmlToImage & html2canvas for instant 100% faithful JPG generation -->
     <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
@@ -23,7 +23,7 @@
         }
 
         body {
-            background-color: #0b1120;
+            background-color: #080c16;
             color: #f8fafc;
             font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
             min-height: 100vh;
@@ -33,7 +33,7 @@
             padding: 24px 16px;
         }
 
-        /* Top Control Bar */
+        /* Top Action / Control Bar */
         .control-bar {
             width: 100%;
             max-width: 1200px;
@@ -41,8 +41,8 @@
             justify-content: space-between;
             align-items: center;
             background: rgba(15, 23, 42, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(14px);
             padding: 12px 20px;
             border-radius: 14px;
             margin-bottom: 24px;
@@ -131,318 +131,380 @@
         }
 
         /* -------------------------------------------------------------------------- */
-        /* MASTER 2708 x 1492 CANVAS CARD (CLEAN LUXURY DESIGN)                      */
+        /* MASTER 2708 x 1492 CANVAS CARD (FRESH EXECUTIVE WALL OF FAME)             */
         /* -------------------------------------------------------------------------- */
         #hrms-wish-card-canvas {
             width: 2708px;
             height: 1492px;
             min-width: 2708px;
             min-height: 1492px;
-            background: radial-gradient(ellipse at 50% 20%, #162447 0%, #0d152a 55%, #060913 100%);
+            background: linear-gradient(135deg, #070c17 0%, #0c152a 50%, #060a14 100%);
             color: #ffffff;
             border: 14px solid #d4af37;
             border-radius: 8px;
-            padding: 44px 64px 36px 64px;
+            padding: 38px 50px 32px 50px;
             position: relative;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            box-shadow: 0 30px 80px rgba(0,0,0,0.95);
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.98);
             box-sizing: border-box;
         }
 
-        /* Fine Interior Framing Line */
+        /* Fine Inset Framing */
         .inner-frame {
             position: absolute;
             inset: 14px;
-            border: 1.5px solid rgba(212, 175, 55, 0.4);
+            border: 1.5px solid rgba(212, 175, 55, 0.45);
             border-radius: 4px;
             pointer-events: none;
         }
 
-        /* Card Header */
+        /* -------------------------------------------------------------------------- */
+        /* HEADER SECTION (ELEGANT & COMPACT)                                        */
+        /* -------------------------------------------------------------------------- */
         .card-header {
             text-align: center;
             position: relative;
             z-index: 5;
-            padding-top: 6px;
+            padding-bottom: 14px;
+            border-bottom: 1.5px solid rgba(212, 175, 55, 0.3);
         }
 
-        .super-title {
+        .header-kicker {
             font-family: 'Cinzel', serif;
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 700;
             letter-spacing: 8px;
             text-transform: uppercase;
             color: #d4af37;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
 
-        .main-card-title {
+        .header-title {
             font-family: 'Cinzel', serif;
-            font-size: 56px;
+            font-size: 52px;
             font-weight: 900;
             letter-spacing: 4px;
             text-transform: uppercase;
             color: #ffffff;
             line-height: 1.15;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 16px rgba(0, 0, 0, 0.8);
         }
 
-        .month-ribbon {
+        .header-badge {
             display: inline-block;
-            background: rgba(212, 175, 55, 0.12);
+            background: rgba(212, 175, 55, 0.15);
             border: 1.5px solid #d4af37;
             border-radius: 30px;
-            padding: 7px 44px;
+            padding: 6px 42px;
             font-family: 'Cinzel', serif;
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 800;
             letter-spacing: 5px;
             color: #fef08a;
             text-transform: uppercase;
         }
 
-        /* Showcase Area: 2 Clean Rows (Row 1: 3 EOM Cards; Row 2: 2 GOM Cards) */
-        .showcase-area {
+        /* -------------------------------------------------------------------------- */
+        /* MAIN GALLERY STAGE (5 UNIFIED FULL-HEIGHT SHOWCASE CARDS)                 */
+        /* -------------------------------------------------------------------------- */
+        .gallery-stage {
+            display: flex;
+            align-items: stretch;
+            gap: 28px;
             position: relative;
             z-index: 5;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-            margin-top: 24px;
-            margin-bottom: 20px;
+            margin-top: 18px;
+            margin-bottom: 18px;
             flex: 1;
         }
 
-        .section-group {
+        /* ZONE 1: EOM (Left 3 Cards) */
+        .zone-eom {
+            flex: 3;
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
 
-        .section-heading {
+        /* ZONE 2: GOM (Right 2 Cards) */
+        .zone-gom {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Zone Header Bar */
+        .zone-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 18px;
+            border-radius: 12px;
             font-family: 'Cinzel', serif;
-            font-size: 20px;
-            font-weight: 800;
-            letter-spacing: 3px;
             text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            letter-spacing: 2px;
         }
 
-        .heading-eom {
+        .zone-header-eom {
+            background: linear-gradient(90deg, rgba(245, 158, 11, 0.22) 0%, rgba(245, 158, 11, 0.05) 100%);
+            border-left: 5px solid #f59e0b;
             color: #fbbf24;
+            font-size: 19px;
+            font-weight: 800;
         }
 
-        .heading-gom {
+        .zone-header-gom {
+            background: linear-gradient(90deg, rgba(14, 165, 233, 0.22) 0%, rgba(14, 165, 233, 0.05) 100%);
+            border-left: 5px solid #0ea5e9;
             color: #38bdf8;
+            font-size: 19px;
+            font-weight: 800;
         }
 
-        .cards-row-eom {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
+        .zone-cards-grid {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+            align-items: stretch;
         }
 
-        .cards-row-gom {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 24px;
-        }
-
-        /* Clean Luxury Winner Card */
-        .winner-card {
-            background: rgba(15, 23, 42, 0.75);
-            border: 2px solid rgba(212, 175, 55, 0.4);
+        /* -------------------------------------------------------------------------- */
+        /* INDIVIDUAL EXECUTIVE SPOTLIGHT CARD (EQUAL FULL HEIGHT)                   */
+        /* -------------------------------------------------------------------------- */
+        .spotlight-card {
+            flex: 1;
+            background: linear-gradient(180deg, rgba(22, 34, 58, 0.85) 0%, rgba(10, 16, 30, 0.95) 100%);
             border-radius: 18px;
-            padding: 22px 28px;
+            padding: 28px 24px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            align-items: center;
+            text-align: center;
             position: relative;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            min-height: 290px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+            box-sizing: border-box;
         }
 
-        .winner-card-gom {
-            border-color: rgba(56, 189, 248, 0.4);
+        .card-eom {
+            border: 2px solid rgba(212, 175, 55, 0.5);
         }
 
-        /* Top Bar inside Card */
-        .card-top-bar {
+        .card-gom {
+            border: 2px solid rgba(56, 189, 248, 0.5);
+        }
+
+        /* Card Top Header */
+        .card-top {
+            width: 100%;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            padding-bottom: 14px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 12px;
-            margin-bottom: 14px;
         }
 
-        .dept-pill {
-            font-size: 14px;
+        .pill-dept {
+            font-size: 13px;
             font-weight: 700;
-            color: #fde047;
             text-transform: uppercase;
             letter-spacing: 1px;
-            background: rgba(253, 224, 71, 0.1);
-            padding: 4px 14px;
+            padding: 4px 12px;
             border-radius: 20px;
-            border: 1px solid rgba(253, 224, 71, 0.25);
+            max-width: 65%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .dept-pill-gom {
+        .pill-dept-eom {
+            color: #fde047;
+            background: rgba(253, 224, 71, 0.12);
+            border: 1px solid rgba(253, 224, 71, 0.3);
+        }
+
+        .pill-dept-gom {
             color: #7dd3fc;
-            background: rgba(125, 211, 252, 0.1);
-            border-color: rgba(125, 211, 252, 0.25);
+            background: rgba(125, 211, 252, 0.12);
+            border: 1px solid rgba(125, 211, 252, 0.3);
         }
 
-        .award-badge {
+        .badge-winner {
             font-size: 12px;
             font-weight: 800;
-            letter-spacing: 1.5px;
             text-transform: uppercase;
-            padding: 4px 12px;
-            border-radius: 8px;
+            letter-spacing: 1px;
+            padding: 4px 10px;
+            border-radius: 6px;
         }
 
-        .badge-eom {
+        .badge-winner-eom {
             background: linear-gradient(135deg, #d97706, #b45309);
             color: #ffffff;
             border: 1px solid #fde68a;
         }
 
-        .badge-gom {
+        .badge-winner-gom {
             background: linear-gradient(135deg, #0284c7, #0369a1);
             color: #ffffff;
             border: 1px solid #bae6fd;
         }
 
-        /* Middle Content: Avatar + Name + Designation */
-        .card-content {
+        /* Center Monogram Medallion */
+        .card-body {
+            width: 100%;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 22px;
-            flex: 1;
+            gap: 16px;
+            margin: auto 0;
+            padding: 20px 0;
         }
 
-        .avatar-circle {
-            width: 84px;
-            height: 84px;
-            min-width: 84px;
+        .medallion {
+            width: 124px;
+            height: 124px;
+            min-width: 124px;
+            min-height: 124px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Cinzel', serif;
-            font-size: 32px;
+            font-size: 46px;
             font-weight: 900;
             color: #0f172a;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
         }
 
-        .avatar-eom {
+        .medallion-eom {
             background: linear-gradient(135deg, #fef08a 0%, #eab308 50%, #ca8a04 100%);
-            border: 3px solid #ffffff;
+            border: 4px solid #ffffff;
         }
 
-        .avatar-gom {
+        .medallion-gom {
             background: linear-gradient(135deg, #e0f2fe 0%, #38bdf8 50%, #0284c7 100%);
-            border: 3px solid #ffffff;
+            border: 4px solid #ffffff;
         }
 
-        .employee-info {
+        .winner-title-wrap {
+            width: 100%;
             display: flex;
             flex-direction: column;
-            gap: 5px;
-            flex: 1;
-            min-width: 0;
-        }
-
-        .winner-name {
-            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-            font-size: 32px;
-            font-weight: 800;
-            color: #ffffff;
-            line-height: 1.2;
-            letter-spacing: -0.5px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .winner-meta {
-            display: flex;
             align-items: center;
-            gap: 12px;
-            font-size: 16px;
-            color: #94a3b8;
+            gap: 6px;
+        }
+
+        .winner-fullname {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 34px;
+            font-weight: 900;
+            color: #ffffff;
+            line-height: 1.25;
+            letter-spacing: -0.3px;
+            max-width: 100%;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .winner-designation {
+            font-size: 19px;
             font-weight: 600;
-        }
-
-        .emp-code-pill {
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #e2e8f0;
-            font-family: monospace;
-            font-size: 14px;
-            font-weight: 700;
-            padding: 2px 10px;
-            border-radius: 6px;
-            flex-shrink: 0;
-        }
-
-        .designation-text {
             color: #cbd5e1;
-            font-size: 17px;
-            font-weight: 600;
+            max-width: 100%;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        /* Clean remarks note (if provided) */
-        .remarks-line {
-            font-size: 14px;
+        .winner-code-tag {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 3px 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 15px;
+            font-weight: 700;
+            color: #e2e8f0;
+            margin-top: 4px;
+        }
+
+        /* Bottom Section of Card */
+        .card-bottom {
+            width: 100%;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 14px;
+        }
+
+        .remark-quote {
+            font-size: 14.5px;
             font-style: italic;
             color: #94a3b8;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            padding-top: 8px;
-            margin-top: 10px;
-            white-space: nowrap;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
             overflow: hidden;
-            text-overflow: ellipsis;
         }
 
-        /* Empty Slot Presentation */
-        .empty-slot {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            min-height: 150px;
-            color: #64748b;
-            font-size: 18px;
+        .ribbon-honor {
+            font-size: 12px;
             font-weight: 700;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
+            padding: 5px 12px;
+            border-radius: 6px;
+            display: inline-block;
         }
 
-        .empty-slot-sub {
-            font-size: 13px;
+        .ribbon-honor-eom {
+            color: #fde68a;
+            background: rgba(245, 158, 11, 0.12);
+        }
+
+        .ribbon-honor-gom {
+            color: #bae6fd;
+            background: rgba(14, 165, 233, 0.12);
+        }
+
+        /* Unassigned Card State */
+        .card-unassigned {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            background: rgba(15, 23, 42, 0.4);
+            justify-content: center;
+        }
+
+        .unassigned-label {
+            font-family: 'Cinzel', serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+        }
+
+        .unassigned-sub {
+            font-size: 14px;
             color: #475569;
-            margin-top: 4px;
-            text-transform: none;
-            letter-spacing: normal;
+            font-weight: 500;
         }
 
-        /* Card Footer */
+        /* -------------------------------------------------------------------------- */
+        /* FOOTER (CLEAN LUXURY BASELINE)                                            */
+        /* -------------------------------------------------------------------------- */
         .card-footer {
             border-top: 1.5px solid rgba(212, 175, 55, 0.3);
-            padding-top: 14px;
+            padding-top: 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -528,110 +590,128 @@
 
                 <!-- Header Banner -->
                 <div class="card-header">
-                    <div class="super-title">★ Waldo Dynasty Resort & Casino • Monthly Recognition ★</div>
-                    <h1 class="main-card-title">Employee & Grooming of the Month</h1>
-                    <div class="month-ribbon">
+                    <div class="header-kicker">★ Waldo Dynasty Resort & Casino • Monthly Recognition Honors ★</div>
+                    <h1 class="header-title">Employee & Grooming of the Month</h1>
+                    <div class="header-badge">
                         ✦ Honorees of {{ strtoupper($monthName) }} {{ $evaluatedYear ?? $report->year }} ✦
                     </div>
                 </div>
 
-                <!-- Showcase Grid: EOM (Row 1) & GOM (Row 2) -->
-                <div class="showcase-area">
+                <!-- Main Gallery Stage: Unified 5 Full-Height Spotlight Cards -->
+                <div class="gallery-stage">
 
-                    <!-- SECTION 1: EMPLOYEES OF THE MONTH (3 Winners) -->
-                    <div class="section-group">
-                        <div class="section-heading heading-eom">
+                    <!-- ZONE 1: EMPLOYEES OF THE MONTH (3 Cards) -->
+                    <div class="zone-eom">
+                        <div class="zone-header zone-header-eom">
                             <span>🏆 Employees of the Month</span>
-                            <span style="font-size: 14px; color: #fde68a; font-weight: 600; text-transform: none; letter-spacing: 0;">(3 Honorees)</span>
+                            <span style="font-size: 13px; font-weight: 700; letter-spacing: 0;">3 Honorees</span>
                         </div>
 
-                        <div class="cards-row-eom">
+                        <div class="zone-cards-grid">
                             @foreach($eomWinners as $winner)
-                                <div class="winner-card">
-                                    <div class="card-top-bar">
-                                        <span class="dept-pill">{{ $winner['department'] }}</span>
-                                        <span class="award-badge badge-eom">🏆 {{ $winner['badge'] }}</span>
-                                    </div>
+                                @if($winner['employee'])
+                                    <div class="spotlight-card card-eom">
+                                        <div class="card-top">
+                                            <span class="pill-dept pill-dept-eom" title="{{ $winner['department'] }}">{{ $winner['department'] }}</span>
+                                            <span class="badge-winner badge-winner-eom">🏆 {{ $winner['badge'] }}</span>
+                                        </div>
 
-                                    @if($winner['employee'])
-                                        <div class="card-content">
-                                            <div class="avatar-circle avatar-eom">
+                                        <div class="card-body">
+                                            <div class="medallion medallion-eom">
                                                 {{ strtoupper(substr($winner['employee']->name, 0, 2)) }}
                                             </div>
 
-                                            <div class="employee-info">
-                                                <div class="winner-name" title="{{ $winner['employee']->name }}">
+                                            <div class="winner-title-wrap">
+                                                <div class="winner-fullname" title="{{ $winner['employee']->name }}">
                                                     {{ $winner['employee']->name }}
                                                 </div>
 
-                                                <div class="winner-meta">
-                                                    <span class="emp-code-pill">{{ $winner['employee']->employee_code }}</span>
-                                                    <span class="designation-text">{{ $winner['employee']->designation?->name ?: 'Staff' }}</span>
+                                                <div class="winner-designation" title="{{ $winner['employee']->designation?->name ?: 'Staff' }}">
+                                                    {{ $winner['employee']->designation?->name ?: 'Staff' }}
+                                                </div>
+
+                                                <div>
+                                                    <span class="winner-code-tag">{{ $winner['employee']->employee_code }}</span>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        @if(!empty($winner['remarks']))
-                                            <div class="remarks-line">
-                                                “{{ $winner['remarks'] }}”
-                                            </div>
-                                        @endif
-                                    @else
-                                        <div class="empty-slot">
-                                            <span>Slot Unassigned</span>
-                                            <span class="empty-slot-sub">{{ $winner['entry_label'] }}</span>
+                                        <div class="card-bottom">
+                                            @if(!empty($winner['remarks']))
+                                                <div class="remark-quote">
+                                                    “{{ $winner['remarks'] }}”
+                                                </div>
+                                            @else
+                                                <div class="ribbon-honor ribbon-honor-eom">
+                                                    ✦ Outstanding Performance ✦
+                                                </div>
+                                            @endif
                                         </div>
-                                    @endif
-                                </div>
+                                    </div>
+                                @else
+                                    <div class="spotlight-card card-unassigned">
+                                        <div class="unassigned-label">Slot Unassigned</div>
+                                        <div class="unassigned-sub">{{ $winner['entry_label'] }}</div>
+                                    </div>
+                                @endif
                             @endforeach
                         </div>
                     </div>
 
-                    <!-- SECTION 2: GROOMING OF THE MONTH (2 Winners) -->
-                    <div class="section-group">
-                        <div class="section-heading heading-gom">
+                    <!-- ZONE 2: GROOMING OF THE MONTH (2 Cards) -->
+                    <div class="zone-gom">
+                        <div class="zone-header zone-header-gom">
                             <span>✨ Grooming of the Month</span>
-                            <span style="font-size: 14px; color: #bae6fd; font-weight: 600; text-transform: none; letter-spacing: 0;">(2 Honorees)</span>
+                            <span style="font-size: 13px; font-weight: 700; letter-spacing: 0;">2 Honorees</span>
                         </div>
 
-                        <div class="cards-row-gom">
+                        <div class="zone-cards-grid">
                             @foreach($gomWinners as $winner)
-                                <div class="winner-card winner-card-gom">
-                                    <div class="card-top-bar">
-                                        <span class="dept-pill dept-pill-gom">{{ $winner['department'] }}</span>
-                                        <span class="award-badge badge-gom">✨ {{ $winner['badge'] }}</span>
-                                    </div>
+                                @if($winner['employee'])
+                                    <div class="spotlight-card card-gom">
+                                        <div class="card-top">
+                                            <span class="pill-dept pill-dept-gom" title="{{ $winner['department'] }}">{{ $winner['department'] }}</span>
+                                            <span class="badge-winner badge-winner-gom">✨ {{ $winner['badge'] }}</span>
+                                        </div>
 
-                                    @if($winner['employee'])
-                                        <div class="card-content">
-                                            <div class="avatar-circle avatar-gom">
+                                        <div class="card-body">
+                                            <div class="medallion medallion-gom">
                                                 {{ strtoupper(substr($winner['employee']->name, 0, 2)) }}
                                             </div>
 
-                                            <div class="employee-info">
-                                                <div class="winner-name" title="{{ $winner['employee']->name }}">
+                                            <div class="winner-title-wrap">
+                                                <div class="winner-fullname" title="{{ $winner['employee']->name }}">
                                                     {{ $winner['employee']->name }}
                                                 </div>
 
-                                                <div class="winner-meta">
-                                                    <span class="emp-code-pill">{{ $winner['employee']->employee_code }}</span>
-                                                    <span class="designation-text">{{ $winner['employee']->designation?->name ?: 'Staff' }}</span>
+                                                <div class="winner-designation" title="{{ $winner['employee']->designation?->name ?: 'Staff' }}">
+                                                    {{ $winner['employee']->designation?->name ?: 'Staff' }}
+                                                </div>
+
+                                                <div>
+                                                    <span class="winner-code-tag">{{ $winner['employee']->employee_code }}</span>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        @if(!empty($winner['remarks']))
-                                            <div class="remarks-line">
-                                                “{{ $winner['remarks'] }}”
-                                            </div>
-                                        @endif
-                                    @else
-                                        <div class="empty-slot">
-                                            <span>Slot Unassigned</span>
-                                            <span class="empty-slot-sub">{{ $winner['entry_label'] }}</span>
+                                        <div class="card-bottom">
+                                            @if(!empty($winner['remarks']))
+                                                <div class="remark-quote">
+                                                    “{{ $winner['remarks'] }}”
+                                                </div>
+                                            @else
+                                                <div class="ribbon-honor ribbon-honor-gom">
+                                                    ✦ Immaculate Grooming ✦
+                                                </div>
+                                            @endif
                                         </div>
-                                    @endif
-                                </div>
+                                    </div>
+                                @else
+                                    <div class="spotlight-card card-unassigned">
+                                        <div class="unassigned-label">Slot Unassigned</div>
+                                        <div class="unassigned-sub">{{ $winner['entry_label'] }}</div>
+                                    </div>
+                                @endif
                             @endforeach
                         </div>
                     </div>
@@ -730,7 +810,7 @@
                         scale: 1,
                         useCORS: true,
                         allowTaint: true,
-                        backgroundColor: '#060913',
+                        backgroundColor: '#070c17',
                         logging: false
                     });
                     dataUrl = canvas.toDataURL('image/jpeg', 0.95);
