@@ -168,6 +168,7 @@
         $e1 = $entries->firstWhere('entry_number', 1);
         $e2 = $entries->firstWhere('entry_number', 2);
         $e3 = $entries->firstWhere('entry_number', 3);
+        $e4 = $entries->firstWhere('entry_number', 4);
 
         $rows = [
             [
@@ -209,6 +210,14 @@
                 'department' => $e3?->department_name ?? ($e3?->department?->name ?? 'Allowed Department'),
                 'emp' => $e3?->gomEmployee1,
                 'remarks' => $e3?->gom_remarks_1,
+            ],
+            [
+                'cat' => 'EOM',
+                'badge_class' => 'badge-eom',
+                'category_label' => 'Employee of the Month (EOM)',
+                'department' => $e4?->department_name ?? ($e4?->department?->name ?? 'Allowed Department'),
+                'emp' => $e4?->eomEmployee1,
+                'remarks' => $e4?->eom_remarks_1,
             ],
         ];
     @endphp

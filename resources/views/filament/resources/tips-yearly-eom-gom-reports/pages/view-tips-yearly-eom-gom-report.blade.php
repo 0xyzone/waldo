@@ -9,6 +9,7 @@
         $e1 = $entries->firstWhere('entry_number', 1);
         $e2 = $entries->firstWhere('entry_number', 2);
         $e3 = $entries->firstWhere('entry_number', 3);
+        $e4 = $entries->firstWhere('entry_number', 4);
     @endphp
 
     {{-- Month Navigation Pills --}}
@@ -50,7 +51,7 @@
                     {{ $this->activePeriod['evaluated_label'] }}
                 </h2>
                 <p class="text-xs text-slate-300 mt-1">
-                    Evaluated Period: <strong class="text-white">{{ $this->activePeriod['evaluated_label'] }}</strong> • Released in <span class="text-amber-300 font-semibold">{{ $this->activePeriod['release_month'] }} {{ $record->year }}</span> (3 Department Entries • 5 Total Honorees)
+                    Evaluated Period: <strong class="text-white">{{ $this->activePeriod['evaluated_label'] }}</strong> • Released in <span class="text-amber-300 font-semibold">{{ $this->activePeriod['release_month'] }} {{ $record->year }}</span> (4 Department Entries • 6 Total Honorees)
                 </p>
             </div>
 
@@ -314,6 +315,65 @@
                         @if($e3->gom_remarks_1)
                             <div class="mt-3 p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-xs text-gray-600 dark:text-gray-300 italic">
                                 "{{ $e3->gom_remarks_1 }}"
+                            </div>
+                        @endif
+                    @else
+                        <div class="text-center py-4 text-xs text-gray-400">
+                            <x-heroicon-o-user-plus class="w-6 h-6 mx-auto mb-1 text-gray-300 dark:text-gray-600" />
+                            <span>Unassigned Slot</span>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        {{-- ENTRY 4: Random Allowed Department (1 EOM) --}}
+        <div class="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+            <div class="px-5 py-3.5 bg-gray-50/80 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="flex items-center justify-center w-7 h-7 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 font-bold text-xs">
+                        4
+                    </span>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white">
+                                {{ $e4?->department_name ?: ($e4?->department?->name ?: 'Allowed Department') }}
+                            </h3>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-400 font-bold uppercase tracking-wider">
+                                Random Selection (1 EOM)
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Selected automatically from non-excluded departments</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-5">
+                <div class="max-w-md p-4 rounded-xl border {{ $e4?->eomEmployee1 ? 'border-amber-200 dark:border-amber-900/50 bg-amber-50/20 dark:bg-amber-950/10' : 'border-dashed border-gray-200 dark:border-gray-800 bg-gray-50/40 dark:bg-gray-800/20' }}">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-[11px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                            🏆 EOM (Employee of the Month)
+                        </span>
+                        <span class="text-[10px] text-gray-400 font-medium">{{ $e4?->department_name }}</span>
+                    </div>
+
+                    @if($e4?->eomEmployee1)
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-teal-600 text-white font-bold flex items-center justify-center text-sm shadow-sm">
+                                {{ strtoupper(substr($e4->eomEmployee1->name, 0, 2)) }}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h4 class="text-sm font-bold text-gray-900 dark:text-white truncate">{{ $e4->eomEmployee1->name }}</h4>
+                                <div class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mt-0.5">
+                                    <span class="font-mono font-semibold text-gray-700 dark:text-gray-300">{{ $e4->eomEmployee1->employee_code }}</span>
+                                    <span>•</span>
+                                    <span class="truncate">{{ $e4->eomEmployee1->designation?->name ?: 'Staff' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        @if($e4->eom_remarks_1)
+                            <div class="mt-3 p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-xs text-gray-600 dark:text-gray-300 italic">
+                                "{{ $e4->eom_remarks_1 }}"
                             </div>
                         @endif
                     @else

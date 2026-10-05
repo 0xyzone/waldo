@@ -98,7 +98,7 @@ class TipsYearlyEomGomReport extends Model
     }
 
     /**
-     * Generate or initialize 12 months with 3 entries per month.
+     * Generate or initialize 12 months with 4 entries per month.
      */
     public function generateEntries(): void
     {
@@ -116,8 +116,8 @@ class TipsYearlyEomGomReport extends Model
             ->where('is_active', true)
             ->get();
 
-        // If somehow no allowed departments, fall back to any active departments excluding 6 and 7
-        if ($allowedDepartments->count() < 2) {
+        // If somehow not enough allowed departments, fall back to any active departments excluding 6 and 7
+        if ($allowedDepartments->count() < 3) {
             $allowedDepartments = Department::whereNotIn('id', [6, 7])
                 ->where('is_active', true)
                 ->get();
@@ -128,10 +128,11 @@ class TipsYearlyEomGomReport extends Model
             $monthName = $period['evaluated_month'];
             $existingEntries = $this->entries()->where('month_number', $monthNumber)->get();
 
-            // Random selection of 2 distinct departments from allowed departments
+            // Random selection of 3 distinct departments from allowed departments
             $availablePool = $allowedDepartments->shuffle();
             $deptEntry2 = $availablePool->first();
             $deptEntry3 = $availablePool->skip(1)->first() ?? $deptEntry2;
+            $deptEntry4 = $availablePool->skip(2)->first() ?? $deptEntry2;
 
             // Entry 1: Gaming / Slot (2 EOM, 1 GOM)
             $entry1 = $existingEntries->firstWhere('entry_number', 1);
@@ -171,11 +172,24 @@ class TipsYearlyEomGomReport extends Model
                     'department_name' => $deptEntry3?->name,
                 ]);
             }
+
+            // Entry 4: Random allowed department (1 EOM)
+            $entry4 = $existingEntries->firstWhere('entry_number', 4);
+            if (! $entry4) {
+                $this->entries()->create([
+                    'month_number' => $monthNumber,
+                    'month_name' => $monthName,
+                    'entry_number' => 4,
+                    'is_gaming_slot' => false,
+                    'department_id' => $deptEntry4?->id,
+                    'department_name' => $deptEntry4?->name,
+                ]);
+            }
         }
     }
 
     /**
-     * Re-randomize entry 2 and 3 departments for a specific month.
+     * Re-randomize entry 2, 3, and 4 departments for a specific month.
      */
     public function rerandomizeMonth(int $monthNumber): void
     {
@@ -190,7 +204,7 @@ class TipsYearlyEomGomReport extends Model
             ->where('is_active', true)
             ->get();
 
-        if ($allowedDepartments->count() < 2) {
+        if ($allowedDepartments->count() < 3) {
             $allowedDepartments = Department::whereNotIn('id', [6, 7])
                 ->where('is_active', true)
                 ->get();
@@ -199,6 +213,7 @@ class TipsYearlyEomGomReport extends Model
         $availablePool = $allowedDepartments->shuffle();
         $deptEntry2 = $availablePool->first();
         $deptEntry3 = $availablePool->skip(1)->first() ?? $deptEntry2;
+        $deptEntry4 = $availablePool->skip(2)->first() ?? $deptEntry2;
 
         $entry2 = $this->entries()->where('month_number', $monthNumber)->where('entry_number', 2)->first();
         if ($entry2) {
@@ -213,6 +228,14 @@ class TipsYearlyEomGomReport extends Model
             $entry3->update([
                 'department_id' => $deptEntry3?->id,
                 'department_name' => $deptEntry3?->name,
+            ]);
+        }
+
+        $entry4 = $this->entries()->where('month_number', $monthNumber)->where('entry_number', 4)->first();
+        if ($entry4) {
+            $entry4->update([
+                'department_id' => $deptEntry4?->id,
+                'department_name' => $deptEntry4?->name,
             ]);
         }
     }

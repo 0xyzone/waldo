@@ -104,6 +104,7 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
                     $e1 = $entries->firstWhere('entry_number', 1);
                     $e2 = $entries->firstWhere('entry_number', 2);
                     $e3 = $entries->firstWhere('entry_number', 3);
+                    $e4 = $entries->firstWhere('entry_number', 4);
 
                     return [
                         'e1_eom_1' => $e1?->eom_employee_code_1,
@@ -120,6 +121,10 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
                         'e3_dept_id' => $e3?->department_id,
                         'e3_gom_1' => $e3?->gom_employee_code_1,
                         'e3_gom_rem_1' => $e3?->gom_remarks_1,
+
+                        'e4_dept_id' => $e4?->department_id,
+                        'e4_eom_1' => $e4?->eom_employee_code_1,
+                        'e4_eom_rem_1' => $e4?->eom_remarks_1,
                     ];
                 })
                 ->form([
@@ -223,12 +228,44 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
                                     ->columnSpanFull(),
                             ]),
                         ]),
+
+                    Section::make('Entry 4: Allowed Department (1 EOM)')
+                        ->description('Randomly selected department for Employee of the Month.')
+                        ->schema([
+                            Grid::make(2)->schema([
+                                Select::make('e4_dept_id')
+                                    ->label('Department')
+                                    ->options(fn () => Department::whereNotIn('id', [6, 7])->orderBy('name')->pluck('name', 'id')->toArray())
+                                    ->searchable()
+                                    ->preload()
+                                    ->native(false)
+                                    ->live(),
+
+                                Select::make('e4_eom_1')
+                                    ->label('EOM (Employee of the Month)')
+                                    ->placeholder('Select Department Employee')
+                                    ->options(function ($get) {
+                                        $deptId = $get('e4_dept_id');
+
+                                        return $deptId ? $this->getEmployeeOptions([(int) $deptId]) : [];
+                                    })
+                                    ->searchable()
+                                    ->preload()
+                                    ->native(false),
+
+                                TextInput::make('e4_eom_rem_1')
+                                    ->label('Remarks / Recognition Note')
+                                    ->placeholder('e.g. Exceptional leadership & dedication')
+                                    ->columnSpanFull(),
+                            ]),
+                        ]),
                 ])
                 ->action(function (array $data): void {
                     $entries = $this->record->entries()->where('month_number', $this->activeMonth)->get();
                     $e1 = $entries->firstWhere('entry_number', 1);
                     $e2 = $entries->firstWhere('entry_number', 2);
                     $e3 = $entries->firstWhere('entry_number', 3);
+                    $e4 = $entries->firstWhere('entry_number', 4);
 
                     if ($e1) {
                         $e1->update([
@@ -261,6 +298,16 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
                         ]);
                     }
 
+                    if ($e4) {
+                        $dept4 = ! empty($data['e4_dept_id']) ? Department::find($data['e4_dept_id']) : null;
+                        $e4->update([
+                            'department_id' => $dept4?->id ?? $e4->department_id,
+                            'department_name' => $dept4?->name ?? $e4->department_name,
+                            'eom_employee_code_1' => $data['e4_eom_1'] ?: null,
+                            'eom_remarks_1' => $data['e4_eom_rem_1'] ?: null,
+                        ]);
+                    }
+
                     Notification::make()
                         ->title("{$this->activePeriodLabel} Winners Updated")
                         ->body("Successfully updated EOM & GOM winners for {$this->activePeriodLabel} ({$this->activePeriod['release_label']}).")
@@ -273,7 +320,7 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
                 ->color('danger')
                 ->requiresConfirmation()
                 ->modalHeading("Re-randomize {$this->activePeriodLabel} Allowed Departments?")
-                ->modalDescription("This will re-select 2 random allowed departments for Entry 2 and Entry 3 for {$this->activePeriodLabel}. Existing employee assignments on those 2 entries will be reset.")
+                ->modalDescription("This will re-select 3 random allowed departments for Entry 2, Entry 3, and Entry 4 for {$this->activePeriodLabel}. Existing employee assignments on those entries will be reset.")
                 ->action(function (): void {
                     $this->record->rerandomizeMonth($this->activeMonth);
 

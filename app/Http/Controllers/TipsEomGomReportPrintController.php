@@ -66,8 +66,9 @@ class TipsEomGomReportPrintController extends Controller
         $e1 = $entries->firstWhere('entry_number', 1);
         $e2 = $entries->firstWhere('entry_number', 2);
         $e3 = $entries->firstWhere('entry_number', 3);
+        $e4 = $entries->firstWhere('entry_number', 4);
 
-        // Group EOM winners (up to 3)
+        // Group EOM winners (4 total: 2 from Entry 1, 1 from Entry 2, 1 from Entry 4)
         $eomWinners = collect([
             [
                 'title' => 'Employee of the Month',
@@ -92,6 +93,14 @@ class TipsEomGomReportPrintController extends Controller
                 'department' => $e2?->department_name ?? ($e2?->department?->name ?? 'Department'),
                 'employee' => $e2?->eomEmployee1,
                 'remarks' => $e2?->eom_remarks_1,
+            ],
+            [
+                'title' => 'Employee of the Month',
+                'badge' => 'EOM Winner',
+                'entry_label' => 'Entry 4 (Allowed Dept)',
+                'department' => $e4?->department_name ?? ($e4?->department?->name ?? 'Department'),
+                'employee' => $e4?->eomEmployee1,
+                'remarks' => $e4?->eom_remarks_1,
             ],
         ]);
 

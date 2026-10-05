@@ -257,33 +257,33 @@
 
         .tier-grid-eom {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 28px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
         }
 
         .tier-grid-gom {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 36px;
-            max-width: 2280px;
+            max-width: 1800px;
             margin: 0 auto;
             width: 100%;
         }
 
         /* -------------------------------------------------------------------------- */
-        /* LUXURY HORIZONTAL CARD (SCALED UP BIG & PROMINENT)                        */
+        /* LUXURY HORIZONTAL CARD (4 EOM ACROSS + 2 GOM BALANCED)                    */
         /* -------------------------------------------------------------------------- */
         .award-card {
             background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.98) 100%);
             border-radius: 24px;
-            padding: 36px 40px;
+            padding: 30px 24px;
             display: flex;
             flex-direction: row;
             align-items: center;
-            gap: 34px;
+            gap: 22px;
             position: relative;
             box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
-            min-height: 360px;
+            min-height: 350px;
             box-sizing: border-box;
         }
 
@@ -305,16 +305,16 @@
         }
 
         .avatar-medallion {
-            width: 160px;
-            height: 160px;
-            min-width: 160px;
-            min-height: 160px;
+            width: 140px;
+            height: 140px;
+            min-width: 140px;
+            min-height: 140px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Cinzel', serif;
-            font-size: 58px;
+            font-size: 52px;
             font-weight: 900;
             color: #0f172a;
             box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65);
@@ -335,7 +335,7 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 12px;
+            gap: 10px;
             flex: 1;
             min-width: 0;
         }
@@ -345,21 +345,21 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 14px;
-            margin-bottom: 6px;
+            gap: 12px;
+            margin-bottom: 4px;
         }
 
         .dept-tag {
-            font-size: 18px;
+            font-size: 15px;
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 7px 18px;
+            letter-spacing: 0.8px;
+            padding: 6px 14px;
             border-radius: 20px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 65%;
+            max-width: 60%;
         }
 
         .dept-tag-eom {
@@ -375,11 +375,11 @@
         }
 
         .award-badge-pill {
-            font-size: 19px;
+            font-size: 17px;
             font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 1.2px;
-            padding: 8px 20px;
+            letter-spacing: 1px;
+            padding: 7px 16px;
             border-radius: 10px;
             flex-shrink: 0;
             box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
@@ -400,7 +400,7 @@
         /* Honoree Name */
         .honoree-name {
             font-family: 'Playfair Display', Georgia, serif;
-            font-size: 44px;
+            font-size: 38px;
             font-weight: 900;
             color: #ffffff;
             line-height: 1.15;
@@ -415,8 +415,8 @@
         .honoree-sub {
             display: flex;
             align-items: center;
-            gap: 14px;
-            font-size: 22px;
+            gap: 12px;
+            font-size: 19px;
             color: #cbd5e1;
             font-weight: 600;
         }
@@ -426,9 +426,9 @@
             border: 1px solid rgba(255, 255, 255, 0.28);
             color: #f8fafc;
             font-family: monospace;
-            font-size: 17px;
+            font-size: 15px;
             font-weight: 700;
-            padding: 3px 12px;
+            padding: 3px 10px;
             border-radius: 8px;
             flex-shrink: 0;
         }
@@ -442,12 +442,12 @@
 
         /* Remarks Note (if provided) */
         .remarks-tag {
-            font-size: 16px;
+            font-size: 15px;
             font-style: italic;
             color: #94a3b8;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             padding-top: 8px;
-            margin-top: 6px;
+            margin-top: 4px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -577,11 +577,11 @@
                 <!-- Main Showcase: 2 Balanced Horizontal Tiers -->
                 <div class="main-showcase">
 
-                    <!-- TIER 1: EMPLOYEES OF THE MONTH (3 Winners Across) -->
+                    <!-- TIER 1: EMPLOYEES OF THE MONTH (4 Winners Across) -->
                     <div class="tier-section">
                         <div class="tier-header tier-header-eom">
                             <span>🏆 Employees of the Month</span>
-                            <span style="font-size: 13px; font-weight: 700; letter-spacing: 0;">3 Honorees</span>
+                            <span style="font-size: 13px; font-weight: 700; letter-spacing: 0;">4 Honorees</span>
                         </div>
 
                         <div class="tier-grid-eom">
