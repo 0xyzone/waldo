@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EOM & GOM Report - {{ $monthName }} {{ $report->year }}</title>
+    <title>EOM & GOM Report - {{ $monthName }} {{ $evaluatedYear ?? $report->year }}</title>
     <x-favicon />
     <style>
         @page {
@@ -250,8 +250,8 @@
         <div class="header-meta-box">
             <div class="meta-row">
                 <div class="meta-col">
-                    <span class="meta-label">For Month & Year:</span>
-                    <span class="meta-value">{{ $monthName }} {{ $report->year }}</span>
+                    <span class="meta-label">Evaluated Period:</span>
+                    <span class="meta-value">{{ $monthName }} {{ $evaluatedYear ?? $report->year }} <span style="font-size: 10px; font-weight: 500; color: #64748b;">({{ $releaseLabel ?? ($releaseMonth . ' ' . $report->year) }})</span></span>
                 </div>
                 <div class="meta-col">
                     <span class="meta-label">Total Allocated Entries:</span>

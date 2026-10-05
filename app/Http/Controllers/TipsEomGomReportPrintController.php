@@ -13,13 +13,7 @@ class TipsEomGomReportPrintController extends Controller
      */
     public function printMonthly(Request $request, TipsYearlyEomGomReport $report, int $month): Response
     {
-        $months = [
-            1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April',
-            5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August',
-            9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December',
-        ];
-
-        $monthName = $months[$month] ?? 'January';
+        $period = $report->getPeriodForMonth($month);
 
         $entries = $report->entries()
             ->where('month_number', $month)
@@ -38,7 +32,11 @@ class TipsEomGomReportPrintController extends Controller
         return response()->view('tips.eom-gom.print-monthly', [
             'report' => $report,
             'month' => $month,
-            'monthName' => $monthName,
+            'monthName' => $period['evaluated_month'],
+            'evaluatedYear' => $period['evaluated_year'],
+            'periodLabel' => $period['evaluated_label'],
+            'releaseMonth' => $period['release_month'],
+            'releaseLabel' => $period['release_label'],
             'entries' => $entries,
         ]);
     }
@@ -48,13 +46,8 @@ class TipsEomGomReportPrintController extends Controller
      */
     public function hrmsCard(Request $request, TipsYearlyEomGomReport $report, int $month): Response
     {
-        $months = [
-            1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April',
-            5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August',
-            9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December',
-        ];
-
-        $monthName = $months[$month] ?? 'January';
+        $period = $report->getPeriodForMonth($month);
+        $monthName = $period['evaluated_month'];
 
         $entries = $report->entries()
             ->where('month_number', $month)
@@ -126,6 +119,10 @@ class TipsEomGomReportPrintController extends Controller
             'report' => $report,
             'month' => $month,
             'monthName' => $monthName,
+            'evaluatedYear' => $period['evaluated_year'],
+            'periodLabel' => $period['evaluated_label'],
+            'releaseMonth' => $period['release_month'],
+            'releaseLabel' => $period['release_label'],
             'entries' => $entries,
             'eomWinners' => $eomWinners,
             'gomWinners' => $gomWinners,

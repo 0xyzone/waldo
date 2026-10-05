@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $monthName }} {{ $report->year }} - EOM & GOM Recognition Card</title>
+    <title>{{ $monthName }} {{ $evaluatedYear ?? $report->year }} - EOM & GOM Recognition Card</title>
     <x-favicon />
 
     <!-- Google Fonts for Luxury Typography -->
@@ -472,7 +472,7 @@
     <div class="control-bar">
         <div class="control-title">
             <span style="font-size: 20px;">🏆</span>
-            <span><strong>{{ $monthName }} {{ $report->year }}</strong> Recognition Wish Card Preview (2708 × 1492 HD)</span>
+            <span><strong>{{ $monthName }} {{ $evaluatedYear ?? $report->year }}</strong> Recognition Wish Card Preview (2708 × 1492 HD)</span>
         </div>
 
         <div class="control-actions">
@@ -512,7 +512,7 @@
                     <div class="super-title">★ Waldo Luxury Resort & Casino • Monthly Recognition Awards ★</div>
                     <h1 class="main-card-title">Employee & Grooming of the Month</h1>
                     <div class="month-ribbon">
-                        ✦ Honoring Excellence in {{ strtoupper($monthName) }} {{ $report->year }} ✦
+                        ✦ Honoring Excellence in {{ strtoupper($monthName) }} {{ $evaluatedYear ?? $report->year }} ✦
                     </div>
                 </div>
 
@@ -678,7 +678,7 @@
                 });
 
                 const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-                const fileName = `EOM_GOM_Wish_Card_{{ $monthName }}_{{ $report->year }}.jpg`;
+                const fileName = `EOM_GOM_Wish_Card_{{ $monthName }}_{{ $evaluatedYear ?? $report->year }}.jpg`;
 
                 const link = document.createElement('a');
                 link.download = fileName;

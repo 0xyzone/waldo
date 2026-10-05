@@ -45,6 +45,59 @@ class TipsYearlyEomGomReport extends Model
     }
 
     /**
+     * Get evaluated period (month & year) and release label for a given month number (1 - 12).
+     */
+    public function getPeriodForMonth(int $monthNumber): array
+    {
+        $evaluatedMonths = [
+            1 => 'December',
+            2 => 'January',
+            3 => 'February',
+            4 => 'March',
+            5 => 'April',
+            6 => 'May',
+            7 => 'June',
+            8 => 'July',
+            9 => 'August',
+            10 => 'September',
+            11 => 'October',
+            12 => 'November',
+        ];
+
+        $releaseMonths = [
+            1 => 'January',
+            2 => 'February',
+            3 => 'March',
+            4 => 'April',
+            5 => 'May',
+            6 => 'June',
+            7 => 'July',
+            8 => 'August',
+            9 => 'September',
+            10 => 'October',
+            11 => 'November',
+            12 => 'December',
+        ];
+
+        $evaluatedMonth = $evaluatedMonths[$monthNumber] ?? 'December';
+        $evaluatedYear = $monthNumber === 1 ? ($this->year - 1) : $this->year;
+        $releaseMonth = $releaseMonths[$monthNumber] ?? 'January';
+
+        return [
+            'month_number' => $monthNumber,
+            'evaluated_month' => $evaluatedMonth,
+            'evaluated_month_short' => substr($evaluatedMonth, 0, 3),
+            'evaluated_year' => $evaluatedYear,
+            'evaluated_year_short' => substr((string) $evaluatedYear, -2),
+            'evaluated_label' => "{$evaluatedMonth} {$evaluatedYear}",
+            'release_month' => $releaseMonth,
+            'release_month_short' => substr($releaseMonth, 0, 3),
+            'release_label' => "{$releaseMonth} Release",
+            'tab_label' => substr($releaseMonth, 0, 3).' ('.substr($evaluatedMonth, 0, 3)." '".substr((string) $evaluatedYear, -2).')',
+        ];
+    }
+
+    /**
      * Generate or initialize 12 months with 3 entries per month.
      */
     public function generateEntries(): void
@@ -70,22 +123,9 @@ class TipsYearlyEomGomReport extends Model
                 ->get();
         }
 
-        $months = [
-            1 => 'January',
-            2 => 'February',
-            3 => 'March',
-            4 => 'April',
-            5 => 'May',
-            6 => 'June',
-            7 => 'July',
-            8 => 'August',
-            9 => 'September',
-            10 => 'October',
-            11 => 'November',
-            12 => 'December',
-        ];
-
-        foreach ($months as $monthNumber => $monthName) {
+        for ($monthNumber = 1; $monthNumber <= 12; $monthNumber++) {
+            $period = $this->getPeriodForMonth($monthNumber);
+            $monthName = $period['evaluated_month'];
             $existingEntries = $this->entries()->where('month_number', $monthNumber)->get();
 
             // Random selection of 2 distinct departments from allowed departments

@@ -46,15 +46,24 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
         }
     }
 
+    public function getActivePeriodProperty(): array
+    {
+        return $this->record->getPeriodForMonth($this->activeMonth);
+    }
+
     public function getActiveMonthNameProperty(): string
     {
-        $months = [
-            1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April',
-            5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August',
-            9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December',
-        ];
+        return $this->activePeriod['evaluated_month'];
+    }
 
-        return $months[$this->activeMonth] ?? 'January';
+    public function getActiveYearProperty(): int
+    {
+        return $this->activePeriod['evaluated_year'];
+    }
+
+    public function getActivePeriodLabelProperty(): string
+    {
+        return $this->activePeriod['evaluated_label'];
     }
 
     public function getMonthEntriesProperty()
@@ -70,24 +79,24 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
     {
         return [
             Action::make('printMonthly')
-                ->label(fn () => "🖨️ Print {$this->activeMonthName} Sheet")
+                ->label(fn () => "🖨️ Print {$this->activePeriodLabel} Sheet")
                 ->color('gray')
                 ->icon(Heroicon::OutlinedPrinter)
                 ->url(fn () => route('tips.eom-gom.print-monthly', ['report' => $this->record->id, 'month' => $this->activeMonth]))
                 ->openUrlInNewTab(),
 
             Action::make('hrmsCard')
-                ->label(fn () => "🌟 {$this->activeMonthName} HRMS Wish Card")
+                ->label(fn () => "🌟 {$this->activePeriodLabel} HRMS Wish Card")
                 ->color('warning')
                 ->icon(Heroicon::OutlinedSparkles)
                 ->url(fn () => route('tips.eom-gom.hrms-card', ['report' => $this->record->id, 'month' => $this->activeMonth]))
                 ->openUrlInNewTab(),
 
             Action::make('editMonthWinners')
-                ->label(fn () => "✏️ Assign {$this->activeMonthName} Winners")
+                ->label(fn () => "✏️ Assign {$this->activePeriodLabel} Winners")
                 ->color('primary')
                 ->icon(Heroicon::OutlinedUserPlus)
-                ->modalHeading(fn () => "Assign Winners for {$this->activeMonthName} {$this->record->year}")
+                ->modalHeading(fn () => "Assign Winners for {$this->activePeriodLabel} ({$this->activePeriod['release_label']})")
                 ->modalDescription('Assign Employees of the Month (EOM) and Groomings of the Month (GOM) for this month.')
                 ->modalWidth('4xl')
                 ->fillForm(function (): array {
@@ -253,8 +262,8 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
                     }
 
                     Notification::make()
-                        ->title("{$this->activeMonthName} Winners Updated")
-                        ->body("Successfully updated EOM & GOM winners for {$this->activeMonthName} {$this->record->year}.")
+                        ->title("{$this->activePeriodLabel} Winners Updated")
+                        ->body("Successfully updated EOM & GOM winners for {$this->activePeriodLabel} ({$this->activePeriod['release_label']}).")
                         ->success()
                         ->send();
                 }),
@@ -263,14 +272,14 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
                 ->label('🎲 Re-randomize Departments')
                 ->color('danger')
                 ->requiresConfirmation()
-                ->modalHeading("Re-randomize {$this->activeMonthName} Allowed Departments?")
-                ->modalDescription("This will re-select 2 random allowed departments for Entry 2 and Entry 3 for {$this->activeMonthName}. Existing employee assignments on those 2 entries will be reset.")
+                ->modalHeading("Re-randomize {$this->activePeriodLabel} Allowed Departments?")
+                ->modalDescription("This will re-select 2 random allowed departments for Entry 2 and Entry 3 for {$this->activePeriodLabel}. Existing employee assignments on those 2 entries will be reset.")
                 ->action(function (): void {
                     $this->record->rerandomizeMonth($this->activeMonth);
 
                     Notification::make()
                         ->title('Departments Re-randomized')
-                        ->body("New random allowed departments selected for {$this->activeMonthName}.")
+                        ->body("New random allowed departments selected for {$this->activePeriodLabel}.")
                         ->success()
                         ->send();
                 }),

@@ -56,4 +56,35 @@ class TipsYearlyEomGomReportEntry extends Model
     {
         return $this->belongsTo(Employee::class, 'gom_employee_code_1', 'employee_code');
     }
+
+    public function getEvaluatedMonthNameAttribute(): string
+    {
+        return match ($this->month_number) {
+            1 => 'December',
+            2 => 'January',
+            3 => 'February',
+            4 => 'March',
+            5 => 'April',
+            6 => 'May',
+            7 => 'June',
+            8 => 'July',
+            9 => 'August',
+            10 => 'September',
+            11 => 'October',
+            12 => 'November',
+            default => 'December',
+        };
+    }
+
+    public function getEvaluatedYearAttribute(): int
+    {
+        $baseYear = (int) ($this->report?->year ?? date('Y'));
+
+        return $this->month_number === 1 ? ($baseYear - 1) : $baseYear;
+    }
+
+    public function getPeriodLabelAttribute(): string
+    {
+        return "{$this->evaluated_month_name} {$this->evaluated_year}";
+    }
 }

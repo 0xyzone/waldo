@@ -13,8 +13,9 @@
 
     {{-- Month Navigation Pills --}}
     <div class="flex flex-wrap items-center gap-1.5 p-2 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm mb-4">
-        @foreach($months as $num => $name)
+        @for($num = 1; $num <= 12; $num++)
             @php
+                $period = $record->getPeriodForMonth($num);
                 $isActive = $this->activeMonth === $num;
                 $monthEntries = $record->entries->where('month_number', $num);
                 $assignedCount = 0;
@@ -27,12 +28,13 @@
             <button type="button"
                     wire:click="setActiveMonth({{ $num }})"
                     class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer {{ $isActive ? 'bg-primary-600 text-white shadow-md shadow-primary-500/20' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
-                <span>{{ substr($name, 0, 3) }}</span>
+                <span>{{ $period['release_month_short'] }}</span>
+                <span class="text-[10px] {{ $isActive ? 'text-amber-200' : 'text-gray-400' }} font-medium">({{ $period['evaluated_month_short'] }} '{{ $period['evaluated_year_short'] }})</span>
                 @if($assignedCount > 0)
                     <span class="w-1.5 h-1.5 rounded-full {{ $isActive ? 'bg-amber-300' : 'bg-emerald-500' }}"></span>
                 @endif
             </button>
-        @endforeach
+        @endfor
     </div>
 
     {{-- Active Month Banner --}}
@@ -40,15 +42,15 @@
         <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
                 <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-400">
-                    <span>Year {{ $record->year }}</span>
+                    <span>{{ $this->activePeriod['release_label'] }} • Year {{ $record->year }}</span>
                     <span>•</span>
                     <span>{{ $record->title ?: 'Annual Recognition Cycle' }}</span>
                 </div>
                 <h2 class="text-2xl font-black tracking-tight text-white mt-1">
-                    {{ $this->activeMonthName }} {{ $record->year }}
+                    {{ $this->activePeriod['evaluated_label'] }}
                 </h2>
                 <p class="text-xs text-slate-300 mt-1">
-                    3 Department Entries • 5 Total Honorees (3 Employee of the Month + 2 Grooming of the Month)
+                    Evaluated Period: <strong class="text-white">{{ $this->activePeriod['evaluated_label'] }}</strong> • Released in <span class="text-amber-300 font-semibold">{{ $this->activePeriod['release_month'] }} {{ $record->year }}</span> (3 Department Entries • 5 Total Honorees)
                 </p>
             </div>
 
