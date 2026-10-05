@@ -86,15 +86,15 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
                 ->openUrlInNewTab(),
 
             Action::make('hrmsCard')
-                ->label(fn () => "🌟 {$this->activePeriodLabel} HRMS Wish Card")
+                ->label(fn () => "{$this->activePeriodLabel} HRMS Wish Card")
                 ->color('warning')
                 ->icon(Heroicon::OutlinedSparkles)
                 ->url(fn () => route('tips.eom-gom.hrms-card', ['report' => $this->record->id, 'month' => $this->activeMonth]))
                 ->openUrlInNewTab(),
 
             Action::make('editMonthWinners')
-                ->label(fn () => "✏️ Assign {$this->activePeriodLabel} Winners")
-                ->color('primary')
+                ->label(fn () => "Assign {$this->activePeriodLabel} Winners")
+                ->color('info')
                 ->icon(Heroicon::OutlinedUserPlus)
                 ->modalHeading(fn () => "Assign Winners for {$this->activePeriodLabel} ({$this->activePeriod['release_label']})")
                 ->modalDescription('Assign Employees of the Month (EOM) and Groomings of the Month (GOM) for this month.')
