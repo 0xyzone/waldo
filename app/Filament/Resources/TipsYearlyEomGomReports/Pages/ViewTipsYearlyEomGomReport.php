@@ -15,6 +15,7 @@ use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Support\Icons\Heroicon;
+use Livewire\Attributes\Url;
 
 class ViewTipsYearlyEomGomReport extends ViewRecord
 {
@@ -22,6 +23,7 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
 
     protected string $view = 'filament.resources.tips-yearly-eom-gom-reports.pages.view-tips-yearly-eom-gom-report';
 
+    #[Url(as: 'month')]
     public int $activeMonth = 1;
 
     public function mount(int|string $record): void
@@ -54,7 +56,28 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
     {
         if ($month >= 1 && $month <= 12) {
             $this->activeMonth = $month;
+            $this->resetComputedMonthProperties();
         }
+    }
+
+    public function updatedActiveMonth(): void
+    {
+        $this->resetComputedMonthProperties();
+    }
+
+    protected function resetComputedMonthProperties(): void
+    {
+        unset(
+            $this->activePeriod,
+            $this->activeMonthName,
+            $this->activeYear,
+            $this->activePeriodLabel,
+            $this->monthEntries,
+            $this->isActiveMonthValidated,
+            $this->activeMonthValidationInfo,
+        );
+
+        $this->record->unsetRelation('entries');
     }
 
     public function getActivePeriodProperty(): array
@@ -108,7 +131,7 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
     public function validateCurrentMonth(): void
     {
         $this->record->validateMonth($this->activeMonth, auth()->id());
-        $this->record->unsetRelation('entries');
+        $this->resetComputedMonthProperties();
 
         Notification::make()
             ->title("{$this->activePeriodLabel} Validated")
@@ -120,7 +143,7 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
     public function unvalidateCurrentMonth(): void
     {
         $this->record->unvalidateMonth($this->activeMonth);
-        $this->record->unsetRelation('entries');
+        $this->resetComputedMonthProperties();
 
         Notification::make()
             ->title("{$this->activePeriodLabel} Unlocked")
@@ -366,6 +389,8 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
                         ]);
                     }
 
+                    $this->resetComputedMonthProperties();
+
                     Notification::make()
                         ->title("{$this->activePeriodLabel} Winners Updated")
                         ->body("Successfully updated EOM & GOM winners for {$this->activePeriodLabel} ({$this->activePeriod['release_label']}).")
@@ -399,8 +424,8 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
                 ->disabled(fn () => $this->isActiveMonthValidated)
                 ->tooltip(fn () => $this->isActiveMonthValidated ? "{$this->activePeriodLabel} is validated and locked from re-randomization." : null)
                 ->requiresConfirmation()
-                ->modalHeading("Re-randomize {$this->activePeriodLabel} Allowed Departments?")
-                ->modalDescription("This will re-select 3 random allowed departments for Entry 2, Entry 3, and Entry 4 for {$this->activePeriodLabel}. Existing employee assignments on those entries will be reset.")
+                ->modalHeading(fn () => "Re-randomize {$this->activePeriodLabel} Allowed Departments?")
+                ->modalDescription(fn () => "This will re-select 3 random allowed departments for Entry 2, Entry 3, and Entry 4 for {$this->activePeriodLabel}. Existing employee assignments on those entries will be reset.")
                 ->action(function (): void {
                     if ($this->record->isMonthValidated($this->activeMonth)) {
                         Notification::make()
@@ -413,7 +438,7 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
                     }
 
                     $this->record->rerandomizeMonth($this->activeMonth);
-                    $this->record->unsetRelation('entries');
+                    $this->resetComputedMonthProperties();
 
                     Notification::make()
                         ->title('Departments Re-randomized')

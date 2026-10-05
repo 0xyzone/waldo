@@ -28,6 +28,7 @@
                 $isMonthVal = $monthEntries->where('is_validated', true)->isNotEmpty();
             @endphp
             <button type="button"
+                    wire:key="month-pill-{{ $num }}"
                     wire:click="setActiveMonth({{ $num }})"
                     class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer {{ $isActive ? 'bg-primary-600 text-white shadow-md shadow-primary-500/20' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                 <span>{{ $period['release_month_short'] }}</span>
@@ -44,7 +45,7 @@
     </div>
 
     {{-- Active Month Banner --}}
-    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-gray-900 via-slate-900 to-indigo-950 p-6 text-white shadow-lg border border-slate-800 mb-6">
+    <div wire:key="active-month-banner-{{ $this->activeMonth }}" class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-gray-900 via-slate-900 to-indigo-950 p-6 text-white shadow-lg border border-slate-800 mb-6">
         <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
                 <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-400">
@@ -120,7 +121,7 @@
     </div>
 
     @if($this->isActiveMonthValidated)
-        <div class="mb-5 flex items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs">
+        <div wire:key="month-validation-alert-{{ $this->activeMonth }}" class="mb-5 flex items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs">
             <div class="flex items-center gap-2.5">
                 <x-heroicon-s-check-circle class="w-5 h-5 text-emerald-500 shrink-0" />
                 <div>
@@ -138,7 +139,7 @@
     @endif
 
     {{-- 4 Department Entries Showcase --}}
-    <div class="space-y-6">
+    <div wire:key="month-entries-container-{{ $this->activeMonth }}" class="space-y-6">
 
         {{-- ENTRY 1: Gaming / Slot Department --}}
         <div class="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
