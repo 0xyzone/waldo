@@ -11,6 +11,7 @@ use App\Http\Controllers\LetterGlobalVariableController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SalaryIncrementRequestPrintController;
+use App\Http\Controllers\TipsEomGomReportPrintController;
 use App\Http\Controllers\TipsReportPrintController;
 use Illuminate\Support\Facades\Route;
 
@@ -82,6 +83,14 @@ Route::get('/tips-reports/{report}/print-summary', [TipsReportPrintController::c
 Route::get('/tips-reports/{report}/print-totals', [TipsReportPrintController::class, 'printTotals'])
     ->name('tips.reports.print-totals')
     ->middleware('auth');
+
+// EOM / GOM Monthly Report & HRMS Wish Card
+Route::prefix('/tips/eom-gom-reports/{report}')->middleware('auth')->group(function () {
+    Route::get('/months/{month}/print', [TipsEomGomReportPrintController::class, 'printMonthly'])
+        ->name('tips.eom-gom.print-monthly');
+    Route::get('/months/{month}/card', [TipsEomGomReportPrintController::class, 'hrmsCard'])
+        ->name('tips.eom-gom.hrms-card');
+});
 
 // ID Card Print Reports Sheet
 Route::get('/id-card-print-reports/{report}/print', [IdCardPrintReportPrintController::class, 'print'])
