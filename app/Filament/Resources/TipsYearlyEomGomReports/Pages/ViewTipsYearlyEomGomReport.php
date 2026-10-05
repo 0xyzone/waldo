@@ -132,19 +132,19 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('printMonthly')
-                ->label(fn () => "🖨️ Print {$this->activePeriodLabel} Sheet")
-                ->color('gray')
-                ->icon(Heroicon::OutlinedPrinter)
-                ->url(fn () => route('tips.eom-gom.print-monthly', ['report' => $this->record->id, 'month' => $this->activeMonth]))
-                ->openUrlInNewTab(),
+            // Action::make('printMonthly')
+            //     ->label(fn () => "🖨️ Print {$this->activePeriodLabel} Sheet")
+            //     ->color('gray')
+            //     ->icon(Heroicon::OutlinedPrinter)
+            //     ->url(fn () => route('tips.eom-gom.print-monthly', ['report' => $this->record->id, 'month' => $this->activeMonth]))
+            //     ->openUrlInNewTab(),
 
-            Action::make('hrmsCard')
-                ->label(fn () => "{$this->activePeriodLabel} HRMS Wish Card")
-                ->color('warning')
-                ->icon(Heroicon::OutlinedSparkles)
-                ->url(fn () => route('tips.eom-gom.hrms-card', ['report' => $this->record->id, 'month' => $this->activeMonth]))
-                ->openUrlInNewTab(),
+            // Action::make('hrmsCard')
+            //     ->label(fn () => "{$this->activePeriodLabel} HRMS Wish Card")
+            //     ->color('warning')
+            //     ->icon(Heroicon::OutlinedSparkles)
+            //     ->url(fn () => route('tips.eom-gom.hrms-card', ['report' => $this->record->id, 'month' => $this->activeMonth]))
+            //     ->openUrlInNewTab(),
 
             Action::make('editMonthWinners')
                 ->label(fn () => "Assign {$this->activePeriodLabel} Winners")
@@ -373,29 +373,29 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
                         ->send();
                 }),
 
-            Action::make('validateMonth')
-                ->label(fn () => "Validate {$this->activePeriodLabel}")
-                ->color('success')
-                ->icon(Heroicon::OutlinedCheckBadge)
-                ->visible(fn () => ! $this->isActiveMonthValidated)
-                ->requiresConfirmation()
-                ->modalHeading(fn () => "Validate {$this->activePeriodLabel} Winners?")
-                ->modalDescription('Validating this month confirms the selected candidates and locks the month so that re-randomization will skip it.')
-                ->action(fn () => $this->validateCurrentMonth()),
+            // Action::make('validateMonth')
+            //     ->label(fn () => "Validate {$this->activePeriodLabel}")
+            //     ->color('success')
+            //     ->icon(Heroicon::OutlinedCheckBadge)
+            //     ->visible(fn () => ! $this->isActiveMonthValidated)
+            //     ->requiresConfirmation()
+            //     ->modalHeading(fn () => "Validate {$this->activePeriodLabel} Winners?")
+            //     ->modalDescription('Validating this month confirms the selected candidates and locks the month so that re-randomization will skip it.')
+            //     ->action(fn () => $this->validateCurrentMonth()),
 
-            Action::make('unvalidateMonth')
-                ->label(fn () => "Unlock {$this->activePeriodLabel}")
-                ->color('gray')
-                ->icon(Heroicon::OutlinedLockOpen)
-                ->visible(fn () => $this->isActiveMonthValidated)
-                ->requiresConfirmation()
-                ->modalHeading(fn () => "Unlock {$this->activePeriodLabel}?")
-                ->modalDescription('Unlocking this month will remove the lock and allow departments to be re-randomized again.')
-                ->action(fn () => $this->unvalidateCurrentMonth()),
+            // Action::make('unvalidateMonth')
+            //     ->label(fn () => "Unlock {$this->activePeriodLabel}")
+            //     ->color('gray')
+            //     ->icon(Heroicon::OutlinedLockOpen)
+            //     ->visible(fn () => $this->isActiveMonthValidated)
+            //     ->requiresConfirmation()
+            //     ->modalHeading(fn () => "Unlock {$this->activePeriodLabel}?")
+            //     ->modalDescription('Unlocking this month will remove the lock and allow departments to be re-randomized again.')
+            //     ->action(fn () => $this->unvalidateCurrentMonth()),
 
             Action::make('rerandomizeMonth')
                 ->label('🎲 Re-randomize Departments')
-                ->color('danger')
+                ->color('gray')
                 ->disabled(fn () => $this->isActiveMonthValidated)
                 ->tooltip(fn () => $this->isActiveMonthValidated ? "{$this->activePeriodLabel} is validated and locked from re-randomization." : null)
                 ->requiresConfirmation()
