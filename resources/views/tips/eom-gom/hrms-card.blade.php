@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-slate-950">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +10,9 @@
     {{-- Google Fonts: Outfit & Plus Jakarta Sans for Material Typography --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap"
+        rel="stylesheet">
 
     {{-- Vite Directive (Tailwind CSS v4 & App JS) --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -39,7 +42,7 @@
 
         /* Ambient background glow meshes */
         .ambient-mesh {
-            background-image: 
+            background-image:
                 radial-gradient(at 15% 15%, rgba(245, 158, 11, 0.18) 0px, transparent 45%),
                 radial-gradient(at 85% 20%, rgba(14, 165, 233, 0.16) 0px, transparent 45%),
                 radial-gradient(at 50% 85%, rgba(99, 102, 241, 0.14) 0px, transparent 50%),
@@ -68,7 +71,8 @@
             height: 1350px;
             transform-origin: top center;
             transform: scale(0.55);
-            margin-bottom: -607px; /* Collapse negative margin due to transform */
+            margin-bottom: -607px;
+            /* Collapse negative margin due to transform */
             flex-shrink: 0;
         }
 
@@ -97,14 +101,17 @@
             .no-print {
                 display: none !important;
             }
+
             body {
                 background: #020617 !important;
                 padding: 0 !important;
             }
+
             .preview-viewport {
                 max-width: none !important;
                 padding: 0 !important;
             }
+
             .canvas-scale-wrapper {
                 transform: scale(0.38) !important;
                 margin: 0 !important;
@@ -112,53 +119,57 @@
         }
     </style>
 </head>
+
 <body class="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
 
     {{-- TOP MATERIAL TOOLBAR (Hidden during print) --}}
-    <header class="no-print sticky top-0 z-50 bg-slate-900/80 backdrop-blur-xl border-b border-white/10 px-6 py-3.5 shadow-lg">
+    <header
+        class="no-print sticky top-0 z-50 bg-slate-900/80 backdrop-blur-xl border-b border-white/10 px-6 py-3.5 shadow-lg">
         <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-slate-950 font-black text-lg shadow-md shadow-amber-500/20">
+                <div
+                    class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-slate-950 font-black text-lg shadow-md shadow-amber-500/20">
                     🏆
                 </div>
                 <div>
                     <h1 class="text-sm font-bold text-white flex items-center gap-2">
                         <span>HRMS Wish Card Preview</span>
-                        <span class="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold font-mono">
+                        <span
+                            class="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold font-mono">
                             2400 × 1350 QHD
                         </span>
                     </h1>
                     <p class="text-xs text-slate-400 mt-0.5">
-                        Honorees for <strong class="text-slate-200">{{ $monthName }} {{ $evaluatedYear ?? $report->year }}</strong> ({{ $releaseLabel }})
+                        Honorees for <strong class="text-slate-200">{{ $monthName }}
+                            {{ $evaluatedYear ?? $report->year }}</strong> ({{ $releaseLabel }})
                     </p>
                 </div>
             </div>
 
             <div class="flex items-center gap-3">
-                <button type="button" 
-                        id="downloadBtn" 
-                        onclick="downloadCardAsJpg()" 
-                        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 hover:from-amber-600 hover:to-amber-500 text-slate-950 font-extrabold text-xs shadow-md shadow-amber-500/25 transition cursor-pointer active:scale-95">
+                <button type="button" id="downloadBtn" onclick="downloadCardAsJpg()"
+                    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 hover:from-amber-600 hover:to-amber-500 text-slate-950 font-extrabold text-xs shadow-md shadow-amber-500/25 transition cursor-pointer active:scale-95">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                     </svg>
                     <span id="downloadBtnText">Download Card (JPG)</span>
                 </button>
 
-                <button type="button" 
-                        onclick="window.print()" 
-                        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 border border-white/15 text-xs font-semibold transition cursor-pointer active:scale-95">
+                <button type="button" onclick="window.print()"
+                    class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 border border-white/15 text-xs font-semibold transition cursor-pointer active:scale-95">
                     <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                     </svg>
                     <span>Print</span>
                 </button>
 
-                <button type="button" 
-                        onclick="window.close()" 
-                        class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-400 hover:text-white text-xs font-medium transition cursor-pointer">
+                <button type="button" onclick="window.close()"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-400 hover:text-white text-xs font-medium transition cursor-pointer">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
                     </svg>
                     <span>Close</span>
                 </button>
@@ -174,15 +185,19 @@
                 {{-- ================================================================= --}}
                 {{-- MASTER 2400 x 1350 WISH CARD CANVAS (MATERIAL 3 AESTHETIC)       --}}
                 {{-- ================================================================= --}}
-                <div id="master-wish-card-canvas" 
-                     class="w-[2400px] h-[1350px] min-w-[2400px] min-h-[1350px] bg-slate-950 relative overflow-hidden ambient-mesh flex flex-col justify-between p-[48px] box-border select-none border border-slate-800 shadow-2xl">
+                <div id="master-wish-card-canvas"
+                    class="w-[2400px] h-[1350px] min-w-[2400px] min-h-[1350px] bg-slate-950 relative overflow-hidden ambient-mesh flex flex-col justify-between p-[48px] box-border select-none border border-slate-800 shadow-2xl">
 
                     {{-- Dot Grid Background Texture --}}
                     <div class="absolute inset-0 dot-grid pointer-events-none opacity-40"></div>
 
                     {{-- Subtle Glowing Edge Beams --}}
-                    <div class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-amber-400/60 to-transparent"></div>
-                    <div class="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-sky-400/60 to-transparent"></div>
+                    <div
+                        class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-amber-400/60 to-transparent">
+                    </div>
+                    <div
+                        class="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-sky-400/60 to-transparent">
+                    </div>
 
                     {{-- ============================================================= --}}
                     {{-- 1. HEADER SECTION (MATERIAL DESIGN BRANDING & TITLE)          --}}
@@ -190,16 +205,19 @@
                     <div class="relative z-10 flex items-center justify-between border-b border-white/10 pb-6">
                         <div class="flex items-center gap-6">
                             {{-- Casino Brand Medallion --}}
-                            <div class="w-22 h-22 rounded-2xl bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-200 p-[3px] shadow-xl shadow-amber-500/20 flex-shrink-0">
-                                <div class="w-full h-full rounded-[14px] bg-slate-950 flex flex-col items-center justify-center">
-                                    <span class="text-4xl">👑</span>
+                            <div
+                                class="w-22 h-22 rounded-2xl bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-200 p-[3px] shadow-xl shadow-amber-500/20 flex-shrink-0">
+                                <div
+                                    class="w-full h-full rounded-[14px] bg-slate-950 flex flex-col items-center justify-center overflow-hidden">
+                                    <img src="{{ asset('img/logo.jpg') }}" alt="Logo">
                                 </div>
                             </div>
 
                             <div>
                                 <div class="flex items-center gap-3">
-                                    <span class="font-display text-base font-extrabold tracking-[4px] uppercase text-amber-400">
-                                        Waldo Dynasty Resort & Casino
+                                    <span
+                                        class="font-display text-base font-extrabold tracking-[4px] uppercase text-amber-400">
+                                        Waldo Dynasty Entertainment Pvt. Ltd.
                                     </span>
                                     <span class="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
                                     <span class="text-sm font-semibold tracking-wider uppercase text-slate-400">
@@ -214,7 +232,8 @@
 
                         {{-- Month Pill Badge --}}
                         <div class="flex flex-col items-end gap-1.5">
-                            <div class="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-slate-900/90 border border-amber-400/40 shadow-xl shadow-amber-950/40 backdrop-blur-md">
+                            <div
+                                class="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-slate-900/90 border border-amber-400/40 shadow-xl shadow-amber-950/40 backdrop-blur-md">
                                 <span class="w-3 h-3 rounded-full bg-amber-400 animate-pulse"></span>
                                 <span class="font-display text-3xl font-black tracking-wide text-amber-300 drop-shadow">
                                     {{ strtoupper($monthName) }} {{ $evaluatedYear ?? $report->year }}
@@ -235,29 +254,35 @@
                         <div class="flex flex-col gap-3.5">
                             {{-- Tier 1 Header Chip --}}
                             <div class="flex items-center justify-between">
-                                <div class="inline-flex items-center gap-3 px-5 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300">
+                                <div
+                                    class="inline-flex items-center gap-3 px-5 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300">
                                     <span class="text-xl">🏆</span>
                                     <span class="font-display text-base font-extrabold tracking-widest uppercase">
                                         Employees of the Month
                                     </span>
                                 </div>
-                                <span class="text-xs font-bold uppercase tracking-wider text-amber-400 font-mono">
+                                <span class="text-2xl font-bold uppercase tracking-wider text-amber-400 font-mono">
                                     4 Honorees Awarded
                                 </span>
                             </div>
 
                             {{-- 4 Columns Grid --}}
                             <div class="grid grid-cols-4 gap-6">
-                                @foreach($eomWinners as $winner)
+                                @foreach ($eomWinners as $winner)
                                     @php $emp = $winner['employee']; @endphp
-                                    @if($emp)
-                                        <div class="relative rounded-3xl bg-slate-900/85 border border-amber-500/35 p-7 flex flex-col justify-between shadow-xl shadow-amber-950/30 backdrop-blur-xl hover:border-amber-400/60 transition-all min-h-[485px]">
+                                    @if ($emp)
+                                        <div
+                                            class="relative rounded-3xl bg-slate-900/85 border border-amber-500/35 p-7 flex flex-col justify-between shadow-xl shadow-amber-950/30 backdrop-blur-xl hover:border-amber-400/60 transition-all min-h-[485px]">
                                             {{-- Top Card Meta (Department & Winner Badge) --}}
-                                            <div class="flex items-center justify-between gap-3 pb-3.5 border-b border-white/10">
-                                                <span class="text-sm font-extrabold uppercase tracking-wider px-3.5 py-1.5 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/25 truncate max-w-[62%]" title="{{ $winner['department'] }}">
+                                            <div
+                                                class="flex items-center justify-between gap-3 pb-3.5 border-b border-white/10">
+                                                <span
+                                                    class="text-sm font-extrabold uppercase tracking-wider px-3.5 py-1.5 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/25 truncate max-w-[62%]"
+                                                    title="{{ $winner['department'] }}">
                                                     {{ $winner['department'] }}
                                                 </span>
-                                                <span class="text-xs font-black uppercase tracking-wider px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-sm shrink-0">
+                                                <span
+                                                    class="text-xl font-black uppercase tracking-wider px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-sm shrink-0 flex-nowrap text-nowrap">
                                                     🏆 EOM Winner
                                                 </span>
                                             </div>
@@ -265,47 +290,58 @@
                                             {{-- Center: Medallion + Name + Title --}}
                                             <div class="flex flex-col items-center text-center my-auto py-3">
                                                 {{-- Vibrant Gold Medallion --}}
-                                                <div class="w-36 h-36 rounded-full bg-gradient-to-tr from-amber-600 via-amber-400 to-yellow-200 p-1 shadow-xl shadow-amber-500/30 shrink-0 flex items-center justify-center">
-                                                    <div class="w-full h-full rounded-full bg-slate-950 flex items-center justify-center">
-                                                        <span class="font-display text-5xl font-black text-amber-300 tracking-wider">
+                                                <div
+                                                    class="w-36 h-36 rounded-full bg-gradient-to-tr from-amber-600 via-amber-400 to-yellow-200 p-1 shadow-xl shadow-amber-500/30 shrink-0 flex items-center justify-center">
+                                                    <div
+                                                        class="w-full h-full rounded-full bg-slate-950 flex items-center justify-center">
+                                                        <span
+                                                            class="font-display text-5xl font-black text-amber-300 tracking-wider">
                                                             {{ strtoupper(substr($emp->name, 0, 2)) }}
                                                         </span>
                                                     </div>
                                                 </div>
 
                                                 {{-- Name --}}
-                                                <h3 class="font-display text-3xl font-black text-white tracking-tight mt-4 line-clamp-1 w-full" title="{{ $emp->name }}">
+                                                <h3 class="font-display text-3xl font-black text-white tracking-tight mt-4 line-clamp-1 w-full"
+                                                    title="{{ $emp->name }}">
                                                     {{ $emp->name }}
                                                 </h3>
 
                                                 {{-- Designation & Code Chips --}}
                                                 <div class="flex items-center justify-center gap-2.5 mt-2 flex-wrap">
-                                                    <span class="font-mono-code text-sm font-bold px-2.5 py-1 rounded-md bg-white/10 text-slate-200 border border-white/15">
+                                                    <span
+                                                        class="font-mono-code text-sm font-bold px-2.5 py-1 rounded-md bg-white/10 text-slate-200 border border-white/15">
                                                         {{ $emp->employee_code }}
                                                     </span>
-                                                    <span class="text-base font-semibold text-slate-200 truncate max-w-[210px]">
+                                                    <span
+                                                        class="text-base font-semibold text-slate-200 truncate max-w-[210px]">
                                                         {{ $emp->designation?->name ?: 'Staff' }}
                                                     </span>
                                                 </div>
                                             </div>
 
                                             {{-- Bottom: Remarks or Accolade Note --}}
-                                            <div class="pt-3 border-t border-white/10">
+                                            {{-- <div class="pt-3 border-t border-white/10">
                                                 <div class="min-h-[50px] flex items-center justify-center px-4 rounded-xl bg-white/[0.04] text-center">
                                                     <p class="text-sm italic text-slate-300 line-clamp-2">
                                                         {{ !empty($winner['remarks']) ? '“' . $winner['remarks'] . '”' : '“Exemplary dedication, leadership & peer support”' }}
                                                     </p>
                                                 </div>
-                                            </div>
+                                            </div> --}}
                                         </div>
                                     @else
                                         {{-- Empty / Unassigned Slot Placeholder --}}
-                                        <div class="rounded-3xl bg-slate-900/40 border border-dashed border-slate-800 p-7 flex flex-col items-center justify-center text-center min-h-[485px]">
-                                            <div class="w-20 h-20 rounded-full bg-slate-800/80 flex items-center justify-center text-slate-600 text-3xl mb-3">
+                                        <div
+                                            class="rounded-3xl bg-slate-900/40 border border-dashed border-slate-800 p-7 flex flex-col items-center justify-center text-center min-h-[485px]">
+                                            <div
+                                                class="w-20 h-20 rounded-full bg-slate-800/80 flex items-center justify-center text-slate-600 text-3xl mb-3">
                                                 ✦
                                             </div>
-                                            <span class="text-sm font-bold text-slate-400 uppercase tracking-wider">Slot Unassigned</span>
-                                            <span class="text-xs text-slate-500 mt-1">{{ $winner['entry_label'] }}</span>
+                                            <span
+                                                class="text-sm font-bold text-slate-400 uppercase tracking-wider">Slot
+                                                Unassigned</span>
+                                            <span
+                                                class="text-xs text-slate-500 mt-1">{{ $winner['entry_label'] }}</span>
                                         </div>
                                     @endif
                                 @endforeach
@@ -316,29 +352,35 @@
                         <div class="flex flex-col gap-3.5">
                             {{-- Tier 2 Header Chip --}}
                             <div class="flex items-center justify-between">
-                                <div class="inline-flex items-center gap-3 px-5 py-2 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-300">
+                                <div
+                                    class="inline-flex items-center gap-3 px-5 py-2 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-300">
                                     <span class="text-xl">✨</span>
                                     <span class="font-display text-base font-extrabold tracking-widest uppercase">
                                         Grooming of the Month
                                     </span>
                                 </div>
-                                <span class="text-xs font-bold uppercase tracking-wider text-sky-400 font-mono">
+                                <span class="text-2xl font-bold uppercase tracking-wider text-sky-400 font-mono">
                                     2 Honorees Awarded
                                 </span>
                             </div>
 
                             {{-- 2 Columns Centered Grid --}}
                             <div class="grid grid-cols-2 gap-8 max-w-[1900px] w-full mx-auto">
-                                @foreach($gomWinners as $winner)
+                                @foreach ($gomWinners as $winner)
                                     @php $emp = $winner['employee']; @endphp
-                                    @if($emp)
-                                        <div class="relative rounded-3xl bg-slate-900/85 border border-sky-500/35 p-8 flex flex-col justify-between shadow-xl shadow-sky-950/30 backdrop-blur-xl hover:border-sky-400/60 transition-all min-h-[405px]">
+                                    @if ($emp)
+                                        <div
+                                            class="relative rounded-3xl bg-slate-900/85 border border-sky-500/35 p-8 flex flex-col justify-between shadow-xl shadow-sky-950/30 backdrop-blur-xl hover:border-sky-400/60 transition-all min-h-[405px]">
                                             {{-- Top Card Meta --}}
-                                            <div class="flex items-center justify-between gap-4 pb-4 border-b border-white/10">
-                                                <span class="text-sm font-extrabold uppercase tracking-wider px-4 py-1.5 rounded-full bg-sky-400/10 text-sky-300 border border-sky-400/25 truncate max-w-[62%]" title="{{ $winner['department'] }}">
+                                            <div
+                                                class="flex items-center justify-between gap-4 pb-4 border-b border-white/10">
+                                                <span
+                                                    class="text-sm font-extrabold uppercase tracking-wider px-4 py-1.5 rounded-full bg-sky-400/10 text-sky-300 border border-sky-400/25 truncate max-w-[62%]"
+                                                    title="{{ $winner['department'] }}">
                                                     {{ $winner['department'] }}
                                                 </span>
-                                                <span class="text-xs font-black uppercase tracking-wider px-4 py-1.5 rounded-full bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 shadow-sm shrink-0">
+                                                <span
+                                                    class="text-xl font-black uppercase tracking-wider px-4 py-1.5 rounded-full bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 shadow-sm shrink-0 flex-nowrap text-nowrap">
                                                     ✨ GOM Winner
                                                 </span>
                                             </div>
@@ -346,9 +388,12 @@
                                             {{-- Center: Horizontal Layout for Roomy GOM Cards --}}
                                             <div class="flex items-center gap-8 my-auto py-3 px-3">
                                                 {{-- Radiant Cyan Medallion --}}
-                                                <div class="w-36 h-36 rounded-full bg-gradient-to-tr from-sky-500 via-cyan-300 to-blue-600 p-1 shadow-xl shadow-sky-500/30 shrink-0 flex items-center justify-center">
-                                                    <div class="w-full h-full rounded-full bg-slate-950 flex items-center justify-center">
-                                                        <span class="font-display text-5xl font-black text-sky-300 tracking-wider">
+                                                <div
+                                                    class="w-36 h-36 rounded-full bg-gradient-to-tr from-sky-500 via-cyan-300 to-blue-600 p-1 shadow-xl shadow-sky-500/30 shrink-0 flex items-center justify-center">
+                                                    <div
+                                                        class="w-full h-full rounded-full bg-slate-950 flex items-center justify-center">
+                                                        <span
+                                                            class="font-display text-5xl font-black text-sky-300 tracking-wider">
                                                             {{ strtoupper(substr($emp->name, 0, 2)) }}
                                                         </span>
                                                     </div>
@@ -356,11 +401,13 @@
 
                                                 {{-- Details Column --}}
                                                 <div class="flex-1 min-w-0">
-                                                    <h3 class="font-display text-4xl font-black text-white tracking-tight truncate" title="{{ $emp->name }}">
+                                                    <h3 class="font-display text-4xl font-black text-white tracking-tight truncate"
+                                                        title="{{ $emp->name }}">
                                                         {{ $emp->name }}
                                                     </h3>
                                                     <div class="flex items-center gap-3 mt-3">
-                                                        <span class="font-mono-code text-sm font-bold px-3 py-1 rounded-md bg-white/10 text-slate-200 border border-white/15 shrink-0">
+                                                        <span
+                                                            class="font-mono-code text-sm font-bold px-3 py-1 rounded-md bg-white/10 text-slate-200 border border-white/15 shrink-0">
                                                             {{ $emp->employee_code }}
                                                         </span>
                                                         <span class="text-lg font-semibold text-slate-200 truncate">
@@ -371,22 +418,27 @@
                                             </div>
 
                                             {{-- Bottom: Remarks Box --}}
-                                            <div class="pt-3 border-t border-white/10">
+                                            {{-- <div class="pt-3 border-t border-white/10">
                                                 <div class="min-h-[48px] flex items-center px-4 rounded-xl bg-white/[0.04]">
                                                     <p class="text-sm italic text-slate-300 truncate">
                                                         {{ !empty($winner['remarks']) ? '“' . $winner['remarks'] . '”' : '“Pristine grooming, flawless posture & corporate etiquette standards”' }}
                                                     </p>
                                                 </div>
-                                            </div>
+                                            </div> --}}
                                         </div>
                                     @else
                                         {{-- Empty / Unassigned Slot Placeholder --}}
-                                        <div class="rounded-3xl bg-slate-900/40 border border-dashed border-slate-800 p-8 flex flex-col items-center justify-center text-center min-h-[405px]">
-                                            <div class="w-20 h-20 rounded-full bg-slate-800/80 flex items-center justify-center text-slate-600 text-3xl mb-3">
+                                        <div
+                                            class="rounded-3xl bg-slate-900/40 border border-dashed border-slate-800 p-8 flex flex-col items-center justify-center text-center min-h-[405px]">
+                                            <div
+                                                class="w-20 h-20 rounded-full bg-slate-800/80 flex items-center justify-center text-slate-600 text-3xl mb-3">
                                                 ✨
                                             </div>
-                                            <span class="text-sm font-bold text-slate-400 uppercase tracking-wider">Slot Unassigned</span>
-                                            <span class="text-xs text-slate-500 mt-1">{{ $winner['entry_label'] }}</span>
+                                            <span
+                                                class="text-sm font-bold text-slate-400 uppercase tracking-wider">Slot
+                                                Unassigned</span>
+                                            <span
+                                                class="text-xs text-slate-500 mt-1">{{ $winner['entry_label'] }}</span>
                                         </div>
                                     @endif
                                 @endforeach
@@ -398,15 +450,16 @@
                     {{-- ============================================================= --}}
                     {{-- 3. FOOTER SECTION (MATERIAL MOTTO & VERIFIED CREST)           --}}
                     {{-- ============================================================= --}}
-                    <div class="relative z-10 flex items-center justify-between border-t border-white/10 pt-5 text-slate-400">
+                    <div
+                        class="relative z-10 flex items-center justify-between border-t border-white/10 pt-5 text-slate-400">
                         <div class="flex items-center gap-4">
                             <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
                             <span class="font-display text-sm font-bold tracking-wider uppercase text-slate-300">
-                                Waldo Resort & Casino HR Excellence Program
+                                Waldo Dynasty Entertainment Pvt. Ltd.
                             </span>
                             <span class="text-xs text-slate-600">•</span>
                             <span class="text-xs text-slate-500">
-                                Honoring Performance, Passion & Professional Presentation
+                                Recognizing Excellence, Attitude & Professional Presentation
                             </span>
                         </div>
 
@@ -414,9 +467,11 @@
                             <span class="font-mono text-slate-500">
                                 Cycle: {{ $periodLabel }}
                             </span>
-                            <div class="flex items-center gap-2 px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-slate-300">
+                            <div
+                                class="flex items-center gap-2 px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-slate-300">
                                 <span>🛡️</span>
-                                <span class="font-bold text-[11px] uppercase tracking-wider">Official HRMS Certified</span>
+                                <span class="font-bold text-[11px] uppercase tracking-wider">Official HRMS
+                                    Certified</span>
                             </div>
                         </div>
                     </div>
@@ -465,7 +520,9 @@
 
                 // Ensure all Google fonts are fully loaded into memory before capture
                 if (document.fonts && document.fonts.ready) {
-                    try { await document.fonts.ready; } catch(e) {}
+                    try {
+                        await document.fonts.ready;
+                    } catch (e) {}
                 }
                 await new Promise(r => setTimeout(r, 250));
 
@@ -518,7 +575,8 @@
                     throw new Error('Failed to generate image data.');
                 }
 
-                const filename = 'EOM-GOM-WishCard-{{ \Illuminate\Support\Str::slug($monthName) }}-{{ $evaluatedYear ?? $report->year }}.jpg';
+                const filename =
+                    'EOM-GOM-WishCard-{{ \Illuminate\Support\Str::slug($monthName) }}-{{ $evaluatedYear ?? $report->year }}.jpg';
                 const link = document.createElement('a');
                 link.download = filename;
                 link.href = dataUrl;
@@ -545,4 +603,5 @@
         }
     </script>
 </body>
+
 </html>
