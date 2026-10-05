@@ -37,6 +37,17 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
                 $this->activeMonth = $m;
             }
         }
+
+        // Self-heal any Entry 1 records that may have legacy/hardcoded wrong department_id from another environment
+        $gamingDeptId = Department::getGamingDepartmentId();
+        $validGamingSlotIds = Department::getGamingAndSlotDepartmentIds();
+        $this->record->entries()
+            ->where('is_gaming_slot', true)
+            ->whereNotIn('department_id', $validGamingSlotIds)
+            ->update([
+                'department_id' => $gamingDeptId,
+                'department_name' => 'Gaming / Slot',
+            ]);
     }
 
     public function setActiveMonth(int $month): void
@@ -178,7 +189,7 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
                                 Select::make('e1_eom_1')
                                     ->label('EOM 1 (Employee of the Month)')
                                     ->placeholder('Choose Gaming / Slot Employee')
-                                    ->options(fn () => $this->getEmployeeOptions([6, 7]))
+                                    ->options(fn () => $this->getEmployeeOptions(Department::getGamingAndSlotDepartmentIds()))
                                     ->searchable()
                                     ->preload()
                                     ->native(false),
@@ -189,7 +200,7 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
                                 Select::make('e1_eom_2')
                                     ->label('EOM 2 (Employee of the Month)')
                                     ->placeholder('Choose Gaming / Slot Employee')
-                                    ->options(fn () => $this->getEmployeeOptions([6, 7]))
+                                    ->options(fn () => $this->getEmployeeOptions(Department::getGamingAndSlotDepartmentIds()))
                                     ->searchable()
                                     ->preload()
                                     ->native(false),
@@ -200,7 +211,7 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
                                 Select::make('e1_gom_1')
                                     ->label('GOM 1 (Grooming of the Month)')
                                     ->placeholder('Choose Gaming / Slot Employee')
-                                    ->options(fn () => $this->getEmployeeOptions([6, 7]))
+                                    ->options(fn () => $this->getEmployeeOptions(Department::getGamingAndSlotDepartmentIds()))
                                     ->searchable()
                                     ->preload()
                                     ->native(false),
@@ -216,7 +227,7 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
                             Grid::make(2)->schema([
                                 Select::make('e2_dept_id')
                                     ->label('Department')
-                                    ->options(fn () => Department::whereNotIn('id', [6, 7])->orderBy('name')->pluck('name', 'id')->toArray())
+                                    ->options(fn () => Department::getAllowedPoolDepartmentsOptions())
                                     ->searchable()
                                     ->preload()
                                     ->native(false)
@@ -247,7 +258,7 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
                             Grid::make(2)->schema([
                                 Select::make('e3_dept_id')
                                     ->label('Department')
-                                    ->options(fn () => Department::whereNotIn('id', [6, 7])->orderBy('name')->pluck('name', 'id')->toArray())
+                                    ->options(fn () => Department::getAllowedPoolDepartmentsOptions())
                                     ->searchable()
                                     ->preload()
                                     ->native(false)
@@ -278,7 +289,7 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
                             Grid::make(2)->schema([
                                 Select::make('e4_dept_id')
                                     ->label('Department')
-                                    ->options(fn () => Department::whereNotIn('id', [6, 7])->orderBy('name')->pluck('name', 'id')->toArray())
+                                    ->options(fn () => Department::getAllowedPoolDepartmentsOptions())
                                     ->searchable()
                                     ->preload()
                                     ->native(false)
@@ -312,6 +323,10 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
 
                     if ($e1) {
                         $e1->update([
+                            'department_id' => $e1->department_id && in_array($e1->department_id, Department::getGamingAndSlotDepartmentIds())
+                                ? $e1->department_id
+                                : Department::getGamingDepartmentId(),
+                            'department_name' => 'Gaming / Slot',
                             'eom_employee_code_1' => $data['e1_eom_1'] ?: null,
                             'eom_remarks_1' => $data['e1_eom_rem_1'] ?: null,
                             'eom_employee_code_2' => $data['e1_eom_2'] ?: null,

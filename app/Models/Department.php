@@ -97,4 +97,75 @@ class Department extends Model
     {
         return $this->hasMany(Adjustment::class);
     }
+
+    /**
+     * Get IDs for Gaming and Slot departments dynamically across environments.
+     *
+     * @return array<int>
+     */
+    public static function getGamingAndSlotDepartmentIds(): array
+    {
+        $ids = static::query()
+            ->where(function ($query) {
+                $query->whereRaw('LOWER(TRIM(name)) in (?, ?, ?)', ['gaming', 'slot', 'slots'])
+                    ->orWhereRaw('LOWER(TRIM(name)) like ?', ['%gaming%'])
+                    ->orWhereRaw('LOWER(TRIM(name)) like ?', ['%slot%']);
+            })
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        if (! empty($ids)) {
+            return $ids;
+        }
+
+        return [6, 7];
+    }
+
+    /**
+     * Get primary Gaming department ID dynamically.
+     */
+    public static function getGamingDepartmentId(): ?int
+    {
+        $id = static::query()
+            ->where(function ($query) {
+                $query->whereRaw('LOWER(TRIM(name)) = ?', ['gaming'])
+                    ->orWhereRaw('LOWER(TRIM(name)) like ?', ['%gaming%']);
+            })
+            ->value('id');
+
+        return $id ? (int) $id : (static::getGamingAndSlotDepartmentIds()[0] ?? 6);
+    }
+
+    /**
+     * Get primary Slot department ID dynamically.
+     */
+    public static function getSlotDepartmentId(): ?int
+    {
+        $id = static::query()
+            ->where(function ($query) {
+                $query->whereRaw('LOWER(TRIM(name)) = ?', ['slot'])
+                    ->orWhereRaw('LOWER(TRIM(name)) like ?', ['%slot%']);
+            })
+            ->value('id');
+
+        return $id ? (int) $id : (static::getGamingAndSlotDepartmentIds()[1] ?? 7);
+    }
+
+    /**
+     * Get options array for departments allowed in the random EOM/GOM pool (excludes Gaming & Slot).
+     *
+     * @return array<int, string>
+     */
+    public static function getAllowedPoolDepartmentsOptions(): array
+    {
+        $reservedIds = static::getGamingAndSlotDepartmentIds();
+
+        return static::query()
+            ->whereNotIn('id', $reservedIds)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->pluck('name', 'id')
+            ->toArray();
+    }
 }

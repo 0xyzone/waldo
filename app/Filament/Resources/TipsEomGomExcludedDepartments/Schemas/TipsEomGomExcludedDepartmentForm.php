@@ -17,7 +17,7 @@ class TipsEomGomExcludedDepartmentForm
                 Select::make('department_id')
                     ->label('Department to Exclude')
                     ->helperText('Select a department to exclude from the random EOM/GOM monthly report pool. (Note: Gaming and Slot are already reserved for Entry 1).')
-                    ->options(fn () => Department::whereNotIn('id', [6, 7])->orderBy('name')->pluck('name', 'id')->toArray())
+                    ->options(fn () => Department::getAllowedPoolDepartmentsOptions())
                     ->searchable()
                     ->preload()
                     ->native(false)

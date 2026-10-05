@@ -103,10 +103,11 @@ class TipsYearlyEomGomReport extends Model
     public function generateEntries(): void
     {
         // 1. Identify excluded departments
-        // Excluded list from TipsEomGomExcludedDepartment + Gaming (6) + Slot (7)
+        // Excluded list from TipsEomGomExcludedDepartment + Gaming & Slot (dynamic IDs)
+        $gamingSlotDepartmentIds = Department::getGamingAndSlotDepartmentIds();
         $excludedDepartmentIds = TipsEomGomExcludedDepartment::pluck('department_id')
             ->map(fn ($id) => (int) $id)
-            ->push(6, 7) // Automatically exclude Gaming & Slot
+            ->merge($gamingSlotDepartmentIds)
             ->unique()
             ->values()
             ->all();
@@ -116,9 +117,9 @@ class TipsYearlyEomGomReport extends Model
             ->where('is_active', true)
             ->get();
 
-        // If somehow not enough allowed departments, fall back to any active departments excluding 6 and 7
+        // If somehow not enough allowed departments, fall back to any active departments excluding Gaming & Slot
         if ($allowedDepartments->count() < 3) {
-            $allowedDepartments = Department::whereNotIn('id', [6, 7])
+            $allowedDepartments = Department::whereNotIn('id', $gamingSlotDepartmentIds)
                 ->where('is_active', true)
                 ->get();
         }
@@ -142,7 +143,7 @@ class TipsYearlyEomGomReport extends Model
                     'month_name' => $monthName,
                     'entry_number' => 1,
                     'is_gaming_slot' => true,
-                    'department_id' => 6, // Default Gaming ID
+                    'department_id' => Department::getGamingDepartmentId(),
                     'department_name' => 'Gaming / Slot',
                 ]);
             }
@@ -238,9 +239,10 @@ class TipsYearlyEomGomReport extends Model
             return false;
         }
 
+        $gamingSlotDepartmentIds = Department::getGamingAndSlotDepartmentIds();
         $excludedDepartmentIds = TipsEomGomExcludedDepartment::pluck('department_id')
             ->map(fn ($id) => (int) $id)
-            ->push(6, 7)
+            ->merge($gamingSlotDepartmentIds)
             ->unique()
             ->values()
             ->all();
@@ -250,7 +252,7 @@ class TipsYearlyEomGomReport extends Model
             ->get();
 
         if ($allowedDepartments->count() < 3) {
-            $allowedDepartments = Department::whereNotIn('id', [6, 7])
+            $allowedDepartments = Department::whereNotIn('id', $gamingSlotDepartmentIds)
                 ->where('is_active', true)
                 ->get();
         }
