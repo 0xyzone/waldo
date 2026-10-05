@@ -5,10 +5,10 @@
 
     RewriteEngine On
 
-    # Force HTTPS for local waldo
+    # Force HTTPS for production domain only (waldo.suminshrestha.com.np)
     RewriteCond %{HTTPS} off
-    RewriteCond %{HTTP_HOST} ^waldo(:[0-9]+)?$ [NC]
-    RewriteRule ^ https://waldo%{REQUEST_URI} [L,R=301]
+    RewriteCond %{HTTP_HOST} ^waldo\.suminshrestha\.com\.np$ [NC]
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
     # Proxy WebSocket connections to Laravel Reverb
     RewriteCond %{HTTP:Upgrade} =websocket [NC]
