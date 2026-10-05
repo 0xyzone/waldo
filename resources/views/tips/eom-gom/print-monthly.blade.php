@@ -133,36 +133,6 @@
             min-height: 28px;
         }
 
-        .footer-signatures {
-            margin-top: 55px;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 20px;
-            page-break-inside: avoid;
-        }
-
-        .sig-block {
-            text-align: center;
-            width: 180px;
-        }
-
-        .sig-line {
-            border-top: 1.5px solid #0f172a;
-            margin-bottom: 6px;
-        }
-
-        .sig-title {
-            font-size: 11px;
-            font-weight: 800;
-            text-transform: uppercase;
-            color: #0f172a;
-            margin-bottom: 2px;
-        }
-
-        .sig-sub {
-            font-size: 10px;
-            color: #64748b;
-        }
 
         .print-footer {
             margin-top: 30px;
@@ -253,14 +223,6 @@
                     <span class="meta-label">Evaluated Period:</span>
                     <span class="meta-value">{{ $monthName }} {{ $evaluatedYear ?? $report->year }} <span style="font-size: 10px; font-weight: 500; color: #64748b;">({{ $releaseLabel ?? ($releaseMonth . ' ' . $report->year) }})</span></span>
                 </div>
-                <div class="meta-col">
-                    <span class="meta-label">Total Allocated Entries:</span>
-                    <span class="meta-value">3 Entries (5 Winners Total)</span>
-                </div>
-                <div class="meta-col">
-                    <span class="meta-label">Status:</span>
-                    <span class="meta-value">{{ ucfirst((string) ($report->status ?? 'active')) }}</span>
-                </div>
             </div>
         </div>
     </div>
@@ -268,14 +230,13 @@
     <table class="report-table">
         <thead>
             <tr>
-                <th style="width: 32px;" class="text-center">S.N.</th>
-                <th style="width: 160px;">Award Category</th>
-                <th style="width: 140px;">Department</th>
-                <th style="width: 75px;" class="text-center">Emp Code</th>
-                <th style="width: 170px;">Employee Name</th>
-                <th style="width: 150px;">Designation</th>
-                <th>Remarks / Recognition Notes</th>
-                <th style="width: 110px;" class="text-center">Signature</th>
+                <th style="width: 35px;" class="text-center">S.N.</th>
+                <th style="width: 180px;">Award Category</th>
+                <th style="width: 160px;">Department</th>
+                <th style="width: 90px;" class="text-center">Emp Code</th>
+                <th style="width: 220px;">Employee Name</th>
+                <th style="width: 180px;">Designation</th>
+                <th style="width: 120px;" class="text-center">Signature</th>
             </tr>
         </thead>
         <tbody>
@@ -296,9 +257,6 @@
                     <td>
                         {{ $r['emp']?->designation?->name ?: '-' }}
                     </td>
-                    <td style="color: #334155; font-size: 10.5px;">
-                        {{ $r['remarks'] ?: '-' }}
-                    </td>
                     <td class="text-center">
                         <span class="sig-box"></span>
                     </td>
@@ -306,30 +264,6 @@
             @endforeach
         </tbody>
     </table>
-
-    {{-- Official Signature Areas --}}
-    <div class="footer-signatures">
-        <div class="sig-block">
-            <div class="sig-line"></div>
-            <div class="sig-title">Prepared By</div>
-            <div class="sig-sub">HR Executive / Officer</div>
-            <div class="sig-sub" style="margin-top: 6px;">Date: ________________</div>
-        </div>
-
-        <div class="sig-block">
-            <div class="sig-line"></div>
-            <div class="sig-title">Verified By</div>
-            <div class="sig-sub">Head of Department / HR Manager</div>
-            <div class="sig-sub" style="margin-top: 6px;">Date: ________________</div>
-        </div>
-
-        <div class="sig-block">
-            <div class="sig-line"></div>
-            <div class="sig-title">Approved By</div>
-            <div class="sig-sub">General Manager / Director</div>
-            <div class="sig-sub" style="margin-top: 6px;">Date: ________________</div>
-        </div>
-    </div>
 
     <div class="print-footer">
         Waldo HRMS Portal • EOM/GOM Annual Cycle {{ $report->year }} • Printed on: {{ now()->format('d M, Y h:i A') }}

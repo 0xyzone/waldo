@@ -9,9 +9,10 @@
     <!-- Google Fonts for Luxury Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <!-- html2canvas for instant JPG generation -->
+    <!-- htmlToImage & html2canvas for instant 100% faithful JPG generation -->
+    <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
     <style>
@@ -39,7 +40,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15, 23, 42, 0.9);
             border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(12px);
             padding: 12px 20px;
@@ -109,7 +110,6 @@
 
         .preview-container {
             transform-origin: top center;
-            /* Scale 0.49 to fit desktop screens nicely */
             transform: scale(0.48);
             width: 2708px;
             height: 1492px;
@@ -130,123 +130,107 @@
             }
         }
 
-        /* The 2708 x 1492 Master Canvas Card */
+        /* -------------------------------------------------------------------------- */
+        /* MASTER 2708 x 1492 CANVAS CARD (CLEAN LUXURY DESIGN)                      */
+        /* -------------------------------------------------------------------------- */
         #hrms-wish-card-canvas {
             width: 2708px;
             height: 1492px;
             min-width: 2708px;
             min-height: 1492px;
-            background: radial-gradient(circle at 50% 10%, #152245 0%, #0a1024 45%, #050814 100%);
+            background: radial-gradient(ellipse at 50% 20%, #162447 0%, #0d152a 55%, #060913 100%);
             color: #ffffff;
-            border: 20px solid #d4af37;
-            padding: 50px 70px;
+            border: 14px solid #d4af37;
+            border-radius: 8px;
+            padding: 44px 64px 36px 64px;
             position: relative;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.9);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.95);
             box-sizing: border-box;
         }
 
-        /* Decorative Inner Borders & Accents */
+        /* Fine Interior Framing Line */
         .inner-frame {
             position: absolute;
-            inset: 16px;
-            border: 3px solid rgba(212, 175, 55, 0.45);
-            pointer-events: none;
-            border-radius: 8px;
-        }
-
-        .inner-frame-thin {
-            position: absolute;
-            inset: 24px;
-            border: 1px dashed rgba(212, 175, 55, 0.3);
+            inset: 14px;
+            border: 1.5px solid rgba(212, 175, 55, 0.4);
+            border-radius: 4px;
             pointer-events: none;
         }
-
-        /* Corner Gold Ornaments */
-        .ornament-tl { position: absolute; top: 32px; left: 32px; width: 90px; height: 90px; border-top: 5px solid #d4af37; border-left: 5px solid #d4af37; }
-        .ornament-tr { position: absolute; top: 32px; right: 32px; width: 90px; height: 90px; border-top: 5px solid #d4af37; border-right: 5px solid #d4af37; }
-        .ornament-bl { position: absolute; bottom: 32px; left: 32px; width: 90px; height: 90px; border-bottom: 5px solid #d4af37; border-left: 5px solid #d4af37; }
-        .ornament-br { position: absolute; bottom: 32px; right: 32px; width: 90px; height: 90px; border-bottom: 5px solid #d4af37; border-right: 5px solid #d4af37; }
 
         /* Card Header */
         .card-header {
             text-align: center;
             position: relative;
             z-index: 5;
-            padding-top: 10px;
+            padding-top: 6px;
         }
 
         .super-title {
             font-family: 'Cinzel', serif;
-            font-size: 26px;
+            font-size: 22px;
             font-weight: 700;
             letter-spacing: 8px;
             text-transform: uppercase;
             color: #d4af37;
-            text-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
             margin-bottom: 6px;
         }
 
         .main-card-title {
             font-family: 'Cinzel', serif;
-            font-size: 64px;
+            font-size: 56px;
             font-weight: 900;
             letter-spacing: 4px;
             text-transform: uppercase;
-            background: linear-gradient(180deg, #ffffff 20%, #fef3c7 60%, #fbbf24 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+            color: #ffffff;
             line-height: 1.15;
             margin-bottom: 12px;
         }
 
         .month-ribbon {
             display: inline-block;
-            background: linear-gradient(90deg, transparent 0%, rgba(212, 175, 55, 0.25) 20%, rgba(212, 175, 55, 0.3) 50%, rgba(212, 175, 55, 0.25) 80%, transparent 100%);
-            border-top: 2px solid #d4af37;
-            border-bottom: 2px solid #d4af37;
-            padding: 8px 60px;
+            background: rgba(212, 175, 55, 0.12);
+            border: 1.5px solid #d4af37;
+            border-radius: 30px;
+            padding: 7px 44px;
             font-family: 'Cinzel', serif;
-            font-size: 30px;
+            font-size: 24px;
             font-weight: 800;
-            letter-spacing: 6px;
+            letter-spacing: 5px;
             color: #fef08a;
             text-transform: uppercase;
         }
 
-        /* Winners Grid */
+        /* Showcase Area: 2 Clean Rows (Row 1: 3 EOM Cards; Row 2: 2 GOM Cards) */
         .showcase-area {
             position: relative;
             z-index: 5;
-            display: grid;
-            grid-template-columns: 1.5fr 1fr;
-            gap: 40px;
-            margin-top: 30px;
-            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            margin-top: 24px;
+            margin-bottom: 20px;
             flex: 1;
         }
 
-        .category-box {
+        .section-group {
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 12px;
         }
 
-        .category-heading {
+        .section-heading {
             font-family: 'Cinzel', serif;
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 800;
             letter-spacing: 3px;
             text-transform: uppercase;
             display: flex;
             align-items: center;
-            gap: 14px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid rgba(212, 175, 55, 0.4);
+            gap: 12px;
         }
 
         .heading-eom {
@@ -255,213 +239,255 @@
 
         .heading-gom {
             color: #38bdf8;
-            border-bottom-color: rgba(56, 189, 248, 0.4);
         }
 
         .cards-row-eom {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 22px;
-            flex: 1;
+            gap: 24px;
         }
 
         .cards-row-gom {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 22px;
-            flex: 1;
+            gap: 24px;
         }
 
-        /* Single Winner Card */
+        /* Clean Luxury Winner Card */
         .winner-card {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(15, 23, 42, 0.7) 100%);
+            background: rgba(15, 23, 42, 0.75);
             border: 2px solid rgba(212, 175, 55, 0.4);
-            border-radius: 20px;
-            padding: 24px 20px;
+            border-radius: 18px;
+            padding: 22px 28px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            text-align: center;
+            justify-content: space-between;
             position: relative;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            min-height: 290px;
         }
 
         .winner-card-gom {
             border-color: rgba(56, 189, 248, 0.4);
         }
 
-        .badge-tag {
-            position: absolute;
-            top: -14px;
-            padding: 5px 18px;
+        /* Top Bar inside Card */
+        .card-top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 12px;
+            margin-bottom: 14px;
+        }
+
+        .dept-pill {
+            font-size: 14px;
+            font-weight: 700;
+            color: #fde047;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: rgba(253, 224, 71, 0.1);
+            padding: 4px 14px;
             border-radius: 20px;
-            font-size: 13px;
+            border: 1px solid rgba(253, 224, 71, 0.25);
+        }
+
+        .dept-pill-gom {
+            color: #7dd3fc;
+            background: rgba(125, 211, 252, 0.1);
+            border-color: rgba(125, 211, 252, 0.25);
+        }
+
+        .award-badge {
+            font-size: 12px;
             font-weight: 800;
             letter-spacing: 1.5px;
             text-transform: uppercase;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            padding: 4px 12px;
+            border-radius: 8px;
         }
 
-        .tag-eom {
-            background: linear-gradient(135deg, #f59e0b, #b45309);
+        .badge-eom {
+            background: linear-gradient(135deg, #d97706, #b45309);
             color: #ffffff;
             border: 1px solid #fde68a;
         }
 
-        .tag-gom {
+        .badge-gom {
             background: linear-gradient(135deg, #0284c7, #0369a1);
             color: #ffffff;
             border: 1px solid #bae6fd;
         }
 
-        /* Avatar Monogram */
+        /* Middle Content: Avatar + Name + Designation */
+        .card-content {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+            flex: 1;
+        }
+
         .avatar-circle {
-            width: 100px;
-            height: 100px;
+            width: 84px;
+            height: 84px;
+            min-width: 84px;
             border-radius: 50%;
-            margin-top: 14px;
-            margin-bottom: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Cinzel', serif;
-            font-size: 38px;
+            font-size: 32px;
             font-weight: 900;
             color: #0f172a;
-            position: relative;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
         }
 
         .avatar-eom {
             background: linear-gradient(135deg, #fef08a 0%, #eab308 50%, #ca8a04 100%);
-            border: 4px solid #fff;
+            border: 3px solid #ffffff;
         }
 
         .avatar-gom {
             background: linear-gradient(135deg, #e0f2fe 0%, #38bdf8 50%, #0284c7 100%);
-            border: 4px solid #fff;
+            border: 3px solid #ffffff;
+        }
+
+        .employee-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
+            min-width: 0;
         }
 
         .winner-name {
-            font-family: 'Playfair Display', Georgia, serif;
-            font-size: 25px;
-            font-weight: 900;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+            font-size: 32px;
+            font-weight: 800;
             color: #ffffff;
-            line-height: 1.25;
-            margin-bottom: 6px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
-            min-height: 62px;
+            line-height: 1.2;
+            letter-spacing: -0.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .winner-meta {
             display: flex;
             align-items: center;
-            justify-content: center;
-        }
-
-        .code-pill {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            padding: 3px 12px;
-            border-radius: 12px;
-            font-family: monospace;
-            font-size: 15px;
-            font-weight: 700;
-            color: #f1f5f9;
-            margin-bottom: 10px;
-        }
-
-        .department-label {
+            gap: 12px;
             font-size: 16px;
-            font-weight: 800;
-            color: #fde047;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 4px;
+            color: #94a3b8;
+            font-weight: 600;
         }
 
-        .designation-label {
-            font-size: 15px;
-            font-weight: 500;
-            color: #cbd5e1;
-            margin-bottom: 12px;
-        }
-
-        .remarks-quote {
-            margin-top: auto;
-            padding: 8px 12px;
-            border-radius: 8px;
-            background: rgba(0, 0, 0, 0.25);
-            border-left: 3px solid #d4af37;
-            font-size: 13.5px;
-            font-style: italic;
+        .emp-code-pill {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             color: #e2e8f0;
-            line-height: 1.35;
-            width: 100%;
+            font-family: monospace;
+            font-size: 14px;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 6px;
+            flex-shrink: 0;
         }
 
-        .remarks-quote-gom {
-            border-left-color: #38bdf8;
+        .designation-text {
+            color: #cbd5e1;
+            font-size: 17px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        /* Unassigned placeholder */
-        .empty-slot {
-            margin-top: 40px;
-            font-size: 18px;
-            color: rgba(255, 255, 255, 0.4);
+        /* Clean remarks note (if provided) */
+        .remarks-line {
+            font-size: 14px;
             font-style: italic;
+            color: #94a3b8;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 8px;
+            margin-top: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Empty Slot Presentation */
+        .empty-slot {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 150px;
+            color: #64748b;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .empty-slot-sub {
+            font-size: 13px;
+            color: #475569;
+            margin-top: 4px;
+            text-transform: none;
+            letter-spacing: normal;
         }
 
         /* Card Footer */
         .card-footer {
-            position: relative;
-            z-index: 5;
-            text-align: center;
-            padding-top: 15px;
-            border-top: 1px solid rgba(212, 175, 55, 0.3);
+            border-top: 1.5px solid rgba(212, 175, 55, 0.3);
+            padding-top: 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            color: #94a3b8;
+            font-size: 15px;
+            position: relative;
+            z-index: 5;
         }
 
-        .footer-note {
-            font-size: 18px;
-            font-weight: 600;
-            color: #e2e8f0;
-            letter-spacing: 0.5px;
-        }
-
-        .footer-gold {
-            color: #fbbf24;
-            font-weight: 800;
-        }
-
-        .footer-seal {
+        .footer-left {
             font-family: 'Cinzel', serif;
-            font-size: 16px;
-            font-weight: 800;
-            letter-spacing: 3px;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 2px;
             color: #d4af37;
             text-transform: uppercase;
         }
 
+        .footer-center {
+            font-size: 15px;
+            color: #cbd5e1;
+            letter-spacing: 1px;
+        }
+
+        .footer-right {
+            font-size: 14px;
+            color: #64748b;
+            font-weight: 600;
+        }
+
         @media print {
+            body {
+                background: #000;
+                padding: 0;
+            }
             .control-bar {
                 display: none !important;
             }
-            body {
-                background: none;
-                padding: 0;
-            }
             .preview-wrapper {
+                max-width: none;
                 padding: 0;
             }
             .preview-container {
-                transform: scale(0.38);
-                margin: 0;
-            }
-            @page {
-                size: A4 landscape;
-                margin: 0;
+                transform: scale(0.38) !important;
+                margin: 0 !important;
             }
         }
     </style>
@@ -497,74 +523,63 @@
             <!-- MASTER 2708 x 1492 CANVAS ELEMENT -->
             <div id="hrms-wish-card-canvas">
 
-                <!-- Inner Decorative Gold Frames -->
+                <!-- Inner Framing Border -->
                 <div class="inner-frame"></div>
-                <div class="inner-frame-thin"></div>
-
-                <!-- Corner Art-Deco Accents -->
-                <div class="ornament-tl"></div>
-                <div class="ornament-tr"></div>
-                <div class="ornament-bl"></div>
-                <div class="ornament-br"></div>
 
                 <!-- Header Banner -->
                 <div class="card-header">
-                    <div class="super-title">★ Waldo Luxury Resort & Casino • Monthly Recognition Awards ★</div>
+                    <div class="super-title">★ Waldo Dynasty Resort & Casino • Monthly Recognition ★</div>
                     <h1 class="main-card-title">Employee & Grooming of the Month</h1>
                     <div class="month-ribbon">
-                        ✦ Honoring Excellence in {{ strtoupper($monthName) }} {{ $evaluatedYear ?? $report->year }} ✦
+                        ✦ Honorees of {{ strtoupper($monthName) }} {{ $evaluatedYear ?? $report->year }} ✦
                     </div>
                 </div>
 
-                <!-- Showcase Grid: EOM (Left) & GOM (Right) -->
+                <!-- Showcase Grid: EOM (Row 1) & GOM (Row 2) -->
                 <div class="showcase-area">
 
                     <!-- SECTION 1: EMPLOYEES OF THE MONTH (3 Winners) -->
-                    <div class="category-box">
-                        <div class="category-heading heading-eom">
+                    <div class="section-group">
+                        <div class="section-heading heading-eom">
                             <span>🏆 Employees of the Month</span>
-                            <span style="font-size: 15px; color: #fde68a; font-weight: 600;">(3 Honorees)</span>
+                            <span style="font-size: 14px; color: #fde68a; font-weight: 600; text-transform: none; letter-spacing: 0;">(3 Honorees)</span>
                         </div>
 
                         <div class="cards-row-eom">
                             @foreach($eomWinners as $winner)
                                 <div class="winner-card">
-                                    <div class="badge-tag tag-eom">🏆 {{ $winner['badge'] }}</div>
+                                    <div class="card-top-bar">
+                                        <span class="dept-pill">{{ $winner['department'] }}</span>
+                                        <span class="award-badge badge-eom">🏆 {{ $winner['badge'] }}</span>
+                                    </div>
 
                                     @if($winner['employee'])
-                                        <div class="avatar-circle avatar-eom">
-                                            {{ strtoupper(substr($winner['employee']->name, 0, 2)) }}
-                                        </div>
-
-                                        <div class="winner-name">
-                                            {{ $winner['employee']->name }}
-                                        </div>
-
-                                        <div class="code-pill">
-                                            {{ $winner['employee']->employee_code }}
-                                        </div>
-
-                                        <div class="department-label">
-                                            {{ $winner['department'] }}
-                                        </div>
-
-                                        <div class="designation-label">
-                                            {{ $winner['employee']->designation?->name ?: 'Staff' }}
-                                        </div>
-
-                                        @if($winner['remarks'])
-                                            <div class="remarks-quote">
-                                                "{{ $winner['remarks'] }}"
+                                        <div class="card-content">
+                                            <div class="avatar-circle avatar-eom">
+                                                {{ strtoupper(substr($winner['employee']->name, 0, 2)) }}
                                             </div>
-                                        @else
-                                            <div class="remarks-quote" style="opacity: 0.7;">
-                                                "Recognized for outstanding dedication, excellence, and exceptional team commitment."
+
+                                            <div class="employee-info">
+                                                <div class="winner-name" title="{{ $winner['employee']->name }}">
+                                                    {{ $winner['employee']->name }}
+                                                </div>
+
+                                                <div class="winner-meta">
+                                                    <span class="emp-code-pill">{{ $winner['employee']->employee_code }}</span>
+                                                    <span class="designation-text">{{ $winner['employee']->designation?->name ?: 'Staff' }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        @if(!empty($winner['remarks']))
+                                            <div class="remarks-line">
+                                                “{{ $winner['remarks'] }}”
                                             </div>
                                         @endif
                                     @else
                                         <div class="empty-slot">
-                                            Slot Unassigned<br>
-                                            <span style="font-size: 14px; opacity: 0.6;">{{ $winner['entry_label'] }}</span>
+                                            <span>Slot Unassigned</span>
+                                            <span class="empty-slot-sub">{{ $winner['entry_label'] }}</span>
                                         </div>
                                     @endif
                                 </div>
@@ -573,51 +588,47 @@
                     </div>
 
                     <!-- SECTION 2: GROOMING OF THE MONTH (2 Winners) -->
-                    <div class="category-box">
-                        <div class="category-heading heading-gom">
+                    <div class="section-group">
+                        <div class="section-heading heading-gom">
                             <span>✨ Grooming of the Month</span>
-                            <span style="font-size: 15px; color: #bae6fd; font-weight: 600;">(2 Honorees)</span>
+                            <span style="font-size: 14px; color: #bae6fd; font-weight: 600; text-transform: none; letter-spacing: 0;">(2 Honorees)</span>
                         </div>
 
                         <div class="cards-row-gom">
                             @foreach($gomWinners as $winner)
                                 <div class="winner-card winner-card-gom">
-                                    <div class="badge-tag tag-gom">✨ {{ $winner['badge'] }}</div>
+                                    <div class="card-top-bar">
+                                        <span class="dept-pill dept-pill-gom">{{ $winner['department'] }}</span>
+                                        <span class="award-badge badge-gom">✨ {{ $winner['badge'] }}</span>
+                                    </div>
 
                                     @if($winner['employee'])
-                                        <div class="avatar-circle avatar-gom">
-                                            {{ strtoupper(substr($winner['employee']->name, 0, 2)) }}
-                                        </div>
-
-                                        <div class="winner-name">
-                                            {{ $winner['employee']->name }}
-                                        </div>
-
-                                        <div class="code-pill">
-                                            {{ $winner['employee']->employee_code }}
-                                        </div>
-
-                                        <div class="department-label" style="color: #7dd3fc;">
-                                            {{ $winner['department'] }}
-                                        </div>
-
-                                        <div class="designation-label">
-                                            {{ $winner['employee']->designation?->name ?: 'Staff' }}
-                                        </div>
-
-                                        @if($winner['remarks'])
-                                            <div class="remarks-quote remarks-quote-gom">
-                                                "{{ $winner['remarks'] }}"
+                                        <div class="card-content">
+                                            <div class="avatar-circle avatar-gom">
+                                                {{ strtoupper(substr($winner['employee']->name, 0, 2)) }}
                                             </div>
-                                        @else
-                                            <div class="remarks-quote remarks-quote-gom" style="opacity: 0.7;">
-                                                "Commended for immaculate grooming, professional etiquette, and pristine presentation."
+
+                                            <div class="employee-info">
+                                                <div class="winner-name" title="{{ $winner['employee']->name }}">
+                                                    {{ $winner['employee']->name }}
+                                                </div>
+
+                                                <div class="winner-meta">
+                                                    <span class="emp-code-pill">{{ $winner['employee']->employee_code }}</span>
+                                                    <span class="designation-text">{{ $winner['employee']->designation?->name ?: 'Staff' }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        @if(!empty($winner['remarks']))
+                                            <div class="remarks-line">
+                                                “{{ $winner['remarks'] }}”
                                             </div>
                                         @endif
                                     @else
                                         <div class="empty-slot">
-                                            Slot Unassigned<br>
-                                            <span style="font-size: 14px; opacity: 0.6;">{{ $winner['entry_label'] }}</span>
+                                            <span>Slot Unassigned</span>
+                                            <span class="empty-slot-sub">{{ $winner['entry_label'] }}</span>
                                         </div>
                                     @endif
                                 </div>
@@ -627,14 +638,18 @@
 
                 </div>
 
-                <!-- Footer -->
+                <!-- Clean Luxury Footer -->
                 <div class="card-footer">
-                    <div class="footer-note">
-                        Heartiest Congratulations to our achievers! Your exceptional spirit embodies <span class="footer-gold">The Gold Standard of Waldo</span>.
+                    <div class="footer-left">
+                        ★ Human Resources Department ★
                     </div>
 
-                    <div class="footer-seal">
-                        ★ Human Resources Department • Official Recognition ★
+                    <div class="footer-center">
+                        Waldo Dynasty Resort & Casino • The Gold Standard of Hospitality
+                    </div>
+
+                    <div class="footer-right">
+                        Annual Cycle {{ $report->year }}
                     </div>
                 </div>
 
@@ -643,12 +658,12 @@
         </div>
     </div>
 
-    <!-- JPG Export Logic -->
+    <!-- JPG Export Logic (Guarantees 100% Identical Render) -->
     <script>
         async function downloadWishCard() {
             const btn = document.getElementById('downloadBtn');
             const origText = btn.innerHTML;
-            btn.innerHTML = '<span>⏳ Generating JPG...</span>';
+            btn.innerHTML = '<span>⏳ Generating JPG (2708 × 1492)...</span>';
             btn.disabled = true;
 
             const card = document.getElementById('hrms-wish-card-canvas');
@@ -659,37 +674,87 @@
                 return;
             }
 
-            // Ensure fonts are loaded
+            // Ensure fonts are loaded before rasterization
             if (document.fonts && document.fonts.ready) {
                 try { await document.fonts.ready; } catch(e) {}
             }
-            await new Promise(r => setTimeout(r, 200));
+            await new Promise(r => setTimeout(r, 100));
+
+            // CRITICAL FIX: The preview container has CSS transform: scale(...).
+            // If captured while scaled, html2canvas/htmlToImage gets scaled down and cropped!
+            // We temporarily reset scale to 1 during the capture!
+            const container = card.parentElement;
+            const prevTransform = container.style.transform;
+            const prevMargin = container.style.marginBottom;
+            const prevScrollY = window.scrollY;
+
+            container.style.transform = 'none';
+            container.style.marginBottom = '0';
+            window.scrollTo(0, 0);
+
+            await new Promise(r => setTimeout(r, 80));
 
             try {
-                // Temporarily clone or style card at true full scale 2708x1492 for clean rasterization
-                const canvas = await window.html2canvas(card, {
-                    width: 2708,
-                    height: 1492,
-                    scale: 1,
-                    useCORS: true,
-                    allowTaint: true,
-                    backgroundColor: '#050814',
-                    logging: false
-                });
+                let dataUrl = null;
 
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-                const fileName = `EOM_GOM_Wish_Card_{{ $monthName }}_{{ $evaluatedYear ?? $report->year }}.jpg`;
+                // 1. Try htmlToImage (Exact SVG foreignObject rendering with 100% browser CSS match)
+                if (window.htmlToImage && typeof window.htmlToImage.toJpeg === 'function') {
+                    try {
+                        dataUrl = await window.htmlToImage.toJpeg(card, {
+                            width: 2708,
+                            height: 1492,
+                            canvasWidth: 2708,
+                            canvasHeight: 1492,
+                            quality: 0.96,
+                            pixelRatio: 1,
+                            cacheBust: true,
+                            style: {
+                                transform: 'none',
+                                margin: '0',
+                                width: '2708px',
+                                height: '1492px',
+                                minWidth: '2708px',
+                                minHeight: '1492px'
+                            }
+                        });
+                    } catch (e) {
+                        console.warn('htmlToImage failed, trying html2canvas:', e);
+                    }
+                }
 
-                const link = document.createElement('a');
-                link.download = fileName;
-                link.href = dataUrl;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                // 2. Fallback to html2canvas if htmlToImage was not available or errored
+                if (!dataUrl && window.html2canvas) {
+                    const canvas = await window.html2canvas(card, {
+                        width: 2708,
+                        height: 1492,
+                        scale: 1,
+                        useCORS: true,
+                        allowTaint: true,
+                        backgroundColor: '#060913',
+                        logging: false
+                    });
+                    dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+                }
+
+                if (dataUrl) {
+                    const fileName = `EOM_GOM_Wish_Card_{{ $monthName }}_{{ $evaluatedYear ?? $report->year }}.jpg`;
+                    const link = document.createElement('a');
+                    link.download = fileName;
+                    link.href = dataUrl;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } else {
+                    alert('Could not render image. Please try again.');
+                }
             } catch (err) {
-                console.error(err);
-                alert('Could not generate JPG export: ' + err.message);
+                console.error('Export error:', err);
+                alert('Failed to generate JPG: ' + (err.message || err));
             } finally {
+                // Restore preview scaling and scroll position
+                container.style.transform = prevTransform;
+                container.style.marginBottom = prevMargin;
+                window.scrollTo(0, prevScrollY);
                 btn.innerHTML = origText;
                 btn.disabled = false;
             }
