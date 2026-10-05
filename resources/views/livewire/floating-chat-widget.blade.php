@@ -1330,6 +1330,13 @@
                     mentionCursorPos: 0,
                     members: @js($this->groupMembers),
                     isGroup: {{ $isFloatingGroup ? 'true' : 'false' }},
+                    enterIsNewLine: (function() {
+                        try {
+                            return localStorage.getItem('waldo_chat_enter_mode') === 'newline';
+                        } catch(e) {
+                            return false;
+                        }
+                    })(),
 
                     init() {
                         this.$nextTick(() => this.resizeInput());
@@ -1347,6 +1354,13 @@
                         });
                     },
 
+                    toggleEnterMode() {
+                        this.enterIsNewLine = !this.enterIsNewLine;
+                        try {
+                            localStorage.setItem('waldo_chat_enter_mode', this.enterIsNewLine ? 'newline' : 'send');
+                        } catch(e) {}
+                    },
+
                     resizeInput() {
                         const el = this.$refs.floatMessageInput;
                         if (!el) return;
@@ -1359,6 +1373,40 @@
                         } else {
                             el.style.height = Math.max(scrollH, 34) + 'px';
                             el.style.overflowY = 'hidden';
+                        }
+                    },
+
+                    insertNewline() {
+                        const el = this.$refs.floatMessageInput;
+                        if (!el) return;
+                        const start = el.selectionStart ?? el.value.length;
+                        const end = el.selectionEnd ?? el.value.length;
+                        const val = el.value || '';
+                        const newVal = val.substring(0, start) + '\n' + val.substring(end);
+                        el.value = newVal;
+                        el.selectionStart = el.selectionEnd = start + 1;
+                        el.dispatchEvent(new Event('input', { bubbles: true }));
+                        $wire.set('messageText', newVal);
+                        this.$nextTick(() => {
+                            el.focus();
+                            this.resizeInput();
+                        });
+                    },
+
+                    submitMessage() {
+                        this.showMentionMenu = false;
+                        const input = this.$refs.floatMessageInput;
+                        const text = input ? input.value : ($wire.messageText || '');
+                        if (text.trim().length > 0 || $wire.attachment) {
+                            $wire.set('messageText', text).then(() => {
+                                $wire.sendMessage();
+                                if (input) {
+                                    input.value = '';
+                                }
+                                this.$nextTick(() => {
+                                    this.resizeInput();
+                                });
+                            });
                         }
                     },
 
@@ -1488,23 +1536,30 @@
                             }
                         }
 
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            this.showMentionMenu = false;
-                            if ($wire.messageText.trim().length > 0 || $wire.attachment) {
-                                $wire.sendMessage();
-                                const input = this.$refs.floatMessageInput;
-                                if (input) {
-                                    input.value = '';
-                                }
-                                this.$nextTick(() => {
-                                    this.resizeInput();
-                                });
+                        if (e.key === 'Enter') {
+                            if (e.shiftKey || e.altKey) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                this.insertNewline();
+                                return;
                             }
-                        } else if (e.key === 'Enter' && e.shiftKey) {
-                            this.$nextTick(() => {
-                                this.resizeInput();
-                            });
+
+                            if (e.ctrlKey || e.metaKey) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                this.submitMessage();
+                                return;
+                            }
+
+                            if (this.enterIsNewLine) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                this.insertNewline();
+                            } else {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                this.submitMessage();
+                            }
                         }
                     }
                 }"
@@ -1816,7 +1871,7 @@
                     </div>
 
                     <!-- Normal Input Form -->
-                    <form x-show="!isRecording" wire:submit.prevent="sendMessage" class="flex items-end gap-1.5">
+                    <form x-show="!isRecording" @submit.prevent="submitMessage()" class="flex items-end gap-1.5">
                         <!-- File input hidden -->
                         <input
                             type="file"
@@ -1861,6 +1916,18 @@
                             </button>
                         @endif
 
+                        <!-- Insert New Line Button -->
+                        <button
+                            type="button"
+                            @click="insertNewline()"
+                            class="flex-shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-950/40 dark:hover:text-amber-400 transition mb-0.5"
+                            title="Insert new line (Shift+Enter)"
+                        >
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a4 4 0 014 4v4m0 0l-3-3m3 3l3-3M3 10l3-3m-3 3l3 3"/>
+                            </svg>
+                        </button>
+
                         <!-- Input Field (Autosizing Textarea according to text wrapping) -->
                         <div class="relative flex-1 min-w-0">
                             <textarea
@@ -1873,16 +1940,39 @@
                                 @keydown="handleFloatInputKeyDown"
                                 @paste="$nextTick(() => resizeInput())"
                                 @cut="$nextTick(() => resizeInput())"
-                                placeholder="{{ $isFloatingGroup ? 'Write a message... (Type @ to mention)' : 'Write a message...' }}"
+                                :placeholder="enterIsNewLine 
+                                    ? '{{ $isFloatingGroup ? 'Message (@ to mention, Enter = line, Ctrl+Enter = send)' : 'Message (Enter = line, Ctrl+Enter = send)' }}'
+                                    : '{{ $isFloatingGroup ? 'Message (@ to mention, Shift+Enter = line)' : 'Message (Shift+Enter = line)' }}'"
                                 class="chat-input-field block w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-xs leading-normal text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 resize-none transition-[height] duration-75 ease-out"
                                 style="min-height: 34px; max-height: 110px; overflow-y: hidden;"
                             ></textarea>
                         </div>
 
+                        <!-- Enter Key Mode Toggle (Option to switch Enter behavior) -->
+                        <button
+                            type="button"
+                            @click="toggleEnterMode()"
+                            class="flex-shrink-0 rounded-lg px-1.5 py-1 text-[10px] font-bold border transition mb-0.5 select-none"
+                            :class="enterIsNewLine 
+                                ? 'border-amber-400 bg-amber-500/10 text-amber-600 dark:border-amber-500 dark:bg-amber-950/40 dark:text-amber-400 shadow-sm' 
+                                : 'border-gray-200 bg-gray-50 text-gray-400 hover:text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400'"
+                            :title="enterIsNewLine 
+                                ? 'Current mode: Enter adds new line (Ctrl+Enter to send). Click to switch to Enter sends.' 
+                                : 'Current mode: Enter sends message (Shift+Enter for new line). Click to switch to Enter adds new line.'"
+                        >
+                            <span x-show="!enterIsNewLine" class="flex items-center gap-0.5">
+                                <span>↵</span><span class="text-[9px]">Send</span>
+                            </span>
+                            <span x-show="enterIsNewLine" class="flex items-center gap-0.5">
+                                <span>↵</span><span class="text-[9px]">Line</span>
+                            </span>
+                        </button>
+
                         <!-- Send Button -->
                         <button
                             type="submit"
                             class="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-amber-600 text-white shadow transition hover:bg-amber-500 mb-0.5"
+                            :title="enterIsNewLine ? 'Send message (Ctrl+Enter)' : 'Send message (Enter)'"
                         >
                             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>

@@ -1516,6 +1516,85 @@
                         mentionCursorPos: 0,
                         members: @js($this->groupMembers),
                         isGroup: {{ $isGroup ? 'true' : 'false' }},
+                        enterIsNewLine: (function() {
+                            try {
+                                return localStorage.getItem('waldo_chat_enter_mode') === 'newline';
+                            } catch(e) {
+                                return false;
+                            }
+                        })(),
+
+                        init() {
+                            this.$nextTick(() => this.resizeInput());
+                            this.$watch('$wire.messageText', () => {
+                                this.$nextTick(() => this.resizeInput());
+                            });
+                            $wire.on('conversation-changed', () => {
+                                this.$nextTick(() => this.resizeInput());
+                            });
+                            $wire.on('focus-message-input', () => {
+                                this.$nextTick(() => {
+                                    this.$refs.messageInput?.focus();
+                                    this.resizeInput();
+                                });
+                            });
+                        },
+
+                        toggleEnterMode() {
+                            this.enterIsNewLine = !this.enterIsNewLine;
+                            try {
+                                localStorage.setItem('waldo_chat_enter_mode', this.enterIsNewLine ? 'newline' : 'send');
+                            } catch(e) {}
+                        },
+
+                        resizeInput() {
+                            const el = this.$refs.messageInput;
+                            if (!el) return;
+                            el.style.height = 'auto';
+                            const maxHeight = 120;
+                            const scrollH = el.scrollHeight;
+                            if (scrollH > maxHeight) {
+                                el.style.height = maxHeight + 'px';
+                                el.style.overflowY = 'auto';
+                            } else {
+                                el.style.height = Math.max(scrollH, 38) + 'px';
+                                el.style.overflowY = 'hidden';
+                            }
+                        },
+
+                        insertNewline() {
+                            const el = this.$refs.messageInput;
+                            if (!el) return;
+                            const start = el.selectionStart ?? el.value.length;
+                            const end = el.selectionEnd ?? el.value.length;
+                            const val = el.value || '';
+                            const newVal = val.substring(0, start) + '\n' + val.substring(end);
+                            el.value = newVal;
+                            el.selectionStart = el.selectionEnd = start + 1;
+                            el.dispatchEvent(new Event('input', { bubbles: true }));
+                            $wire.set('messageText', newVal);
+                            this.$nextTick(() => {
+                                el.focus();
+                                this.resizeInput();
+                            });
+                        },
+
+                        submitMessage() {
+                            this.showMentionMenu = false;
+                            const input = this.$refs.messageInput;
+                            const text = input ? input.value : ($wire.messageText || '');
+                            if (text.trim().length > 0 || $wire.attachment) {
+                                $wire.set('messageText', text).then(() => {
+                                    $wire.sendMessage();
+                                    if (input) {
+                                        input.value = '';
+                                    }
+                                    this.$nextTick(() => {
+                                        this.resizeInput();
+                                    });
+                                });
+                            }
+                        },
 
                         get filteredMembers() {
                             if (!this.isGroup) return [];
@@ -1595,6 +1674,7 @@
                                 input.focus();
                                 const newPos = before.length + tag.length;
                                 input.setSelectionRange(newPos, newPos);
+                                this.resizeInput();
                             });
                         },
 
@@ -1614,6 +1694,7 @@
                                 input.focus();
                                 input.setSelectionRange(text.length, text.length);
                                 this.detectMention();
+                                this.resizeInput();
                             });
                         },
 
@@ -1641,11 +1722,29 @@
                                 }
                             }
 
-                            if (e.key === 'Enter' && !e.shiftKey) {
-                                e.preventDefault();
-                                this.showMentionMenu = false;
-                                if ($wire.messageText.trim().length > 0 || $wire.attachment) {
-                                    $wire.sendMessage();
+                            if (e.key === 'Enter') {
+                                if (e.shiftKey || e.altKey) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    this.insertNewline();
+                                    return;
+                                }
+
+                                if (e.ctrlKey || e.metaKey) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    this.submitMessage();
+                                    return;
+                                }
+
+                                if (this.enterIsNewLine) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    this.insertNewline();
+                                } else {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    this.submitMessage();
                                 }
                             }
                         }
@@ -1970,7 +2069,7 @@
                             </div>
                         </div>
 
-                        <form x-show="!isRecording" wire:submit.prevent="sendMessage" class="flex items-center gap-1.5 sm:gap-2 w-full min-w-0">
+                        <form x-show="!isRecording" @submit.prevent="submitMessage()" class="flex items-end gap-1.5 sm:gap-2 w-full min-w-0">
                             <!-- Attachment File Input (Hidden) -->
                             <input
                                 type="file"
@@ -1983,7 +2082,7 @@
                             <button
                                 type="button"
                                 @click="$refs.fileInput.click()"
-                                class="flex-shrink-0 rounded-xl p-1.5 sm:p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition"
+                                class="flex-shrink-0 rounded-xl p-1.5 sm:p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition mb-0.5"
                                 title="Attach image or file"
                             >
                                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1995,7 +2094,7 @@
                             <button
                                 type="button"
                                 @click="startRecording"
-                                class="flex-shrink-0 rounded-xl p-1.5 sm:p-2 text-gray-400 hover:bg-gray-100 hover:text-amber-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-amber-400 transition"
+                                class="flex-shrink-0 rounded-xl p-1.5 sm:p-2 text-gray-400 hover:bg-gray-100 hover:text-amber-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-amber-400 transition mb-0.5"
                                 title="Record voice message"
                             >
                                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -2008,34 +2107,72 @@
                                 <button
                                     type="button"
                                     @click="openMentionMenu"
-                                    class="flex-shrink-0 rounded-xl p-1.5 sm:p-2 text-gray-400 hover:bg-gray-100 hover:text-amber-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-amber-400 transition"
+                                    class="flex-shrink-0 rounded-xl p-1.5 sm:p-2 text-gray-400 hover:bg-gray-100 hover:text-amber-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-amber-400 transition mb-0.5"
                                     title="Mention group member (@all or @member)"
                                 >
                                     <span class="flex h-5 w-5 items-center justify-center text-sm font-black leading-none select-none">@</span>
                                 </button>
                             @endif
 
-                            <!-- Text Input -->
+                            <!-- Insert New Line Button -->
+                            <button
+                                type="button"
+                                @click="insertNewline()"
+                                class="flex-shrink-0 rounded-xl p-1.5 sm:p-2 text-gray-400 hover:bg-amber-50 hover:text-amber-600 dark:text-slate-400 dark:hover:bg-amber-950/40 dark:hover:text-amber-400 transition mb-0.5"
+                                title="Insert new line (Shift+Enter)"
+                            >
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a4 4 0 014 4v4m0 0l-3-3m3 3l3-3M3 10l3-3m-3 3l3 3"/>
+                                </svg>
+                            </button>
+
+                            <!-- Text Input (Autosizing Textarea) -->
                             <div class="relative flex-1 min-w-0">
-                                <input
-                                    type="text"
+                                <textarea
                                     x-ref="messageInput"
                                     wire:model="messageText"
-                                    @input="detectMention"
+                                    rows="1"
+                                    @input="detectMention(); resizeInput();"
                                     @click="detectMention"
                                     @keyup="detectMention"
                                     @keydown="handleInputKeyDown"
-                                    placeholder="{{ $isGroup ? 'Message (@ to mention)...' : 'Write a message...' }}"
+                                    @paste="$nextTick(() => resizeInput())"
+                                    @cut="$nextTick(() => resizeInput())"
+                                    :placeholder="enterIsNewLine 
+                                        ? '{{ $isGroup ? 'Message (@ to mention, Enter = line, Ctrl+Enter = send)' : 'Write a message... (Enter = line, Ctrl+Enter = send)' }}'
+                                        : '{{ $isGroup ? 'Message (@ to mention, Shift+Enter = line)' : 'Write a message... (Shift+Enter = line)' }}'"
                                     autocomplete="off"
-                                    class="chat-input-field w-full rounded-xl border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 dark:border-slate-700/80 dark:bg-slate-800 dark:text-gray-100 dark:placeholder-slate-400"
-                                />
+                                    class="chat-input-field block w-full rounded-xl border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 dark:border-slate-700/80 dark:bg-slate-800 dark:text-gray-100 dark:placeholder-slate-400 resize-none transition-[height] duration-75 ease-out"
+                                    style="min-height: 38px; max-height: 120px; overflow-y: hidden;"
+                                ></textarea>
                             </div>
+
+                            <!-- Enter Key Mode Toggle -->
+                            <button
+                                type="button"
+                                @click="toggleEnterMode()"
+                                class="flex-shrink-0 rounded-xl px-2 py-1.5 sm:py-2 text-[11px] font-bold border transition mb-0.5 select-none"
+                                :class="enterIsNewLine 
+                                    ? 'border-amber-400 bg-amber-500/10 text-amber-600 dark:border-amber-500 dark:bg-amber-950/40 dark:text-amber-400 shadow-sm' 
+                                    : 'border-gray-200 bg-gray-50 text-gray-400 hover:text-gray-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'"
+                                :title="enterIsNewLine 
+                                    ? 'Current mode: Enter adds new line (Ctrl+Enter to send). Click to switch to Enter sends.' 
+                                    : 'Current mode: Enter sends message (Shift+Enter for new line). Click to switch to Enter adds new line.'"
+                            >
+                                <span x-show="!enterIsNewLine" class="flex items-center gap-0.5">
+                                    <span>↵</span><span class="text-[10px]">Send</span>
+                                </span>
+                                <span x-show="enterIsNewLine" class="flex items-center gap-0.5">
+                                    <span>↵</span><span class="text-[10px]">Line</span>
+                                </span>
+                            </button>
 
                             <!-- Send Button -->
                             <button
                                 type="submit"
                                 wire:loading.attr="disabled"
-                                class="flex-shrink-0 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-amber-600 text-white shadow-md transition hover:bg-amber-500 active:scale-95 disabled:opacity-50"
+                                class="flex-shrink-0 inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-amber-600 text-white shadow-md transition hover:bg-amber-500 active:scale-95 disabled:opacity-50 mb-0.5"
+                                :title="enterIsNewLine ? 'Send message (Ctrl+Enter)' : 'Send message (Enter)'"
                             >
                                 <svg wire:loading.remove wire:target="sendMessage,attachment" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
