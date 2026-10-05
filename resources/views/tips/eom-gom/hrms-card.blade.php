@@ -234,10 +234,10 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 8px 22px;
-            border-radius: 10px;
+            padding: 10px 24px;
+            border-radius: 12px;
             font-family: 'Cinzel', serif;
-            font-size: 21px;
+            font-size: 24px;
             font-weight: 800;
             letter-spacing: 2.5px;
             text-transform: uppercase;
@@ -346,54 +346,55 @@
             align-items: center;
             justify-content: space-between;
             gap: 14px;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
 
         .dept-tag {
-            font-size: 15px;
+            font-size: 18px;
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 1.2px;
-            padding: 6px 16px;
+            letter-spacing: 1px;
+            padding: 7px 18px;
             border-radius: 20px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 70%;
+            max-width: 65%;
         }
 
         .dept-tag-eom {
             color: #fde047;
-            background: rgba(253, 224, 71, 0.14);
-            border: 1.5px solid rgba(253, 224, 71, 0.35);
+            background: rgba(253, 224, 71, 0.16);
+            border: 2px solid rgba(253, 224, 71, 0.4);
         }
 
         .dept-tag-gom {
             color: #7dd3fc;
-            background: rgba(125, 211, 252, 0.14);
-            border: 1.5px solid rgba(125, 211, 252, 0.35);
+            background: rgba(125, 211, 252, 0.16);
+            border: 2px solid rgba(125, 211, 252, 0.4);
         }
 
         .award-badge-pill {
-            font-size: 14px;
-            font-weight: 800;
+            font-size: 19px;
+            font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 1.2px;
-            padding: 6px 16px;
-            border-radius: 8px;
+            padding: 8px 20px;
+            border-radius: 10px;
             flex-shrink: 0;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
         }
 
         .award-badge-eom {
-            background: linear-gradient(135deg, #d97706, #b45309);
+            background: linear-gradient(135deg, #f59e0b, #b45309);
             color: #ffffff;
-            border: 1px solid #fde68a;
+            border: 2px solid #fde68a;
         }
 
         .award-badge-gom {
             background: linear-gradient(135deg, #0284c7, #0369a1);
             color: #ffffff;
-            border: 1px solid #bae6fd;
+            border: 2px solid #bae6fd;
         }
 
         /* Honoree Name */
