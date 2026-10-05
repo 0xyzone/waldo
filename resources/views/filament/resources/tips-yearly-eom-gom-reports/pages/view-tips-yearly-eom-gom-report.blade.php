@@ -25,14 +25,19 @@
                     if ($mentry->eom_employee_code_2) $assignedCount++;
                     if ($mentry->gom_employee_code_1) $assignedCount++;
                 }
+                $isMonthVal = $monthEntries->where('is_validated', true)->isNotEmpty();
             @endphp
             <button type="button"
                     wire:click="setActiveMonth({{ $num }})"
                     class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer {{ $isActive ? 'bg-primary-600 text-white shadow-md shadow-primary-500/20' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
                 <span>{{ $period['release_month_short'] }}</span>
                 <span class="text-[10px] {{ $isActive ? 'text-amber-200' : 'text-gray-400' }} font-medium">({{ $period['evaluated_month_short'] }} '{{ $period['evaluated_year_short'] }})</span>
-                @if($assignedCount > 0)
-                    <span class="w-1.5 h-1.5 rounded-full {{ $isActive ? 'bg-amber-300' : 'bg-emerald-500' }}"></span>
+                @if($isMonthVal)
+                    <span class="inline-flex items-center justify-center px-1 rounded text-[10px] font-black {{ $isActive ? 'bg-emerald-400 text-slate-950' : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30' }}" title="Validated & Locked">
+                        ✓
+                    </span>
+                @elseif($assignedCount > 0)
+                    <span class="w-1.5 h-1.5 rounded-full {{ $isActive ? 'bg-amber-300' : 'bg-amber-500' }}" title="{{ $assignedCount }} Candidates Selected"></span>
                 @endif
             </button>
         @endfor
@@ -47,15 +52,53 @@
                     <span>•</span>
                     <span>{{ $record->title ?: 'Annual Recognition Cycle' }}</span>
                 </div>
-                <h2 class="text-2xl font-black tracking-tight text-white mt-1">
-                    {{ $this->activePeriod['evaluated_label'] }}
-                </h2>
+                <div class="flex flex-wrap items-center gap-3 mt-1">
+                    <h2 class="text-2xl font-black tracking-tight text-white">
+                        {{ $this->activePeriod['evaluated_label'] }}
+                    </h2>
+                    @if($this->isActiveMonthValidated)
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm">
+                            <x-heroicon-m-check-badge class="w-4 h-4 text-emerald-400" />
+                            <span>Validated & Locked</span>
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm">
+                            <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                            <span>Pending Validation</span>
+                        </span>
+                    @endif
+                </div>
                 <p class="text-xs text-slate-300 mt-1">
                     Evaluated Period: <strong class="text-white">{{ $this->activePeriod['evaluated_label'] }}</strong> • Released in <span class="text-amber-300 font-semibold">{{ $this->activePeriod['release_month'] }} {{ $record->year }}</span> (4 Department Entries • 6 Total Honorees)
                 </p>
+                @if($this->isActiveMonthValidated && $this->activeMonthValidationInfo)
+                    <div class="mt-2 text-[11px] text-emerald-400/90 flex items-center gap-1.5">
+                        <x-heroicon-m-shield-check class="w-3.5 h-3.5" />
+                        <span>Validated on {{ \Carbon\Carbon::parse($this->activeMonthValidationInfo['validated_at'])->format('M d, Y h:i A') }} by <strong>{{ $this->activeMonthValidationInfo['validator_name'] }}</strong> • Re-randomize is locked for this month</span>
+                    </div>
+                @endif
             </div>
 
             <div class="flex flex-wrap items-center gap-2.5">
+                @if(! $this->isActiveMonthValidated)
+                    <button type="button"
+                            wire:click="validateCurrentMonth"
+                            wire:confirm="Validate candidates for {{ $this->activePeriodLabel }}? This locks the month and ensures re-randomization will skip it."
+                            class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/30 transition cursor-pointer">
+                        <x-heroicon-m-check-badge class="w-4 h-4 text-emerald-200" />
+                        <span>Validate Month</span>
+                    </button>
+                @else
+                    <button type="button"
+                            wire:click="unvalidateCurrentMonth"
+                            wire:confirm="Unlock {{ $this->activePeriodLabel }}? This will allow departments to be re-randomized again."
+                            class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition cursor-pointer"
+                            title="Unlock to allow re-randomization">
+                        <x-heroicon-m-lock-open class="w-4 h-4 text-slate-400" />
+                        <span>Unlock</span>
+                    </button>
+                @endif
+
                 <a href="{{ route('tips.eom-gom.print-monthly', ['report' => $record->id, 'month' => $this->activeMonth]) }}"
                    target="_blank"
                    class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md transition">
@@ -76,7 +119,25 @@
         <div class="absolute -right-10 -bottom-10 w-44 h-44 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
     </div>
 
-    {{-- 3 Department Entries Showcase --}}
+    @if($this->isActiveMonthValidated)
+        <div class="mb-5 flex items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs">
+            <div class="flex items-center gap-2.5">
+                <x-heroicon-s-check-circle class="w-5 h-5 text-emerald-500 shrink-0" />
+                <div>
+                    <span class="font-bold">This month is validated & locked.</span>
+                    <span class="text-emerald-700 dark:text-emerald-400 ml-1">Department randomization is disabled for this period to preserve your validated candidate selections.</span>
+                </div>
+            </div>
+            <button type="button"
+                    wire:click="unvalidateCurrentMonth"
+                    wire:confirm="Unlock {{ $this->activePeriodLabel }}? This will allow re-randomizing departments again."
+                    class="font-semibold text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-100 underline shrink-0 cursor-pointer">
+                Unlock
+            </button>
+        </div>
+    @endif
+
+    {{-- 4 Department Entries Showcase --}}
     <div class="space-y-6">
 
         {{-- ENTRY 1: Gaming / Slot Department --}}

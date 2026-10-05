@@ -189,10 +189,55 @@ class TipsYearlyEomGomReport extends Model
     }
 
     /**
-     * Re-randomize entry 2, 3, and 4 departments for a specific month.
+     * Check if a specific month is validated.
      */
-    public function rerandomizeMonth(int $monthNumber): void
+    public function isMonthValidated(int $monthNumber): bool
     {
+        return $this->entries()
+            ->where('month_number', $monthNumber)
+            ->where('is_validated', true)
+            ->exists();
+    }
+
+    /**
+     * Validate a specific month's winners.
+     */
+    public function validateMonth(int $monthNumber, ?int $userId = null): void
+    {
+        $this->entries()
+            ->where('month_number', $monthNumber)
+            ->update([
+                'is_validated' => true,
+                'validated_at' => now(),
+                'validated_by' => $userId ?? auth()->id(),
+            ]);
+    }
+
+    /**
+     * Unlock / unvalidate a specific month.
+     */
+    public function unvalidateMonth(int $monthNumber): void
+    {
+        $this->entries()
+            ->where('month_number', $monthNumber)
+            ->update([
+                'is_validated' => false,
+                'validated_at' => null,
+                'validated_by' => null,
+            ]);
+    }
+
+    /**
+     * Re-randomize entry 2, 3, and 4 departments for a specific month.
+     * Automatically skips validated months.
+     */
+    public function rerandomizeMonth(int $monthNumber): bool
+    {
+        // Skip if the month has been validated
+        if ($this->isMonthValidated($monthNumber)) {
+            return false;
+        }
+
         $excludedDepartmentIds = TipsEomGomExcludedDepartment::pluck('department_id')
             ->map(fn ($id) => (int) $id)
             ->push(6, 7)
@@ -238,5 +283,24 @@ class TipsYearlyEomGomReport extends Model
                 'department_name' => $deptEntry4?->name,
             ]);
         }
+
+        return true;
+    }
+
+    /**
+     * Re-randomize all unvalidated months in the report.
+     * Automatically skips any month that has been validated.
+     */
+    public function rerandomizeAll(): int
+    {
+        $updatedCount = 0;
+
+        for ($month = 1; $month <= 12; $month++) {
+            if ($this->rerandomizeMonth($month)) {
+                $updatedCount++;
+            }
+        }
+
+        return $updatedCount;
     }
 }

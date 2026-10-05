@@ -21,6 +21,9 @@ class TipsYearlyEomGomReportEntry extends Model
         'eom_remarks_1',
         'eom_remarks_2',
         'gom_remarks_1',
+        'is_validated',
+        'validated_at',
+        'validated_by',
     ];
 
     protected function casts(): array
@@ -29,7 +32,14 @@ class TipsYearlyEomGomReportEntry extends Model
             'month_number' => 'integer',
             'entry_number' => 'integer',
             'is_gaming_slot' => 'boolean',
+            'is_validated' => 'boolean',
+            'validated_at' => 'datetime',
         ];
+    }
+
+    public function validator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'validated_by');
     }
 
     public function report(): BelongsTo
