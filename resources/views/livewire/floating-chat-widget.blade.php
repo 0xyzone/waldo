@@ -1340,9 +1340,6 @@
 
                     init() {
                         this.$nextTick(() => this.resizeInput());
-                        this.$watch('$wire.messageText', () => {
-                            this.$nextTick(() => this.resizeInput());
-                        });
                         $wire.on('floating-conversation-changed', () => {
                             this.$nextTick(() => this.resizeInput());
                         });
@@ -1365,15 +1362,16 @@
                         const el = this.$refs.floatMessageInput;
                         if (!el) return;
                         el.style.height = 'auto';
-                        const maxHeight = 110;
-                        const scrollH = el.scrollHeight;
-                        if (scrollH > maxHeight) {
-                            el.style.height = maxHeight + 'px';
-                            el.style.overflowY = 'auto';
-                        } else {
-                            el.style.height = Math.max(scrollH, 34) + 'px';
-                            el.style.overflowY = 'hidden';
+                        let scrollH = el.scrollHeight;
+                        const trailingNewlines = (el.value.match(/\n+$/) || [''])[0].length;
+                        if (trailingNewlines > 0) {
+                            scrollH += (trailingNewlines * 20);
                         }
+                        const minHeight = 34;
+                        const maxHeight = 110;
+                        const targetHeight = Math.min(Math.max(scrollH, minHeight), maxHeight);
+                        el.style.height = targetHeight + 'px';
+                        el.style.overflowY = scrollH > maxHeight ? 'auto' : 'hidden';
                     },
 
                     insertNewline() {
@@ -1384,9 +1382,10 @@
                         const val = el.value || '';
                         const newVal = val.substring(0, start) + '\n' + val.substring(end);
                         el.value = newVal;
-                        el.selectionStart = el.selectionEnd = start + 1;
+                        const nextPos = start + 1;
+                        el.selectionStart = el.selectionEnd = nextPos;
                         el.dispatchEvent(new Event('input', { bubbles: true }));
-                        $wire.set('messageText', newVal);
+                        this.resizeInput();
                         this.$nextTick(() => {
                             el.focus();
                             this.resizeInput();
@@ -1563,7 +1562,7 @@
                         }
                     }
                 }"
-                class="relative border-t border-gray-100 bg-white p-2.5 dark:border-gray-800 dark:bg-gray-900"
+                class="relative border-t border-gray-100 bg-white p-2.5 dark:border-gray-800 dark:bg-gray-900 flex-shrink-0"
             >
                 <!-- Mention Dropdown Popover in Floating Widget -->
                 @if($isFloatingGroup)
@@ -1916,20 +1915,8 @@
                             </button>
                         @endif
 
-                        <!-- Insert New Line Button -->
-                        <button
-                            type="button"
-                            @click="insertNewline()"
-                            class="flex-shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-950/40 dark:hover:text-amber-400 transition mb-0.5"
-                            title="Insert new line (Shift+Enter)"
-                        >
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a4 4 0 014 4v4m0 0l-3-3m3 3l3-3M3 10l3-3m-3 3l3 3"/>
-                            </svg>
-                        </button>
-
                         <!-- Input Field (Autosizing Textarea according to text wrapping) -->
-                        <div class="relative flex-1 min-w-0">
+                        <div class="relative flex-1 min-w-0" wire:ignore>
                             <textarea
                                 x-ref="floatMessageInput"
                                 wire:model="messageText"
@@ -1943,7 +1930,7 @@
                                 :placeholder="enterIsNewLine 
                                     ? '{{ $isFloatingGroup ? 'Message (@ to mention, Enter = line, Ctrl+Enter = send)' : 'Message (Enter = line, Ctrl+Enter = send)' }}'
                                     : '{{ $isFloatingGroup ? 'Message (@ to mention, Shift+Enter = line)' : 'Message (Shift+Enter = line)' }}'"
-                                class="chat-input-field block w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-xs leading-normal text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 resize-none transition-[height] duration-75 ease-out"
+                                class="chat-input-field block w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-xs leading-normal text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 resize-none"
                                 style="min-height: 34px; max-height: 110px; overflow-y: hidden;"
                             ></textarea>
                         </div>

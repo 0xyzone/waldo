@@ -1526,9 +1526,6 @@
 
                         init() {
                             this.$nextTick(() => this.resizeInput());
-                            this.$watch('$wire.messageText', () => {
-                                this.$nextTick(() => this.resizeInput());
-                            });
                             $wire.on('conversation-changed', () => {
                                 this.$nextTick(() => this.resizeInput());
                             });
@@ -1551,15 +1548,16 @@
                             const el = this.$refs.messageInput;
                             if (!el) return;
                             el.style.height = 'auto';
-                            const maxHeight = 120;
-                            const scrollH = el.scrollHeight;
-                            if (scrollH > maxHeight) {
-                                el.style.height = maxHeight + 'px';
-                                el.style.overflowY = 'auto';
-                            } else {
-                                el.style.height = Math.max(scrollH, 38) + 'px';
-                                el.style.overflowY = 'hidden';
+                            let scrollH = el.scrollHeight;
+                            const trailingNewlines = (el.value.match(/\n+$/) || [''])[0].length;
+                            if (trailingNewlines > 0) {
+                                scrollH += (trailingNewlines * 22);
                             }
+                            const minHeight = 38;
+                            const maxHeight = 120;
+                            const targetHeight = Math.min(Math.max(scrollH, minHeight), maxHeight);
+                            el.style.height = targetHeight + 'px';
+                            el.style.overflowY = scrollH > maxHeight ? 'auto' : 'hidden';
                         },
 
                         insertNewline() {
@@ -1570,9 +1568,10 @@
                             const val = el.value || '';
                             const newVal = val.substring(0, start) + '\n' + val.substring(end);
                             el.value = newVal;
-                            el.selectionStart = el.selectionEnd = start + 1;
+                            const nextPos = start + 1;
+                            el.selectionStart = el.selectionEnd = nextPos;
                             el.dispatchEvent(new Event('input', { bubbles: true }));
-                            $wire.set('messageText', newVal);
+                            this.resizeInput();
                             this.$nextTick(() => {
                                 el.focus();
                                 this.resizeInput();
@@ -2114,20 +2113,8 @@
                                 </button>
                             @endif
 
-                            <!-- Insert New Line Button -->
-                            <button
-                                type="button"
-                                @click="insertNewline()"
-                                class="flex-shrink-0 rounded-xl p-1.5 sm:p-2 text-gray-400 hover:bg-amber-50 hover:text-amber-600 dark:text-slate-400 dark:hover:bg-amber-950/40 dark:hover:text-amber-400 transition mb-0.5"
-                                title="Insert new line (Shift+Enter)"
-                            >
-                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a4 4 0 014 4v4m0 0l-3-3m3 3l3-3M3 10l3-3m-3 3l3 3"/>
-                                </svg>
-                            </button>
-
                             <!-- Text Input (Autosizing Textarea) -->
-                            <div class="relative flex-1 min-w-0">
+                            <div class="relative flex-1 min-w-0" wire:ignore>
                                 <textarea
                                     x-ref="messageInput"
                                     wire:model="messageText"
@@ -2142,7 +2129,7 @@
                                         ? '{{ $isGroup ? 'Message (@ to mention, Enter = line, Ctrl+Enter = send)' : 'Write a message... (Enter = line, Ctrl+Enter = send)' }}'
                                         : '{{ $isGroup ? 'Message (@ to mention, Shift+Enter = line)' : 'Write a message... (Shift+Enter = line)' }}'"
                                     autocomplete="off"
-                                    class="chat-input-field block w-full rounded-xl border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 dark:border-slate-700/80 dark:bg-slate-800 dark:text-gray-100 dark:placeholder-slate-400 resize-none transition-[height] duration-75 ease-out"
+                                    class="chat-input-field block w-full rounded-xl border border-gray-300 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 dark:border-slate-700/80 dark:bg-slate-800 dark:text-gray-100 dark:placeholder-slate-400 resize-none"
                                     style="min-height: 38px; max-height: 120px; overflow-y: hidden;"
                                 ></textarea>
                             </div>
