@@ -102,38 +102,16 @@ class TipsYearlyEomGomReport extends Model
      */
     public function generateEntries(): void
     {
-        // 1. Identify excluded departments
-        // Excluded list from TipsEomGomExcludedDepartment + Gaming & Slot (dynamic IDs)
-        $gamingSlotDepartmentIds = Department::getGamingAndSlotDepartmentIds();
-        $excludedDepartmentIds = TipsEomGomExcludedDepartment::pluck('department_id')
-            ->map(fn ($id) => (int) $id)
-            ->merge($gamingSlotDepartmentIds)
-            ->unique()
-            ->values()
-            ->all();
-
-        // 2. Fetch allowed departments
-        $allowedDepartments = Department::whereNotIn('id', $excludedDepartmentIds)
-            ->where('is_active', true)
-            ->get();
-
-        // If somehow not enough allowed departments, fall back to any active departments excluding Gaming & Slot
-        if ($allowedDepartments->count() < 3) {
-            $allowedDepartments = Department::whereNotIn('id', $gamingSlotDepartmentIds)
-                ->where('is_active', true)
-                ->get();
-        }
-
         for ($monthNumber = 1; $monthNumber <= 12; $monthNumber++) {
             $period = $this->getPeriodForMonth($monthNumber);
             $monthName = $period['evaluated_month'];
             $existingEntries = $this->entries()->where('month_number', $monthNumber)->get();
 
-            // Random selection of 3 distinct departments from allowed departments
-            $availablePool = $allowedDepartments->shuffle();
-            $deptEntry2 = $availablePool->first();
-            $deptEntry3 = $availablePool->skip(1)->first() ?? $deptEntry2;
-            $deptEntry4 = $availablePool->skip(2)->first() ?? $deptEntry2;
+            // Random selection of 3 distinct allowed departments avoiding repetition for at least 4 months
+            $chosenDepts = $this->selectRandomAllowedDepartments($monthNumber, 3, ignoreFutureUnvalidated: true);
+            $deptEntry2 = $chosenDepts->get(0);
+            $deptEntry3 = $chosenDepts->get(1) ?? $deptEntry2;
+            $deptEntry4 = $chosenDepts->get(2) ?? $deptEntry2;
 
             // Entry 1: Gaming / Slot (2 EOM, 1 GOM)
             $entry1 = $existingEntries->firstWhere('entry_number', 1);
@@ -229,16 +207,13 @@ class TipsYearlyEomGomReport extends Model
     }
 
     /**
-     * Re-randomize entry 2, 3, and 4 departments for a specific month.
-     * Automatically skips validated months.
+     * Select distinct allowed departments for randomized entries (Entry 2, 3, 4) in a given month.
+     * Tries not to repeat any department for at least 4 months whenever possible.
+     *
+     * @return Collection<int, Department>
      */
-    public function rerandomizeMonth(int $monthNumber): bool
+    public function selectRandomAllowedDepartments(int $monthNumber, int $count = 3, bool $ignoreFutureUnvalidated = false): Collection
     {
-        // Skip if the month has been validated
-        if ($this->isMonthValidated($monthNumber)) {
-            return false;
-        }
-
         $gamingSlotDepartmentIds = Department::getGamingAndSlotDepartmentIds();
         $excludedDepartmentIds = TipsEomGomExcludedDepartment::pluck('department_id')
             ->map(fn ($id) => (int) $id)
@@ -251,39 +226,151 @@ class TipsYearlyEomGomReport extends Model
             ->where('is_active', true)
             ->get();
 
-        if ($allowedDepartments->count() < 3) {
+        if ($allowedDepartments->count() < $count) {
             $allowedDepartments = Department::whereNotIn('id', $gamingSlotDepartmentIds)
                 ->where('is_active', true)
                 ->get();
         }
 
-        $availablePool = $allowedDepartments->shuffle();
-        $deptEntry2 = $availablePool->first();
-        $deptEntry3 = $availablePool->skip(1)->first() ?? $deptEntry2;
-        $deptEntry4 = $availablePool->skip(2)->first() ?? $deptEntry2;
+        if ($allowedDepartments->isEmpty()) {
+            return collect();
+        }
+
+        // Query existing entries in this report excluding current month
+        $query = $this->entries()
+            ->where('month_number', '!=', $monthNumber)
+            ->where('is_gaming_slot', false)
+            ->whereNotNull('department_id');
+
+        if ($ignoreFutureUnvalidated) {
+            $query->where(function ($q) use ($monthNumber) {
+                $q->where('month_number', '<', $monthNumber)
+                    ->orWhere('is_validated', true);
+            });
+        }
+
+        $otherEntries = $query->get();
+
+        // Also check previous year's report if this is an early month (months 1 - 4)
+        $prevYearEntries = collect();
+        if ($monthNumber <= 4) {
+            $prevYearReport = static::where('year', $this->year - 1)->first();
+            if ($prevYearReport) {
+                $prevYearEntries = $prevYearReport->entries()
+                    ->where('is_gaming_slot', false)
+                    ->whereNotNull('department_id')
+                    ->where('month_number', '>=', 12 - (4 - $monthNumber))
+                    ->get();
+            }
+        }
+
+        $scored = $allowedDepartments->map(function (Department $dept) use ($monthNumber, $otherEntries, $prevYearEntries) {
+            $minDist = 999;
+            $occurrences = 0;
+
+            foreach ($otherEntries as $entry) {
+                if ($entry->department_id === $dept->id) {
+                    $occurrences++;
+                    $dist = abs($monthNumber - (int) $entry->month_number);
+                    if ($dist < $minDist) {
+                        $minDist = $dist;
+                    }
+                }
+            }
+
+            foreach ($prevYearEntries as $entry) {
+                if ($entry->department_id === $dept->id) {
+                    $dist = (12 - (int) $entry->month_number) + $monthNumber;
+                    if ($dist < $minDist) {
+                        $minDist = $dist;
+                    }
+                }
+            }
+
+            return [
+                'dept' => $dept,
+                'min_dist' => $minDist,
+                'occurrences' => $occurrences,
+                'is_cooldown' => $minDist <= 4,
+                'rand' => mt_rand(1, 100000),
+            ];
+        });
+
+        // Sorting priority:
+        // 1. Not in cooldown (outside 4-month window)
+        // 2. Fewest occurrences in current report
+        // 3. Greatest min distance
+        // 4. Random shuffle
+        $sorted = $scored->sort(function (array $a, array $b) {
+            if ($a['is_cooldown'] !== $b['is_cooldown']) {
+                return $a['is_cooldown'] ? 1 : -1;
+            }
+            if ($a['occurrences'] !== $b['occurrences']) {
+                return $a['occurrences'] <=> $b['occurrences'];
+            }
+            if ($a['min_dist'] !== $b['min_dist']) {
+                return $b['min_dist'] <=> $a['min_dist'];
+            }
+
+            return $a['rand'] <=> $b['rand'];
+        })->values();
+
+        return $sorted->take($count)->pluck('dept');
+    }
+
+    /**
+     * Re-randomize entry 2, 3, and 4 departments for a specific month.
+     * Automatically skips validated months.
+     */
+    public function rerandomizeMonth(int $monthNumber, bool $ignoreFutureUnvalidated = false): bool
+    {
+        // Skip if the month has been validated
+        if ($this->isMonthValidated($monthNumber)) {
+            return false;
+        }
+
+        $chosenDepts = $this->selectRandomAllowedDepartments($monthNumber, 3, $ignoreFutureUnvalidated);
+        $deptEntry2 = $chosenDepts->get(0);
+        $deptEntry3 = $chosenDepts->get(1) ?? $deptEntry2;
+        $deptEntry4 = $chosenDepts->get(2) ?? $deptEntry2;
 
         $entry2 = $this->entries()->where('month_number', $monthNumber)->where('entry_number', 2)->first();
         if ($entry2) {
-            $entry2->update([
+            $data2 = [
                 'department_id' => $deptEntry2?->id,
                 'department_name' => $deptEntry2?->name,
-            ]);
+            ];
+            if ($entry2->department_id !== $deptEntry2?->id) {
+                $data2['eom_employee_code_1'] = null;
+                $data2['eom_remarks_1'] = null;
+            }
+            $entry2->update($data2);
         }
 
         $entry3 = $this->entries()->where('month_number', $monthNumber)->where('entry_number', 3)->first();
         if ($entry3) {
-            $entry3->update([
+            $data3 = [
                 'department_id' => $deptEntry3?->id,
                 'department_name' => $deptEntry3?->name,
-            ]);
+            ];
+            if ($entry3->department_id !== $deptEntry3?->id) {
+                $data3['gom_employee_code_1'] = null;
+                $data3['gom_remarks_1'] = null;
+            }
+            $entry3->update($data3);
         }
 
         $entry4 = $this->entries()->where('month_number', $monthNumber)->where('entry_number', 4)->first();
         if ($entry4) {
-            $entry4->update([
+            $data4 = [
                 'department_id' => $deptEntry4?->id,
                 'department_name' => $deptEntry4?->name,
-            ]);
+            ];
+            if ($entry4->department_id !== $deptEntry4?->id) {
+                $data4['eom_employee_code_1'] = null;
+                $data4['eom_remarks_1'] = null;
+            }
+            $entry4->update($data4);
         }
 
         return true;
@@ -298,7 +385,7 @@ class TipsYearlyEomGomReport extends Model
         $updatedCount = 0;
 
         for ($month = 1; $month <= 12; $month++) {
-            if ($this->rerandomizeMonth($month)) {
+            if ($this->rerandomizeMonth($month, ignoreFutureUnvalidated: true)) {
                 $updatedCount++;
             }
         }
