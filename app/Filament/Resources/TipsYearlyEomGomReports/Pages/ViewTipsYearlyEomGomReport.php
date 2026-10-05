@@ -415,7 +415,6 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
     protected function getEmployeeOptions(array $departmentIds): array
     {
         return Employee::whereIn('department_id', $departmentIds)
-            ->where('employee_status', 'Active')
             ->with('designation')
             ->orderBy('name')
             ->get()
