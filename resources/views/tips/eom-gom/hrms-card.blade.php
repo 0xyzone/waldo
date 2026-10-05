@@ -184,12 +184,12 @@
                     {{-- ============================================================= --}}
                     {{-- 1. HEADER SECTION (MATERIAL DESIGN BRANDING & TITLE)          --}}
                     {{-- ============================================================= --}}
-                    <div class="relative z-10 flex items-center justify-between border-b border-white/10 pb-7">
+                    <div class="relative z-10 flex items-center justify-between border-b border-white/10 pb-6">
                         <div class="flex items-center gap-6">
                             {{-- Casino Brand Medallion --}}
-                            <div class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-200 p-[3px] shadow-xl shadow-amber-500/20 flex-shrink-0">
+                            <div class="w-22 h-22 rounded-2xl bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-200 p-[3px] shadow-xl shadow-amber-500/20 flex-shrink-0">
                                 <div class="w-full h-full rounded-[14px] bg-slate-950 flex flex-col items-center justify-center">
-                                    <span class="text-3xl">👑</span>
+                                    <span class="text-4xl">👑</span>
                                 </div>
                             </div>
 
@@ -211,13 +211,13 @@
 
                         {{-- Month Pill Badge --}}
                         <div class="flex flex-col items-end gap-1.5">
-                            <div class="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-slate-900/90 border border-amber-400/40 shadow-xl shadow-amber-950/40 backdrop-blur-md">
-                                <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
-                                <span class="font-display text-2xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-300 to-yellow-400">
+                            <div class="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-slate-900/90 border border-amber-400/40 shadow-xl shadow-amber-950/40 backdrop-blur-md">
+                                <span class="w-3 h-3 rounded-full bg-amber-400 animate-pulse"></span>
+                                <span class="font-display text-3xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-300 to-yellow-400">
                                     {{ strtoupper($monthName) }} {{ $evaluatedYear ?? $report->year }}
                                 </span>
                             </div>
-                            <span class="text-xs font-semibold tracking-wider text-slate-400 uppercase pr-1">
+                            <span class="text-xs font-bold tracking-wider text-slate-400 uppercase pr-1">
                                 {{ $releaseLabel }} Cycle
                             </span>
                         </div>
@@ -226,19 +226,19 @@
                     {{-- ============================================================= --}}
                     {{-- 2. MAIN BODY (2 TIERS: 4 EOM CARDS + 2 GOM CARDS)             --}}
                     {{-- ============================================================= --}}
-                    <div class="relative z-10 flex-1 flex flex-col justify-between py-7 gap-7">
+                    <div class="relative z-10 flex-1 flex flex-col justify-between py-5 gap-6">
 
                         {{-- TIER 1: EMPLOYEES OF THE MONTH (4 HONOREES ACROSS) --}}
-                        <div class="flex flex-col gap-4">
+                        <div class="flex flex-col gap-3.5">
                             {{-- Tier 1 Header Chip --}}
                             <div class="flex items-center justify-between">
                                 <div class="inline-flex items-center gap-3 px-5 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300">
-                                    <span class="text-lg">🏆</span>
-                                    <span class="font-display text-sm font-extrabold tracking-widest uppercase">
+                                    <span class="text-xl">🏆</span>
+                                    <span class="font-display text-base font-extrabold tracking-widest uppercase">
                                         Employees of the Month
                                     </span>
                                 </div>
-                                <span class="text-xs font-bold uppercase tracking-wider text-amber-400/80 font-mono">
+                                <span class="text-xs font-bold uppercase tracking-wider text-amber-400 font-mono">
                                     4 Honorees Awarded
                                 </span>
                             </div>
@@ -248,48 +248,48 @@
                                 @foreach($eomWinners as $winner)
                                     @php $emp = $winner['employee']; @endphp
                                     @if($emp)
-                                        <div class="relative rounded-3xl bg-slate-900/80 border border-amber-500/30 p-6 flex flex-col justify-between shadow-xl shadow-amber-950/20 backdrop-blur-xl hover:border-amber-400/60 transition-all min-h-[350px]">
+                                        <div class="relative rounded-3xl bg-slate-900/85 border border-amber-500/35 p-7 flex flex-col justify-between shadow-xl shadow-amber-950/30 backdrop-blur-xl hover:border-amber-400/60 transition-all min-h-[485px]">
                                             {{-- Top Card Meta (Department & Winner Badge) --}}
-                                            <div class="flex items-center justify-between gap-3 pb-3 border-b border-white/5">
-                                                <span class="text-[12px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/25 truncate max-w-[60%]" title="{{ $winner['department'] }}">
+                                            <div class="flex items-center justify-between gap-3 pb-3.5 border-b border-white/10">
+                                                <span class="text-sm font-extrabold uppercase tracking-wider px-3.5 py-1.5 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/25 truncate max-w-[62%]" title="{{ $winner['department'] }}">
                                                     {{ $winner['department'] }}
                                                 </span>
-                                                <span class="text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-sm shrink-0">
+                                                <span class="text-xs font-black uppercase tracking-wider px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-sm shrink-0">
                                                     🏆 EOM Winner
                                                 </span>
                                             </div>
 
                                             {{-- Center: Medallion + Name + Title --}}
-                                            <div class="flex flex-col items-center text-center my-auto py-2">
+                                            <div class="flex flex-col items-center text-center my-auto py-3">
                                                 {{-- Vibrant Gold Medallion --}}
-                                                <div class="w-28 h-28 rounded-full bg-gradient-to-tr from-amber-600 via-amber-400 to-yellow-200 p-[3.5px] shadow-lg shadow-amber-500/25 shrink-0 flex items-center justify-center">
+                                                <div class="w-36 h-36 rounded-full bg-gradient-to-tr from-amber-600 via-amber-400 to-yellow-200 p-1 shadow-xl shadow-amber-500/30 shrink-0 flex items-center justify-center">
                                                     <div class="w-full h-full rounded-full bg-slate-950 flex items-center justify-center">
-                                                        <span class="font-display text-3xl font-black text-amber-300 tracking-wider">
+                                                        <span class="font-display text-5xl font-black text-amber-300 tracking-wider">
                                                             {{ strtoupper(substr($emp->name, 0, 2)) }}
                                                         </span>
                                                     </div>
                                                 </div>
 
                                                 {{-- Name --}}
-                                                <h3 class="font-display text-2xl font-black text-white tracking-tight mt-3 line-clamp-1 w-full" title="{{ $emp->name }}">
+                                                <h3 class="font-display text-3xl font-black text-white tracking-tight mt-4 line-clamp-1 w-full" title="{{ $emp->name }}">
                                                     {{ $emp->name }}
                                                 </h3>
 
                                                 {{-- Designation & Code Chips --}}
-                                                <div class="flex items-center justify-center gap-2 mt-1.5 flex-wrap">
-                                                    <span class="font-mono-code text-xs font-bold px-2 py-0.5 rounded-md bg-white/10 text-slate-200 border border-white/15">
+                                                <div class="flex items-center justify-center gap-2.5 mt-2 flex-wrap">
+                                                    <span class="font-mono-code text-sm font-bold px-2.5 py-1 rounded-md bg-white/10 text-slate-200 border border-white/15">
                                                         {{ $emp->employee_code }}
                                                     </span>
-                                                    <span class="text-xs font-semibold text-slate-300 truncate max-w-[180px]">
+                                                    <span class="text-base font-semibold text-slate-200 truncate max-w-[210px]">
                                                         {{ $emp->designation?->name ?: 'Staff' }}
                                                     </span>
                                                 </div>
                                             </div>
 
                                             {{-- Bottom: Remarks or Accolade Note --}}
-                                            <div class="pt-3 border-t border-white/5">
-                                                <div class="h-10 flex items-center justify-center px-3 rounded-xl bg-white/[0.03] text-center">
-                                                    <p class="text-[12px] italic text-slate-400 line-clamp-2">
+                                            <div class="pt-3 border-t border-white/10">
+                                                <div class="min-h-[50px] flex items-center justify-center px-4 rounded-xl bg-white/[0.04] text-center">
+                                                    <p class="text-sm italic text-slate-300 line-clamp-2">
                                                         {{ !empty($winner['remarks']) ? '“' . $winner['remarks'] . '”' : '“Exemplary dedication, leadership & peer support”' }}
                                                     </p>
                                                 </div>
@@ -297,12 +297,12 @@
                                         </div>
                                     @else
                                         {{-- Empty / Unassigned Slot Placeholder --}}
-                                        <div class="rounded-3xl bg-slate-900/40 border border-dashed border-slate-800 p-6 flex flex-col items-center justify-center text-center min-h-[350px]">
-                                            <div class="w-16 h-16 rounded-full bg-slate-800/80 flex items-center justify-center text-slate-600 text-2xl mb-3">
+                                        <div class="rounded-3xl bg-slate-900/40 border border-dashed border-slate-800 p-7 flex flex-col items-center justify-center text-center min-h-[485px]">
+                                            <div class="w-20 h-20 rounded-full bg-slate-800/80 flex items-center justify-center text-slate-600 text-3xl mb-3">
                                                 ✦
                                             </div>
-                                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Slot Unassigned</span>
-                                            <span class="text-[11px] text-slate-600 mt-1">{{ $winner['entry_label'] }}</span>
+                                            <span class="text-sm font-bold text-slate-400 uppercase tracking-wider">Slot Unassigned</span>
+                                            <span class="text-xs text-slate-500 mt-1">{{ $winner['entry_label'] }}</span>
                                         </div>
                                     @endif
                                 @endforeach
@@ -310,42 +310,42 @@
                         </div>
 
                         {{-- TIER 2: GROOMINGS OF THE MONTH (2 HONOREES CENTERED) --}}
-                        <div class="flex flex-col gap-4">
+                        <div class="flex flex-col gap-3.5">
                             {{-- Tier 2 Header Chip --}}
                             <div class="flex items-center justify-between">
                                 <div class="inline-flex items-center gap-3 px-5 py-2 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-300">
-                                    <span class="text-lg">✨</span>
-                                    <span class="font-display text-sm font-extrabold tracking-widest uppercase">
+                                    <span class="text-xl">✨</span>
+                                    <span class="font-display text-base font-extrabold tracking-widest uppercase">
                                         Grooming of the Month
                                     </span>
                                 </div>
-                                <span class="text-xs font-bold uppercase tracking-wider text-sky-400/80 font-mono">
+                                <span class="text-xs font-bold uppercase tracking-wider text-sky-400 font-mono">
                                     2 Honorees Awarded
                                 </span>
                             </div>
 
                             {{-- 2 Columns Centered Grid --}}
-                            <div class="grid grid-cols-2 gap-8 max-w-[1700px] w-full mx-auto">
+                            <div class="grid grid-cols-2 gap-8 max-w-[1900px] w-full mx-auto">
                                 @foreach($gomWinners as $winner)
                                     @php $emp = $winner['employee']; @endphp
                                     @if($emp)
-                                        <div class="relative rounded-3xl bg-slate-900/80 border border-sky-500/30 p-6 flex flex-col justify-between shadow-xl shadow-sky-950/20 backdrop-blur-xl hover:border-sky-400/60 transition-all min-h-[310px]">
+                                        <div class="relative rounded-3xl bg-slate-900/85 border border-sky-500/35 p-8 flex flex-col justify-between shadow-xl shadow-sky-950/30 backdrop-blur-xl hover:border-sky-400/60 transition-all min-h-[405px]">
                                             {{-- Top Card Meta --}}
-                                            <div class="flex items-center justify-between gap-3 pb-3 border-b border-white/5">
-                                                <span class="text-[12px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-sky-400/10 text-sky-300 border border-sky-400/25 truncate max-w-[60%]" title="{{ $winner['department'] }}">
+                                            <div class="flex items-center justify-between gap-4 pb-4 border-b border-white/10">
+                                                <span class="text-sm font-extrabold uppercase tracking-wider px-4 py-1.5 rounded-full bg-sky-400/10 text-sky-300 border border-sky-400/25 truncate max-w-[62%]" title="{{ $winner['department'] }}">
                                                     {{ $winner['department'] }}
                                                 </span>
-                                                <span class="text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-full bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 shadow-sm shrink-0">
+                                                <span class="text-xs font-black uppercase tracking-wider px-4 py-1.5 rounded-full bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 shadow-sm shrink-0">
                                                     ✨ GOM Winner
                                                 </span>
                                             </div>
 
                                             {{-- Center: Horizontal Layout for Roomy GOM Cards --}}
-                                            <div class="flex items-center gap-6 my-auto py-2 px-2">
+                                            <div class="flex items-center gap-8 my-auto py-3 px-3">
                                                 {{-- Radiant Cyan Medallion --}}
-                                                <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-sky-500 via-cyan-300 to-blue-600 p-[3px] shadow-lg shadow-sky-500/25 shrink-0 flex items-center justify-center">
+                                                <div class="w-36 h-36 rounded-full bg-gradient-to-tr from-sky-500 via-cyan-300 to-blue-600 p-1 shadow-xl shadow-sky-500/30 shrink-0 flex items-center justify-center">
                                                     <div class="w-full h-full rounded-full bg-slate-950 flex items-center justify-center">
-                                                        <span class="font-display text-3xl font-black text-sky-300 tracking-wider">
+                                                        <span class="font-display text-5xl font-black text-sky-300 tracking-wider">
                                                             {{ strtoupper(substr($emp->name, 0, 2)) }}
                                                         </span>
                                                     </div>
@@ -353,14 +353,14 @@
 
                                                 {{-- Details Column --}}
                                                 <div class="flex-1 min-w-0">
-                                                    <h3 class="font-display text-3xl font-black text-white tracking-tight truncate" title="{{ $emp->name }}">
+                                                    <h3 class="font-display text-4xl font-black text-white tracking-tight truncate" title="{{ $emp->name }}">
                                                         {{ $emp->name }}
                                                     </h3>
-                                                    <div class="flex items-center gap-2.5 mt-2">
-                                                        <span class="font-mono-code text-xs font-bold px-2 py-0.5 rounded-md bg-white/10 text-slate-200 border border-white/15 shrink-0">
+                                                    <div class="flex items-center gap-3 mt-3">
+                                                        <span class="font-mono-code text-sm font-bold px-3 py-1 rounded-md bg-white/10 text-slate-200 border border-white/15 shrink-0">
                                                             {{ $emp->employee_code }}
                                                         </span>
-                                                        <span class="text-sm font-semibold text-slate-300 truncate">
+                                                        <span class="text-lg font-semibold text-slate-200 truncate">
                                                             {{ $emp->designation?->name ?: 'Staff' }}
                                                         </span>
                                                     </div>
@@ -368,22 +368,22 @@
                                             </div>
 
                                             {{-- Bottom: Remarks Box --}}
-                                            <div class="pt-3 border-t border-white/5">
-                                                <div class="h-9 flex items-center px-4 rounded-xl bg-white/[0.03]">
-                                                    <p class="text-[12px] italic text-slate-400 truncate">
-                                                        {{ !empty($winner['remarks']) ? '“' . $winner['remarks'] . '”' : '“Pristine grooming, flawless posture & etiquette standards”' }}
+                                            <div class="pt-3 border-t border-white/10">
+                                                <div class="min-h-[48px] flex items-center px-4 rounded-xl bg-white/[0.04]">
+                                                    <p class="text-sm italic text-slate-300 truncate">
+                                                        {{ !empty($winner['remarks']) ? '“' . $winner['remarks'] . '”' : '“Pristine grooming, flawless posture & corporate etiquette standards”' }}
                                                     </p>
                                                 </div>
                                             </div>
                                         </div>
                                     @else
                                         {{-- Empty / Unassigned Slot Placeholder --}}
-                                        <div class="rounded-3xl bg-slate-900/40 border border-dashed border-slate-800 p-6 flex flex-col items-center justify-center text-center min-h-[310px]">
-                                            <div class="w-16 h-16 rounded-full bg-slate-800/80 flex items-center justify-center text-slate-600 text-2xl mb-3">
+                                        <div class="rounded-3xl bg-slate-900/40 border border-dashed border-slate-800 p-8 flex flex-col items-center justify-center text-center min-h-[405px]">
+                                            <div class="w-20 h-20 rounded-full bg-slate-800/80 flex items-center justify-center text-slate-600 text-3xl mb-3">
                                                 ✨
                                             </div>
-                                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Slot Unassigned</span>
-                                            <span class="text-[11px] text-slate-600 mt-1">{{ $winner['entry_label'] }}</span>
+                                            <span class="text-sm font-bold text-slate-400 uppercase tracking-wider">Slot Unassigned</span>
+                                            <span class="text-xs text-slate-500 mt-1">{{ $winner['entry_label'] }}</span>
                                         </div>
                                     @endif
                                 @endforeach
