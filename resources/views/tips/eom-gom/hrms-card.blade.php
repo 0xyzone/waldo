@@ -214,11 +214,11 @@
         .main-showcase {
             display: flex;
             flex-direction: column;
-            gap: 28px;
+            gap: 36px;
             position: relative;
             z-index: 5;
-            margin-top: 20px;
-            margin-bottom: 20px;
+            margin-top: 16px;
+            margin-bottom: 16px;
             flex: 1;
             justify-content: center;
         }
@@ -234,65 +234,65 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 6px 18px;
-            border-radius: 8px;
+            padding: 8px 22px;
+            border-radius: 10px;
             font-family: 'Cinzel', serif;
-            font-size: 19px;
+            font-size: 21px;
             font-weight: 800;
-            letter-spacing: 2px;
+            letter-spacing: 2.5px;
             text-transform: uppercase;
         }
 
         .tier-header-eom {
             background: linear-gradient(90deg, rgba(245, 158, 11, 0.22) 0%, rgba(245, 158, 11, 0.04) 100%);
-            border-left: 5px solid #f59e0b;
+            border-left: 6px solid #f59e0b;
             color: #fbbf24;
         }
 
         .tier-header-gom {
             background: linear-gradient(90deg, rgba(14, 165, 233, 0.22) 0%, rgba(14, 165, 233, 0.04) 100%);
-            border-left: 5px solid #0ea5e9;
+            border-left: 6px solid #0ea5e9;
             color: #38bdf8;
         }
 
         .tier-grid-eom {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
+            gap: 28px;
         }
 
         .tier-grid-gom {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 32px;
-            max-width: 2200px;
+            gap: 36px;
+            max-width: 2280px;
             margin: 0 auto;
             width: 100%;
         }
 
         /* -------------------------------------------------------------------------- */
-        /* LUXURY HORIZONTAL CARD (AVATAR ON LEFT, DETAILS ON RIGHT)                  */
+        /* LUXURY HORIZONTAL CARD (SCALED UP BIG & PROMINENT)                        */
         /* -------------------------------------------------------------------------- */
         .award-card {
-            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%);
-            border-radius: 20px;
-            padding: 26px 30px;
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.98) 100%);
+            border-radius: 24px;
+            padding: 36px 40px;
             display: flex;
             flex-direction: row;
             align-items: center;
-            gap: 26px;
+            gap: 34px;
             position: relative;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
-            min-height: 240px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+            min-height: 360px;
             box-sizing: border-box;
         }
 
         .card-eom {
-            border: 2px solid rgba(212, 175, 55, 0.45);
+            border: 2.5px solid rgba(212, 175, 55, 0.5);
         }
 
         .card-gom {
-            border: 2px solid rgba(56, 189, 248, 0.45);
+            border: 2.5px solid rgba(56, 189, 248, 0.5);
         }
 
         /* Avatar Monogram Column */
@@ -305,29 +305,29 @@
         }
 
         .avatar-medallion {
-            width: 120px;
-            height: 120px;
-            min-width: 120px;
-            min-height: 120px;
+            width: 160px;
+            height: 160px;
+            min-width: 160px;
+            min-height: 160px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Cinzel', serif;
-            font-size: 44px;
+            font-size: 58px;
             font-weight: 900;
             color: #0f172a;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65);
         }
 
         .avatar-eom {
             background: linear-gradient(135deg, #fef08a 0%, #eab308 50%, #ca8a04 100%);
-            border: 4px solid #ffffff;
+            border: 5px solid #ffffff;
         }
 
         .avatar-gom {
             background: linear-gradient(135deg, #e0f2fe 0%, #38bdf8 50%, #0284c7 100%);
-            border: 4px solid #ffffff;
+            border: 5px solid #ffffff;
         }
 
         /* Card Content Column */
@@ -335,7 +335,7 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 8px;
+            gap: 12px;
             flex: 1;
             min-width: 0;
         }
@@ -345,16 +345,16 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 2px;
+            gap: 14px;
+            margin-bottom: 4px;
         }
 
         .dept-tag {
-            font-size: 13px;
-            font-weight: 700;
+            font-size: 15px;
+            font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 4px 14px;
+            letter-spacing: 1.2px;
+            padding: 6px 16px;
             border-radius: 20px;
             white-space: nowrap;
             overflow: hidden;
@@ -364,23 +364,23 @@
 
         .dept-tag-eom {
             color: #fde047;
-            background: rgba(253, 224, 71, 0.12);
-            border: 1px solid rgba(253, 224, 71, 0.3);
+            background: rgba(253, 224, 71, 0.14);
+            border: 1.5px solid rgba(253, 224, 71, 0.35);
         }
 
         .dept-tag-gom {
             color: #7dd3fc;
-            background: rgba(125, 211, 252, 0.12);
-            border: 1px solid rgba(125, 211, 252, 0.3);
+            background: rgba(125, 211, 252, 0.14);
+            border: 1.5px solid rgba(125, 211, 252, 0.35);
         }
 
         .award-badge-pill {
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 4px 12px;
-            border-radius: 6px;
+            letter-spacing: 1.2px;
+            padding: 6px 16px;
+            border-radius: 8px;
             flex-shrink: 0;
         }
 
@@ -399,36 +399,36 @@
         /* Honoree Name */
         .honoree-name {
             font-family: 'Playfair Display', Georgia, serif;
-            font-size: 34px;
+            font-size: 44px;
             font-weight: 900;
             color: #ffffff;
-            line-height: 1.2;
-            letter-spacing: -0.3px;
+            line-height: 1.15;
+            letter-spacing: -0.5px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+            text-shadow: 0 3px 12px rgba(0, 0, 0, 0.85);
         }
 
         /* Subtitle: Code + Designation */
         .honoree-sub {
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-size: 18px;
+            gap: 14px;
+            font-size: 22px;
             color: #cbd5e1;
             font-weight: 600;
         }
 
         .code-pill {
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.22);
-            color: #f1f5f9;
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            color: #f8fafc;
             font-family: monospace;
-            font-size: 14px;
+            font-size: 17px;
             font-weight: 700;
-            padding: 2px 10px;
-            border-radius: 6px;
+            padding: 3px 12px;
+            border-radius: 8px;
             flex-shrink: 0;
         }
 
@@ -436,16 +436,17 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            color: #e2e8f0;
         }
 
         /* Remarks Note (if provided) */
         .remarks-tag {
-            font-size: 13.5px;
+            font-size: 16px;
             font-style: italic;
             color: #94a3b8;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            padding-top: 6px;
-            margin-top: 4px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 8px;
+            margin-top: 6px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
