@@ -288,6 +288,7 @@
                                             <th class="px-4 py-3">Gender</th>
                                             <th class="px-4 py-3">Join Date</th>
                                             <th class="px-4 py-3">Designation</th>
+                                            <th class="px-4 py-3">Onboarded</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-white/[0.02]">
@@ -300,10 +301,24 @@
                                                 </td>
                                                 <td class="px-4 py-3 text-slate-400 text-xs" x-text="emp.join_date"></td>
                                                 <td class="px-4 py-3 text-slate-300 text-xs" x-text="emp.designation"></td>
+                                                <td class="px-4 py-3 text-xs">
+                                                    <template x-if="emp.onboarded === true || emp.onboarded === 'yes' || emp.on_boarded === 'yes'">
+                                                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                                            Onboarded
+                                                        </span>
+                                                    </template>
+                                                    <template x-if="!(emp.onboarded === true || emp.onboarded === 'yes' || emp.on_boarded === 'yes')">
+                                                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+                                                            Pending
+                                                        </span>
+                                                    </template>
+                                                </td>
                                             </tr>
                                         </template>
                                         <tr x-show="filteredEmployees.length === 0">
-                                            <td colspan="5" class="p-6 text-center text-slate-500 italic text-xs">No active staff matched current filter</td>
+                                            <td colspan="6" class="p-6 text-center text-slate-500 italic text-xs">No active staff matched current filter</td>
                                         </tr>
                                     </tbody>
                                 </table>

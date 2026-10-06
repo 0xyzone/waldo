@@ -371,6 +371,7 @@
                                     <th class="px-4 py-3">Gender</th>
                                     <th class="px-4 py-3">Join Date</th>
                                     <th class="px-4 py-3">Designation</th>
+                                    <th class="px-4 py-3">Onboarded</th>
                                     {{-- <th class="px-4 py-3">Tips</th> --}}
                                 </tr>
                             </thead>
@@ -550,6 +551,10 @@
                 tr.className = 'border-b border-white/5 hover:bg-white/[0.02] transition-colors';
 
                 const genderColor = emp.gender === 'Male' ? 'text-indigo-400' : (emp.gender === 'Female' ? 'text-pink-400' : 'text-slate-400');
+                const isOnboarded = emp.onboarded === true || emp.onboarded === 'yes' || emp.on_boarded === 'yes';
+                const onboardedBadge = isOnboarded
+                    ? `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Onboarded</span>`
+                    : `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20"><span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>Pending</span>`;
 
                 tr.innerHTML = `
                     <td class="px-4 py-3 font-semibold text-slate-200 text-xs">${emp.code}</td>
@@ -559,6 +564,7 @@
                     </td>
                     <td class="px-4 py-3 text-slate-400 text-xs">${emp.join_date}</td>
                     <td class="px-4 py-3 text-slate-300 text-xs">${emp.designation}</td>
+                    <td class="px-4 py-3 text-xs">${onboardedBadge}</td>
                     {{-- <td class="px-4 py-3 text-xs">
                         <span class="inline-flex items-center px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 font-bold text-[9px] uppercase tracking-wider">
                             ${emp.tips_status}

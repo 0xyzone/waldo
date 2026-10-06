@@ -59,6 +59,8 @@ class DepartmentEmployeeStatsWidget extends Widget
                             'status' => $emp->employee_status,
                             'designation' => $emp->designation ? $emp->designation->name : 'N/A',
                             'tips_status' => $emp->tips_status ?? 'N/A',
+                            'onboarded' => strtolower($emp->onboarded ?? '') === 'yes',
+                            'on_boarded' => $emp->onboarded ?? 'no',
                             'join_years' => $emp->join_date_formatted
                                 ? (function () use ($emp) {
                                     try {
