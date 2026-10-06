@@ -27,40 +27,39 @@ class DesignationsTable
                     ->sortable()
                     ->badge()
                     ->color('primary'),
-
                 TextColumn::make('name')
                     ->label('Designation')
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
-
                 TextColumn::make('rank')
                     ->label('#')
                     ->numeric()
                     ->sortable()
                     ->alignCenter()
                     ->width('50px'),
-
                 TextColumn::make('active_employees_count')
                     ->label('Active Staff')
-                    ->getStateUsing(fn ($record) => Employee::where('designation_id', $record->id)
+                    ->getStateUsing(fn($record) => Employee::where('designation_id', $record->id)
                         ->where('employee_status', 'Active')
                         ->count())
                     ->badge()
                     ->color('success')
                     ->alignCenter(),
-
                 IconColumn::make('is_active')
                     ->label('Active')
                     ->boolean()
                     ->alignCenter(),
-
+                IconColumn::make('job_description')
+                    ->label('JD Added?')
+                    ->boolean()
+                    ->getStateUsing(fn($record) => $record->job_description !== null)
+                    ->alignCenter(),
                 TextColumn::make('created_at')
                     ->label('Created')
                     ->dateTime('d M Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-
                 TextColumn::make('updated_at')
                     ->label('Updated')
                     ->dateTime('d M Y')
@@ -74,7 +73,6 @@ class DesignationsTable
                     ->options(Department::where('is_active', true)->orderBy('rank')->pluck('name', 'id'))
                     ->searchable()
                     ->placeholder('All Departments'),
-
                 TernaryFilter::make('is_active')
                     ->label('Status')
                     ->placeholder('All Designations')
