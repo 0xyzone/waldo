@@ -14,22 +14,14 @@ class IdCardPrintReportPrintController extends Controller
     public function print(Request $request, IdCardPrintReport $report): Response
     {
         $department = $request->query('department');
-        $status = $request->query('status');
 
-        $query = $report->items();
+        $query = $report->items()->where('status', 'printed');
 
         if ($department && strtoupper($department) !== 'ALL') {
             $query->where('department', $department);
             $deptTitle = $department;
         } else {
             $deptTitle = 'All Departments';
-        }
-
-        if ($status && strtoupper(trim($status)) !== 'ALL') {
-            $query->where('status', trim($status));
-            $statusTitle = ucwords(trim($status));
-        } else {
-            $statusTitle = 'All Statuses';
         }
 
         $items = $query
@@ -41,7 +33,7 @@ class IdCardPrintReportPrintController extends Controller
         return response()->view('id-card-reports.print-sheet', [
             'report' => $report,
             'department' => $deptTitle,
-            'status' => $statusTitle,
+            'status' => 'Printed',
             'items' => $items,
         ]);
     }

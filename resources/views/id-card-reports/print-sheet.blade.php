@@ -203,7 +203,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" class="text-center" style="padding: 20px;">No employee ID cards found matching this filter.</td>
+                    <td colspan="5" class="text-center" style="padding: 20px;">No employee ID cards with &quot;Printed&quot; status found matching this filter.</td>
                 </tr>
             @endforelse
         </tbody>

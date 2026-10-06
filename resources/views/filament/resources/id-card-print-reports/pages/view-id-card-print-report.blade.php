@@ -24,7 +24,7 @@
             </div>
         </div>
         <div class="flex items-center gap-2">
-            <a href="{{ route('id-card-print-reports.print', ['report' => $record->id, 'department' => $activeDepartment !== 'ALL' ? $activeDepartment : null, 'status' => $activeStatus !== 'ALL' ? $activeStatus : null]) }}"
+            <a href="{{ route('id-card-print-reports.print', ['report' => $record->id, 'department' => $activeDepartment !== 'ALL' ? $activeDepartment : null]) }}"
                target="_blank"
                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm transition">
                 <x-heroicon-m-printer class="w-4 h-4" />

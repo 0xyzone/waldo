@@ -288,7 +288,6 @@ class ViewIdCardPrintReport extends ViewRecord implements HasTable
                     ->url(fn () => route('id-card-print-reports.print', [
                         'report' => $this->record->id,
                         'department' => $this->activeDepartment !== 'ALL' ? $this->activeDepartment : null,
-                        'status' => $this->activeStatus !== 'ALL' ? $this->activeStatus : null,
                     ]))
                     ->openUrlInNewTab(),
             ])
@@ -526,7 +525,6 @@ class ViewIdCardPrintReport extends ViewRecord implements HasTable
                 ->url(fn () => route('id-card-print-reports.print', [
                     'report' => $this->record->id,
                     'department' => $this->activeDepartment !== 'ALL' ? $this->activeDepartment : null,
-                    'status' => $this->activeStatus !== 'ALL' ? $this->activeStatus : null,
                 ]))
                 ->openUrlInNewTab(),
 
