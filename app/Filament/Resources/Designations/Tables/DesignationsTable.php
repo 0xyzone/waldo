@@ -29,6 +29,7 @@ class DesignationsTable
                     ->color('primary'),
                 TextColumn::make('name')
                     ->label('Designation')
+                    ->copyable()
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
