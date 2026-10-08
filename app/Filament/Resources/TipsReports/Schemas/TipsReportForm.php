@@ -106,6 +106,7 @@ class TipsReportForm
                                     ->label('HRMS Attendance Summary File (.xlsx / .csv)')
                                     ->disk('public')
                                     ->directory('hrms-tips')
+                                    ->downloadable()
                                     ->acceptedFileTypes([
                                         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                                         'application/vnd.ms-excel',
