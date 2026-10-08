@@ -2059,7 +2059,7 @@ function generatorState() {
 
             // Clean any potential template variable chips to tokens, preserving data-font if specified
             html = html.replace(/<span\b[^>]*data-var-font="[^"]*"[^>]*>\s*([{]{2}\s*[^}]+?\s*[}]{2})\s*<\/span>/gi, '$1');
-            html = html.replace(/<span\b[^>]*class="[^"]*template-variable[^"]*"[^>]*data-var(?:-key)?="([^"]+)"[^>]*>[\s\S]*?<\/span>/gi, '{{ $1 }}');
+            html = html.replace(/<span\b[^>]*class="[^"]*template-variable[^"]*"[^>]*data-var(?:-key)?="([^"]+)"[^>]*>[\s\S]*?<\/span>/gi, '@{{ $1 }}');
             html = html.replace(/([{]{2}[^}]*?)&nbsp;([^}]*?[}]{2})/gi, '$1 $2');
 
             // Determine if template uses legacy ASCII Preeti font
