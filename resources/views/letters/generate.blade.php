@@ -537,7 +537,7 @@
                     </div>
 
                     <!-- Rendering each letter page -->
-                    <template x-for="(pageHtml, pageIdx) in (paginatedLetters[code] || [])" :key="pageIdx">
+                    <template x-for="(pageHtml, pageIdx) in (paginatedLetters[code] || [])" :key="pageIdx + '_' + renderKey">
                         <div class="print-page-wrapper">
                             <!-- Gap between pages on screen -->
                             <div x-show="pageIdx > 0" class="page-gap no-print"></div>
@@ -628,7 +628,8 @@
                                 </div>
                                 <div class="space-y-1 pt-1.5 border-t border-amber-500/10">
                                     <label class="block text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Use In Letter As:</label>
-                                    <select x-model="dateFormats[v.key || v]" @change="updatePaginatedLetters()"
+                                    <select :value="getDateFormat(v.key || v, 'date')"
+                                            @change="setDateFormat(v.key || v, $event.target.value)"
                                             class="w-full px-2 py-1.5 border border-amber-500/30 bg-white dark:bg-zinc-900 rounded-lg text-xs font-semibold text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 cursor-pointer">
                                         <option value="ad_full">AD Full: 28th September, 2026</option>
                                         <option value="ad_standard">AD Standard: 2026-09-28</option>
@@ -723,7 +724,8 @@
                                 </div>
                                 <div class="space-y-1 pt-1.5 border-t border-amber-500/10">
                                     <label class="block text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Use In Letter As:</label>
-                                    <select x-model="dateFormats[v.key || v]" @change="updatePaginatedLetters()"
+                                    <select :value="getDateFormat(v.key || v, 'daterange')"
+                                            @change="setDateFormat(v.key || v, $event.target.value)"
                                             class="w-full px-2 py-1.5 border border-amber-500/30 bg-white dark:bg-zinc-900 rounded-lg text-xs font-semibold text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 cursor-pointer">
                                         <option value="ad_full">AD Full: from 1st Sep, 2026 to 28th Sep, 2026</option>
                                         <option value="ad_standard">AD Standard: 2026-09-01 to 2026-09-28</option>
@@ -750,30 +752,40 @@
                             <!-- Nepali & Preeti Number Conversion & Format Selector -->
                             <div x-show="customValues[v.key || v] !== '' && customValues[v.key || v] !== undefined && customValues[v.key || v] !== null" 
                                  class="p-2.5 bg-amber-500/5 dark:bg-amber-950/20 border border-amber-500/20 rounded-xl space-y-2">
-                                <div class="flex items-center justify-between text-[11px]">
-                                    <span class="font-bold text-amber-800 dark:text-amber-400 flex items-center gap-1.5">
-                                        <i class="fa-solid fa-arrow-right-arrow-left text-amber-500"></i>
-                                        <span>Preeti Digits:</span>
-                                    </span>
-                                    <span class="font-bold text-slate-800 dark:text-zinc-200 text-sm" style="font-family: 'Preeti', sans-serif;"
-                                          x-text="formatNumberWithFormat(customValues[v.key || v], 'preeti_comma') || '—'"></span>
-                                </div>
-                                <div class="text-[10px] text-slate-500 dark:text-zinc-400 flex items-center justify-between border-t border-amber-500/10 pt-1.5">
-                                    <span>Devanagari: <strong class="text-slate-700 dark:text-zinc-200 font-semibold" x-text="formatNumberWithFormat(customValues[v.key || v], 'devanagari_comma') || '—'"></strong></span>
-                                    <span>Standard: <strong class="text-slate-700 dark:text-zinc-200 font-mono font-semibold" x-text="formatNumberWithFormat(customValues[v.key || v], 'en_comma') || '—'"></strong></span>
+                                <div class="space-y-1.5 text-[11px]">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-bold text-amber-800 dark:text-amber-400 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-arrow-right-arrow-left text-amber-500"></i>
+                                            <span>Nepali Commas (English Digits):</span>
+                                        </span>
+                                        <strong class="text-slate-800 dark:text-zinc-100 font-mono font-bold"
+                                                x-text="formatNumberWithFormat(customValues[v.key || v], 'nepali_comma') || '—'"></strong>
+                                    </div>
+                                    <div class="text-[10px] text-slate-500 dark:text-zinc-400 flex items-center justify-between border-t border-amber-500/10 pt-1.5">
+                                        <span>Western Commas: <strong class="text-slate-700 dark:text-zinc-200 font-mono font-semibold" x-text="formatNumberWithFormat(customValues[v.key || v], 'en_comma') || '—'"></strong></span>
+                                        <span>As is: <strong class="text-slate-700 dark:text-zinc-200 font-mono" x-text="customValues[v.key || v]"></strong></span>
+                                    </div>
+                                    <div class="text-[10px] text-slate-500 dark:text-zinc-400 flex items-center justify-between border-t border-amber-500/10 pt-1.5">
+                                        <span>Devanagari: <strong class="text-slate-700 dark:text-zinc-200 font-semibold" x-text="formatNumberWithFormat(customValues[v.key || v], 'devanagari_comma') || '—'"></strong></span>
+                                        <span>Preeti Digits: <strong class="text-slate-800 dark:text-zinc-200 font-bold" style="font-family: 'Preeti', sans-serif;" x-text="formatNumberWithFormat(customValues[v.key || v], 'preeti_comma') || '—'"></strong></span>
+                                    </div>
                                 </div>
                                 <div class="space-y-1 pt-1.5 border-t border-amber-500/10">
-                                    <label class="block text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Use In Letter As:</label>
-                                    <select x-model="dateFormats[v.key || v]" @change="updatePaginatedLetters()"
+                                    <label class="block text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
+                                        Use Base Placeholder &#123;&#123;&nbsp;<span x-text="v.key || v"></span>&nbsp;&#125;&#125; As:
+                                    </label>
+                                    <select :value="getDateFormat(v.key || v, 'number')"
+                                            @change="setDateFormat(v.key || v, $event.target.value)"
                                             class="w-full px-2 py-1.5 border border-amber-500/30 bg-white dark:bg-zinc-900 rounded-lg text-xs font-semibold text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 cursor-pointer">
-                                        <option value="en">Standard (English): 50000</option>
-                                        <option value="en_comma">English with Western Comma: 50,000</option>
-                                        <option value="nepali_comma">English with Nepali Comma: 1,00,00,000</option>
-                                        <option value="devanagari">Devanagari: ५००००</option>
-                                        <option value="devanagari_comma">Devanagari with Nepali Comma: १,००,००,०००</option>
-                                        <option value="preeti">BS Preeti Digits: ५००००</option>
-                                        <option value="preeti_comma">BS Preeti Digits with Nepali Comma: १,००,००,०००</option>
+                                        <option value="en">English Digits - No Commas (e.g. 10000000)</option>
+                                        <option value="en_comma">English Digits with Western Commas (e.g. 10,000,000)</option>
+                                        <option value="nepali_comma">English Digits with Nepali Commas (e.g. 1,00,00,000)</option>
+                                        <option value="devanagari">Devanagari Digits - No Commas (e.g. १०००००००)</option>
+                                        <option value="devanagari_comma">Devanagari Digits with Nepali Commas (e.g. १,००,००,०००)</option>
+                                        <option value="preeti">Preeti Digits - No Commas (e.g. १०००००००)</option>
+                                        <option value="preeti_comma">Preeti Digits with Nepali Commas (e.g. १,००,००,०००)</option>
                                     </select>
+                                    <p class="text-[9px] text-slate-400 italic pt-0.5">Or use specific sub-keys: <code class="font-mono text-amber-600 dark:text-amber-400">&#123;&#123;&nbsp;<span x-text="(v.key || v) + '_nepali_comma'"></span>&nbsp;&#125;&#125;</code>, <code class="font-mono text-amber-600 dark:text-amber-400">&#123;&#123;&nbsp;<span x-text="(v.key || v) + '_comma'"></span>&nbsp;&#125;&#125;</code>, etc.</p>
                                 </div>
                             </div>
                         </div>
@@ -798,20 +810,20 @@
                                     <div class="flex items-center justify-between">
                                         <span class="font-bold text-amber-800 dark:text-amber-400 flex items-center gap-1.5">
                                             <i class="fa-solid fa-coins text-amber-500"></i>
-                                            <span>Nepali Commas:</span>
+                                            <span>Nepali Commas (English Digits):</span>
                                         </span>
                                         <strong class="text-slate-800 dark:text-zinc-100 font-mono font-bold"
                                                 x-text="nepaliCalendar.formatNepaliComma(customValues[v.key || v]) || '—'"></strong>
                                     </div>
 
                                     <div class="text-[10px] text-slate-500 dark:text-zinc-400 flex items-center justify-between border-t border-amber-500/10 pt-1.5">
-                                        <span>Preeti Digits: <strong class="text-slate-800 dark:text-zinc-200 font-bold" style="font-family: 'Preeti', sans-serif;" x-text="nepaliCalendar.toPreetiDigits(nepaliCalendar.formatNepaliComma(customValues[v.key || v])) || '—'"></strong></span>
-                                        <span>Devanagari: <strong class="text-slate-700 dark:text-zinc-200 font-semibold" x-text="nepaliCalendar.toDevanagariDigits(nepaliCalendar.formatNepaliComma(customValues[v.key || v])) || '—'"></strong></span>
+                                        <span>Western Commas: <strong class="text-slate-700 dark:text-zinc-200 font-mono font-semibold" x-text="nepaliCalendar.formatWesternComma(customValues[v.key || v]) || '—'"></strong></span>
+                                        <span>As is: <strong class="text-slate-700 dark:text-zinc-200 font-mono" x-text="customValues[v.key || v]"></strong></span>
                                     </div>
 
                                     <div class="text-[10px] text-slate-500 dark:text-zinc-400 flex items-center justify-between border-t border-amber-500/10 pt-1.5">
-                                        <span>Western Commas: <strong class="text-slate-700 dark:text-zinc-200 font-mono font-semibold" x-text="nepaliCalendar.formatWesternComma(customValues[v.key || v]) || '—'"></strong></span>
-                                        <span>As is: <strong class="text-slate-700 dark:text-zinc-200 font-mono" x-text="customValues[v.key || v]"></strong></span>
+                                        <span>Devanagari: <strong class="text-slate-700 dark:text-zinc-200 font-semibold" x-text="nepaliCalendar.toDevanagariDigits(nepaliCalendar.formatNepaliComma(customValues[v.key || v])) || '—'"></strong></span>
+                                        <span>Preeti Digits: <strong class="text-slate-800 dark:text-zinc-200 font-bold" style="font-family: 'Preeti', sans-serif;" x-text="nepaliCalendar.toPreetiDigits(nepaliCalendar.formatNepaliComma(customValues[v.key || v])) || '—'"></strong></span>
                                     </div>
 
                                     <div class="border-t border-amber-500/10 pt-1.5 text-[10px] space-y-1">
@@ -835,15 +847,16 @@
                                     <label class="block text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
                                         Use Base Placeholder &#123;&#123;&nbsp;<span x-text="v.key || v"></span>&nbsp;&#125;&#125; As:
                                     </label>
-                                    <select x-model="dateFormats[v.key || v]" @change="updatePaginatedLetters()"
+                                    <select :value="getDateFormat(v.key || v, 'amount')"
+                                            @change="setDateFormat(v.key || v, $event.target.value)"
                                             class="w-full px-2 py-1.5 border border-amber-500/30 bg-white dark:bg-zinc-900 rounded-lg text-xs font-semibold text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 cursor-pointer">
-                                        <option value="raw">Amount As It Is (e.g. 10000000)</option>
-                                        <option value="en_comma">Amount with Commas - Western (e.g. 10,000,000)</option>
-                                        <option value="nepali_comma">Amount with Nepali Commas (e.g. 1,00,00,000)</option>
-                                        <option value="devanagari_comma">Devanagari Digits with Nepali Comma (e.g. १,००,००,०००)</option>
-                                        <option value="preeti_comma">Preeti Digits with Nepali Comma (e.g. १,००,००,०००)</option>
+                                        <option value="raw">English Digits - As It Is (e.g. 10000000)</option>
+                                        <option value="en_comma">English Digits with Western Commas (e.g. 10,000,000)</option>
+                                        <option value="nepali_comma">English Digits with Nepali Commas (e.g. 1,00,00,000)</option>
+                                        <option value="devanagari_comma">Devanagari Digits with Nepali Commas (e.g. १,००,००,०००)</option>
+                                        <option value="preeti_comma">Preeti Digits with Nepali Commas (e.g. १,००,००,०००)</option>
                                         <option value="words_en">In Words - English (e.g. One Crore Only)</option>
-                                        <option value="words_np">In Words - Nepali (e.g. एक करोड मात्र)</option>
+                                        <option value="words_np">In Words - Nepali Unicode (e.g. एक करोड मात्र)</option>
                                         <option value="words_preeti">In Words - Preeti (e.g. Ps s/f]8 dfq)</option>
                                     </select>
                                     <p class="text-[9px] text-slate-400 italic pt-0.5">Or use specific sub-keys in template: <code class="font-mono text-amber-600 dark:text-amber-400">&#123;&#123;&nbsp;<span x-text="(v.key || v) + '_nepali_comma'"></span>&nbsp;&#125;&#125;</code>, <code class="font-mono text-amber-600 dark:text-amber-400">&#123;&#123;&nbsp;<span x-text="(v.key || v) + '_words_en'"></span>&nbsp;&#125;&#125;</code>, etc.</p>
@@ -951,15 +964,16 @@
                                 </div>
                                 <div class="space-y-1 pt-1.5 border-t border-amber-500/10">
                                     <label class="block text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Use In Letter As:</label>
-                                    <select x-model="dateFormats[v.key || v]" @change="updatePaginatedLetters()"
+                                    <select :value="getDateFormat(v.key || v, 'calculated')"
+                                            @change="setDateFormat(v.key || v, $event.target.value)"
                                             class="w-full px-2 py-1.5 border border-amber-500/30 bg-white dark:bg-zinc-900 rounded-lg text-xs font-semibold text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 cursor-pointer">
-                                        <option value="en">Standard (English): 50000</option>
-                                        <option value="en_comma">English with Western Comma: 50,000</option>
-                                        <option value="nepali_comma">English with Nepali Comma: 1,00,00,000</option>
-                                        <option value="devanagari">Devanagari: ५००००</option>
-                                        <option value="devanagari_comma">Devanagari with Nepali Comma: १,००,००,०००</option>
-                                        <option value="preeti">BS Preeti Digits: ५००००</option>
-                                        <option value="preeti_comma">BS Preeti Digits with Nepali Comma: १,००,००,०००</option>
+                                        <option value="en">English Digits - No Commas (e.g. 10000000)</option>
+                                        <option value="en_comma">English Digits with Western Commas: 50,000</option>
+                                        <option value="nepali_comma">English Digits with Nepali Commas: 1,00,00,000</option>
+                                        <option value="devanagari">Devanagari Digits - No Commas: ५००००</option>
+                                        <option value="devanagari_comma">Devanagari Digits with Nepali Commas: १,००,००,०००</option>
+                                        <option value="preeti">Preeti Digits - No Commas: ५००००</option>
+                                        <option value="preeti_comma">Preeti Digits with Nepali Commas: १,००,००,०००</option>
                                     </select>
                                 </div>
                             </div>
@@ -1518,8 +1532,45 @@ function generatorState() {
         differentFirstPageMargins: false,
         firstPageMargins: { top: 25, bottom: 25, left: 20, right: 20 },
         paginatedLetters: {},
+        renderKey: 0,
         isSaving: false,
         saveMessage: '',
+
+        getDateFormat(key, type) {
+            if (!key) return this.getDefaultFormat(type);
+            const k = String(key);
+            if (this.dateFormats[k] !== undefined && this.dateFormats[k] !== '') return this.dateFormats[k];
+            if (this.dateFormats[k.toLowerCase()] !== undefined && this.dateFormats[k.toLowerCase()] !== '') return this.dateFormats[k.toLowerCase()];
+            if (this.dateFormats[k.toUpperCase()] !== undefined && this.dateFormats[k.toUpperCase()] !== '') return this.dateFormats[k.toUpperCase()];
+            return this.getDefaultFormat(type);
+        },
+
+        getDefaultFormat(type) {
+            const isTemplatePreeti = Boolean(
+                (this.selectedTemplate && this.selectedTemplate.font_family === 'Preeti') ||
+                (this.selectedTemplate && /preeti/i.test(this.selectedTemplate.content || ''))
+            );
+            if (type === 'date' || type === 'daterange') {
+                return isTemplatePreeti ? 'bs_preeti_words' : 'ad_full';
+            }
+            if (type === 'number' || type === 'calculated') {
+                return isTemplatePreeti ? 'preeti_comma' : 'nepali_comma';
+            }
+            if (type === 'amount') {
+                return isTemplatePreeti ? 'preeti_comma' : 'nepali_comma';
+            }
+            return 'nepali_comma';
+        },
+
+        setDateFormat(key, format) {
+            if (!key) return;
+            const k = String(key);
+            this.dateFormats[k] = format;
+            this.dateFormats[k.toLowerCase()] = format;
+            this.dateFormats[k.toUpperCase()] = format;
+            this.renderKey++;
+            this.updatePaginatedLetters();
+        },
 
         deselectAll() {
             this.selectedCodes = [];
@@ -1677,20 +1728,26 @@ function generatorState() {
 
                 const isTemplatePreeti = Boolean(
                     (this.selectedTemplate && this.selectedTemplate.font_family === 'Preeti') ||
-                    (this.selectedTemplate && (this.selectedTemplate.content || '').includes("'Preeti'")) ||
-                    (this.selectedTemplate && (this.selectedTemplate.content || '').includes('"Preeti"'))
+                    (this.selectedTemplate && /preeti/i.test(this.selectedTemplate.content || ''))
                 );
 
                 this.allEffectiveVariables.forEach(v => {
                     const key  = typeof v === 'object' ? v.key : v;
                     const type = typeof v === 'object' ? (v.type || 'text') : 'text';
+                    let defaultFmt = 'nepali_comma';
                     if (type === 'date' || type === 'daterange') {
-                        this.dateFormats[key] = isTemplatePreeti ? 'bs_preeti_words' : 'ad_full';
+                        defaultFmt = isTemplatePreeti ? 'bs_preeti_words' : 'ad_full';
                     } else if (type === 'number' || type === 'calculated') {
-                        this.dateFormats[key] = isTemplatePreeti ? 'preeti_comma' : 'en';
+                        defaultFmt = isTemplatePreeti ? 'preeti_comma' : 'nepali_comma';
                     } else if (type === 'amount') {
-                        this.dateFormats[key] = isTemplatePreeti ? 'preeti_comma' : 'nepali_comma';
+                        defaultFmt = isTemplatePreeti ? 'preeti_comma' : 'nepali_comma';
                     }
+
+                    const k = String(key);
+                    this.dateFormats[k] = defaultFmt;
+                    this.dateFormats[k.toLowerCase()] = defaultFmt;
+                    this.dateFormats[k.toUpperCase()] = defaultFmt;
+
                     if (type === 'dropdown' && typeof v === 'object' && v.options && v.options.trim()) {
                         const first = v.options.split(',').map(s => s.trim()).filter(s => s)[0] || '';
                         this.customValues[key] = (typeof v === 'object' && v.dummy) ? v.dummy : first;
@@ -1712,7 +1769,10 @@ function generatorState() {
                         v.formulas.forEach(f => {
                             if (f.key) {
                                 this.customValues[f.key] = '';
-                                this.dateFormats[f.key] = isTemplatePreeti ? 'preeti_comma' : 'en_comma';
+                                const fFmt = isTemplatePreeti ? 'preeti_comma' : 'en_comma';
+                                this.dateFormats[f.key] = fFmt;
+                                this.dateFormats[String(f.key).toLowerCase()] = fFmt;
+                                this.dateFormats[String(f.key).toUpperCase()] = fFmt;
                             }
                         });
                     }
@@ -1987,6 +2047,7 @@ function generatorState() {
             });
 
             this.paginatedLetters = pagesMap;
+            this.renderKey++;
         },
 
         renderLetter(code) {
@@ -1997,16 +2058,14 @@ function generatorState() {
             let html = this.selectedTemplate.content || '';
 
             // Clean any potential template variable chips to tokens, preserving data-font if specified
-            html = html.replace(/<span\b[^>]*class="[^"]*template-variable[^"]*"[^>]*data-var(?:-key)?="([^"]+)"[^>]*data-font="([^"]+)"[^>]*>[\s\S]*?<\/span>/gi, function(match, key, font) {
-                return `<span style="font-family: '${font}';" data-var-font="${font}">` + '{' + '{ ' + key + ' }' + '}' + `</span>`;
-            });
-            html = html.replace(/<span\b[^>]*class="[^"]*template-variable[^"]*"[^>]*data-var(?:-key)?="([^"]+)"[^>]*>[\s\S]*?<\/span>/gi, '{' + '{ $1 }' + '}');
+            html = html.replace(/<span\b[^>]*data-var-font="[^"]*"[^>]*>\s*([{]{2}\s*[^}]+?\s*[}]{2})\s*<\/span>/gi, '$1');
+            html = html.replace(/<span\b[^>]*class="[^"]*template-variable[^"]*"[^>]*data-var(?:-key)?="([^"]+)"[^>]*>[\s\S]*?<\/span>/gi, '{{ $1 }}');
+            html = html.replace(/([{]{2}[^}]*?)&nbsp;([^}]*?[}]{2})/gi, '$1 $2');
 
             // Determine if template uses legacy ASCII Preeti font
             const isTemplatePreeti = Boolean(
                 (this.selectedTemplate && this.selectedTemplate.font_family === 'Preeti') ||
-                (this.selectedTemplate && (this.selectedTemplate.content || '').includes("'Preeti'")) ||
-                (this.selectedTemplate && (this.selectedTemplate.content || '').includes('"Preeti"'))
+                (this.selectedTemplate && /preeti/i.test(this.selectedTemplate.content || ''))
             );
 
             // Replace prebuilt employee variables — use character class [{}]{2} to avoid Blade parsing
@@ -2049,7 +2108,7 @@ function generatorState() {
 
             Object.entries(prebuilts).forEach(([k, val]) => {
                 const safeVal = this.wrapVarVal(val, 'text', isTemplatePreeti);
-                const rx = new RegExp('[{]{2}\\s*' + k + '\\s*[}]{2}', 'g');
+                const rx = new RegExp('[{]{2}\\s*' + k + '\\s*[}]{2}', 'gi');
                 html = html.replace(rx, safeVal);
             });
 
@@ -2057,8 +2116,13 @@ function generatorState() {
             (this.allEffectiveVariables || []).forEach(v => {
                 const key  = typeof v === 'object' ? v.key : v;
                 const type = typeof v === 'object' ? (v.type || 'text') : 'text';
-                let val = this.customValues[key] || '';
-                const fmt = this.dateFormats[key] || (type === 'number' || type === 'calculated' ? (isTemplatePreeti ? 'preeti_comma' : 'en') : 'ad_full');
+                let val = this.customValues[key] !== undefined && this.customValues[key] !== ''
+                    ? this.customValues[key]
+                    : (this.customValues[key.toLowerCase()] !== undefined && this.customValues[key.toLowerCase()] !== ''
+                        ? this.customValues[key.toLowerCase()]
+                        : (this.customValues[key.toUpperCase()] !== undefined ? this.customValues[key.toUpperCase()] : ''));
+
+                const fmt = this.getDateFormat(key, type);
 
                 if (type === 'date' && val) {
                     val = this.formatDateWithFormat(val, fmt);
@@ -2066,8 +2130,8 @@ function generatorState() {
                 }
 
                 if (type === 'daterange') {
-                    const rawFrom = this.customValues[key + '_from'] || '';
-                    const rawTo   = this.customValues[key + '_to']   || '';
+                    const rawFrom = this.customValues[key + '_from'] || this.customValues[key.toLowerCase() + '_from'] || '';
+                    const rawTo   = this.customValues[key + '_to']   || this.customValues[key.toLowerCase() + '_to']   || '';
 
                     let rangeStr = '';
                     let formattedFrom = '';
@@ -2089,10 +2153,10 @@ function generatorState() {
                     val = rangeStr;
 
                     // Substitute sub-keys (key_from and key_to)
-                    const rxFrom = new RegExp('[{]{2}\\s*' + key + '_from\\s*[}]{2}', 'g');
+                    const rxFrom = new RegExp('[{]{2}\\s*' + key + '_from\\s*[}]{2}', 'gi');
                     html = html.replace(rxFrom, formattedFrom);
 
-                    const rxTo = new RegExp('[{]{2}\\s*' + key + '_to\\s*[}]{2}', 'g');
+                    const rxTo = new RegExp('[{]{2}\\s*' + key + '_to\\s*[}]{2}', 'gi');
                     html = html.replace(rxTo, formattedTo);
                 }
 
@@ -2100,33 +2164,32 @@ function generatorState() {
                     const conv = this.getAmountConversions(val);
                     if (conv) {
                         const subs = {
-                            [key + '_raw']: this.wrapVarVal(conv.raw, 'text', isTemplatePreeti),
+                            [key + '_raw']: this.wrapVarVal(conv.raw, 'raw', isTemplatePreeti),
                             [key + '_comma']: this.wrapVarVal(conv.en_comma, 'en_comma', isTemplatePreeti),
                             [key + '_commas']: this.wrapVarVal(conv.en_comma, 'en_comma', isTemplatePreeti),
                             [key + '_en_comma']: this.wrapVarVal(conv.en_comma, 'en_comma', isTemplatePreeti),
-                            [key + '_nepali_comma']: this.wrapVarVal(conv.nepali_comma, 'en_comma', isTemplatePreeti),
+                            [key + '_nepali_comma']: this.wrapVarVal(conv.nepali_comma, 'nepali_comma', isTemplatePreeti),
                             [key + '_nepali']: this.wrapVarVal(conv.devanagari_comma, 'devanagari_comma', isTemplatePreeti),
                             [key + '_devanagari_comma']: this.wrapVarVal(conv.devanagari_comma, 'devanagari_comma', isTemplatePreeti),
                             [key + '_devanagari']: this.wrapVarVal(conv.devanagari_comma, 'devanagari_comma', isTemplatePreeti),
                             [key + '_preeti']: this.wrapVarVal(conv.preeti_comma, 'preeti_comma', isTemplatePreeti),
                             [key + '_preeti_comma']: this.wrapVarVal(conv.preeti_comma, 'preeti_comma', isTemplatePreeti),
-                            [key + '_words_en']: this.wrapVarVal(conv.words_en, 'text', isTemplatePreeti),
-                            [key + '_in_words_en']: this.wrapVarVal(conv.words_en, 'text', isTemplatePreeti),
-                            [key + '_words']: this.wrapVarVal(conv.words_en, 'text', isTemplatePreeti),
-                            [key + '_words_np']: this.wrapVarVal(conv.words_np, 'devanagari', isTemplatePreeti),
-                            [key + '_in_words_np']: this.wrapVarVal(conv.words_np, 'devanagari', isTemplatePreeti),
-                            [key + '_nepali_words']: this.wrapVarVal(conv.words_np, 'devanagari', isTemplatePreeti),
-                            [key + '_words_preeti']: this.wrapVarVal(conv.words_preeti, 'preeti', isTemplatePreeti),
-                            [key + '_preeti_words']: this.wrapVarVal(conv.words_preeti, 'preeti', isTemplatePreeti),
+                            [key + '_words_en']: this.wrapVarVal(conv.words_en, 'words_en', isTemplatePreeti),
+                            [key + '_in_words_en']: this.wrapVarVal(conv.words_en, 'words_en', isTemplatePreeti),
+                            [key + '_words']: this.wrapVarVal(conv.words_en, 'words_en', isTemplatePreeti),
+                            [key + '_words_np']: this.wrapVarVal(conv.words_np, 'words_np', isTemplatePreeti),
+                            [key + '_in_words_np']: this.wrapVarVal(conv.words_np, 'words_np', isTemplatePreeti),
+                            [key + '_nepali_words']: this.wrapVarVal(conv.words_np, 'words_np', isTemplatePreeti),
+                            [key + '_words_preeti']: this.wrapVarVal(conv.words_preeti, 'words_preeti', isTemplatePreeti),
+                            [key + '_preeti_words']: this.wrapVarVal(conv.words_preeti, 'words_preeti', isTemplatePreeti),
                         };
 
                         Object.entries(subs).forEach(([subKey, subVal]) => {
-                            const rxSub = new RegExp('[{]{2}\\s*' + subKey + '\\s*[}]{2}', 'g');
+                            const rxSub = new RegExp('[{]{2}\\s*' + subKey + '\\s*[}]{2}', 'gi');
                             html = html.replace(rxSub, subVal);
                         });
 
-                        const fmt = this.dateFormats[key] || (isTemplatePreeti ? 'preeti_comma' : 'nepali_comma');
-                        let formattedBase = conv.raw;
+                        let formattedBase = conv.nepali_comma;
                         if (fmt === 'raw') formattedBase = conv.raw;
                         else if (fmt === 'en_comma') formattedBase = conv.en_comma;
                         else if (fmt === 'nepali_comma') formattedBase = conv.nepali_comma;
@@ -2135,7 +2198,7 @@ function generatorState() {
                         else if (fmt === 'words_en') formattedBase = conv.words_en;
                         else if (fmt === 'words_np') formattedBase = conv.words_np;
                         else if (fmt === 'words_preeti') formattedBase = conv.words_preeti;
-                        else formattedBase = conv.raw;
+                        else formattedBase = conv.nepali_comma;
 
                         val = this.wrapVarVal(formattedBase, fmt, isTemplatePreeti);
                     } else {
@@ -2143,7 +2206,29 @@ function generatorState() {
                     }
                 }
 
-                if ((type === 'number' || type === 'calculated') && (val !== '' && val !== null && val !== undefined)) {
+                if (type === 'number' && val !== '' && val !== null && val !== undefined) {
+                    const subsNum = {
+                        [key + '_raw']: this.wrapVarVal(this.formatNumberWithFormat(val, 'en'), 'raw', isTemplatePreeti),
+                        [key + '_comma']: this.wrapVarVal(this.formatNumberWithFormat(val, 'en_comma'), 'en_comma', isTemplatePreeti),
+                        [key + '_en_comma']: this.wrapVarVal(this.formatNumberWithFormat(val, 'en_comma'), 'en_comma', isTemplatePreeti),
+                        [key + '_nepali_comma']: this.wrapVarVal(this.formatNumberWithFormat(val, 'nepali_comma'), 'nepali_comma', isTemplatePreeti),
+                        [key + '_devanagari']: this.wrapVarVal(this.formatNumberWithFormat(val, 'devanagari'), 'devanagari', isTemplatePreeti),
+                        [key + '_devanagari_comma']: this.wrapVarVal(this.formatNumberWithFormat(val, 'devanagari_comma'), 'devanagari_comma', isTemplatePreeti),
+                        [key + '_nepali']: this.wrapVarVal(this.formatNumberWithFormat(val, 'devanagari_comma'), 'devanagari_comma', isTemplatePreeti),
+                        [key + '_preeti']: this.wrapVarVal(this.formatNumberWithFormat(val, 'preeti'), 'preeti', isTemplatePreeti),
+                        [key + '_preeti_comma']: this.wrapVarVal(this.formatNumberWithFormat(val, 'preeti_comma'), 'preeti_comma', isTemplatePreeti),
+                    };
+
+                    Object.entries(subsNum).forEach(([subKey, subVal]) => {
+                        const rxSub = new RegExp('[{]{2}\\s*' + subKey + '\\s*[}]{2}', 'gi');
+                        html = html.replace(rxSub, subVal);
+                    });
+
+                    val = this.formatNumberWithFormat(val, fmt);
+                    val = this.wrapVarVal(val, fmt, isTemplatePreeti);
+                }
+
+                if (type === 'calculated' && val !== '' && val !== null && val !== undefined) {
                     val = this.formatNumberWithFormat(val, fmt);
                     val = this.wrapVarVal(val, fmt, isTemplatePreeti);
                 }
@@ -2152,7 +2237,7 @@ function generatorState() {
                     val = this.wrapVarVal(val, 'text', isTemplatePreeti);
                 }
 
-                const rx = new RegExp('[{]{2}\\s*' + key + '\\s*[}]{2}', 'g');
+                const rx = new RegExp('[{]{2}\\s*' + key + '\\s*[}]{2}', 'gi');
                 html = html.replace(rx, val);
 
                 // Also substitute formula child keys for 'calculated' variables
@@ -2165,7 +2250,7 @@ function generatorState() {
                             fVal = this.formatNumberWithFormat(fVal, fFmt);
                             fVal = this.wrapVarVal(fVal, fFmt, isTemplatePreeti);
                         }
-                        const frx = new RegExp('[{]{2}\\s*' + f.key + '\\s*[}]{2}', 'g');
+                        const frx = new RegExp('[{]{2}\\s*' + f.key + '\\s*[}]{2}', 'gi');
                         html = html.replace(frx, fVal);
                     });
                 }
@@ -2319,15 +2404,23 @@ function generatorState() {
             if (val === '' || val === null || val === undefined) return '';
             const strVal = String(val);
 
+            // Preeti font formats
             if (formatType === 'bs_preeti_words' || formatType === 'bs_preeti_digits' || formatType === 'preeti' || formatType === 'preeti_comma' || formatType === 'words_preeti') {
                 return `<span style="font-family: 'Preeti', sans-serif !important;">${strVal}</span>`;
             }
 
+            // Devanagari Unicode formats
             if (formatType === 'bs_unicode' || formatType === 'devanagari' || formatType === 'devanagari_comma' || formatType === 'words_np') {
                 return `<span style="font-family: 'Kalimati', 'Noto Sans Devanagari', 'Mangal', sans-serif !important;">${strVal}</span>`;
             }
 
-            if (isTemplatePreeti && (formatType === 'en' || formatType === 'en_comma' || formatType === 'nepali_comma' || formatType === 'raw' || formatType === 'words_en' || formatType === 'ad_full' || formatType === 'ad_standard' || formatType === 'text')) {
+            // English formats (Western commas, Nepali commas, raw digits, words in English, AD dates):
+            // Always style with Arial / Times New Roman so they never inherit or get rendered as broken Preeti characters
+            if (formatType === 'en' || formatType === 'en_comma' || formatType === 'nepali_comma' || formatType === 'raw' || formatType === 'words_en' || formatType === 'ad_full' || formatType === 'ad_standard') {
+                return `<span style="font-family: Arial, 'Times New Roman', sans-serif !important;">${strVal}</span>`;
+            }
+
+            if (isTemplatePreeti && formatType === 'text') {
                 return `<span style="font-family: Arial, 'Times New Roman', sans-serif !important;">${strVal}</span>`;
             }
 

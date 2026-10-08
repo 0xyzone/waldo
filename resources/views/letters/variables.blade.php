@@ -137,6 +137,28 @@
                             </span>
                         </div>
                     </div>
+                    @if($v->type === 'number')
+                    <!-- Tokens list for number: as is, western comma, nepali comma, devanagari, preeti -->
+                    <div class="space-y-1 pt-1 border-t border-slate-100 dark:border-zinc-800">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-400">Available Placeholders:</span>
+                        <div class="flex flex-wrap gap-1 pt-0.5">
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300 font-mono text-[10px] border border-cyan-200 dark:border-cyan-800/60 font-semibold" title="Number as it is">
+                                &#123;&#123;&nbsp;{{ $v->key }}&nbsp;&#125;&#125;
+                            </span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-mono text-[10px] border border-amber-200 dark:border-amber-800/60 font-semibold" title="Western Comma (e.g. 50,000)">
+                                &#123;&#123;&nbsp;{{ $v->key }}_comma&nbsp;&#125;&#125;
+                            </span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 font-mono text-[10px] border border-teal-200 dark:border-teal-800/60 font-semibold" title="Nepali comma principles (e.g. 1,00,00,000)">
+                                &#123;&#123;&nbsp;{{ $v->key }}_nepali_comma&nbsp;&#125;&#125;
+                            </span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-mono text-[10px] border border-emerald-200 dark:border-emerald-800/60 font-semibold" title="Devanagari digits with commas (e.g. १,००,००,०००)">
+                                &#123;&#123;&nbsp;{{ $v->key }}_nepali&nbsp;&#125;&#125;
+                            </span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-mono text-[10px] border border-blue-200 dark:border-blue-800/60 font-semibold" title="Preeti digits with commas">
+                                &#123;&#123;&nbsp;{{ $v->key }}_preeti&nbsp;&#125;&#125;
+                            </span>
+                        </div>
+                    </div>
                     @endif
 
                     @if($v->type === 'amount')

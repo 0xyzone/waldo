@@ -1084,6 +1084,21 @@
                                                 class="px-1 py-1 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/25" title="In Words (NP)">words-np</button>
                                         </div>
                                     </template>
+                                    <template x-if="gv.type === 'number'">
+                                        <div class="flex items-center border-l border-emerald-500/20 text-[9px] font-mono">
+                                            <button type="button" @mousedown.prevent="insertVar(gv.key + '_comma')"
+                                                class="px-1 py-1 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/25" title="Western Comma">comma</button>
+                                            <span class="text-emerald-500/40">|</span>
+                                            <button type="button" @mousedown.prevent="insertVar(gv.key + '_nepali_comma')"
+                                                class="px-1 py-1 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/25" title="Nepali Comma">np-comma</button>
+                                            <span class="text-emerald-500/40">|</span>
+                                            <button type="button" @mousedown.prevent="insertVar(gv.key + '_nepali')"
+                                                class="px-1 py-1 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/25" title="Devanagari">dev</button>
+                                            <span class="text-emerald-500/40">|</span>
+                                            <button type="button" @mousedown.prevent="insertVar(gv.key + '_preeti')"
+                                                class="px-1 py-1 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/25" title="Preeti">preeti</button>
+                                        </div>
+                                    </template>
                                 </div>
                             </template>
                             <div x-show="filteredPermanentGlobalVars.length === 0 && permanentGlobalVars.length > 0"
@@ -1343,6 +1358,35 @@
                                                     title="To date only">
                                                     <span>&#123;&#123;&nbsp;<span x-text="v.key + '_to'"></span>&nbsp;&#125;&#125;</span>
                                                 </button>
+                                            </div>
+                                        </template>
+
+                                        <!-- If number: offer sub-keys for commas, nepali commas, devanagari, and preeti -->
+                                        <template x-if="v.type === 'number'">
+                                            <div class="space-y-1 pt-1.5 border-t border-slate-100 dark:border-zinc-800">
+                                                <span class="text-[9px] font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-400 block">Number Formats:</span>
+                                                <div class="flex flex-wrap gap-1">
+                                                    <button type="button" @mousedown.prevent="insertVar(v.key + '_comma')"
+                                                        class="text-[10px] font-mono font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 hover:bg-amber-100 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800/40 cursor-pointer"
+                                                        title="With standard Western commas (e.g. 50,000)">
+                                                        <span>&#123;&#123;&nbsp;<span x-text="v.key + '_comma'"></span>&nbsp;&#125;&#125;</span>
+                                                    </button>
+                                                    <button type="button" @mousedown.prevent="insertVar(v.key + '_nepali_comma')"
+                                                        class="text-[10px] font-mono font-bold text-teal-700 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/30 hover:bg-teal-100 px-1.5 py-0.5 rounded border border-teal-200 dark:border-teal-800/40 cursor-pointer"
+                                                        title="Nepali comma principles (e.g. 1,00,00,000)">
+                                                        <span>&#123;&#123;&nbsp;<span x-text="v.key + '_nepali_comma'"></span>&nbsp;&#125;&#125;</span>
+                                                    </button>
+                                                    <button type="button" @mousedown.prevent="insertVar(v.key + '_nepali')"
+                                                        class="text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/40 cursor-pointer"
+                                                        title="Nepali Devanagari digits with commas (e.g. १,००,०००)">
+                                                        <span>&#123;&#123;&nbsp;<span x-text="v.key + '_nepali'"></span>&nbsp;&#125;&#125;</span>
+                                                    </button>
+                                                    <button type="button" @mousedown.prevent="insertVar(v.key + '_preeti')"
+                                                        class="text-[10px] font-mono font-bold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 hover:bg-blue-100 px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800/40 cursor-pointer"
+                                                        title="Preeti font digits with commas">
+                                                        <span>&#123;&#123;&nbsp;<span x-text="v.key + '_preeti'"></span>&nbsp;&#125;&#125;</span>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </template>
 

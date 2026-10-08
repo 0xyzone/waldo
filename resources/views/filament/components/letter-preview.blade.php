@@ -203,7 +203,7 @@ if (!$employee) {
             for (const sfx of amountSubSuffixes) {
                 if (cleanKey.endsWith(sfx)) {
                     const parentKey = cleanKey.slice(0, -sfx.length);
-                    const parent = repeater.find(v => v.key === parentKey && v.type === 'amount');
+                    const parent = repeater.find(v => v.key === parentKey && (v.type === 'amount' || v.type === 'number'));
                     if (parent) {
                         return parent.dummy ? `${parent.dummy} (${sfx.replace(/^_/, '')})` : `[${this.formatLabel(cleanKey)}]`;
                     }
