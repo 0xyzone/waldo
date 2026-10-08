@@ -767,12 +767,86 @@
                                     <select x-model="dateFormats[v.key || v]" @change="updatePaginatedLetters()"
                                             class="w-full px-2 py-1.5 border border-amber-500/30 bg-white dark:bg-zinc-900 rounded-lg text-xs font-semibold text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 cursor-pointer">
                                         <option value="en">Standard (English): 50000</option>
-                                        <option value="en_comma">English with Comma: 50,000</option>
+                                        <option value="en_comma">English with Western Comma: 50,000</option>
+                                        <option value="nepali_comma">English with Nepali Comma: 1,00,00,000</option>
                                         <option value="devanagari">Devanagari: ५००००</option>
-                                        <option value="devanagari_comma">Devanagari with Comma: ५०,०००</option>
-                                        <option value="preeti">BS Preeti Digits (नेपाली): ५००००</option>
-                                        <option value="preeti_comma">BS Preeti Digits with Comma: ५०,०००</option>
+                                        <option value="devanagari_comma">Devanagari with Nepali Comma: १,००,००,०००</option>
+                                        <option value="preeti">BS Preeti Digits: ५००००</option>
+                                        <option value="preeti_comma">BS Preeti Digits with Nepali Comma: १,००,००,०००</option>
                                     </select>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Amount Field (with live conversions: raw, commas, nepali commas, and words) -->
+                    <template x-if="(v.type || 'text') === 'amount'">
+                        <div class="space-y-2">
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs select-none">Rs.</span>
+                                <input type="number" step="any" x-model="customValues[v.key || v]" 
+                                       @input="computeFormulas(); updatePaginatedLetters()" 
+                                       :placeholder="'Enter ' + formatLabel(v.key || v)" 
+                                       class="w-full pl-9 pr-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-850 dark:text-zinc-200 focus:outline-none focus:border-amber-500 font-mono">
+                            </div>
+
+                            <!-- Nepali & English Amount Conversions Card -->
+                            <div x-show="customValues[v.key || v] !== '' && customValues[v.key || v] !== undefined && customValues[v.key || v] !== null" 
+                                 class="p-2.5 bg-amber-500/5 dark:bg-amber-950/20 border border-amber-500/20 rounded-xl space-y-2">
+                                
+                                <div class="space-y-1.5 text-[11px]">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-bold text-amber-800 dark:text-amber-400 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-coins text-amber-500"></i>
+                                            <span>Nepali Commas:</span>
+                                        </span>
+                                        <strong class="text-slate-800 dark:text-zinc-100 font-mono font-bold"
+                                                x-text="nepaliCalendar.formatNepaliComma(customValues[v.key || v]) || '—'"></strong>
+                                    </div>
+
+                                    <div class="text-[10px] text-slate-500 dark:text-zinc-400 flex items-center justify-between border-t border-amber-500/10 pt-1.5">
+                                        <span>Preeti Digits: <strong class="text-slate-800 dark:text-zinc-200 font-bold" style="font-family: 'Preeti', sans-serif;" x-text="nepaliCalendar.toPreetiDigits(nepaliCalendar.formatNepaliComma(customValues[v.key || v])) || '—'"></strong></span>
+                                        <span>Devanagari: <strong class="text-slate-700 dark:text-zinc-200 font-semibold" x-text="nepaliCalendar.toDevanagariDigits(nepaliCalendar.formatNepaliComma(customValues[v.key || v])) || '—'"></strong></span>
+                                    </div>
+
+                                    <div class="text-[10px] text-slate-500 dark:text-zinc-400 flex items-center justify-between border-t border-amber-500/10 pt-1.5">
+                                        <span>Western Commas: <strong class="text-slate-700 dark:text-zinc-200 font-mono font-semibold" x-text="nepaliCalendar.formatWesternComma(customValues[v.key || v]) || '—'"></strong></span>
+                                        <span>As is: <strong class="text-slate-700 dark:text-zinc-200 font-mono" x-text="customValues[v.key || v]"></strong></span>
+                                    </div>
+
+                                    <div class="border-t border-amber-500/10 pt-1.5 text-[10px] space-y-1">
+                                        <div class="text-slate-600 dark:text-zinc-300">
+                                            <span class="text-slate-400 font-bold uppercase text-[9px] block">In Words (English):</span>
+                                            <span class="font-medium text-slate-800 dark:text-zinc-100" x-text="nepaliCalendar.amountToWordsEnglish(customValues[v.key || v]) || '—'"></span>
+                                        </div>
+                                        <div class="text-slate-600 dark:text-zinc-300">
+                                            <span class="text-slate-400 font-bold uppercase text-[9px] block">In Words (Nepali Unicode):</span>
+                                            <span class="font-medium text-slate-800 dark:text-zinc-100" x-text="nepaliCalendar.amountToWordsNepali(customValues[v.key || v], false) || '—'"></span>
+                                        </div>
+                                        <div class="text-slate-600 dark:text-zinc-300">
+                                            <span class="text-slate-400 font-bold uppercase text-[9px] block font-sans">In Words (Preeti):</span>
+                                            <span class="font-bold text-slate-800 dark:text-zinc-100" style="font-family: 'Preeti', sans-serif;" x-text="nepaliCalendar.amountToWordsNepali(customValues[v.key || v], true) || '—'"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Use Base Placeholder As: -->
+                                <div class="space-y-1 pt-1.5 border-t border-amber-500/10">
+                                    <label class="block text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
+                                        Use Base Placeholder &#123;&#123;&nbsp;<span x-text="v.key || v"></span>&nbsp;&#125;&#125; As:
+                                    </label>
+                                    <select x-model="dateFormats[v.key || v]" @change="updatePaginatedLetters()"
+                                            class="w-full px-2 py-1.5 border border-amber-500/30 bg-white dark:bg-zinc-900 rounded-lg text-xs font-semibold text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 cursor-pointer">
+                                        <option value="raw">Amount As It Is (e.g. 10000000)</option>
+                                        <option value="en_comma">Amount with Commas - Western (e.g. 10,000,000)</option>
+                                        <option value="nepali_comma">Amount with Nepali Commas (e.g. 1,00,00,000)</option>
+                                        <option value="devanagari_comma">Devanagari Digits with Nepali Comma (e.g. १,००,००,०००)</option>
+                                        <option value="preeti_comma">Preeti Digits with Nepali Comma (e.g. १,००,००,०००)</option>
+                                        <option value="words_en">In Words - English (e.g. One Crore Only)</option>
+                                        <option value="words_np">In Words - Nepali (e.g. एक करोड मात्र)</option>
+                                        <option value="words_preeti">In Words - Preeti (e.g. Ps s/f]8 dfq)</option>
+                                    </select>
+                                    <p class="text-[9px] text-slate-400 italic pt-0.5">Or use specific sub-keys in template: <code class="font-mono text-amber-600 dark:text-amber-400">&#123;&#123;&nbsp;<span x-text="(v.key || v) + '_nepali_comma'"></span>&nbsp;&#125;&#125;</code>, <code class="font-mono text-amber-600 dark:text-amber-400">&#123;&#123;&nbsp;<span x-text="(v.key || v) + '_words_en'"></span>&nbsp;&#125;&#125;</code>, etc.</p>
                                 </div>
                             </div>
                         </div>
@@ -880,11 +954,12 @@
                                     <select x-model="dateFormats[v.key || v]" @change="updatePaginatedLetters()"
                                             class="w-full px-2 py-1.5 border border-amber-500/30 bg-white dark:bg-zinc-900 rounded-lg text-xs font-semibold text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 cursor-pointer">
                                         <option value="en">Standard (English): 50000</option>
-                                        <option value="en_comma">English with Comma: 50,000</option>
+                                        <option value="en_comma">English with Western Comma: 50,000</option>
+                                        <option value="nepali_comma">English with Nepali Comma: 1,00,00,000</option>
                                         <option value="devanagari">Devanagari: ५००००</option>
-                                        <option value="devanagari_comma">Devanagari with Comma: ५०,०००</option>
-                                        <option value="preeti">BS Preeti Digits (नेपाली): ५००००</option>
-                                        <option value="preeti_comma">BS Preeti Digits with Comma: ५०,०००</option>
+                                        <option value="devanagari_comma">Devanagari with Nepali Comma: १,००,००,०००</option>
+                                        <option value="preeti">BS Preeti Digits: ५००००</option>
+                                        <option value="preeti_comma">BS Preeti Digits with Nepali Comma: १,००,००,०००</option>
                                     </select>
                                 </div>
                             </div>
@@ -1037,6 +1112,276 @@ const nepaliCalendar = {
     },
     toPreetiDigits(str) {
         return String(str).replace(/[0-9]/g, d => this.digitsPreeti[parseInt(d, 10)]);
+    },
+
+    formatNepaliComma(val) {
+        if (val === '' || val === null || val === undefined) return '';
+        const strVal = String(val).trim();
+        if (!strVal) return '';
+        const isNegative = strVal.startsWith('-');
+        const cleanStr = isNegative ? strVal.slice(1) : strVal;
+        const parts = cleanStr.split('.');
+        let intPart = parts[0].replace(/^0+(?=\d)/, '');
+        if (!intPart) intPart = '0';
+        
+        let formattedInt = '';
+        if (intPart.length <= 3) {
+            formattedInt = intPart;
+        } else {
+            const last3 = intPart.slice(-3);
+            const remaining = intPart.slice(0, -3);
+            const formattedRemaining = remaining.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+            formattedInt = formattedRemaining + ',' + last3;
+        }
+        
+        const decPart = parts.length > 1 ? '.' + parts[1] : '';
+        return (isNegative ? '-' : '') + formattedInt + decPart;
+    },
+
+    formatWesternComma(val) {
+        if (val === '' || val === null || val === undefined) return '';
+        const strVal = String(val).trim();
+        if (!strVal) return '';
+        const isNegative = strVal.startsWith('-');
+        const cleanStr = isNegative ? strVal.slice(1) : strVal;
+        const parts = cleanStr.split('.');
+        let intPart = parts[0].replace(/^0+(?=\d)/, '');
+        if (!intPart) intPart = '0';
+        const formattedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        const decPart = parts.length > 1 ? '.' + parts[1] : '';
+        return (isNegative ? '-' : '') + formattedInt + decPart;
+    },
+
+    amountToWordsEnglish(numStr) {
+        if (numStr === '' || numStr === null || numStr === undefined) return '';
+        let str = String(numStr).trim();
+        if (!str) return '';
+        let isNeg = str.startsWith('-');
+        if (isNeg) str = str.slice(1);
+        const parts = str.split('.');
+        let intStr = parts[0].replace(/^0+(?=\d)/, '');
+        if (!intStr) intStr = '0';
+
+        const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
+            'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+        const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+        function twoDigits(n) {
+            if (n === 0) return '';
+            if (n < 20) return ones[n];
+            const t = Math.floor(n / 10);
+            const o = n % 10;
+            return tens[t] + (o > 0 ? ' ' + ones[o] : '');
+        }
+
+        function threeDigits(n) {
+            if (n === 0) return '';
+            const h = Math.floor(n / 100);
+            const rem = n % 100;
+            let res = '';
+            if (h > 0) res += ones[h] + ' Hundred';
+            if (rem > 0) {
+                if (res) res += ' ';
+                res += twoDigits(rem);
+            }
+            return res;
+        }
+
+        if (intStr === '0') {
+            let decWords = '';
+            if (parts.length > 1 && parts[1].length > 0) {
+                let p = parseInt(parts[1].slice(0, 2).padEnd(2, '0'), 10);
+                if (p > 0) decWords = ' and ' + twoDigits(p) + ' Paisa';
+            }
+            return (isNeg ? 'Minus ' : '') + 'Zero' + decWords + ' Only';
+        }
+
+        let words = [];
+        let remStr = intStr;
+
+        // 1. Hundreds (last 3 digits)
+        if (remStr.length > 0) {
+            let take = remStr.slice(-3);
+            remStr = remStr.slice(0, -3);
+            let n = parseInt(take, 10);
+            if (n > 0) words.unshift(threeDigits(n));
+        }
+        // 2. Thousands (next 2 digits)
+        if (remStr.length > 0) {
+            let take = remStr.slice(-2);
+            remStr = remStr.slice(0, -2);
+            let n = parseInt(take, 10);
+            if (n > 0) words.unshift(twoDigits(n) + ' Thousand');
+        }
+        // 3. Lakhs (next 2 digits)
+        if (remStr.length > 0) {
+            let take = remStr.slice(-2);
+            remStr = remStr.slice(0, -2);
+            let n = parseInt(take, 10);
+            if (n > 0) words.unshift(twoDigits(n) + ' Lakh');
+        }
+        // 4. Crores (next 2 digits)
+        if (remStr.length > 0) {
+            let take = remStr.slice(-2);
+            remStr = remStr.slice(0, -2);
+            let n = parseInt(take, 10);
+            if (n > 0) words.unshift(twoDigits(n) + ' Crore');
+        }
+        // 5. Arabs (next 2 digits)
+        if (remStr.length > 0) {
+            let take = remStr.slice(-2);
+            remStr = remStr.slice(0, -2);
+            let n = parseInt(take, 10);
+            if (n > 0) words.unshift(twoDigits(n) + ' Arab');
+        }
+        // 6. Kharabs (next 2 digits)
+        if (remStr.length > 0) {
+            let take = remStr.slice(-2);
+            remStr = remStr.slice(0, -2);
+            let n = parseInt(take, 10);
+            if (n > 0) words.unshift(twoDigits(n) + ' Kharab');
+        }
+
+        let result = words.join(' ').trim();
+        if (!result) result = 'Zero';
+
+        if (parts.length > 1 && parts[1].length > 0) {
+            let p = parseInt(parts[1].slice(0, 2).padEnd(2, '0'), 10);
+            if (p > 0) {
+                result += ' and ' + twoDigits(p) + ' Paisa';
+            }
+        }
+
+        return (isNeg ? 'Minus ' : '') + result + ' Only';
+    },
+
+    amountToWordsNepali(numStr, isPreeti = false) {
+        if (numStr === '' || numStr === null || numStr === undefined) return '';
+        let str = String(numStr).trim();
+        if (!str) return '';
+        let isNeg = str.startsWith('-');
+        if (isNeg) str = str.slice(1);
+        const parts = str.split('.');
+        let intStr = parts[0].replace(/^0+(?=\d)/, '');
+        if (!intStr) intStr = '0';
+
+        const npDigitsWords = [
+            'शून्य', 'एक', 'दुई', 'तीन', 'चार', 'पाँच', 'छ', 'सात', 'आठ', 'नौ',
+            'दश', 'एघार', 'बाह्र', 'तेह्र', 'चौध', 'पन्ध्र', 'सोह्र', 'सत्र', 'अठार', 'उन्नाइस',
+            'बीस', 'एक्काइस', 'बाइस', 'तेइस', 'चौबिस', 'पच्चिस', 'छब्बीस', 'सत्ताइस', 'अट्ठाइस', 'उनन्तिस',
+            'तीस', 'एकत्तिस', 'बत्तिस', 'तेत्तिस', 'चौँतिस', 'पैँतिस', 'छत्तीस', 'सैँतिस', 'अड्तीस', 'उनन्चालीस',
+            'चालीस', 'एकचलीस', 'बयानलीस', 'त्रिचालीस', 'चौवालिस', 'पैँतालीस', 'छयालीस', 'सत्चालीस', 'अड्चालीस', 'उनन्पचास',
+            'पचास', 'एकाउन्न', 'बाउन्न', 'त्रिपन्न', 'चौवन्न', 'पचपन्न', 'छपन्न', 'सन्ताउन्न', 'अन्ठाउन्न', 'उनन्साठ्ठी',
+            'साठ्ठी', 'एकसट्ठी', 'बासट्ठी', 'त्रिसट्ठी', 'चौंसट्ठी', 'पैंसट्ठी', 'छयसट्ठी', 'सतसट्ठी', 'अठसट्ठी', 'उनन्सत्तरी',
+            'सत्तरी', 'एकहत्तर', 'बहत्तर', 'त्रिहत्तर', 'चौहत्तर', 'पचहत्तर', 'छहत्तर', 'सतहत्तर', 'अठहत्तर', 'उन्यासी',
+            'असी', 'एकासी', 'बयासी', 'त्रियासी', 'चौरासी', 'पचासी', 'छयासी', 'सत्तासी', 'अठासी', 'उनन्नब्बे',
+            'नब्बे', 'एकान्नब्बे', 'बयानब्बे', 'त्रियान्नब्बे', 'चौरानब्बे', 'पञ्चानब्बे', 'छयानब्बे', 'सन्तान्नब्बे', 'अन्ठान्ब्बे', 'उनान्सय'
+        ];
+
+        const preetiDigitsWords = [
+            'z"Go', 'Ps', "b'O{", 'tLg', 'rf/', 'kfFr', '5', ';ft', 'cf7', 'gf}',
+            'bz', 'P3f/', 'afx|', 't]x|', 'rf}w', 'kGw|', ';f]x|', ';q', 'c7f/', 'pGgfO;',
+            'aL;', 'PssfO;', 'afO;', 't]O;', 'rf}la;', 'klRr;', '5AaL;', ';QfO;', 'c7\\7fO;', 'pgGtL;',
+            'tL;', 'PsQL;', 'aQL;', 't]QL;', 'rf}+tL;', 'k}+tL;', '5QL;', ';}+tL;', 'c8\\tL;', 'pggrfnL;',
+            'rfnL;', 'PssfnL;', 'aofgnL;', 'lqrfnL;', 'rf}jfnL;', 'k}+tfnL;', '5ofnL;', ';TrfnL;', 'c8\\rfnL;', 'pggkrf;',
+            'krf;', 'PsfpGg', 'afpGg', 'lqkGg', 'rf}jGg', 'krkGg', '5kGg', ';GtfpGg', 'cG7fpGg', 'pgg;f7L',
+            ';f7L', 'Pss7L', 'af;7L', 'lq;7L', 'rf}+;7L', 'k}+;7L', '5o;7L', ';t;7L', 'c7;7L', 'pgg;Q/L',
+            ';Q/L', 'PsgQ/', 'axQ/', 'lqxgQ/', 'rf}xQ/', 'krxgQ/', '5xQ/', ';txQ/', 'c7xgQ/', 'pgof;L',
+            'c;L', 'Pscf;L', 'aof;L', 'lqof;L', 'rf}/f;L', 'krf;L', '5of;L', ';Qf;L', 'c7f;L', 'pggAa]',
+            'gAa]', 'PsfGga]', 'aofGga]', 'lqoGga]', 'rf}/fGga]', 'k~rfGga]', '5ofGga]', ';GtfGga]', 'cG7fGga]', 'pgfg;o'
+        ];
+
+        const wordsMap = isPreeti ? preetiDigitsWords : npDigitsWords;
+        const sHundred = isPreeti ? ';o' : 'सय';
+        const sThousand = isPreeti ? 'xhf/' : 'हजार';
+        const sLakh = isPreeti ? 'nfv' : 'लाख';
+        const sCrore = isPreeti ? 's/f]8' : 'करोड';
+        const sArab = isPreeti ? 'c/a' : 'अरब';
+        const sKharab = isPreeti ? 'v/a' : 'खरब';
+        const sOnly = isPreeti ? 'dfq' : 'मात्र';
+        const sPaisa = isPreeti ? 'k};f' : 'पैसा';
+        const sMinus = isPreeti ? 'dfOg;' : 'माइनस';
+        const sZero = wordsMap[0];
+
+        function threeDigits(n) {
+            if (n === 0) return '';
+            const h = Math.floor(n / 100);
+            const rem = n % 100;
+            let res = '';
+            if (h > 0) res += wordsMap[h] + ' ' + sHundred;
+            if (rem > 0) {
+                if (res) res += ' ';
+                res += wordsMap[rem];
+            }
+            return res;
+        }
+
+        if (intStr === '0') {
+            let decWords = '';
+            if (parts.length > 1 && parts[1].length > 0) {
+                let p = parseInt(parts[1].slice(0, 2).padEnd(2, '0'), 10);
+                if (p > 0) decWords = ' ' + wordsMap[p] + ' ' + sPaisa;
+            }
+            return (isNeg ? sMinus + ' ' : '') + sZero + decWords + ' ' + sOnly;
+        }
+
+        let words = [];
+        let remStr = intStr;
+
+        // 1. Hundreds (last 3 digits)
+        if (remStr.length > 0) {
+            let take = remStr.slice(-3);
+            remStr = remStr.slice(0, -3);
+            let n = parseInt(take, 10);
+            if (n > 0) words.unshift(threeDigits(n));
+        }
+        // 2. Thousands (next 2 digits)
+        if (remStr.length > 0) {
+            let take = remStr.slice(-2);
+            remStr = remStr.slice(0, -2);
+            let n = parseInt(take, 10);
+            if (n > 0) words.unshift(wordsMap[n] + ' ' + sThousand);
+        }
+        // 3. Lakhs (next 2 digits)
+        if (remStr.length > 0) {
+            let take = remStr.slice(-2);
+            remStr = remStr.slice(0, -2);
+            let n = parseInt(take, 10);
+            if (n > 0) words.unshift(wordsMap[n] + ' ' + sLakh);
+        }
+        // 4. Crores (next 2 digits)
+        if (remStr.length > 0) {
+            let take = remStr.slice(-2);
+            remStr = remStr.slice(0, -2);
+            let n = parseInt(take, 10);
+            if (n > 0) words.unshift(wordsMap[n] + ' ' + sCrore);
+        }
+        // 5. Arabs (next 2 digits)
+        if (remStr.length > 0) {
+            let take = remStr.slice(-2);
+            remStr = remStr.slice(0, -2);
+            let n = parseInt(take, 10);
+            if (n > 0) words.unshift(wordsMap[n] + ' ' + sArab);
+        }
+        // 6. Kharabs (next 2 digits)
+        if (remStr.length > 0) {
+            let take = remStr.slice(-2);
+            remStr = remStr.slice(0, -2);
+            let n = parseInt(take, 10);
+            if (n > 0) words.unshift(wordsMap[n] + ' ' + sKharab);
+        }
+
+        let result = words.join(' ').trim();
+        if (!result) result = sZero;
+
+        if (parts.length > 1 && parts[1].length > 0) {
+            let p = parseInt(parts[1].slice(0, 2).padEnd(2, '0'), 10);
+            if (p > 0) {
+                result += ' ' + wordsMap[p] + ' ' + sPaisa;
+            }
+        }
+
+        return (isNeg ? sMinus + ' ' : '') + result + ' ' + sOnly;
     },
 
     convertEnglishToNepali(yy, mm, dd) {
@@ -1343,6 +1688,8 @@ function generatorState() {
                         this.dateFormats[key] = isTemplatePreeti ? 'bs_preeti_words' : 'ad_full';
                     } else if (type === 'number' || type === 'calculated') {
                         this.dateFormats[key] = isTemplatePreeti ? 'preeti_comma' : 'en';
+                    } else if (type === 'amount') {
+                        this.dateFormats[key] = isTemplatePreeti ? 'preeti_comma' : 'nepali_comma';
                     }
                     if (type === 'dropdown' && typeof v === 'object' && v.options && v.options.trim()) {
                         const first = v.options.split(',').map(s => s.trim()).filter(s => s)[0] || '';
@@ -1749,12 +2096,59 @@ function generatorState() {
                     html = html.replace(rxTo, formattedTo);
                 }
 
+                if (type === 'amount') {
+                    const conv = this.getAmountConversions(val);
+                    if (conv) {
+                        const subs = {
+                            [key + '_raw']: this.wrapVarVal(conv.raw, 'text', isTemplatePreeti),
+                            [key + '_comma']: this.wrapVarVal(conv.en_comma, 'en_comma', isTemplatePreeti),
+                            [key + '_commas']: this.wrapVarVal(conv.en_comma, 'en_comma', isTemplatePreeti),
+                            [key + '_en_comma']: this.wrapVarVal(conv.en_comma, 'en_comma', isTemplatePreeti),
+                            [key + '_nepali_comma']: this.wrapVarVal(conv.nepali_comma, 'en_comma', isTemplatePreeti),
+                            [key + '_nepali']: this.wrapVarVal(conv.devanagari_comma, 'devanagari_comma', isTemplatePreeti),
+                            [key + '_devanagari_comma']: this.wrapVarVal(conv.devanagari_comma, 'devanagari_comma', isTemplatePreeti),
+                            [key + '_devanagari']: this.wrapVarVal(conv.devanagari_comma, 'devanagari_comma', isTemplatePreeti),
+                            [key + '_preeti']: this.wrapVarVal(conv.preeti_comma, 'preeti_comma', isTemplatePreeti),
+                            [key + '_preeti_comma']: this.wrapVarVal(conv.preeti_comma, 'preeti_comma', isTemplatePreeti),
+                            [key + '_words_en']: this.wrapVarVal(conv.words_en, 'text', isTemplatePreeti),
+                            [key + '_in_words_en']: this.wrapVarVal(conv.words_en, 'text', isTemplatePreeti),
+                            [key + '_words']: this.wrapVarVal(conv.words_en, 'text', isTemplatePreeti),
+                            [key + '_words_np']: this.wrapVarVal(conv.words_np, 'devanagari', isTemplatePreeti),
+                            [key + '_in_words_np']: this.wrapVarVal(conv.words_np, 'devanagari', isTemplatePreeti),
+                            [key + '_nepali_words']: this.wrapVarVal(conv.words_np, 'devanagari', isTemplatePreeti),
+                            [key + '_words_preeti']: this.wrapVarVal(conv.words_preeti, 'preeti', isTemplatePreeti),
+                            [key + '_preeti_words']: this.wrapVarVal(conv.words_preeti, 'preeti', isTemplatePreeti),
+                        };
+
+                        Object.entries(subs).forEach(([subKey, subVal]) => {
+                            const rxSub = new RegExp('[{]{2}\\s*' + subKey + '\\s*[}]{2}', 'g');
+                            html = html.replace(rxSub, subVal);
+                        });
+
+                        const fmt = this.dateFormats[key] || (isTemplatePreeti ? 'preeti_comma' : 'nepali_comma');
+                        let formattedBase = conv.raw;
+                        if (fmt === 'raw') formattedBase = conv.raw;
+                        else if (fmt === 'en_comma') formattedBase = conv.en_comma;
+                        else if (fmt === 'nepali_comma') formattedBase = conv.nepali_comma;
+                        else if (fmt === 'devanagari_comma') formattedBase = conv.devanagari_comma;
+                        else if (fmt === 'preeti_comma') formattedBase = conv.preeti_comma;
+                        else if (fmt === 'words_en') formattedBase = conv.words_en;
+                        else if (fmt === 'words_np') formattedBase = conv.words_np;
+                        else if (fmt === 'words_preeti') formattedBase = conv.words_preeti;
+                        else formattedBase = conv.raw;
+
+                        val = this.wrapVarVal(formattedBase, fmt, isTemplatePreeti);
+                    } else {
+                        val = '';
+                    }
+                }
+
                 if ((type === 'number' || type === 'calculated') && (val !== '' && val !== null && val !== undefined)) {
                     val = this.formatNumberWithFormat(val, fmt);
                     val = this.wrapVarVal(val, fmt, isTemplatePreeti);
                 }
 
-                if (type !== 'richtext' && type !== 'date' && type !== 'daterange' && type !== 'number' && type !== 'calculated' && val) {
+                if (type !== 'richtext' && type !== 'date' && type !== 'daterange' && type !== 'number' && type !== 'amount' && type !== 'calculated' && val) {
                     val = this.wrapVarVal(val, 'text', isTemplatePreeti);
                 }
 
@@ -1852,6 +2246,32 @@ function generatorState() {
             return 'from ' + this.formatDate(fromStr) + ' to ' + this.formatDate(toStr);
         },
 
+        getAmountConversions(val) {
+            if (val === '' || val === null || val === undefined) return null;
+            const strVal = String(val).trim();
+            if (strVal === '') return null;
+            
+            const raw = strVal;
+            const enComma = nepaliCalendar.formatWesternComma(strVal);
+            const nepaliComma = nepaliCalendar.formatNepaliComma(strVal);
+            const devanagariComma = nepaliCalendar.toDevanagariDigits(nepaliComma);
+            const preetiComma = nepaliCalendar.toPreetiDigits(nepaliComma);
+            const wordsEn = nepaliCalendar.amountToWordsEnglish(strVal);
+            const wordsNp = nepaliCalendar.amountToWordsNepali(strVal, false);
+            const wordsPreeti = nepaliCalendar.amountToWordsNepali(strVal, true);
+
+            return {
+                raw,
+                en_comma: enComma,
+                nepali_comma: nepaliComma,
+                devanagari_comma: devanagariComma,
+                preeti_comma: preetiComma,
+                words_en: wordsEn,
+                words_np: wordsNp,
+                words_preeti: wordsPreeti
+            };
+        },
+
         formatNumberWithFormat(val, formatType) {
             if (val === '' || val === null || val === undefined) return '';
             formatType = formatType || 'en';
@@ -1863,15 +2283,12 @@ function generatorState() {
             const cleanStr = isNegative ? strVal.slice(1) : strVal;
             const parts = cleanStr.split('.');
 
-            // Parse integer part and format with commas
-            const intNum = parseInt(parts[0], 10);
-            const intWithComma = isNaN(intNum) ? parts[0] : intNum.toLocaleString('en-US');
-            const intNoComma = parts[0];
-
+            const intNoComma = parts[0].replace(/^0+(?=\d)/, '') || '0';
             const decPart = parts.length > 1 ? '.' + parts[1] : '';
 
             const enNoComma = (isNegative ? '-' : '') + intNoComma + decPart;
-            const enWithComma = (isNegative ? '-' : '') + intWithComma + decPart;
+            const enWithComma = (isNegative ? '-' : '') + nepaliCalendar.formatWesternComma(cleanStr);
+            const nepaliWithComma = (isNegative ? '-' : '') + nepaliCalendar.formatNepaliComma(cleanStr);
 
             if (formatType === 'en') {
                 return enNoComma;
@@ -1879,17 +2296,20 @@ function generatorState() {
             if (formatType === 'en_comma') {
                 return enWithComma;
             }
+            if (formatType === 'nepali_comma') {
+                return nepaliWithComma;
+            }
             if (formatType === 'devanagari') {
                 return nepaliCalendar.toDevanagariDigits(enNoComma);
             }
             if (formatType === 'devanagari_comma') {
-                return nepaliCalendar.toDevanagariDigits(enWithComma);
+                return nepaliCalendar.toDevanagariDigits(nepaliWithComma);
             }
             if (formatType === 'preeti') {
                 return nepaliCalendar.toPreetiDigits(enNoComma);
             }
             if (formatType === 'preeti_comma') {
-                return nepaliCalendar.toPreetiDigits(enWithComma);
+                return nepaliCalendar.toPreetiDigits(nepaliWithComma);
             }
 
             return enNoComma;
@@ -1899,15 +2319,15 @@ function generatorState() {
             if (val === '' || val === null || val === undefined) return '';
             const strVal = String(val);
 
-            if (formatType === 'bs_preeti_words' || formatType === 'bs_preeti_digits' || formatType === 'preeti' || formatType === 'preeti_comma') {
+            if (formatType === 'bs_preeti_words' || formatType === 'bs_preeti_digits' || formatType === 'preeti' || formatType === 'preeti_comma' || formatType === 'words_preeti') {
                 return `<span style="font-family: 'Preeti', sans-serif !important;">${strVal}</span>`;
             }
 
-            if (formatType === 'bs_unicode' || formatType === 'devanagari' || formatType === 'devanagari_comma') {
+            if (formatType === 'bs_unicode' || formatType === 'devanagari' || formatType === 'devanagari_comma' || formatType === 'words_np') {
                 return `<span style="font-family: 'Kalimati', 'Noto Sans Devanagari', 'Mangal', sans-serif !important;">${strVal}</span>`;
             }
 
-            if (isTemplatePreeti && (formatType === 'en' || formatType === 'en_comma' || formatType === 'ad_full' || formatType === 'ad_standard')) {
+            if (isTemplatePreeti && (formatType === 'en' || formatType === 'en_comma' || formatType === 'nepali_comma' || formatType === 'raw' || formatType === 'words_en' || formatType === 'ad_full' || formatType === 'ad_standard' || formatType === 'text')) {
                 return `<span style="font-family: Arial, 'Times New Roman', sans-serif !important;">${strVal}</span>`;
             }
 

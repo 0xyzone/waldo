@@ -194,6 +194,21 @@ if (!$employee) {
                     return parts[1] || parts[0] || `[${this.formatLabel(cleanKey)}]`;
                 }
             }
+            // Check for amount sub-keys
+            const amountSubSuffixes = [
+                '_nepali_comma', '_devanagari_comma', '_preeti_comma',
+                '_words_en', '_in_words_en', '_words_np', '_in_words_np', '_words_preeti', '_preeti_words', '_nepali_words',
+                '_comma', '_commas', '_en_comma', '_nepali', '_devanagari', '_preeti', '_words', '_raw'
+            ];
+            for (const sfx of amountSubSuffixes) {
+                if (cleanKey.endsWith(sfx)) {
+                    const parentKey = cleanKey.slice(0, -sfx.length);
+                    const parent = repeater.find(v => v.key === parentKey && v.type === 'amount');
+                    if (parent) {
+                        return parent.dummy ? `${parent.dummy} (${sfx.replace(/^_/, '')})` : `[${this.formatLabel(cleanKey)}]`;
+                    }
+                }
+            }
             return found ? `[${this.formatLabel(cleanKey)}]` : match;
         });
 

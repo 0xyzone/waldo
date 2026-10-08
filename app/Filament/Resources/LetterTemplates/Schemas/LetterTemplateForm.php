@@ -123,6 +123,7 @@ class LetterTemplateForm
                                                         'date' => 'Date',
                                                         'daterange' => 'Date Range',
                                                         'number' => 'Number',
+                                                        'amount' => 'Amount',
                                                         'boolean' => 'Boolean (Yes/No)',
                                                         'dropdown' => 'Dropdown',
                                                         'richtext' => 'Rich Text',

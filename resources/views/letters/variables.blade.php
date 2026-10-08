@@ -139,6 +139,39 @@
                     </div>
                     @endif
 
+                    @if($v->type === 'amount')
+                    <!-- Tokens list for amount: as is, western comma, nepali comma, devanagari, preeti, in words (en, np, preeti) -->
+                    <div class="space-y-1 pt-1 border-t border-slate-100 dark:border-zinc-800">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Available Placeholders:</span>
+                        <div class="flex flex-wrap gap-1 pt-0.5">
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-mono text-[10px] border border-amber-200 dark:border-amber-800/60 font-semibold" title="Amount as it is">
+                                &#123;&#123;&nbsp;{{ $v->key }}&nbsp;&#125;&#125;
+                            </span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-mono text-[10px] border border-amber-200 dark:border-amber-800/60 font-semibold" title="Western Comma (e.g. 50,000)">
+                                &#123;&#123;&nbsp;{{ $v->key }}_comma&nbsp;&#125;&#125;
+                            </span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 font-mono text-[10px] border border-teal-200 dark:border-teal-800/60 font-semibold" title="Nepali comma principles (e.g. 1,00,00,000)">
+                                &#123;&#123;&nbsp;{{ $v->key }}_nepali_comma&nbsp;&#125;&#125;
+                            </span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-mono text-[10px] border border-emerald-200 dark:border-emerald-800/60 font-semibold" title="Devanagari digits with commas (e.g. १,००,००,०००)">
+                                &#123;&#123;&nbsp;{{ $v->key }}_nepali&nbsp;&#125;&#125;
+                            </span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-mono text-[10px] border border-blue-200 dark:border-blue-800/60 font-semibold" title="Preeti digits with commas">
+                                &#123;&#123;&nbsp;{{ $v->key }}_preeti&nbsp;&#125;&#125;
+                            </span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-mono text-[10px] border border-indigo-200 dark:border-indigo-800/60 font-semibold" title="In words English (e.g. One Crore Only)">
+                                &#123;&#123;&nbsp;{{ $v->key }}_words_en&nbsp;&#125;&#125;
+                            </span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-mono text-[10px] border border-purple-200 dark:border-purple-800/60 font-semibold" title="In words Nepali Devanagari (e.g. एक करोड मात्र)">
+                                &#123;&#123;&nbsp;{{ $v->key }}_words_np&nbsp;&#125;&#125;
+                            </span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 font-mono text-[10px] border border-rose-200 dark:border-rose-800/60 font-semibold" title="In words Preeti (e.g. Ps s/f]8 dfq)">
+                                &#123;&#123;&nbsp;{{ $v->key }}_words_preeti&nbsp;&#125;&#125;
+                            </span>
+                        </div>
+                    </div>
+                    @endif
+
                     @if($v->description)
                     <p class="text-xs text-slate-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">{{ $v->description }}</p>
                     @endif
@@ -243,6 +276,7 @@
                             <option value="date">Date</option>
                             <option value="daterange">Date Range</option>
                             <option value="number">Number</option>
+                            <option value="amount">Amount</option>
                             <option value="boolean">Yes/No (Boolean)</option>
                             <option value="dropdown">Dropdown</option>
                             <option value="richtext">Rich Text</option>
