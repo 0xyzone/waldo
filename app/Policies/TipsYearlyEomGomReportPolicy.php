@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\TipsYearlyEomGomReport;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Foundation\Auth\User as AuthUser;
 
 class TipsYearlyEomGomReportPolicy
 {
     use HandlesAuthorization;
-    
+
     public function viewAny(AuthUser $authUser): bool
     {
         return $authUser->can('ViewAny:TipsYearlyEomGomReport');
@@ -27,9 +27,14 @@ class TipsYearlyEomGomReportPolicy
         return $authUser->can('Create:TipsYearlyEomGomReport');
     }
 
-    public function update(AuthUser $authUser, TipsYearlyEomGomReport $tipsYearlyEomGomReport): bool
+    public function update(AuthUser $authUser, ?TipsYearlyEomGomReport $tipsYearlyEomGomReport = null): bool
     {
         return $authUser->can('Update:TipsYearlyEomGomReport');
+    }
+
+    public function edit(AuthUser $authUser, ?TipsYearlyEomGomReport $tipsYearlyEomGomReport = null): bool
+    {
+        return $this->update($authUser, $tipsYearlyEomGomReport);
     }
 
     public function delete(AuthUser $authUser, TipsYearlyEomGomReport $tipsYearlyEomGomReport): bool
@@ -71,5 +76,4 @@ class TipsYearlyEomGomReportPolicy
     {
         return $authUser->can('Reorder:TipsYearlyEomGomReport');
     }
-
 }
