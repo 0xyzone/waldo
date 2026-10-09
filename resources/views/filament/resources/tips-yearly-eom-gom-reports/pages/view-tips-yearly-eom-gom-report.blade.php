@@ -81,7 +81,7 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2.5">
-                @if(! $this->isActiveMonthValidated)
+                @if(! $this->isActiveMonthValidated && auth()->user()->canEdit())
                     <button type="button"
                             wire:click="rerandomizeCurrentMonth"
                             wire:confirm="Re-randomize {{ $this->activePeriodLabel }} Allowed Departments? This will re-select 3 random allowed departments for Entry 2, Entry 3, and Entry 4. Existing employee assignments on those entries will be reset."

@@ -5,6 +5,7 @@ namespace App\Filament\Resources\TipsYearlyEomGomReports\Pages;
 use App\Filament\Resources\TipsYearlyEomGomReports\TipsYearlyEomGomReportResource;
 use App\Models\Department;
 use App\Models\Employee;
+use App\Models\TipsYearlyEomGomReport;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -192,6 +193,7 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
             //     ->openUrlInNewTab(),
 
             Action::make('editMonthWinners')
+                ->visible(fn (): bool => auth()->user()->can('edit',TipsYearlyEomGomReport::class))
                 ->label(fn () => "Assign {$this->activePeriodLabel} Winners")
                 ->color('info')
                 ->icon(Heroicon::OutlinedUserPlus)
@@ -441,6 +443,7 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
             //     ->action(fn () => $this->unvalidateCurrentMonth()),
 
             Action::make('rerandomizeMonth')
+                ->visible(fn (): bool => auth()->user()->can('edit',TipsYearlyEomGomReport::class))
                 ->label('🎲 Re-randomize Departments')
                 ->color('gray')
                 ->disabled(fn () => $this->isActiveMonthValidated)
