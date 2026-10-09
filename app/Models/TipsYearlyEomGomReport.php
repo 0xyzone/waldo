@@ -212,7 +212,7 @@ class TipsYearlyEomGomReport extends Model
      *
      * @return Collection<int, Department>
      */
-    public function selectRandomAllowedDepartments(int $monthNumber, int $count = 3, bool $ignoreFutureUnvalidated = false): Collection
+    public function selectRandomAllowedDepartments(int $monthNumber, int $count = 3, bool $ignoreFutureUnvalidated = true): Collection
     {
         $gamingSlotDepartmentIds = Department::getGamingAndSlotDepartmentIds();
         $excludedDepartmentIds = TipsEomGomExcludedDepartment::pluck('department_id')
@@ -292,47 +292,101 @@ class TipsYearlyEomGomReport extends Model
                 'min_dist' => $minDist,
                 'occurrences' => $occurrences,
                 'is_cooldown' => $minDist <= 4,
-                'rand' => mt_rand(1, 100000),
             ];
         });
 
-        // Sorting priority:
-        // 1. Not in cooldown (outside 4-month window)
-        // 2. Fewest occurrences in current report
-        // 3. Greatest min distance
-        // 4. Random shuffle
-        $sorted = $scored->sort(function (array $a, array $b) {
-            if ($a['is_cooldown'] !== $b['is_cooldown']) {
-                return $a['is_cooldown'] ? 1 : -1;
-            }
-            if ($a['occurrences'] !== $b['occurrences']) {
-                return $a['occurrences'] <=> $b['occurrences'];
-            }
-            if ($a['min_dist'] !== $b['min_dist']) {
-                return $b['min_dist'] <=> $a['min_dist'];
-            }
+        // Split into non-cooldown and cooldown candidates
+        $nonCooldown = $scored->where('is_cooldown', false)->values();
 
-            return $a['rand'] <=> $b['rand'];
+        // If we don't have enough non-cooldown departments, take all non-cooldown and backfill with largest distance
+        if ($nonCooldown->count() >= $count) {
+            $pool = $nonCooldown;
+        } else {
+            $cooldownCandidates = $scored->where('is_cooldown', true)
+                ->sortByDesc('min_dist')
+                ->values();
+            $pool = $nonCooldown->concat($cooldownCandidates);
+        }
+
+        // Weighted random selection: prefer departments with fewer occurrences across the report
+        $maxOcc = (int) ($pool->max('occurrences') ?? 0);
+        $weightedCandidates = $pool->map(function (array $item) use ($maxOcc) {
+            $baseWeight = (int) pow(max(1, $maxOcc - $item['occurrences'] + 1), 2);
+            $weight = $item['is_cooldown'] ? 1 : ($baseWeight * 10);
+
+            return [
+                'dept' => $item['dept'],
+                'weight' => max(1, $weight),
+            ];
         })->values();
 
-        return $sorted->take($count)->pluck('dept');
+        $selected = collect();
+        $remaining = $weightedCandidates;
+
+        for ($i = 0; $i < $count && $remaining->isNotEmpty(); $i++) {
+            $totalWeight = $remaining->sum('weight');
+            $randVal = mt_rand(1, max(1, $totalWeight));
+            $running = 0;
+            $picked = false;
+
+            foreach ($remaining as $idx => $candidate) {
+                $running += $candidate['weight'];
+                if ($randVal <= $running) {
+                    $selected->push($candidate['dept']);
+                    $remaining->forget($idx);
+                    $picked = true;
+                    break;
+                }
+            }
+
+            if (! $picked && $remaining->isNotEmpty()) {
+                $firstKey = $remaining->keys()->first();
+                $selected->push($remaining->get($firstKey)['dept']);
+                $remaining->forget($firstKey);
+            }
+        }
+
+        return $selected;
     }
 
     /**
      * Re-randomize entry 2, 3, and 4 departments for a specific month.
      * Automatically skips validated months.
      */
-    public function rerandomizeMonth(int $monthNumber, bool $ignoreFutureUnvalidated = false): bool
+    public function rerandomizeMonth(int $monthNumber, bool $ignoreFutureUnvalidated = true): bool
     {
         // Skip if the month has been validated
         if ($this->isMonthValidated($monthNumber)) {
             return false;
         }
 
+        // Current assigned department IDs on entries 2, 3, 4
+        $currentDeptIds = $this->entries()
+            ->where('month_number', $monthNumber)
+            ->where('entry_number', '>', 1)
+            ->pluck('department_id')
+            ->filter()
+            ->sort()
+            ->values()
+            ->all();
+
+        // Select 3 random allowed departments, ensuring variation from current when possible
         $chosenDepts = $this->selectRandomAllowedDepartments($monthNumber, 3, $ignoreFutureUnvalidated);
-        $deptEntry2 = $chosenDepts->get(0);
-        $deptEntry3 = $chosenDepts->get(1) ?? $deptEntry2;
-        $deptEntry4 = $chosenDepts->get(2) ?? $deptEntry2;
+
+        $attempts = 0;
+        while ($attempts < 10 && count($currentDeptIds) > 0) {
+            $newDeptIds = $chosenDepts->pluck('id')->filter()->sort()->values()->all();
+            if ($newDeptIds !== $currentDeptIds) {
+                break;
+            }
+            $chosenDepts = $this->selectRandomAllowedDepartments($monthNumber, 3, $ignoreFutureUnvalidated);
+            $attempts++;
+        }
+
+        $shuffled = $chosenDepts->shuffle()->values();
+        $deptEntry2 = $shuffled->get(0);
+        $deptEntry3 = $shuffled->get(1) ?? $deptEntry2;
+        $deptEntry4 = $shuffled->get(2) ?? $deptEntry2;
 
         $entry2 = $this->entries()->where('month_number', $monthNumber)->where('entry_number', 2)->first();
         if ($entry2) {

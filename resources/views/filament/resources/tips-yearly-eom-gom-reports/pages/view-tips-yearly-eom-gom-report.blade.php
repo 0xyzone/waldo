@@ -83,6 +83,13 @@
             <div class="flex flex-wrap items-center gap-2.5">
                 @if(! $this->isActiveMonthValidated)
                     <button type="button"
+                            wire:click="rerandomizeCurrentMonth"
+                            wire:confirm="Re-randomize {{ $this->activePeriodLabel }} Allowed Departments? This will re-select 3 random allowed departments for Entry 2, Entry 3, and Entry 4. Existing employee assignments on those entries will be reset."
+                            class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md transition cursor-pointer">
+                        <span>🎲</span>
+                        <span>Re-randomize</span>
+                    </button>
+                    <button type="button"
                             wire:click="validateCurrentMonth"
                             wire:confirm="Validate candidates for {{ $this->activePeriodLabel }}? This locks the month and ensures re-randomization will skip it."
                             class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/30 transition cursor-pointer">

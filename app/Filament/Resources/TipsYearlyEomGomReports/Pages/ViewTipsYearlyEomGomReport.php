@@ -77,7 +77,7 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
             $this->activeMonthValidationInfo,
         );
 
-        $this->record->unsetRelation('entries');
+        $this->record->refresh();
     }
 
     public function getActivePeriodProperty(): array
@@ -149,6 +149,28 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
             ->title("{$this->activePeriodLabel} Unlocked")
             ->body('Validation lock removed. The month can now be re-randomized.')
             ->warning()
+            ->send();
+    }
+
+    public function rerandomizeCurrentMonth(): void
+    {
+        if ($this->record->isMonthValidated($this->activeMonth)) {
+            Notification::make()
+                ->title('Month Locked')
+                ->body("{$this->activePeriodLabel} is validated and cannot be re-randomized.")
+                ->danger()
+                ->send();
+
+            return;
+        }
+
+        $this->record->rerandomizeMonth($this->activeMonth, ignoreFutureUnvalidated: true);
+        $this->resetComputedMonthProperties();
+
+        Notification::make()
+            ->title('Departments Re-randomized')
+            ->body("New random allowed departments selected for {$this->activePeriodLabel}.")
+            ->success()
             ->send();
     }
 
@@ -426,26 +448,7 @@ class ViewTipsYearlyEomGomReport extends ViewRecord
                 ->requiresConfirmation()
                 ->modalHeading(fn () => "Re-randomize {$this->activePeriodLabel} Allowed Departments?")
                 ->modalDescription(fn () => "This will re-select 3 random allowed departments for Entry 2, Entry 3, and Entry 4 for {$this->activePeriodLabel}. Existing employee assignments on those entries will be reset.")
-                ->action(function (): void {
-                    if ($this->record->isMonthValidated($this->activeMonth)) {
-                        Notification::make()
-                            ->title('Month Locked')
-                            ->body("{$this->activePeriodLabel} is validated and cannot be re-randomized.")
-                            ->danger()
-                            ->send();
-
-                        return;
-                    }
-
-                    $this->record->rerandomizeMonth($this->activeMonth);
-                    $this->resetComputedMonthProperties();
-
-                    Notification::make()
-                        ->title('Departments Re-randomized')
-                        ->body("New random allowed departments selected for {$this->activePeriodLabel}.")
-                        ->success()
-                        ->send();
-                }),
+                ->action(fn () => $this->rerandomizeCurrentMonth()),
 
             EditAction::make(),
             DeleteAction::make(),
