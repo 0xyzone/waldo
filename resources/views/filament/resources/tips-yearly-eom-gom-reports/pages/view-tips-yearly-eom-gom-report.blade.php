@@ -96,7 +96,7 @@
                         <x-heroicon-m-check-badge class="w-4 h-4 text-emerald-200" />
                         <span>Validate Month</span>
                     </button>
-                @else
+                @elseif (auth()->user()->can('edit', $this->record))
                     <button type="button"
                             wire:click="unvalidateCurrentMonth"
                             wire:confirm="Unlock {{ $this->activePeriodLabel }}? This will allow departments to be re-randomized again."
