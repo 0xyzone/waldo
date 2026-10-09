@@ -13,7 +13,7 @@
     @endphp
 
     {{-- Month Navigation Pills --}}
-    <div class="flex flex-wrap items-center gap-1.5 p-2 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm mb-4 sticky top-20 z-999">
+    <div class="flex flex-wrap items-center gap-1.5 p-2 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm mb-4 sticky top-16 z-20">
         @for($num = 1; $num <= 12; $num++)
             @php
                 $period = $record->getPeriodForMonth($num);
