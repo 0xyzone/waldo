@@ -132,12 +132,14 @@
                     </button>
                 @endif
 
-                <a href="{{ route('tips.eom-gom.print-monthly', ['report' => $record->id, 'month' => $this->activeMonth]) }}"
-                    target="_blank"
-                    class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md transition">
-                    <x-heroicon-m-printer class="w-4 h-4 text-sky-400" />
-                    <span>Print Monthly Sheet</span>
-                </a>
+                @if ($this->isActiveMonthValidated)
+                    <a href="{{ route('tips.eom-gom.print-monthly', ['report' => $record->id, 'month' => $this->activeMonth]) }}"
+                        target="_blank"
+                        class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md transition">
+                        <x-heroicon-m-printer class="w-4 h-4 text-sky-400" />
+                        <span>Print Monthly Sheet</span>
+                    </a>
+                @endif
                 @if ($this->canEdit)
                     <a href="{{ route('tips.eom-gom.hrms-card', ['report' => $record->id, 'month' => $this->activeMonth]) }}"
                         target="_blank"
