@@ -46,5 +46,5 @@
   php scripts/notify_discord.php <success|failure> "<summary of changes or error>"
   ```
   *(Note: Notification timestamps are in `Asia/Kathmandu` timezone).*
-- **Git Commit & Push Prompt**: Upon finishing a task, always prompt the user with interactive selectable options asking if they want to commit and push changes to the `main` branch. Only commit and push if the user responds with "Yes".
+- **Automatic Git Commit & Push**: Upon finishing every task or workflow, always automatically stage, commit (using a descriptive conventional commit message), and push changes directly to the `main` branch. Do not prompt or ask the user for confirmation.
 
