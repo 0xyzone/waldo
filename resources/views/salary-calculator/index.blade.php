@@ -1141,13 +1141,13 @@
             <!-- Header -->
             <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 10px;">
                 <h1 style="margin: 0; font-size: 19px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">
-                    WALDO CASINO & ENTERTAINMENT
+                    WALDO DYNASTY CASINO & ENTERTAINMENT
                 </h1>
                 <h2 style="margin: 2px 0 0 0; font-size: 13px; font-weight: bold; text-transform: uppercase; color: #333;">
                     SALARY, OVERTIME & REMUNERATION CALCULATION SLIP
                 </h2>
                 <div style="font-size: 10px; color: #555; margin-top: 3px;">
-                    Waldo HQ Operations • Confidential Payroll Record
+                    Waldo HQ Operations • Estimated Payroll Record
                 </div>
             </div>
 
@@ -1306,30 +1306,9 @@
                 </tr>
             </table>
 
-            <!-- Official Signatures Box -->
-            <table style="width: 100%; border: 1px solid #999; border-collapse: collapse; margin-top: 24px; font-size: 10px;">
-                <tr>
-                    <td style="width: 25%; height: 50px; vertical-align: bottom; text-align: center; border: 1px solid #999; padding-bottom: 5px;">
-                        _______________________<br>
-                        <strong>Prepared By</strong>
-                    </td>
-                    <td style="width: 25%; height: 50px; vertical-align: bottom; text-align: center; border: 1px solid #999; padding-bottom: 5px;">
-                        _______________________<br>
-                        <strong>Checked By (HR)</strong>
-                    </td>
-                    <td style="width: 25%; height: 50px; vertical-align: bottom; text-align: center; border: 1px solid #999; padding-bottom: 5px;">
-                        _______________________<br>
-                        <strong>Approved By (Finance)</strong>
-                    </td>
-                    <td style="width: 25%; height: 50px; vertical-align: bottom; text-align: center; border: 1px solid #999; padding-bottom: 5px;">
-                        _______________________<br>
-                        <strong>Employee Acknowledgment</strong>
-                    </td>
-                </tr>
-            </table>
-
-            <div style="text-align: center; font-size: 9px; color: #777; margin-top: 10px;">
-                This document is a computer-generated official payroll calculation sheet issued by Waldo Casino & Entertainment.
+            <div style="text-align: center; font-size: 9.5px; color: #555; margin-top: 20px; border-top: 1px dashed #bbb; padding-top: 10px;">
+                This document is a computer-generated payroll calculation sheet issued by Waldo Dynasty Casino & Entertainment and is only for demonstration purpose only.<br>
+                The calculation might not be accurate and is subject to change.
             </div>
 
         </div>
