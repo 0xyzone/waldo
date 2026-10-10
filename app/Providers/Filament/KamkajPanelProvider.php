@@ -82,6 +82,13 @@ class KamkajPanelProvider extends PanelProvider
                     ->sort(10)
                     ->group('HR & Admin')
                     ->visible(fn () => auth()->user()->hasRole(['super_admin', 'HR'])),
+                NavigationItem::make('Salary Calculator')
+                    ->url('/salary-calculator')
+                    ->openUrlInNewTab()
+                    ->icon('heroicon-o-calculator')
+                    ->activeIcon('heroicon-s-calculator')
+                    ->sort(1)
+                    ->group('Finance'),
             ])
             ->navigationGroups([
                 'HR & Admin',

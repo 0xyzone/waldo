@@ -10,6 +10,7 @@ use App\Http\Controllers\LetterController;
 use App\Http\Controllers\LetterGlobalVariableController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\SalaryCalculatorController;
 use App\Http\Controllers\SalaryIncrementRequestPrintController;
 use App\Http\Controllers\TipsEomGomReportPrintController;
 use App\Http\Controllers\TipsReportPrintController;
@@ -18,6 +19,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Standalone Interactive Salary & OT Calculator
+Route::get('/salary-calculator', [SalaryCalculatorController::class, 'index'])
+    ->name('salary-calculator.index')
+    ->middleware('auth');
 
 // Candidates Print
 Route::get('/candidates/{candidate}/print', [CandidatePrintController::class, 'print'])
