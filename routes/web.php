@@ -22,8 +22,7 @@ Route::get('/', function () {
 
 // Standalone Interactive Salary & OT Calculator
 Route::get('/salary-calculator', [SalaryCalculatorController::class, 'index'])
-    ->name('salary-calculator.index')
-    ->middleware('auth');
+    ->name('salary-calculator.index');
 
 // Candidates Print
 Route::get('/candidates/{candidate}/print', [CandidatePrintController::class, 'print'])
