@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\Auth\Login;
+use App\Helpers\FaviconHelper;
 use App\Http\Middleware\RequirePasswordChange;
 use AzGasim\FilamentUnsavedChangesModal\FilamentUnsavedChangesModalPlugin;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
@@ -40,7 +41,7 @@ class KamkajPanelProvider extends PanelProvider
             ->emailVerification()
             ->emailChangeVerification()
             ->profile(EditProfile::class)
-            ->favicon(fn () => request()->isSecure() ? asset('img/logo.ico') : asset('img/logo-http.ico'))
+            ->favicon(fn () => FaviconHelper::getFaviconUrl())
             ->renderHook(
                 PanelsRenderHook::HEAD_START,
                 fn () => view('filament.pwa-scripts')
@@ -49,8 +50,9 @@ class KamkajPanelProvider extends PanelProvider
                 PanelsRenderHook::HEAD_END,
                 fn () => new HtmlString('<script>
                     (function() {
-                        var isHttps = window.location.protocol === "https:";
-                        var target = isHttps ? "'.asset('img/logo.ico').'" : "'.asset('img/logo-http.ico').'";
+                        var h = window.location.hostname;
+                        var isLocal = '.(FaviconHelper::isLocal() ? 'true' : 'false').' || h === "localhost" || h === "127.0.0.1" || h === "waldo" || h.endsWith(".test") || h.endsWith(".local") || h.startsWith("192.168.") || h.startsWith("10.");
+                        var target = isLocal ? "'.asset('img/logo-http.ico').'" : "'.asset('img/logo.ico').'";
                         var links = document.querySelectorAll("link[rel*=\'icon\']");
                         links.forEach(function(l) { if (l.href !== target) l.href = target; });
                     })();

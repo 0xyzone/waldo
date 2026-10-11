@@ -1,8 +1,8 @@
 @php
-    $isSecure = request()->isSecure();
-    $httpsFavicon = asset('img/logo.ico');
-    $httpFavicon = asset('img/logo-http.ico');
-    $initialFavicon = $isSecure ? $httpsFavicon : $httpFavicon;
+    $isLocal = \App\Helpers\FaviconHelper::isLocal();
+    $productionFavicon = asset('img/logo.ico');
+    $localFavicon = asset('img/logo-http.ico');
+    $initialFavicon = $isLocal ? $localFavicon : $productionFavicon;
 @endphp
 <link rel="icon" type="image/x-icon" href="{{ $initialFavicon }}" id="app-favicon">
 <link rel="shortcut icon" type="image/x-icon" href="{{ $initialFavicon }}">
@@ -17,8 +17,9 @@
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f172a">
 <script>
     (function() {
-        var isHttps = window.location.protocol === 'https:';
-        var targetFavicon = isHttps ? '{{ $httpsFavicon }}' : '{{ $httpFavicon }}';
+        var h = window.location.hostname;
+        var isLocal = {{ $isLocal ? 'true' : 'false' }} || h === 'localhost' || h === '127.0.0.1' || h === 'waldo' || h.endsWith('.test') || h.endsWith('.local') || h.startsWith('192.168.') || h.startsWith('10.');
+        var targetFavicon = isLocal ? '{{ $localFavicon }}' : '{{ $productionFavicon }}';
         var links = document.querySelectorAll("link[rel*='icon']");
         if (links.length > 0) {
             links.forEach(function(l) {
