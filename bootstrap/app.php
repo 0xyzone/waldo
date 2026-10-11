@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\SanitizeSocketIdHeader;
 use App\Http\Middleware\UpdateUserLastActive;
 use Illuminate\Foundation\Application;
@@ -22,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prepend(SanitizeSocketIdHeader::class);
         $middleware->web(append: [
             UpdateUserLastActive::class,
+            EnsureUserIsActive::class,
         ]);
 
         $middleware->alias([

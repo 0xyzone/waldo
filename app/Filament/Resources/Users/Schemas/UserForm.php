@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use App\Models\User;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -24,6 +25,11 @@ class UserForm
                     ->imageEditor()
                     ->circleCropper()
                     ->alignCenter(),
+                Toggle::make('is_active')
+                    ->label('Active Account')
+                    ->helperText('Deactivating will revoke access to the Kamkaj panel.')
+                    ->default(true)
+                    ->disabled(fn (?User $record): bool => $record?->id === auth()->id()),
                 Toggle::make('read_receipts_enabled')
                     ->label('Read Receipts (Blue Ticks)')
                     ->default(true),

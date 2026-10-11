@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountDeactivatedController;
 use App\Http\Controllers\ApiDocsController;
 use App\Http\Controllers\CandidatePrintController;
 use App\Http\Controllers\EmployeePromotionPrintController;
@@ -19,6 +20,12 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Account Deactivated Notice & Status Verification
+Route::get('/account-deactivated', [AccountDeactivatedController::class, 'index'])
+    ->name('account.deactivated');
+Route::get('/account-deactivated/check', [AccountDeactivatedController::class, 'check'])
+    ->name('account.deactivated.check');
 
 // Standalone Interactive Salary & OT Calculator
 Route::get('/salary-calculator', [SalaryCalculatorController::class, 'index'])

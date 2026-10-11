@@ -18,7 +18,7 @@ use Laravel\Sanctum\HasApiTokens;
 use NotificationChannels\WebPush\HasPushSubscriptions;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'username', 'email', 'phone', 'avatar_url', 'password', 'must_change_password', 'read_receipts_enabled', 'online_status_enabled', 'last_active_at'])]
+#[Fillable(['name', 'username', 'email', 'phone', 'avatar_url', 'password', 'must_change_password', 'is_active', 'read_receipts_enabled', 'online_status_enabled', 'last_active_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerifyEmail
 {
@@ -30,7 +30,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        return true;
+        return (bool) ($this->is_active ?? true);
     }
 
     /**
@@ -52,6 +52,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'must_change_password' => 'boolean',
+            'is_active' => 'boolean',
             'read_receipts_enabled' => 'boolean',
             'online_status_enabled' => 'boolean',
             'last_active_at' => 'datetime',

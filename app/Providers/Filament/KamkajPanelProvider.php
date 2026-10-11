@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\Auth\Login;
 use App\Helpers\FaviconHelper;
+use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\RequirePasswordChange;
 use AzGasim\FilamentUnsavedChangesModal\FilamentUnsavedChangesModalPlugin;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
@@ -121,6 +122,7 @@ class KamkajPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->authMiddleware([
+                EnsureUserIsActive::class,
                 Authenticate::class,
                 RequirePasswordChange::class,
             ])

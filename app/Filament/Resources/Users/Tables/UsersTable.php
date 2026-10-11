@@ -2,16 +2,20 @@
 
 namespace App\Filament\Resources\Users\Tables;
 
+use App\Models\User;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Notifications\Notification;
 use Filament\Pages\Dashboard;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use STS\FilamentImpersonate\Actions\Impersonate;
@@ -44,6 +48,19 @@ class UsersTable
                     ->label('Phone')
                     ->searchable()
                     ->sortable(),
+                ToggleColumn::make('is_active')
+                    ->label('Active')
+                    ->onColor('success')
+                    ->offColor('danger')
+                    ->disabled(fn (User $record): bool => $record->id === auth()->id())
+                    ->tooltip(fn (User $record): ?string => $record->id === auth()->id() ? 'You cannot deactivate your own account.' : null)
+                    ->afterStateUpdated(function (User $record, bool $state): void {
+                        Notification::make()
+                            ->title('User Status Updated')
+                            ->body("User {$record->name} is now ".($state ? 'Active' : 'Inactive').'.')
+                            ->color($state ? 'success' : 'danger')
+                            ->send();
+                    }),
                 TextColumn::make('email_verified_at')
                     ->label('Verified At')
                     ->dateTime()
@@ -62,6 +79,11 @@ class UsersTable
             ])
             ->defaultSort('id', 'desc')
             ->filters([
+                TernaryFilter::make('is_active')
+                    ->label('Account Status')
+                    ->placeholder('All Users')
+                    ->trueLabel('Active Only')
+                    ->falseLabel('Inactive Only'),
                 SelectFilter::make('role')
                     ->label('Role')
                     ->relationship('roles', 'name')
