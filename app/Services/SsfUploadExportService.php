@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use OpenSpout\Common\Entity\Row;
-use OpenSpout\Common\Entity\Style\Style;
 use OpenSpout\Writer\XLSX\Writer as XlsxWriter;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -50,13 +49,8 @@ class SsfUploadExportService
             // Set the internal worksheet name to 'Entry' as required
             $writer->getCurrentSheet()->setName('Entry');
 
-            // Header Row Styling
-            $headerStyle = (new Style)
-                ->setFontBold()
-                ->setFontColor('FFFFFF')
-                ->setBackgroundColor('1E293B');
-
-            $writer->addRow(Row::fromValues(self::HEADINGS, $headerStyle));
+            // Clean text format with no color styling
+            $writer->addRow(Row::fromValues(self::HEADINGS));
 
             // Data Rows
             $sno = 1;

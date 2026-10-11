@@ -9,6 +9,27 @@
         $canDownload = $totalActive > 0 && $missingCount === 0;
     @endphp
 
+    <style>
+        /* SSF Table Header Styling - Light Mode */
+        .ssf-table-header,
+        .ssf-table-header > tr,
+        .ssf-table-header th {
+            background-color: #f1f5f9 !important;
+            color: #0f172a !important;
+        }
+
+        /* SSF Table Header Styling - Dark Mode (Crisp White Text on Dark Navy Background) */
+        html.dark .ssf-table-header,
+        html.dark .ssf-table-header > tr,
+        html.dark .ssf-table-header th,
+        .dark .ssf-table-header,
+        .dark .ssf-table-header > tr,
+        .dark .ssf-table-header th {
+            background-color: #0f172a !important;
+            color: #ffffff !important;
+        }
+    </style>
+
     <div class="space-y-6">
         {{-- Hero Header & Summary Banner --}}
         <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 text-white shadow-xl border border-indigo-900/50">
@@ -222,28 +243,28 @@
         <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
             <div class="overflow-x-auto max-h-[640px] relative">
                 <table class="w-full text-left text-xs whitespace-nowrap">
-                    <thead class="bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 font-bold sticky top-0 z-20 shadow-xs border-b border-gray-200 dark:border-gray-700">
+                    <thead class="ssf-table-header bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold sticky top-0 z-20 shadow-xs border-b border-gray-200 dark:border-gray-700">
                         <tr>
-                            <th class="py-3 px-3 w-12 text-center">Sno</th>
-                            <th class="py-3 px-3">Actions</th>
-                            <th class="py-3 px-3">Employee</th>
-                            <th class="py-3 px-3">Status</th>
-                            <th class="py-3 px-3">First name</th>
-                            <th class="py-3 px-3">Mid name</th>
-                            <th class="py-3 px-3">Last Name</th>
-                            <th class="py-3 px-3">Gender</th>
-                            <th class="py-3 px-3">DOB(YYYY.MM.DD)</th>
-                            <th class="py-3 px-3">Country</th>
-                            <th class="py-3 px-3">Email</th>
-                            <th class="py-3 px-3">Contact Type</th>
-                            <th class="py-3 px-3">Contact No</th>
-                            <th class="py-3 px-3">Document</th>
-                            <th class="py-3 px-3">Document No</th>
-                            <th class="py-3 px-3">Issuing Office</th>
-                            <th class="py-3 px-3">Issued Date(YYYY.MM.DD)</th>
-                            <th class="py-3 px-3">Employement Type</th>
-                            <th class="py-3 px-3">Post</th>
-                            <th class="py-3 px-3">Join Date(YYYY.MM.DD)</th>
+                            <th class="py-3 px-3 w-12 text-center bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold">Sno</th>
+                            <th class="py-3 px-3 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold">Actions</th>
+                            <th class="py-3 px-3 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold">Employee</th>
+                            <th class="py-3 px-3 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold">Status</th>
+                            <th class="py-3 px-3 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold">First name</th>
+                            <th class="py-3 px-3 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold">Mid name</th>
+                            <th class="py-3 px-3 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold">Last Name</th>
+                            <th class="py-3 px-3 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold">Gender</th>
+                            <th class="py-3 px-3 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold">DOB(YYYY.MM.DD)</th>
+                            <th class="py-3 px-3 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold">Country</th>
+                            <th class="py-3 px-3 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold">Email</th>
+                            <th class="py-3 px-3 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold">Contact Type</th>
+                            <th class="py-3 px-3 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold">Contact No</th>
+                            <th class="py-3 px-3 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold">Document</th>
+                            <th class="py-3 px-3 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold">Document No</th>
+                            <th class="py-3 px-3 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold">Issuing Office</th>
+                            <th class="py-3 px-3 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold">Issued Date(YYYY.MM.DD)</th>
+                            <th class="py-3 px-3 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold">Employement Type</th>
+                            <th class="py-3 px-3 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold">Post</th>
+                            <th class="py-3 px-3 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white font-bold">Join Date(YYYY.MM.DD)</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-gray-700 dark:text-gray-300 font-normal">

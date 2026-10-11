@@ -72,4 +72,18 @@ input[type="number"] {
     color: #ffffff !important;
 }
 
+/* SSF Upload Generator table header styling */
+.ssf-table-header,
+.ssf-table-header th {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+}
+
+:is(.dark, :root.dark, html.dark) .ssf-table-header,
+:is(.dark, :root.dark, html.dark) .ssf-table-header th {
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+}
+
+
 
