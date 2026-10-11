@@ -4,7 +4,12 @@ namespace App\Filament\Resources\Users\Pages;
 
 use App\Filament\Resources\Users\UserResource;
 use App\Mail\WelcomeUserMail;
+use App\Models\AppSetting;
+use App\Services\UserReactivationOtpService;
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Mail;
@@ -19,6 +24,37 @@ class ListUsers extends ListRecords
         $plainPassword = '';
 
         return [
+            Action::make('configureOtpEmail')
+                ->label('Reactivation OTP Email')
+                ->icon('heroicon-o-envelope')
+                ->color('gray')
+                ->visible(fn (): bool => auth()->user()?->hasRole('super_admin') ?? false)
+                ->modalHeading('Configure Reactivation OTP Email')
+                ->modalDescription(function (UserReactivationOtpService $otpService): string {
+                    $current = $otpService->getConfiguredEmail();
+
+                    return "Current recipient: {$current}. Specify the email address that will receive OTP security codes for reactivating user accounts.";
+                })
+                ->modalSubmitActionLabel('Save Email')
+                ->modalWidth('md')
+                ->form([
+                    TextInput::make('email')
+                        ->label('OTP Destination Email')
+                        ->email()
+                        ->required()
+                        ->default(fn (UserReactivationOtpService $otpService): string => $otpService->getConfiguredEmail())
+                        ->placeholder('admin@company.com')
+                        ->helperText('All reactivation OTP codes will be routed to this inbox.'),
+                ])
+                ->action(function (array $data): void {
+                    AppSetting::set('user_reactivation_otp_email', trim($data['email']));
+
+                    Notification::make()
+                        ->title('Reactivation OTP Email Configured')
+                        ->body("OTP codes will now be sent to {$data['email']}.")
+                        ->success()
+                        ->send();
+                }),
             CreateAction::make()
                 ->mutateFormDataUsing(function (array $data) use (&$plainPassword): array {
                     $plainPassword = Str::password(12);

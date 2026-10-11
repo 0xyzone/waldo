@@ -3,11 +3,14 @@
 namespace App\Filament\Resources\Users\Tables;
 
 use App\Models\User;
+use App\Services\UserReactivationOtpService;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Dashboard;
 use Filament\Tables\Columns\ImageColumn;
@@ -18,6 +21,8 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\HtmlString;
+use Illuminate\Validation\ValidationException;
 use STS\FilamentImpersonate\Actions\Impersonate;
 
 class UsersTable
@@ -52,8 +57,11 @@ class UsersTable
                     ->label('Active')
                     ->onColor('success')
                     ->offColor('danger')
-                    ->disabled(fn (User $record): bool => $record->id === auth()->id())
-                    ->tooltip(fn (User $record): ?string => $record->id === auth()->id() ? 'You cannot deactivate your own account.' : null)
+                    ->disabled(fn (User $record): bool => $record->id === auth()->id() || ! (bool) $record->is_active)
+                    ->tooltip(fn (User $record): ?string => $record->id === auth()->id()
+                        ? 'You cannot deactivate your own account.'
+                        : (! (bool) $record->is_active ? 'Reactivation requires Super Admin OTP verification. Use the Reactivate button in Actions.' : 'Click to deactivate account.')
+                    )
                     ->afterStateUpdated(function (User $record, bool $state): void {
                         Notification::make()
                             ->title('User Status Updated')
@@ -111,6 +119,99 @@ class UsersTable
                     }),
             ])
             ->recordActions([
+                Action::make('reactivate')
+                    ->label('Reactivate')
+                    ->icon('heroicon-o-shield-check')
+                    ->color('success')
+                    ->visible(fn (User $record): bool => ! (bool) $record->is_active && (auth()->user()?->hasRole('super_admin') ?? false))
+                    ->modalHeading(fn (User $record): string => "Reactivate {$record->name}")
+                    ->modalDescription(function (User $record, UserReactivationOtpService $otpService): HtmlString {
+                        $masked = $otpService->getMaskedEmail();
+
+                        return new HtmlString("A 6-digit security OTP code has been dispatched to <strong>{$masked}</strong>. Please enter the OTP to reactivate this account.");
+                    })
+                    ->modalSubmitActionLabel('Verify & Reactivate')
+                    ->modalWidth('md')
+                    ->mountUsing(function (Action $action, User $record, UserReactivationOtpService $otpService): void {
+                        $otpInfo = $otpService->generateAndSendOtp($record, auth()->user());
+                        Notification::make()
+                            ->title('OTP Dispatched')
+                            ->body("A 6-digit OTP code was sent to {$otpInfo['masked_email']}.")
+                            ->info()
+                            ->send();
+                    })
+                    ->extraModalActions([
+                        Action::make('resendOtp')
+                            ->label('Resend Code')
+                            ->icon('heroicon-o-arrow-path')
+                            ->color('gray')
+                            ->action(function (User $record, UserReactivationOtpService $otpService): void {
+                                $otpInfo = $otpService->generateAndSendOtp($record, auth()->user());
+                                Notification::make()
+                                    ->title('New OTP Dispatched')
+                                    ->body("A fresh 6-digit OTP code was sent to {$otpInfo['masked_email']}.")
+                                    ->success()
+                                    ->send();
+                            }),
+                    ])
+                    ->form([
+                        TextInput::make('otp')
+                            ->label('6-Digit OTP Code')
+                            ->placeholder('••••••')
+                            ->required()
+                            ->length(6)
+                            ->numeric()
+                            ->autocomplete(false)
+                            ->autofocus()
+                            ->helperText('Valid for 10 minutes. Check the configured admin email inbox.')
+                            ->extraInputAttributes(['style' => 'letter-spacing: 0.35em; font-family: monospace; font-size: 1.25rem; text-align: center; font-weight: bold;']),
+                    ])
+                    ->action(function (array $data, User $record, UserReactivationOtpService $otpService): void {
+                        $isValid = $otpService->verifyOtp($record, $data['otp']);
+
+                        if (! $isValid) {
+                            Notification::make()
+                                ->title('Invalid or Expired OTP')
+                                ->body('The OTP code entered is incorrect or has expired. Account reactivation was denied.')
+                                ->danger()
+                                ->send();
+
+                            throw ValidationException::withMessages([
+                                'otp' => 'Invalid or expired OTP code. Click "Resend Code" to receive a new one.',
+                            ]);
+                        }
+
+                        User::$allowReactivationWithoutOtp = true;
+                        try {
+                            $record->update(['is_active' => true]);
+                        } finally {
+                            User::$allowReactivationWithoutOtp = false;
+                        }
+
+                        Notification::make()
+                            ->title('User Successfully Reactivated')
+                            ->body("Account {$record->name} ({$record->email}) is now Active.")
+                            ->success()
+                            ->send();
+                    }),
+                Action::make('deactivate')
+                    ->label('Deactivate')
+                    ->icon('heroicon-o-user-minus')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading(fn (User $record): string => "Deactivate {$record->name}")
+                    ->modalDescription('Are you sure you want to deactivate this account? They will be immediately blocked from accessing the panel.')
+                    ->modalSubmitActionLabel('Deactivate Account')
+                    ->visible(fn (User $record): bool => (bool) $record->is_active && $record->id !== auth()->id() && (auth()->user()?->hasRole('super_admin') ?? false))
+                    ->action(function (User $record): void {
+                        $record->update(['is_active' => false]);
+
+                        Notification::make()
+                            ->title('Account Deactivated')
+                            ->body("User {$record->name} is now Inactive.")
+                            ->danger()
+                            ->send();
+                    }),
                 EditAction::make(),
                 DeleteAction::make(),
                 Impersonate::make()

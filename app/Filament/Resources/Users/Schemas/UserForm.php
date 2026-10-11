@@ -27,9 +27,12 @@ class UserForm
                     ->alignCenter(),
                 Toggle::make('is_active')
                     ->label('Active Account')
-                    ->helperText('Deactivating will revoke access to the Kamkaj panel.')
                     ->default(true)
-                    ->disabled(fn (?User $record): bool => $record?->id === auth()->id()),
+                    ->disabled(fn (?User $record): bool => $record?->id === auth()->id() || ($record !== null && ! (bool) $record->is_active))
+                    ->helperText(fn (?User $record): string => ($record !== null && ! (bool) $record->is_active)
+                        ? 'Inactive accounts cannot be reactivated from this form. Use the Reactivate button with OTP verification on the Users list page.'
+                        : 'Deactivating will revoke access to the Kamkaj panel.'
+                    ),
                 Toggle::make('read_receipts_enabled')
                     ->label('Read Receipts (Blue Ticks)')
                     ->default(true),

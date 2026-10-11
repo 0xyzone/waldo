@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\HasApiTokens;
 use NotificationChannels\WebPush\HasPushSubscriptions;
 use Spatie\Permission\Traits\HasRoles;
@@ -24,6 +26,28 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, HasPushSubscriptions, HasRoles, Notifiable;
+
+    /**
+     * Flag to allow reactivation only when validated with Super Admin OTP.
+     */
+    public static bool $allowReactivationWithoutOtp = false;
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::updating(function (User $user) {
+            if ($user->isDirty('is_active') && (bool) $user->is_active && ! (bool) $user->getOriginal('is_active')) {
+                if (! static::$allowReactivationWithoutOtp) {
+                    throw new ValidationException(
+                        Validator::make([], []),
+                        ['is_active' => ['Reactivating this account requires Super Admin OTP verification.']]
+                    );
+                }
+            }
+        });
+    }
 
     /**
      * Determine if the user can access the Filament panel.
