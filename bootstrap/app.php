@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureUserIsActive;
+use App\Http\Middleware\NormalizeAmpersandQueryParameters;
 use App\Http\Middleware\SanitizeSocketIdHeader;
 use App\Http\Middleware\UpdateUserLastActive;
 use Illuminate\Foundation\Application;
@@ -20,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->prepend(NormalizeAmpersandQueryParameters::class);
         $middleware->prepend(SanitizeSocketIdHeader::class);
         $middleware->web(append: [
             UpdateUserLastActive::class,

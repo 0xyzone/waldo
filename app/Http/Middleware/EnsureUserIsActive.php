@@ -21,6 +21,7 @@ class EnsureUserIsActive
             $bypassRoutes = [
                 'account.deactivated',
                 'account.deactivated.check',
+                'filament.kamkaj.auth.email-verification.verify',
                 'filament.kamkaj.auth.logout',
             ];
 

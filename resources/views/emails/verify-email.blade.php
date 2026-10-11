@@ -57,7 +57,7 @@
             </p>
 
             <!-- Verify Button -->
-            <a href="{{ $url }}" class="verify-btn">
+            <a href="{!! $url !!}" class="verify-btn">
                 ✅ Yes, this is me — Verify my email!
             </a>
 
@@ -76,7 +76,7 @@
             <!-- URL Fallback -->
             <div class="url-fallback">
                 <p>If the button above is playing hard to get, copy-paste this link into your browser:</p>
-                <a href="{{ $url }}">{{ $url }}</a>
+                <a href="{!! $url !!}">{!! $url !!}</a>
             </div>
 
             <p style="color:#777; font-size:13px; line-height:1.7; text-align:center;">

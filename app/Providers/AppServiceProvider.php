@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Events\MessageSent;
+use App\Http\Requests\Auth\CustomEmailVerificationRequest;
 use App\Listeners\SendWebPushOnChatMessage;
 use App\Listeners\SendWebPushOnDatabaseNotification;
 use App\Models\BiometricAllotment;
@@ -13,6 +14,7 @@ use Filament\Auth\Notifications\VerifyEmail;
 use Filament\Facades\Filament;
 use Filament\Support\Facades\FilamentView;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Event;
@@ -27,7 +29,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(
+            EmailVerificationRequest::class,
+            CustomEmailVerificationRequest::class
+        );
     }
 
     /**
