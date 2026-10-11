@@ -133,12 +133,28 @@ class UsersTable
                     ->modalSubmitActionLabel('Verify & Reactivate')
                     ->modalWidth('md')
                     ->mountUsing(function (Action $action, User $record, UserReactivationOtpService $otpService): void {
-                        $otpInfo = $otpService->generateAndSendOtp($record, auth()->user());
-                        Notification::make()
-                            ->title('OTP Dispatched')
-                            ->body("A 6-digit OTP code was sent to {$otpInfo['masked_email']}.")
-                            ->info()
-                            ->send();
+                        try {
+                            $otpInfo = $otpService->generateAndSendOtp($record, auth()->user(), isResend: false);
+                            if ($otpInfo['status'] === 'sent') {
+                                Notification::make()
+                                    ->title('OTP Dispatched')
+                                    ->body("A 6-digit OTP code was sent to {$otpInfo['masked_email']}.")
+                                    ->info()
+                                    ->send();
+                            } else {
+                                Notification::make()
+                                    ->title('Active OTP Available')
+                                    ->body("An active OTP was already sent to {$otpInfo['masked_email']}. Cooldown active ({$otpInfo['cooldown']}s remaining).")
+                                    ->info()
+                                    ->send();
+                            }
+                        } catch (ValidationException $e) {
+                            Notification::make()
+                                ->title('Rate Limit Active')
+                                ->body($e->getMessage())
+                                ->warning()
+                                ->send();
+                        }
                     })
                     ->extraModalActions([
                         Action::make('resendOtp')
@@ -146,12 +162,20 @@ class UsersTable
                             ->icon('heroicon-o-arrow-path')
                             ->color('gray')
                             ->action(function (User $record, UserReactivationOtpService $otpService): void {
-                                $otpInfo = $otpService->generateAndSendOtp($record, auth()->user());
-                                Notification::make()
-                                    ->title('New OTP Dispatched')
-                                    ->body("A fresh 6-digit OTP code was sent to {$otpInfo['masked_email']}.")
-                                    ->success()
-                                    ->send();
+                                try {
+                                    $otpInfo = $otpService->generateAndSendOtp($record, auth()->user(), isResend: true);
+                                    Notification::make()
+                                        ->title('New OTP Dispatched')
+                                        ->body("A fresh 6-digit OTP code was sent to {$otpInfo['masked_email']}. Please wait {$otpInfo['cooldown']}s before requesting another.")
+                                        ->success()
+                                        ->send();
+                                } catch (ValidationException $e) {
+                                    Notification::make()
+                                        ->title('Cannot Resend Yet')
+                                        ->body($e->getMessage())
+                                        ->warning()
+                                        ->send();
+                                }
                             }),
                     ])
                     ->form([
@@ -167,17 +191,17 @@ class UsersTable
                             ->extraInputAttributes(['style' => 'letter-spacing: 0.35em; font-family: monospace; font-size: 1.25rem; text-align: center; font-weight: bold;']),
                     ])
                     ->action(function (array $data, User $record, UserReactivationOtpService $otpService): void {
-                        $isValid = $otpService->verifyOtp($record, $data['otp']);
+                        $result = $otpService->verifyOtp($record, $data['otp']);
 
-                        if (! $isValid) {
+                        if ($result['status'] !== 'success') {
                             Notification::make()
-                                ->title('Invalid or Expired OTP')
-                                ->body('The OTP code entered is incorrect or has expired. Account reactivation was denied.')
+                                ->title('Verification Failed')
+                                ->body($result['message'])
                                 ->danger()
                                 ->send();
 
                             throw ValidationException::withMessages([
-                                'otp' => 'Invalid or expired OTP code. Click "Resend Code" to receive a new one.',
+                                'otp' => $result['message'],
                             ]);
                         }
 
