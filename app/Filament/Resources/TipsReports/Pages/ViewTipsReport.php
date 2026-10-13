@@ -34,6 +34,14 @@ class ViewTipsReport extends ViewRecord implements HasTable
 
     public string $activeDepartment = 'PIT';
 
+    public ?int $editingAdjustmentId = null;
+
+    public array $editingAdjustmentData = [];
+
+    public ?int $editingErrorIndex = null;
+
+    public array $editingErrorData = [];
+
     public function mount(int|string $record): void
     {
         parent::mount($record);
@@ -142,9 +150,12 @@ class ViewTipsReport extends ViewRecord implements HasTable
     {
         return (float) TipsReportItem::where('tips_report_id', $this->record->id)
             ->where(function ($q) {
-                $q->where('is_left_out', true)
+                $q
+                    ->where('is_left_out', true)
                     ->orWhere('department', 'Left Outs');
-            })->get()->sum('final_distribution_amount');
+            })
+            ->get()
+            ->sum('final_distribution_amount');
     }
 
     public function getCompanyShouldAddProperty(): float
@@ -161,9 +172,11 @@ class ViewTipsReport extends ViewRecord implements HasTable
     {
         return TipsReportItem::where('tips_report_id', $this->record->id)
             ->where(function ($q) {
-                $q->where('is_left_out', true)
+                $q
+                    ->where('is_left_out', true)
                     ->orWhere('department', 'Left Outs');
-            })->count();
+            })
+            ->count();
     }
 
     public function getAdjustmentsListProperty(): Collection
@@ -211,7 +224,7 @@ class ViewTipsReport extends ViewRecord implements HasTable
         $reportItems = $this->record->items->keyBy(fn ($i) => strtoupper(trim((string) $i->employee_code)));
         $employees = null;
 
-        return collect($rawErrors)->map(function ($err) use ($reportItems, &$employees) {
+        return collect($rawErrors)->map(function ($err, $idx) use ($reportItems, &$employees) {
             $code = strtoupper(trim((string) ($err['employee_code'] ?? '')));
             $item = $reportItems->get($code);
 
@@ -246,6 +259,7 @@ class ViewTipsReport extends ViewRecord implements HasTable
             }
 
             return [
+                'index' => $idx,
                 'employee_code' => $code,
                 'employee_name' => $name ?? $code,
                 'department' => $dept ?? '-',
@@ -348,41 +362,34 @@ class ViewTipsReport extends ViewRecord implements HasTable
                     ->label('Leaves')
                     ->formatStateUsing(fn ($state) => $state + 0)
                     ->sortable(),
-
                 TextColumn::make('absent_days')
                     ->label('Absent')
                     ->formatStateUsing(fn ($state) => $state + 0)
                     ->color(fn ($state) => $state > 0 ? 'danger' : 'gray')
                     ->sortable(),
-
                 TextColumn::make('missing_punch_in_count')
                     ->label('Missing Punch')
                     ->formatStateUsing(fn ($state) => $state + 0)
                     ->color(fn ($state) => $state > 0 ? 'warning' : 'gray')
                     ->sortable(),
-
                 TextColumn::make('tips_percentage')
                     ->label('Tips %')
                     ->suffix('%')
                     ->color(fn ($state) => $state < 100 ? 'warning' : 'success')
                     ->sortable(),
-
                 TextColumn::make('percentage_to_deduct')
                     ->label('Err %')
                     ->suffix('%')
                     ->color('danger')
                     ->visible(fn () => TipsReportItem::where('tips_report_id', $this->record->id)->where('percentage_to_deduct', '>', 0)->exists()),
-
                 TextColumn::make('amount_to_adjust')
                     ->label('Adj (+)')
                     ->numeric(2)
                     ->color('success'),
-
                 TextColumn::make('amount_to_deduct')
                     ->label('Deduct (-)')
                     ->numeric(2)
                     ->color('danger'),
-
                 TextColumn::make('final_distribution_amount')
                     ->label('Actual Payout')
                     ->formatStateUsing(fn ($record, $state) => ($record->is_blank || $state === null) ? '-' : number_format((float) $state, 0))
@@ -390,16 +397,15 @@ class ViewTipsReport extends ViewRecord implements HasTable
                     ->badge()
                     ->color(fn ($record, $state) => ($record->is_blank || $state === null) ? 'gray' : (strtoupper((string) $record->tips_status) === 'HOLD' ? 'danger' : 'primary'))
                     ->sortable(),
-
                 TextColumn::make('tips_status')
                     ->label('Status')
                     ->badge()
                     ->color(fn ($state) => strtoupper((string) $state) === 'RELEASE' ? 'success' : 'danger'),
             ])
             ->headerActions([
-                $this->addLeftOutAction()
+                $this
+                    ->addLeftOutAction()
                     ->visible(fn () => $this->activeDepartment === 'Left Outs' && ! $this->record->isValidated()),
-
                 Action::make('printSheet')
                     ->label(fn () => 'Print '.$this->activeDepartment.' Payout Sheet')
                     ->icon('heroicon-m-printer')
@@ -436,7 +442,6 @@ class ViewTipsReport extends ViewRecord implements HasTable
                         ->toArray())
                     ->searchable()
                     ->required(),
-
                 Select::make('type')
                     ->label('Adjustment Type')
                     ->options([
@@ -445,13 +450,11 @@ class ViewTipsReport extends ViewRecord implements HasTable
                     ])
                     ->default('add')
                     ->required(),
-
                 TextInput::make('amount')
                     ->label('Amount (Rs.)')
                     ->numeric()
                     ->minValue(1)
                     ->required(),
-
                 Textarea::make('remarks')
                     ->label('Remarks / Reason')
                     ->placeholder('e.g., Overtime payout adjustment, Approved floor bonus, etc.')
@@ -474,52 +477,7 @@ class ViewTipsReport extends ViewRecord implements HasTable
                 ]);
 
                 // Recalculate matching TipsReportItem if exists
-                $item = TipsReportItem::where('tips_report_id', $this->record->id)
-                    ->where('employee_code', $code)
-                    ->first();
-
-                if ($item) {
-                    $adjustments = TipsAdjustment::whereRaw('LOWER(for_month) = ?', [$month])
-                        ->where('year', $year)
-                        ->where('employee_id', $code)
-                        ->where(function ($q) {
-                            $q->whereNull('status')->orWhere('status', '!=', 'cancelled');
-                        })
-                        ->get();
-
-                    $amountToAdjust = (float) $adjustments->where('type', 'add')->sum('amount');
-                    $amountToDeduct = (float) $adjustments->where('type', 'deduct')->sum('amount');
-
-                    if (! $item->is_blank && strtoupper(trim((string) $item->tips_status)) !== 'HOLD') {
-                        $multiplier = $item->is_fixed ? 1.0 : ($item->completion_factor + $item->point_value);
-                        $adjustedBase = $item->base_tips_amount * $multiplier;
-                        $effectivePercentage = max(0.0, ($item->tips_percentage - $item->percentage_to_deduct));
-                        $rawCalculatedTips = ($adjustedBase * $effectivePercentage) / 100;
-                        $calculatedTips = TipsCalculationService::roundUpToNearest100($rawCalculatedTips);
-                        $rawFinalDistribution = $rawCalculatedTips + $amountToAdjust - $amountToDeduct;
-
-                        if ($rawFinalDistribution <= 0) {
-                            $finalDistribution = 0.0;
-                            $unroundedAmount = 0.0;
-                        } else {
-                            $finalDistribution = TipsCalculationService::roundUpToNearest100($rawFinalDistribution);
-                            $unroundedAmount = round($rawFinalDistribution, 2);
-                        }
-
-                        $item->update([
-                            'amount_to_adjust' => $amountToAdjust,
-                            'amount_to_deduct' => $amountToDeduct,
-                            'calculated_tips' => $calculatedTips,
-                            'unrounded_amount' => $unroundedAmount,
-                            'final_distribution_amount' => $finalDistribution,
-                        ]);
-                    } else {
-                        $item->update([
-                            'amount_to_adjust' => $amountToAdjust,
-                            'amount_to_deduct' => $amountToDeduct,
-                        ]);
-                    }
-                }
+                $this->recalculateItemForAdjustments($code);
 
                 Notification::make()
                     ->title('Adjustment Added')
@@ -527,6 +485,7 @@ class ViewTipsReport extends ViewRecord implements HasTable
                     ->success()
                     ->send();
 
+                $this->record->refresh();
                 $this->resetTable();
             });
     }
@@ -554,7 +513,6 @@ class ViewTipsReport extends ViewRecord implements HasTable
                         ->toArray())
                     ->searchable()
                     ->required(),
-
                 TextInput::make('percentage_to_deduct')
                     ->label('Percentage to Deduct (%)')
                     ->numeric()
@@ -563,7 +521,6 @@ class ViewTipsReport extends ViewRecord implements HasTable
                     ->suffix('%')
                     ->default(10)
                     ->required(),
-
                 Textarea::make('reason')
                     ->label('Reason / Remarks')
                     ->placeholder('e.g., Short cash in drawer, Procedure breach...')
@@ -587,38 +544,7 @@ class ViewTipsReport extends ViewRecord implements HasTable
                 $this->record->update(['company_errors' => $errors]);
 
                 // Recalculate employee's item in this report
-                $item = TipsReportItem::where('tips_report_id', $this->record->id)
-                    ->where('employee_code', $code)
-                    ->first();
-
-                if ($item && ! $item->is_blank && strtoupper(trim((string) $item->tips_status)) !== 'HOLD') {
-                    $totalDeductPct = collect($errors)
-                        ->filter(fn ($e) => strtoupper(trim((string) ($e['employee_code'] ?? ''))) === $code)
-                        ->sum('percentage_to_deduct');
-
-                    $effectivePercentage = max(0.0, ($item->tips_percentage - $totalDeductPct));
-                    $multiplier = $item->is_fixed ? 1.0 : ($item->completion_factor + $item->point_value);
-                    $adjustedBase = $item->base_tips_amount * $multiplier;
-
-                    $rawCalculatedTips = ($adjustedBase * $effectivePercentage) / 100;
-                    $calculatedTips = TipsCalculationService::roundUpToNearest100($rawCalculatedTips);
-                    $rawFinalDistribution = $rawCalculatedTips + $item->amount_to_adjust - $item->amount_to_deduct;
-
-                    if ($rawFinalDistribution <= 0) {
-                        $finalDistribution = 0.0;
-                        $unroundedAmount = 0.0;
-                    } else {
-                        $finalDistribution = TipsCalculationService::roundUpToNearest100($rawFinalDistribution);
-                        $unroundedAmount = round($rawFinalDistribution, 2);
-                    }
-
-                    $item->update([
-                        'percentage_to_deduct' => $totalDeductPct,
-                        'calculated_tips' => $calculatedTips,
-                        'unrounded_amount' => $unroundedAmount,
-                        'final_distribution_amount' => $finalDistribution,
-                    ]);
-                }
+                $this->recalculateItemForErrors($code);
 
                 Notification::make()
                     ->title('Company Error Penalty Added')
@@ -626,6 +552,7 @@ class ViewTipsReport extends ViewRecord implements HasTable
                     ->success()
                     ->send();
 
+                $this->record->refresh();
                 $this->resetTable();
             });
     }
@@ -677,11 +604,9 @@ class ViewTipsReport extends ViewRecord implements HasTable
                         }
                     })
                     ->required(),
-
                 TextInput::make('designation')
                     ->label('Designation')
                     ->placeholder('Auto-fetched from DB'),
-
                 Select::make('department')
                     ->label('Department Page')
                     ->options(function () {
@@ -696,7 +621,6 @@ class ViewTipsReport extends ViewRecord implements HasTable
                     })
                     ->default('Left Outs')
                     ->required(),
-
                 TextInput::make('base_tips_amount')
                     ->label('Base Tips')
                     ->numeric()
@@ -708,7 +632,6 @@ class ViewTipsReport extends ViewRecord implements HasTable
                         $raw = ($base * $pct) / 100;
                         $set('final_distribution_amount', TipsCalculationService::roundUpToNearest100($raw));
                     }),
-
                 TextInput::make('tips_percentage')
                     ->label('Tips %')
                     ->numeric()
@@ -721,11 +644,9 @@ class ViewTipsReport extends ViewRecord implements HasTable
                         $raw = ($base * $pct) / 100;
                         $set('final_distribution_amount', TipsCalculationService::roundUpToNearest100($raw));
                     }),
-
                 TextInput::make('final_distribution_amount')
                     ->label('Final Amount')
                     ->numeric(),
-
                 Textarea::make('notes')
                     ->label('Notes / Reason')
                     ->placeholder('e.g., Missed in biometric sync, Special inclusion approved...')
@@ -814,18 +735,248 @@ class ViewTipsReport extends ViewRecord implements HasTable
             });
     }
 
+    public function recalculateItemForAdjustments(string $employeeCode): void
+    {
+        $month = strtolower((string) ($this->record->month ?? ''));
+        $year = (string) ($this->record->year ?? '');
+        $code = strtoupper(trim($employeeCode));
+
+        $item = TipsReportItem::where('tips_report_id', $this->record->id)
+            ->where('employee_code', $code)
+            ->first();
+
+        if (! $item) {
+            return;
+        }
+
+        $adjustments = TipsAdjustment::whereRaw('LOWER(for_month) = ?', [$month])
+            ->where('year', $year)
+            ->where('employee_id', $code)
+            ->where(function ($q) {
+                $q->whereNull('status')->orWhere('status', '!=', 'cancelled');
+            })
+            ->get();
+
+        $amountToAdjust = (float) $adjustments->where('type', 'add')->sum('amount');
+        $amountToDeduct = (float) $adjustments->where('type', 'deduct')->sum('amount');
+
+        if (! $item->is_blank && strtoupper(trim((string) $item->tips_status)) !== 'HOLD') {
+            $multiplier = $item->is_fixed ? 1.0 : ($item->completion_factor + $item->point_value);
+            $adjustedBase = $item->base_tips_amount * $multiplier;
+            $effectivePercentage = max(0.0, ($item->tips_percentage - $item->percentage_to_deduct));
+            $rawCalculatedTips = ($adjustedBase * $effectivePercentage) / 100;
+            $calculatedTips = TipsCalculationService::roundUpToNearest100($rawCalculatedTips);
+            $rawFinalDistribution = $rawCalculatedTips + $amountToAdjust - $amountToDeduct;
+
+            if ($rawFinalDistribution <= 0) {
+                $finalDistribution = 0.0;
+                $unroundedAmount = 0.0;
+            } else {
+                $finalDistribution = TipsCalculationService::roundUpToNearest100($rawFinalDistribution);
+                $unroundedAmount = round($rawFinalDistribution, 2);
+            }
+
+            $item->update([
+                'amount_to_adjust' => $amountToAdjust,
+                'amount_to_deduct' => $amountToDeduct,
+                'calculated_tips' => $calculatedTips,
+                'unrounded_amount' => $unroundedAmount,
+                'final_distribution_amount' => $finalDistribution,
+            ]);
+        } else {
+            $item->update([
+                'amount_to_adjust' => $amountToAdjust,
+                'amount_to_deduct' => $amountToDeduct,
+            ]);
+        }
+    }
+
+    public function recalculateItemForErrors(string $employeeCode): void
+    {
+        $code = strtoupper(trim($employeeCode));
+        $item = TipsReportItem::where('tips_report_id', $this->record->id)
+            ->where('employee_code', $code)
+            ->first();
+
+        if (! $item) {
+            return;
+        }
+
+        $errors = $this->record->company_errors ?? [];
+        $totalDeductPct = collect($errors)
+            ->filter(fn ($e) => strtoupper(trim((string) ($e['employee_code'] ?? ''))) === $code)
+            ->sum('percentage_to_deduct');
+
+        if (! $item->is_blank && strtoupper(trim((string) $item->tips_status)) !== 'HOLD') {
+            $effectivePercentage = max(0.0, ($item->tips_percentage - $totalDeductPct));
+            $multiplier = $item->is_fixed ? 1.0 : ($item->completion_factor + $item->point_value);
+            $adjustedBase = $item->base_tips_amount * $multiplier;
+
+            $rawCalculatedTips = ($adjustedBase * $effectivePercentage) / 100;
+            $calculatedTips = TipsCalculationService::roundUpToNearest100($rawCalculatedTips);
+            $rawFinalDistribution = $rawCalculatedTips + $item->amount_to_adjust - $item->amount_to_deduct;
+
+            if ($rawFinalDistribution <= 0) {
+                $finalDistribution = 0.0;
+                $unroundedAmount = 0.0;
+            } else {
+                $finalDistribution = TipsCalculationService::roundUpToNearest100($rawFinalDistribution);
+                $unroundedAmount = round($rawFinalDistribution, 2);
+            }
+
+            $item->update([
+                'percentage_to_deduct' => $totalDeductPct,
+                'calculated_tips' => $calculatedTips,
+                'unrounded_amount' => $unroundedAmount,
+                'final_distribution_amount' => $finalDistribution,
+            ]);
+        } else {
+            $item->update([
+                'percentage_to_deduct' => $totalDeductPct,
+            ]);
+        }
+    }
+
+    public function startEditingAdjustment(int $id): void
+    {
+        if ($this->record->isValidated()) {
+            return;
+        }
+
+        $adj = TipsAdjustment::find($id);
+        if (! $adj) {
+            return;
+        }
+
+        $this->editingAdjustmentId = $id;
+        $this->editingAdjustmentData = [
+            'type' => (string) ($adj->type ?? 'add'),
+            'amount' => (float) ($adj->amount ?? 0),
+            'remarks' => (string) ($adj->remarks ?? ''),
+            'status' => (string) ($adj->status ?? 'pending'),
+        ];
+    }
+
+    public function cancelEditingAdjustment(): void
+    {
+        $this->editingAdjustmentId = null;
+        $this->editingAdjustmentData = [];
+    }
+
+    public function saveEditingAdjustment(): void
+    {
+        if ($this->record->isValidated() || ! $this->editingAdjustmentId) {
+            $this->cancelEditingAdjustment();
+
+            return;
+        }
+
+        $adj = TipsAdjustment::find($this->editingAdjustmentId);
+        if (! $adj) {
+            $this->cancelEditingAdjustment();
+
+            return;
+        }
+
+        $this->validate([
+            'editingAdjustmentData.type' => ['required', 'in:add,deduct'],
+            'editingAdjustmentData.amount' => ['required', 'numeric', 'min:0'],
+            'editingAdjustmentData.remarks' => ['nullable', 'string'],
+            'editingAdjustmentData.status' => ['required', 'in:pending,updated,cancelled'],
+        ]);
+
+        $adj->update([
+            'type' => $this->editingAdjustmentData['type'],
+            'amount' => (float) $this->editingAdjustmentData['amount'],
+            'remarks' => trim((string) ($this->editingAdjustmentData['remarks'] ?? '')),
+            'status' => $this->editingAdjustmentData['status'],
+        ]);
+
+        $this->recalculateItemForAdjustments($adj->employee_id);
+
+        Notification::make()
+            ->title('Adjustment Updated')
+            ->body('Tips adjustment updated and employee payout recalculated.')
+            ->success()
+            ->send();
+
+        $this->cancelEditingAdjustment();
+        $this->record->refresh();
+        $this->resetTable();
+    }
+
+    public function startEditingError(int $index): void
+    {
+        if ($this->record->isValidated()) {
+            return;
+        }
+
+        $errors = $this->record->company_errors ?? [];
+        if (! isset($errors[$index])) {
+            return;
+        }
+
+        $this->editingErrorIndex = $index;
+        $this->editingErrorData = [
+            'percentage_to_deduct' => (float) ($errors[$index]['percentage_to_deduct'] ?? 0),
+            'reason' => (string) ($errors[$index]['reason'] ?? ''),
+        ];
+    }
+
+    public function cancelEditingError(): void
+    {
+        $this->editingErrorIndex = null;
+        $this->editingErrorData = [];
+    }
+
+    public function saveEditingError(): void
+    {
+        if ($this->record->isValidated() || $this->editingErrorIndex === null) {
+            $this->cancelEditingError();
+
+            return;
+        }
+
+        $errors = $this->record->company_errors ?? [];
+        if (! isset($errors[$this->editingErrorIndex])) {
+            $this->cancelEditingError();
+
+            return;
+        }
+
+        $this->validate([
+            'editingErrorData.percentage_to_deduct' => ['required', 'numeric', 'min:0', 'max:100'],
+            'editingErrorData.reason' => ['nullable', 'string'],
+        ]);
+
+        $code = strtoupper(trim((string) ($errors[$this->editingErrorIndex]['employee_code'] ?? '')));
+        $errors[$this->editingErrorIndex]['percentage_to_deduct'] = (float) $this->editingErrorData['percentage_to_deduct'];
+        $errors[$this->editingErrorIndex]['reason'] = trim((string) ($this->editingErrorData['reason'] ?? ''));
+
+        $this->record->update(['company_errors' => $errors]);
+
+        $this->recalculateItemForErrors($code);
+
+        Notification::make()
+            ->title('Company Error Penalty Updated')
+            ->body("Company error penalty for {$code} updated and distribution recalculated.")
+            ->success()
+            ->send();
+
+        $this->cancelEditingError();
+        $this->record->refresh();
+        $this->resetTable();
+    }
+
     protected function getHeaderActions(): array
     {
         return [
             // $this->addAdjustmentAction()
             //     ->visible(fn () => $this->activeDepartment === 'Adjustments & Errors' && ! $this->record->isValidated()),
-
             // $this->addErrorAction()
             //     ->visible(fn () => $this->activeDepartment === 'Adjustments & Errors' && ! $this->record->isValidated()),
-
             // $this->addLeftOutAction()
             //     ->visible(fn () => $this->activeDepartment === 'Left Outs' && ! $this->record->isValidated()),
-
             Action::make('validateReport')
                 ->label('Validate & Lock')
                 ->icon('heroicon-m-check-badge')
@@ -847,7 +998,6 @@ class ViewTipsReport extends ViewRecord implements HasTable
                         ->success()
                         ->send();
                 }),
-
             Action::make('unlockReport')
                 ->label('Unlock')
                 ->icon('heroicon-m-lock-open')
@@ -869,28 +1019,24 @@ class ViewTipsReport extends ViewRecord implements HasTable
                         ->warning()
                         ->send();
                 }),
-
             // Action::make('printAdjustmentsErrors')
             //     ->label('Print Adjustments & Errors')
             //     ->icon('heroicon-m-clipboard-document-list')
             //     ->color('amber')
             //     ->url(fn () => route('tips.reports.print-adjustments-errors', ['report' => $this->record->id]))
             //     ->openUrlInNewTab(),
-
             Action::make('printSummary')
                 ->label('Print Summary')
                 ->icon('heroicon-m-table-cells')
                 ->color('info')
                 ->url(fn () => route('tips.reports.print-summary', ['report' => $this->record->id]))
                 ->openUrlInNewTab(),
-
             Action::make('printTotals')
                 ->label('Print Totals')
                 ->icon('heroicon-m-calculator')
                 ->color('warning')
                 ->url(fn () => route('tips.reports.print-totals', ['report' => $this->record->id]))
                 ->openUrlInNewTab(),
-
             Action::make('regenerate')
                 ->label('Regenerate')
                 ->icon('heroicon-m-arrow-path')
@@ -912,7 +1058,6 @@ class ViewTipsReport extends ViewRecord implements HasTable
                         ->send();
                     $this->resetTable();
                 }),
-
             EditAction::make()
                 ->hidden(fn () => $this->record->isValidated()),
         ];

@@ -347,34 +347,45 @@
                                     <th class="py-2.5 px-3">Designation</th>
                                     <th class="py-2.5 px-3 w-24 text-center">Type</th>
                                     <th class="py-2.5 px-3 w-32 text-right">Amount</th>
-                                    <th class="py-2.5 px-3 min-w-[280px]">Remarks / Note</th>
-                                    <th class="py-2.5 px-3 w-32 text-center">In Report</th>
+                                    <th class="py-2.5 px-3 min-w-[240px]">Remarks / Note</th>
+                                    <th class="py-2.5 px-3 w-28 text-center">In Report</th>
+                                    <th class="py-2.5 px-3 w-20 text-center">Action</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100 dark:divide-gray-800 font-normal text-gray-700 dark:text-gray-300">
                                 @foreach($this->adjustmentsList as $idx => $adj)
                                     @php
                                         $searchHaystack = strtolower($adj['employee_code'].' '.$adj['employee_name'].' '.$adj['department'].' '.$adj['designation'].' '.$adj['remarks']);
+                                        $isEditingAdj = ($this->editingAdjustmentId === $adj['id']);
                                     @endphp
                                     <tr x-show="!search || '{{ addslashes($searchHaystack) }}'.includes(search.toLowerCase())"
-                                        class="hover:bg-gray-50/80 dark:hover:bg-gray-800/50 transition">
+                                        class="{{ $isEditingAdj ? 'bg-primary-50/60 dark:bg-primary-950/40 ring-1 ring-primary-500/30' : 'hover:bg-gray-50/80 dark:hover:bg-gray-800/50' }} transition">
                                         <td class="py-3 px-3 text-center text-gray-400 font-mono">{{ $idx + 1 }}</td>
                                         <td class="py-3 px-3">
-                                            @if($adj['status'] === 'updated')
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                                                    <x-heroicon-m-check class="w-3 h-3 text-emerald-600" />
-                                                    <span>Updated</span>
-                                                </span>
-                                            @elseif($adj['status'] === 'cancelled')
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
-                                                    <x-heroicon-m-x-mark class="w-3 h-3 text-gray-500" />
-                                                    <span>Cancelled</span>
-                                                </span>
+                                            @if($isEditingAdj)
+                                                <select wire:model.defer="editingAdjustmentData.status"
+                                                        class="w-full text-[11px] font-semibold rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 py-1 px-1.5 focus:border-primary-500 focus:ring-primary-500">
+                                                    <option value="pending">Pending</option>
+                                                    <option value="updated">Updated</option>
+                                                    <option value="cancelled">Cancelled</option>
+                                                </select>
                                             @else
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                                                    <x-heroicon-m-clock class="w-3 h-3 text-amber-600" />
-                                                    <span>Pending</span>
-                                                </span>
+                                                @if($adj['status'] === 'updated')
+                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                                        <x-heroicon-m-check class="w-3 h-3 text-emerald-600" />
+                                                        <span>Updated</span>
+                                                    </span>
+                                                @elseif($adj['status'] === 'cancelled')
+                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                                                        <x-heroicon-m-x-mark class="w-3 h-3 text-gray-500" />
+                                                        <span>Cancelled</span>
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                                                        <x-heroicon-m-clock class="w-3 h-3 text-amber-600" />
+                                                        <span>Pending</span>
+                                                    </span>
+                                                @endif
                                             @endif
                                         </td>
                                         <td class="py-3 px-3 font-bold font-mono text-gray-900 dark:text-white">
@@ -394,27 +405,54 @@
                                             {{ $adj['designation'] }}
                                         </td>
                                         <td class="py-3 px-3 text-center">
-                                            @if($adj['type'] === 'add')
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                                                    + ADD
-                                                </span>
+                                            @if($isEditingAdj)
+                                                <select wire:model.defer="editingAdjustmentData.type"
+                                                        class="w-full text-[11px] font-bold rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 py-1 px-1 focus:border-primary-500 focus:ring-primary-500">
+                                                    <option value="add">+ ADD</option>
+                                                    <option value="deduct">- DEDUCT</option>
+                                                </select>
                                             @else
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">
-                                                    - DEDUCT
-                                                </span>
+                                                @if($adj['type'] === 'add')
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                                                        + ADD
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">
+                                                        - DEDUCT
+                                                    </span>
+                                                @endif
                                             @endif
                                         </td>
                                         <td class="py-3 px-3 text-right font-bold {{ $adj['type'] === 'add' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
-                                            {{ $adj['type'] === 'add' ? '+' : '-' }} Rs. {{ number_format($adj['amount'], 0) }}
+                                            @if($isEditingAdj)
+                                                <input type="number"
+                                                       step="any"
+                                                       min="0"
+                                                       wire:model.defer="editingAdjustmentData.amount"
+                                                       wire:keydown.enter="saveEditingAdjustment"
+                                                       wire:keydown.escape="cancelEditingAdjustment"
+                                                       class="w-28 text-right font-bold text-xs rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 py-1 px-2 focus:border-primary-500 focus:ring-primary-500" />
+                                            @else
+                                                {{ $adj['type'] === 'add' ? '+' : '-' }} Rs. {{ number_format($adj['amount'], 0) }}
+                                            @endif
                                         </td>
                                         <td class="py-3 px-3">
-                                            @if(!empty($adj['remarks']))
-                                                <div class="flex items-start gap-1.5 p-2 rounded-lg bg-gray-50 dark:bg-gray-800/80 border border-gray-200/80 dark:border-gray-700/80 text-gray-800 dark:text-gray-200 text-xs">
-                                                    <x-heroicon-m-chat-bubble-bottom-center-text class="w-3.5 h-3.5 text-primary-500 shrink-0 mt-0.5" />
-                                                    <span class="leading-relaxed">{{ $adj['remarks'] }}</span>
-                                                </div>
+                                            @if($isEditingAdj)
+                                                <input type="text"
+                                                       wire:model.defer="editingAdjustmentData.remarks"
+                                                       wire:keydown.enter="saveEditingAdjustment"
+                                                       wire:keydown.escape="cancelEditingAdjustment"
+                                                       placeholder="Enter remarks..."
+                                                       class="w-full text-xs rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 py-1 px-2 focus:border-primary-500 focus:ring-primary-500" />
                                             @else
-                                                <span class="text-gray-400 italic text-[11px]">No remarks provided</span>
+                                                @if(!empty($adj['remarks']))
+                                                    <div class="flex items-start gap-1.5 p-2 rounded-lg bg-gray-50 dark:bg-gray-800/80 border border-gray-200/80 dark:border-gray-700/80 text-gray-800 dark:text-gray-200 text-xs">
+                                                        <x-heroicon-m-chat-bubble-bottom-center-text class="w-3.5 h-3.5 text-primary-500 shrink-0 mt-0.5" />
+                                                        <span class="leading-relaxed">{{ $adj['remarks'] }}</span>
+                                                    </div>
+                                                @else
+                                                    <span class="text-gray-400 italic text-[11px]">No remarks provided</span>
+                                                @endif
                                             @endif
                                         </td>
                                         <td class="py-3 px-3 text-center">
@@ -428,6 +466,35 @@
                                                       title="Staff code was not matched in this month's attendance sheet">
                                                     <span>Not in Sheet</span>
                                                 </span>
+                                            @endif
+                                        </td>
+                                        <td class="py-3 px-3 text-center">
+                                            @if(!$record->isValidated())
+                                                @if($isEditingAdj)
+                                                    <div class="flex items-center justify-center gap-1">
+                                                        <button type="button"
+                                                                wire:click="saveEditingAdjustment"
+                                                                title="Save Adjustment (Enter)"
+                                                                class="p-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition cursor-pointer">
+                                                            <x-heroicon-m-check class="w-3.5 h-3.5" />
+                                                        </button>
+                                                        <button type="button"
+                                                                wire:click="cancelEditingAdjustment"
+                                                                title="Cancel (Esc)"
+                                                                class="p-1.5 rounded-lg bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 transition cursor-pointer">
+                                                            <x-heroicon-m-x-mark class="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                @else
+                                                    <button type="button"
+                                                            wire:click="startEditingAdjustment({{ $adj['id'] }})"
+                                                            title="Edit Adjustment"
+                                                            class="p-1.5 rounded-lg text-gray-500 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-950/50 transition cursor-pointer">
+                                                        <x-heroicon-m-pencil-square class="w-4 h-4" />
+                                                    </button>
+                                                @endif
+                                            @else
+                                                <span class="text-gray-300 dark:text-gray-700">-</span>
                                             @endif
                                         </td>
                                     </tr>
@@ -492,20 +559,23 @@
                                     <th class="py-2.5 px-3">Employee Name</th>
                                     <th class="py-2.5 px-3">Department</th>
                                     <th class="py-2.5 px-3">Designation</th>
-                                    <th class="py-2.5 px-3 w-28 text-center">Deduct Penalty</th>
+                                    <th class="py-2.5 px-3 w-32 text-center">Deduct Penalty</th>
                                     <th class="py-2.5 px-3 w-28 text-right">Base Tips</th>
                                     <th class="py-2.5 px-3 w-32 text-right">Est. Deduction</th>
-                                    <th class="py-2.5 px-3 min-w-[280px]">Error Remarks / Reason</th>
-                                    <th class="py-2.5 px-3 w-28 text-center">Status</th>
+                                    <th class="py-2.5 px-3 min-w-[240px]">Error Remarks / Reason</th>
+                                    <th class="py-2.5 px-3 w-24 text-center">Status</th>
+                                    <th class="py-2.5 px-3 w-20 text-center">Action</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100 dark:divide-gray-800 font-normal text-gray-700 dark:text-gray-300">
                                 @foreach($this->errorsList as $idx => $err)
                                     @php
                                         $errSearch = strtolower($err['employee_code'].' '.$err['employee_name'].' '.$err['department'].' '.$err['designation'].' '.$err['reason']);
+                                        $errIndex = $err['index'] ?? $idx;
+                                        $isEditingErr = ($this->editingErrorIndex !== null && $this->editingErrorIndex === $errIndex);
                                     @endphp
                                     <tr x-show="!search || '{{ addslashes($errSearch) }}'.includes(search.toLowerCase())"
-                                        class="hover:bg-gray-50/80 dark:hover:bg-gray-800/50 transition">
+                                        class="{{ $isEditingErr ? 'bg-rose-50/50 dark:bg-rose-950/30 ring-1 ring-rose-500/30' : 'hover:bg-gray-50/80 dark:hover:bg-gray-800/50' }} transition">
                                         <td class="py-3 px-3 text-center text-gray-400 font-mono">{{ $idx + 1 }}</td>
                                         <td class="py-3 px-3 font-bold font-mono text-gray-900 dark:text-white">
                                             <span class="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
@@ -524,10 +594,24 @@
                                             {{ $err['designation'] }}
                                         </td>
                                         <td class="py-3 px-3 text-center">
-                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
-                                                <x-heroicon-m-arrow-down class="w-3 h-3 text-rose-600" />
-                                                <span>{{ $err['percentage_to_deduct'] }}%</span>
-                                            </span>
+                                            @if($isEditingErr)
+                                                <div class="inline-flex items-center justify-center gap-1">
+                                                    <input type="number"
+                                                           step="1"
+                                                           min="0"
+                                                           max="100"
+                                                           wire:model.defer="editingErrorData.percentage_to_deduct"
+                                                           wire:keydown.enter="saveEditingError"
+                                                           wire:keydown.escape="cancelEditingError"
+                                                           class="w-16 text-center font-bold text-xs rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 py-1 px-1 focus:border-rose-500 focus:ring-rose-500" />
+                                                    <span class="text-xs font-bold text-rose-600">%</span>
+                                                </div>
+                                            @else
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
+                                                    <x-heroicon-m-arrow-down class="w-3 h-3 text-rose-600" />
+                                                    <span>{{ $err['percentage_to_deduct'] }}%</span>
+                                                </span>
+                                            @endif
                                         </td>
                                         <td class="py-3 px-3 text-right text-gray-600 dark:text-gray-400">
                                             Rs. {{ number_format($err['base_tips'] ?? 0, 0) }}
@@ -536,19 +620,57 @@
                                             - Rs. {{ number_format($err['estimated_deduction'] ?? 0, 0) }}
                                         </td>
                                         <td class="py-3 px-3">
-                                            @if(!empty($err['reason']))
-                                                <div class="flex items-start gap-1.5 p-2 rounded-lg bg-rose-50/70 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-950 dark:text-rose-200 text-xs">
-                                                    <x-heroicon-m-exclamation-circle class="w-3.5 h-3.5 text-rose-500 shrink-0 mt-0.5" />
-                                                    <span class="font-medium leading-relaxed">{{ $err['reason'] }}</span>
-                                                </div>
+                                            @if($isEditingErr)
+                                                <input type="text"
+                                                       wire:model.defer="editingErrorData.reason"
+                                                       wire:keydown.enter="saveEditingError"
+                                                       wire:keydown.escape="cancelEditingError"
+                                                       placeholder="Enter error reason..."
+                                                       class="w-full text-xs rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 py-1 px-2 focus:border-rose-500 focus:ring-rose-500" />
                                             @else
-                                                <span class="text-gray-400 italic text-[11px]">No specific reason recorded</span>
+                                                @if(!empty($err['reason']))
+                                                    <div class="flex items-start gap-1.5 p-2 rounded-lg bg-rose-50/70 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-950 dark:text-rose-200 text-xs">
+                                                        <x-heroicon-m-exclamation-circle class="w-3.5 h-3.5 text-rose-500 shrink-0 mt-0.5" />
+                                                        <span class="font-medium leading-relaxed">{{ $err['reason'] }}</span>
+                                                    </div>
+                                                @else
+                                                    <span class="text-gray-400 italic text-[11px]">No specific reason recorded</span>
+                                                @endif
                                             @endif
                                         </td>
                                         <td class="py-3 px-3 text-center">
                                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
                                                 Deducted
                                             </span>
+                                        </td>
+                                        <td class="py-3 px-3 text-center">
+                                            @if(!$record->isValidated())
+                                                @if($isEditingErr)
+                                                    <div class="flex items-center justify-center gap-1">
+                                                        <button type="button"
+                                                                wire:click="saveEditingError"
+                                                                title="Save Company Error (Enter)"
+                                                                class="p-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition cursor-pointer">
+                                                            <x-heroicon-m-check class="w-3.5 h-3.5" />
+                                                        </button>
+                                                        <button type="button"
+                                                                wire:click="cancelEditingError"
+                                                                title="Cancel (Esc)"
+                                                                class="p-1.5 rounded-lg bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 transition cursor-pointer">
+                                                            <x-heroicon-m-x-mark class="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                @else
+                                                    <button type="button"
+                                                            wire:click="startEditingError({{ $errIndex }})"
+                                                            title="Edit Company Error"
+                                                            class="p-1.5 rounded-lg text-gray-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition cursor-pointer">
+                                                        <x-heroicon-m-pencil-square class="w-4 h-4" />
+                                                    </button>
+                                                @endif
+                                            @else
+                                                <span class="text-gray-300 dark:text-gray-700">-</span>
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforeach
