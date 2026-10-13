@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class TipsReport extends Model
 {
@@ -56,6 +57,84 @@ class TipsReport extends Model
     public function isValidated(): bool
     {
         return $this->status === 'validated';
+    }
+
+    /**
+     * Validate and lock the report, updating applied tips adjustments to 'updated'.
+     */
+    public function validateAndLock(?int $userId = null): int
+    {
+        $month = strtolower((string) ($this->month ?? ''));
+        $year = (string) ($this->year ?? '');
+        $processedCodes = $this->items()
+            ->pluck('employee_code')
+            ->map(fn ($c) => strtoupper(trim((string) $c)))
+            ->filter()
+            ->unique()
+            ->values()
+            ->toArray();
+
+        $updatedCount = 0;
+        if (! empty($processedCodes)) {
+            $adjustmentsQuery = TipsAdjustment::query();
+            if ($month !== '') {
+                $adjustmentsQuery->whereRaw('LOWER(for_month) = ?', [$month]);
+            }
+            if ($year !== '') {
+                $adjustmentsQuery->where('year', $year);
+            }
+            $updatedCount = $adjustmentsQuery
+                ->where(function ($q) {
+                    $q->whereNull('status')->orWhere('status', '!=', 'cancelled');
+                })
+                ->whereIn(DB::raw('UPPER(TRIM(employee_id))'), $processedCodes)
+                ->update(['status' => 'updated']);
+        }
+
+        $this->update([
+            'status' => 'validated',
+            'validated_at' => now(),
+            'validated_by' => $userId,
+        ]);
+
+        return $updatedCount;
+    }
+
+    /**
+     * Unlock the report, reverting applied tips adjustments to 'pending'.
+     */
+    public function unlock(): int
+    {
+        $month = strtolower((string) ($this->month ?? ''));
+        $year = (string) ($this->year ?? '');
+        $processedCodes = $this->items()
+            ->pluck('employee_code')
+            ->map(fn ($c) => strtoupper(trim((string) $c)))
+            ->filter()
+            ->unique()
+            ->values()
+            ->toArray();
+
+        $revertedCount = 0;
+        if (! empty($processedCodes)) {
+            $adjustmentsQuery = TipsAdjustment::query();
+            if ($month !== '') {
+                $adjustmentsQuery->whereRaw('LOWER(for_month) = ?', [$month]);
+            }
+            if ($year !== '') {
+                $adjustmentsQuery->where('year', $year);
+            }
+            $revertedCount = $adjustmentsQuery
+                ->where('status', 'updated')
+                ->whereIn(DB::raw('UPPER(TRIM(employee_id))'), $processedCodes)
+                ->update(['status' => 'pending']);
+        }
+
+        $this->update([
+            'status' => 'generated',
+        ]);
+
+        return $revertedCount;
     }
 
     public function validator(): BelongsTo

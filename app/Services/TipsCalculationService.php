@@ -47,6 +47,9 @@ class TipsCalculationService
             if ($year !== '') {
                 $adjustmentsQuery->where('year', $year);
             }
+            $adjustmentsQuery->where(function ($q) {
+                $q->whereNull('status')->orWhere('status', '!=', 'cancelled');
+            });
             $adjustmentsGrouped = $adjustmentsQuery->get()->groupBy(fn ($item) => strtoupper(trim((string) $item->employee_id)));
 
             // 3. Preload only Active and Resigning This Month employees indexed by uppercase employee_code

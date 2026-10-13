@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\TipsReports\Pages;
 
 use App\Filament\Resources\TipsReports\TipsReportResource;
+use App\Models\Employee;
+use App\Models\TipsAdjustment;
 use App\Models\TipsDepartmentMapping;
 use App\Models\TipsReportItem;
 use App\Services\TipsCalculationService;
@@ -15,6 +17,7 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 
 class ViewTipsReport extends ViewRecord implements HasTable
 {
@@ -31,9 +34,11 @@ class ViewTipsReport extends ViewRecord implements HasTable
         parent::mount($record);
 
         $departments = $this->departments;
-        $requestedDept = request()->query('department');
+        $requestedDept = request()->query('department') ?? request()->query('tab');
 
-        if ($requestedDept && in_array($requestedDept, $departments, true)) {
+        if ($requestedDept === 'adjustments-errors' || $requestedDept === 'Adjustments & Errors') {
+            $this->activeDepartment = 'Adjustments & Errors';
+        } elseif ($requestedDept && in_array($requestedDept, $departments, true)) {
             $this->activeDepartment = $requestedDept;
         } elseif (! empty($departments)) {
             $this->activeDepartment = $departments[0];
@@ -156,11 +161,134 @@ class ViewTipsReport extends ViewRecord implements HasTable
             })->count();
     }
 
+    public function getAdjustmentsListProperty(): Collection
+    {
+        $month = strtolower((string) ($this->record->month ?? ''));
+        $year = (string) ($this->record->year ?? '');
+
+        $query = TipsAdjustment::with(['employee.department', 'employee.designation']);
+        if ($month !== '') {
+            $query->whereRaw('LOWER(for_month) = ?', [$month]);
+        }
+        if ($year !== '') {
+            $query->where('year', $year);
+        }
+
+        $reportItems = $this->record->items->keyBy(fn ($i) => strtoupper(trim((string) $i->employee_code)));
+
+        return $query->get()->map(function ($adj) use ($reportItems) {
+            $code = strtoupper(trim((string) $adj->employee_id));
+            $item = $reportItems->get($code);
+
+            return [
+                'id' => $adj->id,
+                'employee_code' => $code,
+                'employee_name' => $item?->employee_name ?? $adj->employee?->name ?? 'Unknown',
+                'department' => $item?->department ?? $adj->employee?->department?->name ?? '-',
+                'designation' => $item?->designation ?? $adj->employee?->designation?->name ?? '-',
+                'type' => strtolower((string) ($adj->type ?? 'add')),
+                'amount' => (float) ($adj->amount ?? 0),
+                'status' => strtolower((string) ($adj->status ?? 'pending')),
+                'remarks' => trim((string) ($adj->remarks ?? '')),
+                'is_applied' => $item !== null,
+                'report_item' => $item,
+            ];
+        });
+    }
+
+    public function getErrorsListProperty(): Collection
+    {
+        $rawErrors = $this->record->company_errors ?? [];
+        if (! is_array($rawErrors)) {
+            return collect();
+        }
+
+        $reportItems = $this->record->items->keyBy(fn ($i) => strtoupper(trim((string) $i->employee_code)));
+        $employees = null;
+
+        return collect($rawErrors)->map(function ($err) use ($reportItems, &$employees) {
+            $code = strtoupper(trim((string) ($err['employee_code'] ?? '')));
+            $item = $reportItems->get($code);
+
+            $name = $item?->employee_name;
+            $dept = $item?->department;
+            $desig = $item?->designation;
+            $baseTips = $item?->base_tips_amount;
+
+            if (! $item && $code !== '') {
+                if ($employees === null) {
+                    $employees = Employee::with(['department', 'designation'])
+                        ->get()
+                        ->keyBy(fn ($e) => strtoupper(trim((string) $e->employee_code)));
+                }
+                $emp = $employees->get($code);
+                $name = $emp?->name ?? $code;
+                $dept = $emp?->department?->name ?? '-';
+                $desig = $emp?->designation?->name ?? '-';
+                $baseTips = (float) ($emp?->tips_amount ?? 0);
+            }
+
+            $pct = (float) ($err['percentage_to_deduct'] ?? 0);
+            $reason = trim((string) ($err['reason'] ?? ''));
+
+            $estimatedDeduction = 0.0;
+            if ($item) {
+                $multiplier = $item->is_fixed ? 1.0 : ($item->completion_factor + $item->point_value);
+                $adjustedBase = ($item->base_tips_amount ?? 0) * $multiplier;
+                $estimatedDeduction = round(($adjustedBase * $pct) / 100, 2);
+            } elseif ($baseTips) {
+                $estimatedDeduction = round(($baseTips * $pct) / 100, 2);
+            }
+
+            return [
+                'employee_code' => $code,
+                'employee_name' => $name ?? $code,
+                'department' => $dept ?? '-',
+                'designation' => $desig ?? '-',
+                'percentage_to_deduct' => $pct,
+                'reason' => $reason,
+                'base_tips' => $baseTips ?? 0,
+                'estimated_deduction' => $estimatedDeduction,
+                'is_applied' => $item !== null,
+                'report_item' => $item,
+            ];
+        });
+    }
+
+    public function getTotalAdjustmentsAndErrorsCountProperty(): int
+    {
+        return $this->adjustmentsList->count() + $this->errorsList->count();
+    }
+
+    public function getTotalAddAdjustmentsAmountProperty(): float
+    {
+        return (float) $this->adjustmentsList->where('type', 'add')->sum('amount');
+    }
+
+    public function getTotalDeductAdjustmentsAmountProperty(): float
+    {
+        return (float) $this->adjustmentsList->where('type', 'deduct')->sum('amount');
+    }
+
+    public function getTotalNetAdjustmentAmountProperty(): float
+    {
+        return $this->totalAddAdjustmentsAmount - $this->totalDeductAdjustmentsAmount;
+    }
+
+    public function getTotalEstimatedErrorDeductionProperty(): float
+    {
+        return (float) $this->errorsList->sum('estimated_deduction');
+    }
+
     public function table(Table $table): Table
     {
         return $table
             ->query(function (): Builder {
                 $query = TipsReportItem::query()->where('tips_report_id', $this->record->id);
+
+                if ($this->activeDepartment === 'Adjustments & Errors') {
+                    return $query->whereRaw('1 = 0');
+                }
 
                 if ($this->activeDepartment === 'Left Outs') {
                     return $query
@@ -268,6 +396,7 @@ class ViewTipsReport extends ViewRecord implements HasTable
                     ->label(fn () => 'Print '.$this->activeDepartment.' Payout Sheet')
                     ->icon('heroicon-m-printer')
                     ->color('success')
+                    ->visible(fn () => $this->activeDepartment !== 'Adjustments & Errors')
                     ->url(fn () => route('tips.reports.print', [
                         'report' => $this->record->id,
                         'department' => $this->activeDepartment,
@@ -285,18 +414,18 @@ class ViewTipsReport extends ViewRecord implements HasTable
                 ->color('success')
                 ->requiresConfirmation()
                 ->modalHeading('Validate & Lock Tips Report')
-                ->modalDescription('Once validated, this tips report is permanently locked for auditing. Editing and recalculating will be disabled. Proceed?')
+                ->modalDescription('Once validated, this tips report is permanently locked for auditing. Any applied tips adjustments will be updated to "Updated". Editing and recalculating will be disabled. Proceed?')
                 ->modalSubmitActionLabel('Yes, Validate & Lock')
                 ->visible(fn () => ! $this->record->isValidated())
                 ->action(function () {
-                    $this->record->update([
-                        'status' => 'validated',
-                        'validated_at' => now(),
-                        'validated_by' => auth()->id(),
-                    ]);
+                    $updatedCount = $this->record->validateAndLock(auth()->id());
+                    $body = 'This tips report has been validated and locked.';
+                    if ($updatedCount > 0) {
+                        $body .= " {$updatedCount} applied tips adjustment(s) updated to 'Updated'.";
+                    }
                     Notification::make()
                         ->title('Report Validated')
-                        ->body('This tips report has been validated and locked.')
+                        ->body($body)
                         ->success()
                         ->send();
                 }),
@@ -307,19 +436,28 @@ class ViewTipsReport extends ViewRecord implements HasTable
                 ->color('danger')
                 ->requiresConfirmation()
                 ->modalHeading('Unlock Tips Report')
-                ->modalDescription('Unlocking will permit modifications and recalculations again. Are you sure?')
+                ->modalDescription('Unlocking will permit modifications and recalculations again. Applied tips adjustments will be reverted to "Pending". Are you sure?')
                 ->modalSubmitActionLabel('Yes, Unlock')
                 ->visible(fn () => $this->record->isValidated() && (auth()->user()?->hasRole('super_admin') ?? true))
                 ->action(function () {
-                    $this->record->update([
-                        'status' => 'generated',
-                    ]);
+                    $revertedCount = $this->record->unlock();
+                    $body = 'This tips report is now unlocked.';
+                    if ($revertedCount > 0) {
+                        $body .= " {$revertedCount} tips adjustment(s) reverted to 'Pending'.";
+                    }
                     Notification::make()
                         ->title('Report Unlocked')
-                        ->body('This tips report is now unlocked.')
+                        ->body($body)
                         ->warning()
                         ->send();
                 }),
+
+            Action::make('printAdjustmentsErrors')
+                ->label('Print Adjustments & Errors')
+                ->icon('heroicon-m-clipboard-document-list')
+                ->color('amber')
+                ->url(fn () => route('tips.reports.print-adjustments-errors', ['report' => $this->record->id]))
+                ->openUrlInNewTab(),
 
             Action::make('printSummary')
                 ->label('Print Summary')

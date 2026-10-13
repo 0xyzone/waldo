@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\TipsAdjustment;
 use App\Models\TipsReport;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -278,6 +279,78 @@ class TipsReportPrintController extends Controller
             'span3Count' => $s3,
             'span4Start' => $s1 + $s2 + $s3,
             'span4Count' => $s4,
+        ]);
+    }
+
+    /**
+     * Print Tips Adjustments and Company Error Penalties Audit Sheet.
+     */
+    public function printAdjustmentsErrors(Request $request, TipsReport $report): Response
+    {
+        $month = strtolower((string) ($report->month ?? ''));
+        $year = (string) ($report->year ?? '');
+
+        $adjustmentsQuery = TipsAdjustment::with(['employee.department', 'employee.designation']);
+        if ($month !== '') {
+            $adjustmentsQuery->whereRaw('LOWER(for_month) = ?', [$month]);
+        }
+        if ($year !== '') {
+            $adjustmentsQuery->where('year', $year);
+        }
+
+        $reportItems = $report->items->keyBy(fn ($i) => strtoupper(trim((string) $i->employee_code)));
+
+        $adjustments = $adjustmentsQuery->get()->map(function ($adj) use ($reportItems) {
+            $code = strtoupper(trim((string) $adj->employee_id));
+            $item = $reportItems->get($code);
+
+            return [
+                'employee_code' => $code,
+                'employee_name' => $item?->employee_name ?? $adj->employee?->name ?? 'Unknown',
+                'department' => $item?->department ?? $adj->employee?->department?->name ?? '-',
+                'designation' => $item?->designation ?? $adj->employee?->designation?->name ?? '-',
+                'type' => strtolower((string) ($adj->type ?? 'add')),
+                'amount' => (float) ($adj->amount ?? 0),
+                'status' => strtolower((string) ($adj->status ?? 'pending')),
+                'remarks' => trim((string) ($adj->remarks ?? '')),
+                'is_applied' => $item !== null,
+            ];
+        });
+
+        $rawErrors = $report->company_errors ?? [];
+        $errors = collect(is_array($rawErrors) ? $rawErrors : [])->map(function ($err) use ($reportItems) {
+            $code = strtoupper(trim((string) ($err['employee_code'] ?? '')));
+            $item = $reportItems->get($code);
+            $pct = (float) ($err['percentage_to_deduct'] ?? 0);
+            $reason = trim((string) ($err['reason'] ?? ''));
+
+            $estimatedDeduction = 0.0;
+            if ($item) {
+                $multiplier = $item->is_fixed ? 1.0 : ($item->completion_factor + $item->point_value);
+                $adjustedBase = ($item->base_tips_amount ?? 0) * $multiplier;
+                $estimatedDeduction = round(($adjustedBase * $pct) / 100, 2);
+            }
+
+            return [
+                'employee_code' => $code,
+                'employee_name' => $item?->employee_name ?? $code,
+                'department' => $item?->department ?? '-',
+                'designation' => $item?->designation ?? '-',
+                'percentage_to_deduct' => $pct,
+                'reason' => $reason,
+                'base_tips' => $item?->base_tips_amount ?? 0,
+                'estimated_deduction' => $estimatedDeduction,
+                'is_applied' => $item !== null,
+            ];
+        });
+
+        return response()->view('tips.print-adjustments-errors', [
+            'report' => $report,
+            'adjustments' => $adjustments,
+            'errors' => $errors,
+            'totalAdd' => (float) $adjustments->where('type', 'add')->sum('amount'),
+            'totalDeduct' => (float) $adjustments->where('type', 'deduct')->sum('amount'),
+            'totalErrorDeduction' => (float) $errors->sum('estimated_deduction'),
         ]);
     }
 }

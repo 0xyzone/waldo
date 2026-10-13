@@ -96,6 +96,10 @@ Route::get('/tips-reports/{report}/print-totals', [TipsReportPrintController::cl
     ->name('tips.reports.print-totals')
     ->middleware('auth');
 
+Route::get('/tips-reports/{report}/print-adjustments-errors', [TipsReportPrintController::class, 'printAdjustmentsErrors'])
+    ->name('tips.reports.print-adjustments-errors')
+    ->middleware('auth');
+
 // EOM / GOM Monthly Report & HRMS Wish Card
 Route::prefix('/tips/eom-gom-reports/{report}')->middleware('auth')->group(function () {
     Route::get('/months/{month}/print', [TipsEomGomReportPrintController::class, 'printMonthly'])
