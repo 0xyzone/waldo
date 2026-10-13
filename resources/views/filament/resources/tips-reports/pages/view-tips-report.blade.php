@@ -112,8 +112,18 @@
                     • Allocated: <strong class="text-gray-800 dark:text-gray-200">Rs. {{ number_format($this->getDepartmentTotal($activeDepartment), 0) }}</strong>
                 </span>
             </div>
-            <div class="text-gray-400 text-[11px]">
-                Tip: Use header actions above to print Summary, Totals, or Adjustments & Errors reports.
+            <div class="flex items-center gap-2">
+                @if($activeDepartment === 'Left Outs' && !$record->isValidated())
+                    <button type="button"
+                            wire:click="mountAction('addLeftOut')"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary-600 hover:bg-primary-500 text-white shadow-sm transition cursor-pointer">
+                        <x-heroicon-m-user-plus class="w-4 h-4" />
+                        <span>Add Left Out Staff</span>
+                    </button>
+                @endif
+                <div class="text-gray-400 text-[11px] hidden sm:inline">
+                    Tip: Use header actions above to print Summary, Totals, or Adjustments & Errors reports.
+                </div>
             </div>
         </div>
     @endif
@@ -251,15 +261,31 @@
                         Company Errors ({{ $this->errorsList->count() }})
                     </button>
                 </div>
-                <div class="w-full sm:w-72">
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                            <x-heroicon-m-magnifying-glass class="w-4 h-4" />
+                <div class="flex flex-wrap items-center gap-2">
+                    @if(!$record->isValidated())
+                        <button type="button"
+                                wire:click="mountAction('addAdjustment')"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition cursor-pointer">
+                            <x-heroicon-m-plus-circle class="w-4 h-4" />
+                            <span>Add Adjustment</span>
+                        </button>
+                        <button type="button"
+                                wire:click="mountAction('addError')"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white shadow-sm transition cursor-pointer">
+                            <x-heroicon-m-plus-circle class="w-4 h-4" />
+                            <span>Add Company Error</span>
+                        </button>
+                    @endif
+                    <div class="w-full sm:w-64">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                <x-heroicon-m-magnifying-glass class="w-4 h-4" />
+                            </div>
+                            <input type="text"
+                                   x-model="search"
+                                   placeholder="Search employee, remarks, code..."
+                                   class="w-full pl-9 pr-3 py-1.5 rounded-lg text-xs bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 transition" />
                         </div>
-                        <input type="text"
-                               x-model="search"
-                               placeholder="Search employee, remarks, code..."
-                               class="w-full pl-9 pr-3 py-1.5 rounded-lg text-xs bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 transition" />
                     </div>
                 </div>
             </div>
@@ -277,9 +303,19 @@
                             {{ $this->adjustmentsList->count() }} records
                         </span>
                     </div>
-                    <span class="text-xs text-gray-400">
-                        Period: {{ ucfirst($record->month) }} {{ $record->year }}
-                    </span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-400 hidden sm:inline">
+                            Period: {{ ucfirst($record->month) }} {{ $record->year }}
+                        </span>
+                        @if(!$record->isValidated())
+                            <button type="button"
+                                    wire:click="mountAction('addAdjustment')"
+                                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition cursor-pointer">
+                                <x-heroicon-m-plus class="w-3.5 h-3.5" />
+                                <span>Add Adjustment</span>
+                            </button>
+                        @endif
+                    </div>
                 </div>
 
                 @if($this->adjustmentsList->isEmpty())
@@ -287,6 +323,16 @@
                         <x-heroicon-o-document-magnifying-glass class="w-8 h-8 mx-auto mb-2 opacity-50" />
                         <p class="font-medium text-gray-600 dark:text-gray-300">No individual tips adjustments recorded</p>
                         <p class="text-gray-400 mt-0.5">No tips adjustment entries found for {{ ucfirst($record->month) }} {{ $record->year }}.</p>
+                        @if(!$record->isValidated())
+                            <div class="mt-3">
+                                <button type="button"
+                                        wire:click="mountAction('addAdjustment')"
+                                        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition cursor-pointer">
+                                    <x-heroicon-m-plus class="w-3.5 h-3.5" />
+                                    <span>Add Adjustment</span>
+                                </button>
+                            </div>
+                        @endif
                     </div>
                 @else
                     <div class="overflow-x-auto">
@@ -405,9 +451,19 @@
                             {{ $this->errorsList->count() }} penalties
                         </span>
                     </div>
-                    <span class="text-xs text-gray-400">
-                        Total Est. Deduction: <strong class="text-rose-600 dark:text-rose-400">- Rs. {{ number_format($this->totalEstimatedErrorDeduction, 0) }}</strong>
-                    </span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-400 hidden sm:inline">
+                            Total Est. Deduction: <strong class="text-rose-600 dark:text-rose-400">- Rs. {{ number_format($this->totalEstimatedErrorDeduction, 0) }}</strong>
+                        </span>
+                        @if(!$record->isValidated())
+                            <button type="button"
+                                    wire:click="mountAction('addError')"
+                                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white shadow-sm transition cursor-pointer">
+                                <x-heroicon-m-plus class="w-3.5 h-3.5" />
+                                <span>Add Company Error</span>
+                            </button>
+                        @endif
+                    </div>
                 </div>
 
                 @if($this->errorsList->isEmpty())
@@ -415,6 +471,16 @@
                         <x-heroicon-o-shield-check class="w-8 h-8 mx-auto mb-2 opacity-50 text-emerald-500" />
                         <p class="font-medium text-gray-600 dark:text-gray-300">No company error penalties registered</p>
                         <p class="text-gray-400 mt-0.5">No employee penalty percentage deductions recorded for this tips report.</p>
+                        @if(!$record->isValidated())
+                            <div class="mt-3">
+                                <button type="button"
+                                        wire:click="mountAction('addError')"
+                                        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white shadow-sm transition cursor-pointer">
+                                    <x-heroicon-m-plus class="w-3.5 h-3.5" />
+                                    <span>Add Company Error</span>
+                                </button>
+                            </div>
+                        @endif
                     </div>
                 @else
                     <div class="overflow-x-auto">

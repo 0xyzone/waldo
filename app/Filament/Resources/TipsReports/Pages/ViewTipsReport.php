@@ -10,8 +10,13 @@ use App\Models\TipsReportItem;
 use App\Services\TipsCalculationService;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -392,6 +397,9 @@ class ViewTipsReport extends ViewRecord implements HasTable
                     ->color(fn ($state) => strtoupper((string) $state) === 'RELEASE' ? 'success' : 'danger'),
             ])
             ->headerActions([
+                $this->addLeftOutAction()
+                    ->visible(fn () => $this->activeDepartment === 'Left Outs' && ! $this->record->isValidated()),
+
                 Action::make('printSheet')
                     ->label(fn () => 'Print '.$this->activeDepartment.' Payout Sheet')
                     ->icon('heroicon-m-printer')
@@ -405,9 +413,419 @@ class ViewTipsReport extends ViewRecord implements HasTable
             ]);
     }
 
+    public function addAdjustmentAction(): Action
+    {
+        return Action::make('addAdjustment')
+            ->label('Add Adjustment')
+            ->icon('heroicon-m-plus-circle')
+            ->color('success')
+            ->modalHeading('Add Tips Adjustment')
+            ->modalDescription('Record an individual adjustment addition or deduction. The staff member payout in this report will be updated immediately.')
+            ->modalSubmitActionLabel('Add Adjustment')
+            ->visible(fn () => ! $this->record->isValidated())
+            ->schema([
+                Select::make('employee_id')
+                    ->label('Employee')
+                    ->options(fn () => Employee::query()
+                        ->whereIn('employee_status', ['Active', 'Resigning This Month'])
+                        ->orderBy('employee_code')
+                        ->get()
+                        ->mapWithKeys(fn ($e) => [
+                            $e->employee_code => strtoupper($e->employee_code).' — '.$e->name.' ('.($e->department?->name ?? 'No Dept').')',
+                        ])
+                        ->toArray())
+                    ->searchable()
+                    ->required(),
+
+                Select::make('type')
+                    ->label('Adjustment Type')
+                    ->options([
+                        'add' => 'Add (+) - Payout Bonus',
+                        'deduct' => 'Deduct (-) - Payout Deduction',
+                    ])
+                    ->default('add')
+                    ->required(),
+
+                TextInput::make('amount')
+                    ->label('Amount (Rs.)')
+                    ->numeric()
+                    ->minValue(1)
+                    ->required(),
+
+                Textarea::make('remarks')
+                    ->label('Remarks / Reason')
+                    ->placeholder('e.g., Overtime payout adjustment, Approved floor bonus, etc.')
+                    ->required()
+                    ->rows(3),
+            ])
+            ->action(function (array $data) {
+                $month = strtolower((string) ($this->record->month ?? ''));
+                $year = (string) ($this->record->year ?? '');
+                $code = strtoupper(trim((string) $data['employee_id']));
+
+                TipsAdjustment::create([
+                    'employee_id' => $code,
+                    'type' => $data['type'],
+                    'amount' => $data['amount'],
+                    'remarks' => $data['remarks'],
+                    'for_month' => $month,
+                    'year' => $year,
+                    'status' => $this->record->isValidated() ? 'updated' : 'pending',
+                ]);
+
+                // Recalculate matching TipsReportItem if exists
+                $item = TipsReportItem::where('tips_report_id', $this->record->id)
+                    ->where('employee_code', $code)
+                    ->first();
+
+                if ($item) {
+                    $adjustments = TipsAdjustment::whereRaw('LOWER(for_month) = ?', [$month])
+                        ->where('year', $year)
+                        ->where('employee_id', $code)
+                        ->where(function ($q) {
+                            $q->whereNull('status')->orWhere('status', '!=', 'cancelled');
+                        })
+                        ->get();
+
+                    $amountToAdjust = (float) $adjustments->where('type', 'add')->sum('amount');
+                    $amountToDeduct = (float) $adjustments->where('type', 'deduct')->sum('amount');
+
+                    if (! $item->is_blank && strtoupper(trim((string) $item->tips_status)) !== 'HOLD') {
+                        $multiplier = $item->is_fixed ? 1.0 : ($item->completion_factor + $item->point_value);
+                        $adjustedBase = $item->base_tips_amount * $multiplier;
+                        $effectivePercentage = max(0.0, ($item->tips_percentage - $item->percentage_to_deduct));
+                        $rawCalculatedTips = ($adjustedBase * $effectivePercentage) / 100;
+                        $calculatedTips = TipsCalculationService::roundUpToNearest100($rawCalculatedTips);
+                        $rawFinalDistribution = $rawCalculatedTips + $amountToAdjust - $amountToDeduct;
+
+                        if ($rawFinalDistribution <= 0) {
+                            $finalDistribution = 0.0;
+                            $unroundedAmount = 0.0;
+                        } else {
+                            $finalDistribution = TipsCalculationService::roundUpToNearest100($rawFinalDistribution);
+                            $unroundedAmount = round($rawFinalDistribution, 2);
+                        }
+
+                        $item->update([
+                            'amount_to_adjust' => $amountToAdjust,
+                            'amount_to_deduct' => $amountToDeduct,
+                            'calculated_tips' => $calculatedTips,
+                            'unrounded_amount' => $unroundedAmount,
+                            'final_distribution_amount' => $finalDistribution,
+                        ]);
+                    } else {
+                        $item->update([
+                            'amount_to_adjust' => $amountToAdjust,
+                            'amount_to_deduct' => $amountToDeduct,
+                        ]);
+                    }
+                }
+
+                Notification::make()
+                    ->title('Adjustment Added')
+                    ->body("Successfully added {$data['type']} adjustment of Rs. {$data['amount']} for {$code}.")
+                    ->success()
+                    ->send();
+
+                $this->resetTable();
+            });
+    }
+
+    public function addErrorAction(): Action
+    {
+        return Action::make('addError')
+            ->label('Add Company Error')
+            ->icon('heroicon-m-exclamation-triangle')
+            ->color('danger')
+            ->modalHeading('Add Company Error Penalty')
+            ->modalDescription('Record an employee error penalty percentage deduction. Payout will be updated immediately.')
+            ->modalSubmitActionLabel('Add Penalty')
+            ->visible(fn () => ! $this->record->isValidated())
+            ->schema([
+                Select::make('employee_code')
+                    ->label('Employee')
+                    ->options(fn () => Employee::query()
+                        ->whereIn('employee_status', ['Active', 'Resigning This Month'])
+                        ->orderBy('employee_code')
+                        ->get()
+                        ->mapWithKeys(fn ($e) => [
+                            $e->employee_code => strtoupper($e->employee_code).' — '.$e->name.' ('.($e->department?->name ?? 'No Dept').')',
+                        ])
+                        ->toArray())
+                    ->searchable()
+                    ->required(),
+
+                TextInput::make('percentage_to_deduct')
+                    ->label('Percentage to Deduct (%)')
+                    ->numeric()
+                    ->minValue(1)
+                    ->maxValue(100)
+                    ->suffix('%')
+                    ->default(10)
+                    ->required(),
+
+                Textarea::make('reason')
+                    ->label('Reason / Remarks')
+                    ->placeholder('e.g., Short cash in drawer, Procedure breach...')
+                    ->required()
+                    ->rows(3),
+            ])
+            ->action(function (array $data) {
+                $code = strtoupper(trim((string) $data['employee_code']));
+                $pct = (float) $data['percentage_to_deduct'];
+                $reason = trim((string) $data['reason']);
+
+                $errors = $this->record->company_errors ?? [];
+                if (! is_array($errors)) {
+                    $errors = [];
+                }
+                $errors[] = [
+                    'employee_code' => $code,
+                    'percentage_to_deduct' => $pct,
+                    'reason' => $reason,
+                ];
+                $this->record->update(['company_errors' => $errors]);
+
+                // Recalculate employee's item in this report
+                $item = TipsReportItem::where('tips_report_id', $this->record->id)
+                    ->where('employee_code', $code)
+                    ->first();
+
+                if ($item && ! $item->is_blank && strtoupper(trim((string) $item->tips_status)) !== 'HOLD') {
+                    $totalDeductPct = collect($errors)
+                        ->filter(fn ($e) => strtoupper(trim((string) ($e['employee_code'] ?? ''))) === $code)
+                        ->sum('percentage_to_deduct');
+
+                    $effectivePercentage = max(0.0, ($item->tips_percentage - $totalDeductPct));
+                    $multiplier = $item->is_fixed ? 1.0 : ($item->completion_factor + $item->point_value);
+                    $adjustedBase = $item->base_tips_amount * $multiplier;
+
+                    $rawCalculatedTips = ($adjustedBase * $effectivePercentage) / 100;
+                    $calculatedTips = TipsCalculationService::roundUpToNearest100($rawCalculatedTips);
+                    $rawFinalDistribution = $rawCalculatedTips + $item->amount_to_adjust - $item->amount_to_deduct;
+
+                    if ($rawFinalDistribution <= 0) {
+                        $finalDistribution = 0.0;
+                        $unroundedAmount = 0.0;
+                    } else {
+                        $finalDistribution = TipsCalculationService::roundUpToNearest100($rawFinalDistribution);
+                        $unroundedAmount = round($rawFinalDistribution, 2);
+                    }
+
+                    $item->update([
+                        'percentage_to_deduct' => $totalDeductPct,
+                        'calculated_tips' => $calculatedTips,
+                        'unrounded_amount' => $unroundedAmount,
+                        'final_distribution_amount' => $finalDistribution,
+                    ]);
+                }
+
+                Notification::make()
+                    ->title('Company Error Penalty Added')
+                    ->body("Successfully recorded {$pct}% penalty for {$code} and recalculated distribution.")
+                    ->success()
+                    ->send();
+
+                $this->resetTable();
+            });
+    }
+
+    public function addLeftOutAction(): Action
+    {
+        return Action::make('addLeftOut')
+            ->label('Add Left Out Staff')
+            ->icon('heroicon-m-user-plus')
+            ->color('primary')
+            ->modalHeading('Add Left Out Staff Override')
+            ->modalDescription('Manually include an employee who was missed or excluded from attendance upload.')
+            ->modalSubmitActionLabel('Add Staff Override')
+            ->visible(fn () => ! $this->record->isValidated())
+            ->schema([
+                Select::make('employee_id')
+                    ->label('Employee')
+                    ->options(fn () => Employee::query()
+                        ->with(['department', 'designation'])
+                        ->orderBy('employee_code')
+                        ->get()
+                        ->mapWithKeys(fn ($e) => [
+                            $e->employee_code => strtoupper($e->employee_code).' — '.$e->name.' ('.($e->designation?->name ?? 'No Designation').')',
+                        ])
+                        ->toArray())
+                    ->searchable()
+                    ->live()
+                    ->afterStateUpdated(function ($state, Set $set) {
+                        if (! $state) {
+                            return;
+                        }
+                        $emp = Employee::with(['department', 'designation'])->where('employee_code', $state)->first();
+                        if ($emp) {
+                            $set('designation', $emp->designation?->name ?? '');
+                            $base = (float) ($emp->tips_amount ?? 0);
+                            $set('base_tips_amount', $base);
+
+                            $isHold = strtoupper(trim((string) ($emp->tips_status ?? ''))) === 'HOLD';
+                            if ($isHold) {
+                                $set('final_distribution_amount', 0);
+                            } else {
+                                $set('final_distribution_amount', TipsCalculationService::roundUpToNearest100($base));
+                            }
+
+                            $pageName = TipsDepartmentMapping::resolvePageName($emp->department_id, $emp->department?->name);
+                            if ($pageName) {
+                                $set('department', $pageName);
+                            }
+                        }
+                    })
+                    ->required(),
+
+                TextInput::make('designation')
+                    ->label('Designation')
+                    ->placeholder('Auto-fetched from DB'),
+
+                Select::make('department')
+                    ->label('Department Page')
+                    ->options(function () {
+                        $masterPages = TipsDepartmentMapping::where('is_active', true)
+                            ->orderBy('sort_order')
+                            ->pluck('page_name', 'page_name')
+                            ->toArray();
+
+                        return array_merge($masterPages, [
+                            'Left Outs' => 'Left Outs',
+                        ]);
+                    })
+                    ->default('Left Outs')
+                    ->required(),
+
+                TextInput::make('base_tips_amount')
+                    ->label('Base Tips')
+                    ->numeric()
+                    ->default(0)
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(function (Get $get, Set $set) {
+                        $base = (float) ($get('base_tips_amount') ?? 0);
+                        $pct = (float) ($get('tips_percentage') ?? 100);
+                        $raw = ($base * $pct) / 100;
+                        $set('final_distribution_amount', TipsCalculationService::roundUpToNearest100($raw));
+                    }),
+
+                TextInput::make('tips_percentage')
+                    ->label('Tips %')
+                    ->numeric()
+                    ->default(100)
+                    ->suffix('%')
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(function (Get $get, Set $set) {
+                        $base = (float) ($get('base_tips_amount') ?? 0);
+                        $pct = (float) ($get('tips_percentage') ?? 100);
+                        $raw = ($base * $pct) / 100;
+                        $set('final_distribution_amount', TipsCalculationService::roundUpToNearest100($raw));
+                    }),
+
+                TextInput::make('final_distribution_amount')
+                    ->label('Final Amount')
+                    ->numeric(),
+
+                Textarea::make('notes')
+                    ->label('Notes / Reason')
+                    ->placeholder('e.g., Missed in biometric sync, Special inclusion approved...')
+                    ->rows(2),
+            ])
+            ->action(function (array $data) {
+                $code = strtoupper(trim((string) $data['employee_id']));
+                $employee = Employee::with(['department', 'designation'])->where('employee_code', $code)->first();
+
+                $baseTips = (float) ($data['base_tips_amount'] ?? ($employee?->tips_amount ?? 0));
+                $tipsPct = (float) ($data['tips_percentage'] ?? 100);
+                $tipsStatus = (string) ($employee?->tips_status ?? 'Release');
+
+                if (strtoupper(trim($tipsStatus)) === 'HOLD') {
+                    $finalDist = 0.0;
+                    $unrounded = 0.0;
+                    $calculatedTips = 0.0;
+                } else {
+                    if (isset($data['final_distribution_amount']) && $data['final_distribution_amount'] !== null && $data['final_distribution_amount'] !== '') {
+                        $rawDist = (float) $data['final_distribution_amount'];
+                    } else {
+                        $rawDist = ($baseTips * $tipsPct) / 100;
+                    }
+                    $finalDist = $rawDist > 0 ? TipsCalculationService::roundUpToNearest100($rawDist) : 0.0;
+                    $unrounded = round($rawDist, 2);
+                    $calculatedTips = $finalDist;
+                }
+
+                $leftOuts = $this->record->left_outs ?? [];
+                if (! is_array($leftOuts)) {
+                    $leftOuts = [];
+                }
+                $leftOuts[] = [
+                    'employee_id' => $code,
+                    'department' => $data['department'] ?? 'Left Outs',
+                    'designation' => $data['designation'] ?? ($employee?->designation?->name ?? '-'),
+                    'base_tips_amount' => $baseTips,
+                    'tips_percentage' => $tipsPct,
+                    'final_distribution_amount' => $finalDist,
+                    'notes' => $data['notes'] ?? null,
+                ];
+                $this->record->update(['left_outs' => $leftOuts]);
+
+                TipsReportItem::create([
+                    'tips_report_id' => $this->record->id,
+                    'employee_id' => $code,
+                    'employee_code' => $code,
+                    'department' => $data['department'] ?? 'Left Outs',
+                    'department_rank' => $employee?->department?->rank ?? ($employee?->dp_rank ?? 999),
+                    'designation' => $data['designation'] ?? ($employee?->designation?->name ?? '-'),
+                    'designation_rank' => $employee?->designation?->rank ?? ($employee?->rank ?? 999),
+                    'employee_name' => $employee?->name ?? $code,
+                    'working_days' => 0,
+                    'present_days' => 0,
+                    'absent_days' => 0,
+                    'total_leaves' => 0,
+                    'late_in_count' => 0,
+                    'early_out_count' => 0,
+                    'missing_punch_in_count' => 0,
+                    'join_date' => $employee?->join_date_formatted,
+                    'working_duration' => 'Left Out Override',
+                    'completion_factor' => 1.0,
+                    'point_value' => (float) ($employee?->point_value ?? 0),
+                    'base_tips_amount' => $baseTips,
+                    'tips_percentage' => $tipsPct,
+                    'is_blank' => false,
+                    'is_fixed' => true,
+                    'publish_tips' => true,
+                    'tips_status' => $tipsStatus,
+                    'amount_to_adjust' => 0,
+                    'amount_to_deduct' => 0,
+                    'percentage_to_deduct' => 0,
+                    'calculated_tips' => $calculatedTips,
+                    'unrounded_amount' => $unrounded,
+                    'final_distribution_amount' => $finalDist,
+                    'is_left_out' => true,
+                ]);
+
+                Notification::make()
+                    ->title('Left Out Staff Added')
+                    ->body("Successfully added {$code} to {$data['department']}.")
+                    ->success()
+                    ->send();
+
+                $this->resetTable();
+            });
+    }
+
     protected function getHeaderActions(): array
     {
         return [
+            $this->addAdjustmentAction()
+                ->visible(fn () => $this->activeDepartment === 'Adjustments & Errors' && ! $this->record->isValidated()),
+
+            $this->addErrorAction()
+                ->visible(fn () => $this->activeDepartment === 'Adjustments & Errors' && ! $this->record->isValidated()),
+
+            $this->addLeftOutAction()
+                ->visible(fn () => $this->activeDepartment === 'Left Outs' && ! $this->record->isValidated()),
+
             Action::make('validateReport')
                 ->label('Validate & Lock')
                 ->icon('heroicon-m-check-badge')
