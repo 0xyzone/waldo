@@ -971,12 +971,12 @@ class ViewTipsReport extends ViewRecord implements HasTable
     protected function getHeaderActions(): array
     {
         return [
-            // $this->addAdjustmentAction()
-            //     ->visible(fn () => $this->activeDepartment === 'Adjustments & Errors' && ! $this->record->isValidated()),
-            // $this->addErrorAction()
-            //     ->visible(fn () => $this->activeDepartment === 'Adjustments & Errors' && ! $this->record->isValidated()),
-            // $this->addLeftOutAction()
-            //     ->visible(fn () => $this->activeDepartment === 'Left Outs' && ! $this->record->isValidated()),
+            $this->addAdjustmentAction()
+                ->visible(fn () => $this->activeDepartment === 'Adjustments & Errors' && ! $this->record->isValidated()),
+            $this->addErrorAction()
+                ->visible(fn () => $this->activeDepartment === 'Adjustments & Errors' && ! $this->record->isValidated()),
+            $this->addLeftOutAction()
+                ->visible(fn () => $this->activeDepartment === 'Left Outs' && ! $this->record->isValidated()),
             Action::make('validateReport')
                 ->label('Validate & Lock')
                 ->icon('heroicon-m-check-badge')

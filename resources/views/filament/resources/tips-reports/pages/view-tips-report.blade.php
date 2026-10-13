@@ -686,4 +686,6 @@
             {{ $this->table }}
         </div>
     @endif
+
+    <x-filament-actions::modals />
 </x-filament-panels::page>
