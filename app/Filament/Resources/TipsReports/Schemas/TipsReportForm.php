@@ -138,6 +138,7 @@ class TipsReportForm
                                     TextInput::make('department')
                                         ->label('Department')
                                         ->required()
+                                        ->extraInputAttributes(['tabindex' => '-1'])
                                         ->columnSpan(1),
 
                                     TextInput::make('chips_amount')
@@ -150,6 +151,10 @@ class TipsReportForm
                                             $cash = (float) ($get('cash_amount') ?? 0);
                                             $set('total_amount', $chips + $cash);
                                         })
+                                        ->extraInputAttributes([
+                                            'class' => 'collection-chips-input',
+                                            'data-collection-field' => 'chips',
+                                        ])
                                         ->columnSpan(1),
 
                                     TextInput::make('cash_amount')
@@ -162,6 +167,10 @@ class TipsReportForm
                                             $cash = (float) ($get('cash_amount') ?? 0);
                                             $set('total_amount', $chips + $cash);
                                         })
+                                        ->extraInputAttributes([
+                                            'class' => 'collection-cash-input',
+                                            'data-collection-field' => 'cash',
+                                        ])
                                         ->columnSpan(1),
 
                                     TextInput::make('total_amount')
@@ -169,11 +178,12 @@ class TipsReportForm
                                         ->numeric()
                                         ->readOnly()
                                         ->default(0)
+                                        ->extraInputAttributes(['tabindex' => '-1'])
                                         ->columnSpan(1),
                                 ])
                                 ->columns(4)
-                                ->collapsible()
-                                ->reorderableWithButtons(),
+                                ->collapsible(false)
+                                ->reorderable(false),
                         ]),
 
                     Step::make('Company Error Report')

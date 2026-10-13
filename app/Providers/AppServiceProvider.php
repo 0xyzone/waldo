@@ -117,6 +117,88 @@ class AppServiceProvider extends ServiceProvider
                             }
                         }
                     });
+
+                    // Tips Report: Cycle through chips_amount and cash_amount inputs on Tab or Enter
+                    document.addEventListener("keydown", function (event) {
+                        if (event.key !== "Tab" && event.key !== "Enter") {
+                            return;
+                        }
+
+                        // Allow default Enter if modifier keys are pressed
+                        if (event.key === "Enter" && (event.shiftKey || event.ctrlKey || event.metaKey || event.altKey)) {
+                            return;
+                        }
+
+                        var target = event.target;
+                        if (!target || target.tagName !== "INPUT") {
+                            return;
+                        }
+
+                        var isChips = target.classList.contains("collection-chips-input");
+                        var isCash = target.classList.contains("collection-cash-input");
+
+                        if (!isChips && !isCash) {
+                            return;
+                        }
+
+                        var chipsInputs = Array.from(document.querySelectorAll(".collection-chips-input"))
+                            .filter(function (el) { return el.offsetParent !== null && !el.disabled && !el.readOnly; });
+                        var cashInputs = Array.from(document.querySelectorAll(".collection-cash-input"))
+                            .filter(function (el) { return el.offsetParent !== null && !el.disabled && !el.readOnly; });
+
+                        if (chipsInputs.length === 0 || cashInputs.length === 0) {
+                            return;
+                        }
+
+                        // Build ordered sequence alternating [chips_0, cash_0, chips_1, cash_1, ...]
+                        var sequence = [];
+                        var maxLen = Math.max(chipsInputs.length, cashInputs.length);
+                        for (var i = 0; i < maxLen; i++) {
+                            if (chipsInputs[i]) {
+                                sequence.push(chipsInputs[i]);
+                            }
+                            if (cashInputs[i]) {
+                                sequence.push(cashInputs[i]);
+                            }
+                        }
+
+                        var currentIndex = sequence.indexOf(target);
+                        if (currentIndex === -1) {
+                            return;
+                        }
+
+                        event.preventDefault();
+
+                        var targetIndex;
+                        if (event.shiftKey) {
+                            // Move backward
+                            targetIndex = (currentIndex - 1 + sequence.length) % sequence.length;
+                        } else {
+                            // Move forward
+                            targetIndex = (currentIndex + 1) % sequence.length;
+                        }
+
+                        var nextEl = sequence[targetIndex];
+                        if (nextEl) {
+                            nextEl.focus();
+                            if (typeof nextEl.select === "function") {
+                                nextEl.select();
+                            }
+                        }
+                    });
+
+                    // Auto-select numeric text on focus for collection inputs
+                    document.addEventListener("focus", function (event) {
+                        if (event.target && event.target.tagName === "INPUT") {
+                            if (event.target.classList.contains("collection-chips-input") || event.target.classList.contains("collection-cash-input")) {
+                                setTimeout(function () {
+                                    if (document.activeElement === event.target && typeof event.target.select === "function") {
+                                        event.target.select();
+                                    }
+                                }, 30);
+                            }
+                        }
+                    }, true);
                 </script>
             ')
         );
