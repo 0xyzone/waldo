@@ -6,7 +6,7 @@
     <style>
         @page {
             size: A4 portrait;
-            margin: 10mm 12mm;
+            margin: 8mm 10mm;
         }
 
         * {
@@ -17,10 +17,19 @@
             font-family: Arial, Helvetica, sans-serif;
             font-size: 11px;
             color: #0f172a;
-            background: #fff;
+            background: #f1f5f9;
             margin: 0;
-            padding: 12px;
+            padding: 16px 10px;
             line-height: 1.35;
+        }
+
+        .sheet-container {
+            max-width: 210mm;
+            margin: 0 auto;
+            background: #fff;
+            padding: 14px 16px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .header-container {
@@ -40,7 +49,7 @@
         }
 
         .header-subtitle {
-            font-size: 12.5px;
+            font-size: 12px;
             font-weight: 600;
             color: #475569;
             margin: 0 0 6px 0;
@@ -48,7 +57,7 @@
 
         .header-meta-box {
             margin-top: 6px;
-            padding: 6px 14px;
+            padding: 6px 12px;
             background-color: #f8fafc;
             border: 1px solid #cbd5e1;
             border-radius: 4px;
@@ -58,7 +67,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 11px;
+            font-size: 10.5px;
         }
 
         .meta-col {
@@ -88,12 +97,12 @@
             flex: 1;
             border: 1px solid #cbd5e1;
             border-radius: 4px;
-            padding: 6px 10px;
+            padding: 6px 8px;
             background: #f8fafc;
         }
 
         .kpi-title {
-            font-size: 9.5px;
+            font-size: 9px;
             color: #64748b;
             text-transform: uppercase;
             font-weight: bold;
@@ -101,13 +110,14 @@
         }
 
         .kpi-val {
-            font-size: 13.5px;
+            font-size: 13px;
             font-weight: bold;
             margin-top: 2px;
+            white-space: nowrap;
         }
 
         .kpi-sub {
-            font-size: 9px;
+            font-size: 8.5px;
             color: #64748b;
             margin-top: 1px;
         }
@@ -116,7 +126,7 @@
         .section-header {
             margin-top: 12px;
             margin-bottom: 6px;
-            padding: 5px 8px;
+            padding: 4px 8px;
             background-color: #f1f5f9;
             border-left: 4px solid #0f172a;
             display: flex;
@@ -130,7 +140,7 @@
         }
 
         .section-title {
-            font-size: 11.5px;
+            font-size: 11px;
             font-weight: bold;
             text-transform: uppercase;
             color: #0f172a;
@@ -139,9 +149,9 @@
         }
 
         .section-badge {
-            font-size: 10px;
+            font-size: 9.5px;
             font-weight: 600;
-            padding: 2px 7px;
+            padding: 1.5px 6px;
             border-radius: 3px;
             background: #e2e8f0;
             color: #334155;
@@ -152,28 +162,27 @@
             width: 100%;
             table-layout: fixed;
             border-collapse: collapse;
-            font-size: 10.5px;
+            font-size: 10px;
             margin-bottom: 12px;
             border: 1px solid #cbd5e1;
         }
 
         table.data-table th,
         table.data-table td {
-            border: 1px solid #e2e8f0;
-            padding: 5px 6px;
+            border: 1px solid #cbd5e1;
+            padding: 4px 5px;
             vertical-align: middle;
-            word-break: break-word;
-            overflow-wrap: break-word;
         }
 
         table.data-table th {
             background-color: #f1f5f9;
             font-weight: bold;
-            font-size: 10px;
+            font-size: 9px;
             text-transform: uppercase;
             letter-spacing: 0.3px;
             color: #0f172a;
             border-bottom: 2px solid #cbd5e1;
+            white-space: nowrap;
         }
 
         table.data-table tbody tr:nth-child(even) {
@@ -184,63 +193,52 @@
             background-color: #f1f5f9;
             border-top: 2px solid #cbd5e1;
             font-weight: bold;
-            padding: 6px;
+            padding: 5px 6px;
+            font-size: 10px;
         }
 
         .text-center { text-align: center; }
         .text-right { text-align: right; }
         .text-left { text-align: left; }
         .font-bold { font-weight: bold; }
+        .nowrap { white-space: nowrap; }
 
         .emp-code {
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
             font-weight: bold;
             color: #0f172a;
+            white-space: nowrap;
         }
 
         .badge-add {
             color: #166534;
             font-weight: bold;
+            white-space: nowrap;
         }
 
         .badge-deduct {
             color: #991b1b;
             font-weight: bold;
-        }
-
-        .badge-status {
-            display: inline-block;
-            padding: 1.5px 5px;
-            border-radius: 3px;
-            font-size: 9px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.2px;
-        }
-
-        .status-updated {
-            background-color: #dcfce7;
-            color: #166534;
-            border: 1px solid #86efac;
-        }
-
-        .status-pending {
-            background-color: #fef3c7;
-            color: #92400e;
-            border: 1px solid #fcd34d;
+            white-space: nowrap;
         }
 
         .remarks-text {
-            font-size: 10px;
+            font-size: 9.5px;
             color: #334155;
             line-height: 1.35;
+            word-break: normal;
+            overflow-wrap: break-word;
+            hyphens: none;
         }
 
         .error-reason-text {
-            font-size: 10px;
+            font-size: 9.5px;
             color: #991b1b;
             line-height: 1.35;
             font-weight: 500;
+            word-break: normal;
+            overflow-wrap: break-word;
+            hyphens: none;
         }
 
         .empty-cell {
@@ -249,18 +247,27 @@
         }
 
         .print-footer-info {
-            margin-top: 16px;
+            margin-top: 14px;
             padding-top: 6px;
             border-top: 1px solid #e2e8f0;
             display: flex;
             justify-content: space-between;
-            font-size: 9.5px;
+            font-size: 9px;
             color: #64748b;
         }
 
         @media print {
             body {
+                background: #fff;
                 padding: 0;
+                font-size: 10px;
+            }
+            .sheet-container {
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+                border-radius: 0;
             }
             .no-print {
                 display: none !important;
@@ -285,6 +292,7 @@
     </style>
 </head>
 <body>
+    <div class="sheet-container">
     {{-- Top Action Toolbar (No-Print) --}}
     <div class="no-print" style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
         <a href="javascript:window.close()" style="text-decoration: none; color: #475569; font-size: 12px; font-weight: 500;">
@@ -360,24 +368,24 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th style="width: 28px;" class="text-center">#</th>
-                    <th style="width: 72px;" class="text-center">Code</th>
-                    <th style="width: 135px;">Employee Name</th>
-                    <th style="width: 105px;">Department</th>
-                    <th style="width: 105px;">Designation</th>
-                    <th style="width: 85px;" class="text-right">Amount</th>
-                    <th>Adjustment Remarks</th>
+                    <th style="width: 3.5%;" class="text-center nowrap">#</th>
+                    <th style="width: 8.5%;" class="text-center nowrap">Code</th>
+                    <th style="width: 18%;" class="nowrap">Employee Name</th>
+                    <th style="width: 9%;" class="nowrap">Department</th>
+                    <th style="width: 13%;" class="nowrap">Designation</th>
+                    <th style="width: 11%;" class="text-right nowrap">Amount</th>
+                    <th style="width: 37%;">Adjustment Remarks</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($adjustments as $idx => $adj)
                     <tr>
-                        <td class="text-center font-bold" style="color: #64748b;">{{ $idx + 1 }}</td>
-                        <td class="text-center emp-code">{{ $adj['employee_code'] }}</td>
+                        <td class="text-center font-bold nowrap" style="color: #64748b;">{{ $idx + 1 }}</td>
+                        <td class="text-center emp-code nowrap">{{ $adj['employee_code'] }}</td>
                         <td style="font-weight: 600;">{{ $adj['employee_name'] }}</td>
-                        <td>{{ $adj['department'] }}</td>
+                        <td class="nowrap">{{ $adj['department'] }}</td>
                         <td>{{ $adj['designation'] }}</td>
-                        <td class="text-right font-bold {{ $adj['type'] === 'add' ? 'badge-add' : 'badge-deduct' }}">
+                        <td class="text-right font-bold nowrap {{ $adj['type'] === 'add' ? 'badge-add' : 'badge-deduct' }}">
                             {{ $adj['type'] === 'add' ? '+' : '-' }} Rs. {{ number_format($adj['amount'], 0) }}
                         </td>
                         <td>
@@ -392,8 +400,8 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="5" class="text-right">Total Applied Adjustments Net:</td>
-                    <td class="text-right" style="color: {{ ($totalAdd - $totalDeduct) >= 0 ? '#166534' : '#991b1b' }};">
+                    <td colspan="5" class="text-right nowrap">Total Applied Adjustments Net:</td>
+                    <td class="text-right nowrap" style="color: {{ ($totalAdd - $totalDeduct) >= 0 ? '#166534' : '#991b1b' }};">
                         Rs. {{ number_format($totalAdd - $totalDeduct, 0) }}
                     </td>
                     <td></td>
@@ -416,32 +424,32 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th style="width: 28px;" class="text-center">#</th>
-                    <th style="width: 72px;" class="text-center">Code</th>
-                    <th style="width: 135px;">Employee Name</th>
-                    <th style="width: 105px;">Department</th>
-                    <th style="width: 105px;">Designation</th>
-                    <th style="width: 60px;" class="text-center">Deduct %</th>
-                    <th style="width: 75px;" class="text-right">Base Tips</th>
-                    <th style="width: 80px;" class="text-right">Est. Deduct</th>
-                    <th>Error Reason / Remarks</th>
+                    <th style="width: 3.5%;" class="text-center nowrap">#</th>
+                    <th style="width: 8.5%;" class="text-center nowrap">Code</th>
+                    <th style="width: 15%;" class="nowrap">Employee Name</th>
+                    <th style="width: 8%;" class="nowrap">Department</th>
+                    <th style="width: 11%;" class="nowrap">Designation</th>
+                    <th style="width: 7%;" class="text-center nowrap">Deduct %</th>
+                    <th style="width: 8.5%;" class="text-right nowrap">Base Tips</th>
+                    <th style="width: 9.5%;" class="text-right nowrap">Est. Deduct</th>
+                    <th style="width: 29%;">Error Reason / Remarks</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($errors as $idx => $err)
                     <tr>
-                        <td class="text-center font-bold" style="color: #64748b;">{{ $idx + 1 }}</td>
-                        <td class="text-center emp-code">{{ $err['employee_code'] }}</td>
+                        <td class="text-center font-bold nowrap" style="color: #64748b;">{{ $idx + 1 }}</td>
+                        <td class="text-center emp-code nowrap">{{ $err['employee_code'] }}</td>
                         <td style="font-weight: 600;">{{ $err['employee_name'] }}</td>
-                        <td>{{ $err['department'] }}</td>
+                        <td class="nowrap">{{ $err['department'] }}</td>
                         <td>{{ $err['designation'] }}</td>
-                        <td class="text-center font-bold" style="color: #991b1b;">
+                        <td class="text-center font-bold nowrap" style="color: #991b1b;">
                             - {{ $err['percentage_to_deduct'] }}%
                         </td>
-                        <td class="text-right" style="color: #475569;">
+                        <td class="text-right nowrap" style="color: #475569;">
                             Rs. {{ number_format($err['base_tips'], 0) }}
                         </td>
-                        <td class="text-right font-bold" style="color: #991b1b;">
+                        <td class="text-right font-bold nowrap" style="color: #991b1b;">
                             - Rs. {{ number_format($err['estimated_deduction'], 0) }}
                         </td>
                         <td>
@@ -456,8 +464,8 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="7" class="text-right">Total Estimated Error Deduction:</td>
-                    <td class="text-right" style="color: #991b1b;">
+                    <td colspan="7" class="text-right nowrap">Total Estimated Error Deduction:</td>
+                    <td class="text-right nowrap" style="color: #991b1b;">
                         - Rs. {{ number_format($totalErrorDeduction, 0) }}
                     </td>
                     <td></td>
@@ -470,6 +478,7 @@
     <div class="print-footer-info">
         <span>Report Document: {{ $report->title }} &bull; Period: {{ ucfirst($report->month) }} {{ $report->year }}</span>
         <span>Generated from Waldo HR System on {{ now()->format('d M, Y h:i A') }}</span>
+    </div>
     </div>
 </body>
 </html>
