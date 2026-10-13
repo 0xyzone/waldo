@@ -361,13 +361,11 @@
             <thead>
                 <tr>
                     <th style="width: 28px;" class="text-center">#</th>
-                    <th style="width: 62px;" class="text-center">Status</th>
-                    <th style="width: 68px;" class="text-center">Code</th>
-                    <th style="width: 125px;">Employee Name</th>
-                    <th style="width: 95px;">Department</th>
-                    <th style="width: 95px;">Designation</th>
-                    <th style="width: 58px;" class="text-center">Type</th>
-                    <th style="width: 75px;" class="text-right">Amount</th>
+                    <th style="width: 72px;" class="text-center">Code</th>
+                    <th style="width: 135px;">Employee Name</th>
+                    <th style="width: 105px;">Department</th>
+                    <th style="width: 105px;">Designation</th>
+                    <th style="width: 85px;" class="text-right">Amount</th>
                     <th>Adjustment Remarks</th>
                 </tr>
             </thead>
@@ -375,26 +373,10 @@
                 @foreach($adjustments as $idx => $adj)
                     <tr>
                         <td class="text-center font-bold" style="color: #64748b;">{{ $idx + 1 }}</td>
-                        <td class="text-center">
-                            @if($adj['status'] === 'updated')
-                                <span class="badge-status status-updated">Updated</span>
-                            @elseif($adj['status'] === 'cancelled')
-                                <span class="badge-status" style="background:#e2e8f0; color:#475569;">Cancelled</span>
-                            @else
-                                <span class="badge-status status-pending">Pending</span>
-                            @endif
-                        </td>
                         <td class="text-center emp-code">{{ $adj['employee_code'] }}</td>
                         <td style="font-weight: 600;">{{ $adj['employee_name'] }}</td>
                         <td>{{ $adj['department'] }}</td>
                         <td>{{ $adj['designation'] }}</td>
-                        <td class="text-center">
-                            @if($adj['type'] === 'add')
-                                <span class="badge-add">+ ADD</span>
-                            @else
-                                <span class="badge-deduct">- DEDUCT</span>
-                            @endif
-                        </td>
                         <td class="text-right font-bold {{ $adj['type'] === 'add' ? 'badge-add' : 'badge-deduct' }}">
                             {{ $adj['type'] === 'add' ? '+' : '-' }} Rs. {{ number_format($adj['amount'], 0) }}
                         </td>
@@ -410,7 +392,7 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="7" class="text-right">Total Applied Adjustments Net:</td>
+                    <td colspan="5" class="text-right">Total Applied Adjustments Net:</td>
                     <td class="text-right" style="color: {{ ($totalAdd - $totalDeduct) >= 0 ? '#166534' : '#991b1b' }};">
                         Rs. {{ number_format($totalAdd - $totalDeduct, 0) }}
                     </td>
@@ -435,13 +417,13 @@
             <thead>
                 <tr>
                     <th style="width: 28px;" class="text-center">#</th>
-                    <th style="width: 68px;" class="text-center">Code</th>
-                    <th style="width: 125px;">Employee Name</th>
-                    <th style="width: 95px;">Department</th>
-                    <th style="width: 95px;">Designation</th>
-                    <th style="width: 58px;" class="text-center">Deduct %</th>
-                    <th style="width: 70px;" class="text-right">Base Tips</th>
-                    <th style="width: 75px;" class="text-right">Est. Deduct</th>
+                    <th style="width: 72px;" class="text-center">Code</th>
+                    <th style="width: 135px;">Employee Name</th>
+                    <th style="width: 105px;">Department</th>
+                    <th style="width: 105px;">Designation</th>
+                    <th style="width: 60px;" class="text-center">Deduct %</th>
+                    <th style="width: 75px;" class="text-right">Base Tips</th>
+                    <th style="width: 80px;" class="text-right">Est. Deduct</th>
                     <th>Error Reason / Remarks</th>
                 </tr>
             </thead>
