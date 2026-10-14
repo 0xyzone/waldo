@@ -321,52 +321,76 @@ class TipsReportPrintController extends Controller
         if ($year !== '') {
             $adjustmentsQuery->where('year', $year);
         }
+        $adjustmentsQuery->where(function ($q) {
+            $q->whereNull('status')->orWhereRaw('LOWER(status) != ?', ['cancelled']);
+        });
 
         $reportItems = $report->items->keyBy(fn ($i) => strtoupper(trim((string) $i->employee_code)));
 
-        $adjustments = $adjustmentsQuery->get()->map(function ($adj) use ($reportItems) {
-            $code = strtoupper(trim((string) $adj->employee_id));
-            $item = $reportItems->get($code);
+        $adjustments = $adjustmentsQuery->get()
+            ->filter(function ($adj) use ($reportItems) {
+                // Skip cancelled adjustments
+                if (strtolower(trim((string) ($adj->status ?? ''))) === 'cancelled') {
+                    return false;
+                }
 
-            return [
-                'employee_code' => $code,
-                'employee_name' => $item?->employee_name ?? $adj->employee?->name ?? 'Unknown',
-                'department' => $item?->department ?? $adj->employee?->department?->name ?? '-',
-                'designation' => $item?->designation ?? $adj->employee?->designation?->name ?? '-',
-                'type' => strtolower((string) ($adj->type ?? 'add')),
-                'amount' => (float) ($adj->amount ?? 0),
-                'status' => strtolower((string) ($adj->status ?? 'pending')),
-                'remarks' => trim((string) ($adj->remarks ?? '')),
-                'is_applied' => $item !== null,
-            ];
-        });
+                // Skip adjustments for employees not in the sheet
+                $code = strtoupper(trim((string) $adj->employee_id));
+
+                return $code !== '' && $reportItems->has($code);
+            })
+            ->map(function ($adj) use ($reportItems) {
+                $code = strtoupper(trim((string) $adj->employee_id));
+                $item = $reportItems->get($code);
+
+                return [
+                    'employee_code' => $code,
+                    'employee_name' => $item?->employee_name ?? $adj->employee?->name ?? 'Unknown',
+                    'department' => $item?->department ?? $adj->employee?->department?->name ?? '-',
+                    'designation' => $item?->designation ?? $adj->employee?->designation?->name ?? '-',
+                    'type' => strtolower((string) ($adj->type ?? 'add')),
+                    'amount' => (float) ($adj->amount ?? 0),
+                    'status' => strtolower((string) ($adj->status ?? 'pending')),
+                    'remarks' => trim((string) ($adj->remarks ?? '')),
+                    'is_applied' => true,
+                ];
+            })
+            ->values();
 
         $rawErrors = $report->company_errors ?? [];
-        $errors = collect(is_array($rawErrors) ? $rawErrors : [])->map(function ($err) use ($reportItems) {
-            $code = strtoupper(trim((string) ($err['employee_code'] ?? '')));
-            $item = $reportItems->get($code);
-            $pct = (float) ($err['percentage_to_deduct'] ?? 0);
-            $reason = trim((string) ($err['reason'] ?? ''));
+        $errors = collect(is_array($rawErrors) ? $rawErrors : [])
+            ->filter(function ($err) use ($reportItems) {
+                // Skip errors for employees not in the sheet
+                $code = strtoupper(trim((string) ($err['employee_code'] ?? '')));
 
-            $estimatedDeduction = 0.0;
-            if ($item) {
-                $multiplier = $item->is_fixed ? 1.0 : ($item->completion_factor + $item->point_value);
-                $adjustedBase = ($item->base_tips_amount ?? 0) * $multiplier;
-                $estimatedDeduction = round(($adjustedBase * $pct) / 100, 2);
-            }
+                return $code !== '' && $reportItems->has($code);
+            })
+            ->map(function ($err) use ($reportItems) {
+                $code = strtoupper(trim((string) ($err['employee_code'] ?? '')));
+                $item = $reportItems->get($code);
+                $pct = (float) ($err['percentage_to_deduct'] ?? 0);
+                $reason = trim((string) ($err['reason'] ?? ''));
 
-            return [
-                'employee_code' => $code,
-                'employee_name' => $item?->employee_name ?? $code,
-                'department' => $item?->department ?? '-',
-                'designation' => $item?->designation ?? '-',
-                'percentage_to_deduct' => $pct,
-                'reason' => $reason,
-                'base_tips' => $item?->base_tips_amount ?? 0,
-                'estimated_deduction' => $estimatedDeduction,
-                'is_applied' => $item !== null,
-            ];
-        });
+                $estimatedDeduction = 0.0;
+                if ($item) {
+                    $multiplier = $item->is_fixed ? 1.0 : ($item->completion_factor + $item->point_value);
+                    $adjustedBase = ($item->base_tips_amount ?? 0) * $multiplier;
+                    $estimatedDeduction = round(($adjustedBase * $pct) / 100, 2);
+                }
+
+                return [
+                    'employee_code' => $code,
+                    'employee_name' => $item?->employee_name ?? $code,
+                    'department' => $item?->department ?? '-',
+                    'designation' => $item?->designation ?? '-',
+                    'percentage_to_deduct' => $pct,
+                    'reason' => $reason,
+                    'base_tips' => $item?->base_tips_amount ?? 0,
+                    'estimated_deduction' => $estimatedDeduction,
+                    'is_applied' => true,
+                ];
+            })
+            ->values();
 
         $rawHeld = $report->held_tips ?? [];
         $heldByCode = collect(is_array($rawHeld) ? $rawHeld : [])->keyBy(fn ($h) => strtoupper(trim((string) ($h['employee_code'] ?? ''))));
