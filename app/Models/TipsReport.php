@@ -62,9 +62,12 @@ class TipsReport extends Model
     }
 
     /**
-     * Validate and lock the report, updating applied tips adjustments to 'updated'.
+     * Validate and lock the report, updating applied tips adjustments to 'updated'
+     * and releasing held tips to 'Release' for active employees whose tips were held for this month.
+     *
+     * @return array{adjustments_count: int, released_held_count: int}
      */
-    public function validateAndLock(?int $userId = null): int
+    public function validateAndLock(?int $userId = null): array
     {
         $month = strtolower((string) ($this->month ?? ''));
         $year = (string) ($this->year ?? '');
@@ -93,13 +96,36 @@ class TipsReport extends Model
                 ->update(['status' => 'updated']);
         }
 
+        // Release tips status to Release for employees whose tips were held for this month,
+        // only if the employee is in active state at the time of validating the report.
+        $heldCodes = collect($this->held_tips ?? [])
+            ->pluck('employee_code')
+            ->merge(
+                $this->items()->where(DB::raw('UPPER(TRIM(tips_status))'), 'HOLD')->pluck('employee_code')
+            )
+            ->map(fn ($c) => strtoupper(trim((string) $c)))
+            ->filter()
+            ->unique()
+            ->values()
+            ->toArray();
+
+        $releasedCount = 0;
+        if (! empty($heldCodes)) {
+            $releasedCount = Employee::whereIn(DB::raw('UPPER(TRIM(employee_code))'), $heldCodes)
+                ->whereRaw('LOWER(TRIM(employee_status)) = ?', ['active'])
+                ->update(['tips_status' => 'Release']);
+        }
+
         $this->update([
             'status' => 'validated',
             'validated_at' => now(),
             'validated_by' => $userId,
         ]);
 
-        return $updatedCount;
+        return [
+            'adjustments_count' => $updatedCount,
+            'released_held_count' => $releasedCount,
+        ];
     }
 
     /**

@@ -1278,14 +1278,17 @@ class ViewTipsReport extends ViewRecord implements HasTable
                 ->color('success')
                 ->requiresConfirmation()
                 ->modalHeading('Validate & Lock Tips Report')
-                ->modalDescription('Once validated, this tips report is permanently locked for auditing. Any applied tips adjustments will be updated to "Updated". Editing and recalculating will be disabled. Proceed?')
+                ->modalDescription('Once validated, this tips report is permanently locked for auditing. Any applied tips adjustments will be updated to "Updated", and active employees whose tips were held for this month will be reverted to "Release". Editing and recalculating will be disabled. Proceed?')
                 ->modalSubmitActionLabel('Yes, Validate & Lock')
                 ->visible(fn () => ! $this->record->isValidated())
                 ->action(function () {
-                    $updatedCount = $this->record->validateAndLock(auth()->id());
+                    $result = $this->record->validateAndLock(auth()->id());
                     $body = 'This tips report has been validated and locked.';
-                    if ($updatedCount > 0) {
-                        $body .= " {$updatedCount} applied tips adjustment(s) updated to 'Updated'.";
+                    if (($result['adjustments_count'] ?? 0) > 0) {
+                        $body .= " {$result['adjustments_count']} applied tips adjustment(s) updated to 'Updated'.";
+                    }
+                    if (($result['released_held_count'] ?? 0) > 0) {
+                        $body .= " {$result['released_held_count']} active employee(s) with held tips released to 'Release'.";
                     }
                     Notification::make()
                         ->title('Report Validated')
