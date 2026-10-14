@@ -42,6 +42,10 @@ class ViewTipsReport extends ViewRecord implements HasTable
 
     public array $editingErrorData = [];
 
+    public ?string $editingHeldTipCode = null;
+
+    public array $editingHeldTipData = [];
+
     public function mount(int|string $record): void
     {
         parent::mount($record);
@@ -274,9 +278,90 @@ class ViewTipsReport extends ViewRecord implements HasTable
         });
     }
 
+    public function getHeldTipsListProperty(): Collection
+    {
+        $reportItems = $this->record->items->keyBy(fn ($i) => strtoupper(trim((string) $i->employee_code)));
+        $rawHeld = $this->record->held_tips ?? [];
+        if (! is_array($rawHeld)) {
+            $rawHeld = [];
+        }
+
+        $heldByCode = collect($rawHeld)->keyBy(fn ($h) => strtoupper(trim((string) ($h['employee_code'] ?? ''))));
+
+        $holdItems = $this->record->items->filter(fn ($i) => strtoupper(trim((string) $i->tips_status)) === 'HOLD');
+        $allHeldCodes = $heldByCode->keys()
+            ->merge($holdItems->map(fn ($i) => strtoupper(trim((string) $i->employee_code))))
+            ->filter()
+            ->unique()
+            ->values();
+
+        $employees = null;
+
+        return $allHeldCodes->map(function ($code, $idx) use ($heldByCode, $reportItems, &$employees) {
+            $item = $reportItems->get($code);
+            $heldData = $heldByCode->get($code);
+
+            $name = $item?->employee_name;
+            $dept = $item?->department;
+            $desig = $item?->designation;
+            $baseTips = $item?->base_tips_amount;
+
+            if (! $item && $code !== '') {
+                if ($employees === null) {
+                    $employees = Employee::with(['department', 'designation'])
+                        ->get()
+                        ->keyBy(fn ($e) => strtoupper(trim((string) $e->employee_code)));
+                }
+                $emp = $employees->get($code);
+                $name = $emp?->name ?? $code;
+                $dept = $emp?->department?->name ?? '-';
+                $desig = $emp?->designation?->name ?? '-';
+                $baseTips = (float) ($emp?->tips_amount ?? 0);
+            }
+
+            $reason = trim((string) ($heldData['reason'] ?? ($item ? 'Employee tips status set to Hold' : 'Tips placed on Hold')));
+
+            $heldAmount = 0.0;
+            if ($item) {
+                $multiplier = $item->is_fixed ? 1.0 : ($item->completion_factor + $item->point_value);
+                $adjustedBase = ($item->base_tips_amount ?? 0) * $multiplier;
+                $effectivePercentage = max(0.0, ($item->tips_percentage - $item->percentage_to_deduct));
+                $rawCalculatedTips = ($adjustedBase * $effectivePercentage) / 100;
+                $rawFinalDistribution = $rawCalculatedTips + ($item->amount_to_adjust ?? 0) - ($item->amount_to_deduct ?? 0);
+                $heldAmount = $rawFinalDistribution > 0 ? TipsCalculationService::roundUpToNearest100($rawFinalDistribution) : 0.0;
+            } elseif ($baseTips) {
+                $heldAmount = (float) $baseTips;
+            }
+
+            return [
+                'index' => $idx,
+                'employee_code' => $code,
+                'employee_name' => $name ?? $code,
+                'department' => $dept ?? '-',
+                'designation' => $desig ?? '-',
+                'base_tips' => (float) ($baseTips ?? 0),
+                'held_amount' => $heldAmount,
+                'reason' => $reason,
+                'held_at' => $heldData['held_at'] ?? null,
+                'is_in_report' => $item !== null,
+                'report_item' => $item,
+            ];
+        });
+    }
+
+    public function getTotalHeldTipsCountProperty(): int
+    {
+        return $this->heldTipsList->count();
+    }
+
+    public function getTotalHeldTipsAmountProperty(): float
+    {
+        return (float) $this->heldTipsList->sum('held_amount');
+    }
+
     public function getTotalAdjustmentsAndErrorsCountProperty(): int
     {
-        return $this->adjustmentsList->count() + $this->errorsList->count();
+        return $this->adjustmentsList->count() + $this->errorsList->count() + $this->heldTipsList->count();
     }
 
     public function getTotalAddAdjustmentsAmountProperty(): float
@@ -403,9 +488,6 @@ class ViewTipsReport extends ViewRecord implements HasTable
                     ->color(fn ($state) => strtoupper((string) $state) === 'RELEASE' ? 'success' : 'danger'),
             ])
             ->headerActions([
-                $this
-                    ->addLeftOutAction()
-                    ->visible(fn () => $this->activeDepartment === 'Left Outs' && ! $this->record->isValidated()),
                 Action::make('printSheet')
                     ->label(fn () => 'Print '.$this->activeDepartment.' Payout Sheet')
                     ->icon('heroicon-m-printer')
@@ -968,15 +1050,238 @@ class ViewTipsReport extends ViewRecord implements HasTable
         $this->resetTable();
     }
 
+    public function addHeldTipAction(): Action
+    {
+        return Action::make('addHeldTip')
+            ->label('Hold Tips')
+            ->icon('heroicon-m-pause-circle')
+            ->color('warning')
+            ->modalHeading('Hold Employee Tips')
+            ->modalDescription('Place an employee\'s tips on hold. This updates the employee profile status to Hold and sets their payout to Rs. 0 in this report.')
+            ->modalSubmitActionLabel('Hold Tips')
+            ->visible(fn () => ! $this->record->isValidated())
+            ->schema([
+                Select::make('employee_code')
+                    ->label('Employee')
+                    ->options(fn () => Employee::query()
+                        ->whereIn('employee_status', ['Active', 'Resigning This Month'])
+                        ->orderBy('employee_code')
+                        ->get()
+                        ->mapWithKeys(fn ($e) => [
+                            $e->employee_code => strtoupper($e->employee_code).' — '.$e->name.' ('.($e->department?->name ?? 'No Dept').' - Status: '.($e->tips_status ?? 'Release').')',
+                        ])
+                        ->toArray())
+                    ->searchable()
+                    ->required(),
+                Textarea::make('reason')
+                    ->label('Reason for Holding Tips')
+                    ->placeholder('e.g., Under inquiry, Pending documents, Performance hold, Suspended...')
+                    ->required()
+                    ->rows(3),
+            ])
+            ->action(function (array $data) {
+                $code = strtoupper(trim((string) $data['employee_code']));
+                $reason = trim((string) $data['reason']);
+
+                // 1. Update Employee model tips_status to Hold
+                $employee = Employee::where('employee_code', $code)->first();
+                if ($employee) {
+                    $employee->update(['tips_status' => 'Hold']);
+                }
+
+                // 2. Update held_tips JSON on TipsReport
+                $held = $this->record->held_tips ?? [];
+                if (! is_array($held)) {
+                    $held = [];
+                }
+                $found = false;
+                foreach ($held as &$h) {
+                    if (strtoupper(trim((string) ($h['employee_code'] ?? ''))) === $code) {
+                        $h['reason'] = $reason;
+                        $h['held_at'] = now()->toDateTimeString();
+                        $found = true;
+                        break;
+                    }
+                }
+                unset($h);
+                if (! $found) {
+                    $held[] = [
+                        'employee_code' => $code,
+                        'reason' => $reason,
+                        'held_at' => now()->toDateTimeString(),
+                    ];
+                }
+                $this->record->update(['held_tips' => $held]);
+
+                // 3. Update matching TipsReportItem if exists
+                $item = TipsReportItem::where('tips_report_id', $this->record->id)
+                    ->where('employee_code', $code)
+                    ->first();
+
+                if ($item) {
+                    $item->update([
+                        'tips_status' => 'Hold',
+                        'calculated_tips' => 0.0,
+                        'unrounded_amount' => 0.0,
+                        'final_distribution_amount' => 0.0,
+                    ]);
+                }
+
+                Notification::make()
+                    ->title('Employee Tips Held')
+                    ->body("Tips status for {$code} updated to Hold and payout held in this report.")
+                    ->warning()
+                    ->send();
+
+                $this->record->refresh();
+                $this->resetTable();
+            });
+    }
+
+    public function deleteHeldTip(string $employeeCode): void
+    {
+        if ($this->record->isValidated()) {
+            return;
+        }
+
+        $code = strtoupper(trim($employeeCode));
+
+        // 1. Revert Employee model tips_status to Release
+        $employee = Employee::where('employee_code', $code)->first();
+        if ($employee) {
+            $employee->update(['tips_status' => 'Release']);
+        }
+
+        // 2. Remove from held_tips on TipsReport
+        $held = $this->record->held_tips ?? [];
+        if (is_array($held)) {
+            $held = array_values(array_filter($held, fn ($h) => strtoupper(trim((string) ($h['employee_code'] ?? ''))) !== $code));
+            $this->record->update(['held_tips' => $held]);
+        }
+
+        // 3. Revert TipsReportItem tips_status to Release and recalculate payout
+        $item = TipsReportItem::where('tips_report_id', $this->record->id)
+            ->where('employee_code', $code)
+            ->first();
+
+        if ($item) {
+            $item->update(['tips_status' => 'Release']);
+            $this->recalculateItemPayout($item);
+        }
+
+        Notification::make()
+            ->title('Tips Status Reverted to Release')
+            ->body("Tips status for {$code} reverted to Release and distribution amount restored.")
+            ->success()
+            ->send();
+
+        $this->record->refresh();
+        $this->resetTable();
+    }
+
+    public function recalculateItemPayout(TipsReportItem $item): void
+    {
+        if ($item->is_blank) {
+            return;
+        }
+
+        if (strtoupper(trim((string) $item->tips_status)) === 'HOLD') {
+            $item->update([
+                'calculated_tips' => 0.0,
+                'unrounded_amount' => 0.0,
+                'final_distribution_amount' => 0.0,
+            ]);
+
+            return;
+        }
+
+        $multiplier = $item->is_fixed ? 1.0 : ($item->completion_factor + $item->point_value);
+        $adjustedBase = $item->base_tips_amount * $multiplier;
+        $effectivePercentage = max(0.0, ($item->tips_percentage - $item->percentage_to_deduct));
+        $rawCalculatedTips = ($adjustedBase * $effectivePercentage) / 100;
+        $calculatedTips = TipsCalculationService::roundUpToNearest100($rawCalculatedTips);
+        $rawFinalDistribution = $rawCalculatedTips + $item->amount_to_adjust - $item->amount_to_deduct;
+
+        if ($rawFinalDistribution <= 0) {
+            $finalDistribution = 0.0;
+            $unroundedAmount = 0.0;
+        } else {
+            $finalDistribution = TipsCalculationService::roundUpToNearest100($rawFinalDistribution);
+            $unroundedAmount = round($rawFinalDistribution, 2);
+        }
+
+        $item->update([
+            'calculated_tips' => $calculatedTips,
+            'unrounded_amount' => $unroundedAmount,
+            'final_distribution_amount' => $finalDistribution,
+        ]);
+    }
+
+    public function startEditingHeldTip(string $code): void
+    {
+        if ($this->record->isValidated()) {
+            return;
+        }
+
+        $this->editingHeldTipCode = $code;
+        $held = collect($this->record->held_tips ?? [])->firstWhere(fn ($h) => strtoupper(trim((string) ($h['employee_code'] ?? ''))) === strtoupper(trim($code)));
+        $this->editingHeldTipData = [
+            'reason' => (string) ($held['reason'] ?? ''),
+        ];
+    }
+
+    public function cancelEditingHeldTip(): void
+    {
+        $this->editingHeldTipCode = null;
+        $this->editingHeldTipData = [];
+    }
+
+    public function saveEditingHeldTip(): void
+    {
+        if ($this->record->isValidated() || ! $this->editingHeldTipCode) {
+            $this->cancelEditingHeldTip();
+
+            return;
+        }
+
+        $code = strtoupper(trim($this->editingHeldTipCode));
+        $reason = trim((string) ($this->editingHeldTipData['reason'] ?? ''));
+
+        $held = $this->record->held_tips ?? [];
+        if (! is_array($held)) {
+            $held = [];
+        }
+        $found = false;
+        foreach ($held as &$h) {
+            if (strtoupper(trim((string) ($h['employee_code'] ?? ''))) === $code) {
+                $h['reason'] = $reason;
+                $found = true;
+                break;
+            }
+        }
+        unset($h);
+        if (! $found) {
+            $held[] = [
+                'employee_code' => $code,
+                'reason' => $reason,
+                'held_at' => now()->toDateTimeString(),
+            ];
+        }
+        $this->record->update(['held_tips' => $held]);
+
+        Notification::make()
+            ->title('Hold Reason Updated')
+            ->body("Hold reason for {$code} has been updated.")
+            ->success()
+            ->send();
+
+        $this->cancelEditingHeldTip();
+        $this->record->refresh();
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            $this->addAdjustmentAction()
-                ->visible(fn () => $this->activeDepartment === 'Adjustments & Errors' && ! $this->record->isValidated()),
-            $this->addErrorAction()
-                ->visible(fn () => $this->activeDepartment === 'Adjustments & Errors' && ! $this->record->isValidated()),
-            $this->addLeftOutAction()
-                ->visible(fn () => $this->activeDepartment === 'Left Outs' && ! $this->record->isValidated()),
             Action::make('validateReport')
                 ->label('Validate & Lock')
                 ->icon('heroicon-m-check-badge')

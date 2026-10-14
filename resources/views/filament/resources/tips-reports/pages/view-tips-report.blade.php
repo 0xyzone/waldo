@@ -88,8 +88,9 @@
                 </div>
                 <span class="text-amber-700 dark:text-amber-300 hidden md:inline">•</span>
                 <span class="text-amber-800 dark:text-amber-300">
-                    <strong>{{ $this->adjustmentsList->count() }}</strong> Adjustments ({{ $this->adjustmentsList->where('type', 'add')->count() }} Added, {{ $this->adjustmentsList->where('type', 'deduct')->count() }} Deducted)
-                    & <strong>{{ $this->errorsList->count() }}</strong> Error Penalties
+                    <strong>{{ $this->adjustmentsList->count() }}</strong> Adjustments ({{ $this->adjustmentsList->where('type', 'add')->count() }} Added, {{ $this->adjustmentsList->where('type', 'deduct')->count() }} Deducted),
+                    <strong>{{ $this->errorsList->count() }}</strong> Error Penalties
+                    & <strong>{{ $this->heldTipsList->count() }}</strong> Tips Held
                 </span>
             </div>
             <div class="flex items-center gap-2">
@@ -168,7 +169,7 @@
     @if($activeDepartment === 'Adjustments & Errors')
         <div x-data="{ activeFilter: 'all', search: '' }" class="space-y-4">
             {{-- KPI Summary Cards for Adjustments & Errors --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
                 {{-- Card 1: Add Adjustments (+) --}}
                 <div class="fi-section rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
                     <div class="flex items-center justify-between">
@@ -181,7 +182,7 @@
                         + Rs. {{ number_format($this->totalAddAdjustmentsAmount, 0) }}
                     </div>
                     <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center justify-between">
-                        <span>{{ $this->adjustmentsList->where('type', 'add')->count() }} Additions applied</span>
+                        <span>{{ $this->adjustmentsList->where('type', 'add')->count() }} Additions</span>
                         <span class="text-emerald-600 dark:text-emerald-400 font-medium">Payout Bonus</span>
                     </div>
                 </div>
@@ -198,7 +199,7 @@
                         - Rs. {{ number_format($this->totalDeductAdjustmentsAmount, 0) }}
                     </div>
                     <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center justify-between">
-                        <span>{{ $this->adjustmentsList->where('type', 'deduct')->count() }} Deductions applied</span>
+                        <span>{{ $this->adjustmentsList->where('type', 'deduct')->count() }} Deductions</span>
                         <span class="text-rose-600 dark:text-rose-400 font-medium">Payout Reduction</span>
                     </div>
                 </div>
@@ -206,7 +207,7 @@
                 {{-- Card 3: Company Error Penalties --}}
                 <div class="fi-section rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Company Error Penalties</span>
+                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Error Penalties</span>
                         <span class="p-1.5 rounded-lg bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400">
                             <x-heroicon-m-exclamation-triangle class="w-4 h-4" />
                         </span>
@@ -215,15 +216,32 @@
                         - Rs. {{ number_format($this->totalEstimatedErrorDeduction, 0) }}
                     </div>
                     <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center justify-between">
-                        <span>{{ $this->errorsList->count() }} Penalized staff</span>
-                        <span class="text-amber-600 dark:text-amber-400 font-medium">Infraction Deductions</span>
+                        <span>{{ $this->errorsList->count() }} Staff Penalized</span>
+                        <span class="text-amber-600 dark:text-amber-400 font-medium">Infraction Deduct</span>
                     </div>
                 </div>
 
-                {{-- Card 4: Net Adjustment Fund Impact --}}
+                {{-- Card 4: Tips On Hold --}}
                 <div class="fi-section rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
                     <div class="flex items-center justify-between">
-                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Net Adjustments Impact</span>
+                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Tips On Hold</span>
+                        <span class="p-1.5 rounded-lg bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400">
+                            <x-heroicon-m-pause-circle class="w-4 h-4" />
+                        </span>
+                    </div>
+                    <div class="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">
+                        Rs. {{ number_format($this->totalHeldTipsAmount, 0) }}
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center justify-between">
+                        <span>{{ $this->heldTipsList->count() }} Staff on Hold</span>
+                        <span class="text-amber-600 dark:text-amber-400 font-medium">Payout Held (0)</span>
+                    </div>
+                </div>
+
+                {{-- Card 5: Net Adjustment Fund Impact --}}
+                <div class="fi-section rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Net Adjustments</span>
                         <span class="p-1.5 rounded-lg bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-400">
                             <x-heroicon-m-calculator class="w-4 h-4" />
                         </span>
@@ -232,8 +250,8 @@
                         {{ $this->totalNetAdjustmentAmount >= 0 ? '+' : '' }} Rs. {{ number_format($this->totalNetAdjustmentAmount, 0) }}
                     </div>
                     <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center justify-between">
-                        <span>{{ $this->totalAdjustmentsAndErrorsCount }} Total audit items</span>
-                        <span class="text-gray-400">Net Payout Shift</span>
+                        <span>{{ $this->totalAdjustmentsAndErrorsCount }} Total Items</span>
+                        <span class="text-gray-400">Net Shift</span>
                     </div>
                 </div>
             </div>
@@ -260,6 +278,12 @@
                             class="px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer">
                         Company Errors ({{ $this->errorsList->count() }})
                     </button>
+                    <button type="button"
+                            @click="activeFilter = 'held'"
+                            :class="activeFilter === 'held' ? 'bg-primary-600 text-white shadow-sm' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'"
+                            class="px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer">
+                        Tips Held ({{ $this->heldTipsList->count() }})
+                    </button>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                     @if(!$record->isValidated())
@@ -274,6 +298,12 @@
                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white shadow-sm transition cursor-pointer">
                             <x-heroicon-m-plus-circle class="w-4 h-4" />
                             <span>Add Company Error</span>
+                        </button>
+                        <button type="button"
+                                wire:click="mountAction('addHeldTip')"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-600 hover:bg-amber-500 text-white shadow-sm transition cursor-pointer">
+                            <x-heroicon-m-pause-circle class="w-4 h-4" />
+                            <span>Hold Tips</span>
                         </button>
                     @endif
                     <div class="w-full sm:w-64">
@@ -667,6 +697,183 @@
                                                             class="p-1.5 rounded-lg text-gray-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition cursor-pointer">
                                                         <x-heroicon-m-pencil-square class="w-4 h-4" />
                                                     </button>
+                                                @endif
+                                            @else
+                                                <span class="text-gray-300 dark:text-gray-700">-</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
+
+            {{-- SECTION 3: EMPLOYEES WITH TIPS HELD --}}
+            <div x-show="activeFilter === 'all' || activeFilter === 'held'"
+                 class="fi-section rounded-xl bg-white shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-3 bg-amber-50/70 dark:bg-amber-950/40 border-b border-amber-200/80 dark:border-amber-800/60">
+                    <div class="flex items-center gap-2">
+                        <span class="p-1 rounded bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300">
+                            <x-heroicon-m-pause-circle class="w-4 h-4" />
+                        </span>
+                        <h3 class="text-sm font-bold text-gray-900 dark:text-white">Employees With Tips Held</h3>
+                        <span class="px-2 py-0.5 rounded-full bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100 text-[11px] font-bold">
+                            {{ $this->heldTipsList->count() }} staff on hold
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-amber-800 dark:text-amber-300 hidden sm:inline">
+                            Total Held Amount: <strong class="text-amber-700 dark:text-amber-400">Rs. {{ number_format($this->totalHeldTipsAmount, 0) }}</strong>
+                        </span>
+                        @if(!$record->isValidated())
+                            <button type="button"
+                                    wire:click="mountAction('addHeldTip')"
+                                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-600 hover:bg-amber-500 text-white shadow-sm transition cursor-pointer">
+                                <x-heroicon-m-plus class="w-3.5 h-3.5" />
+                                <span>Hold Tips</span>
+                            </button>
+                        @endif
+                    </div>
+                </div>
+
+                @if($this->heldTipsList->isEmpty())
+                    <div class="p-8 text-center text-gray-400 text-xs">
+                        <x-heroicon-o-check-badge class="w-8 h-8 mx-auto mb-2 opacity-50 text-emerald-500" />
+                        <p class="font-medium text-gray-600 dark:text-gray-300">No staff tips currently placed on hold</p>
+                        <p class="text-gray-400 mt-0.5">All staff tips for this report period are marked as Release.</p>
+                        @if(!$record->isValidated())
+                            <div class="mt-3">
+                                <button type="button"
+                                        wire:click="mountAction('addHeldTip')"
+                                        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-600 hover:bg-amber-500 text-white shadow-sm transition cursor-pointer">
+                                    <x-heroicon-m-plus class="w-3.5 h-3.5" />
+                                    <span>Hold Tips</span>
+                                </button>
+                            </div>
+                        @endif
+                    </div>
+                @else
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs divide-y divide-gray-200 dark:divide-gray-800">
+                            <thead class="bg-gray-50/50 dark:bg-gray-800/30 text-[11px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">
+                                <tr>
+                                    <th class="py-2.5 px-3 w-10 text-center">#</th>
+                                    <th class="py-2.5 px-3 w-24 text-center">Status</th>
+                                    <th class="py-2.5 px-3 w-28">Code</th>
+                                    <th class="py-2.5 px-3">Employee Name</th>
+                                    <th class="py-2.5 px-3">Department</th>
+                                    <th class="py-2.5 px-3">Designation</th>
+                                    <th class="py-2.5 px-3 w-28 text-right">Base Tips</th>
+                                    <th class="py-2.5 px-3 w-28 text-right">Held Amount</th>
+                                    <th class="py-2.5 px-3 min-w-[240px]">Hold Reason / Remarks</th>
+                                    <th class="py-2.5 px-3 w-24 text-center">In Report</th>
+                                    <th class="py-2.5 px-3 w-24 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-800 font-normal text-gray-700 dark:text-gray-300">
+                                @foreach($this->heldTipsList as $idx => $held)
+                                    @php
+                                        $heldSearch = strtolower($held['employee_code'].' '.$held['employee_name'].' '.$held['department'].' '.$held['designation'].' '.$held['reason']);
+                                        $isEditingHeld = ($this->editingHeldTipCode === $held['employee_code']);
+                                    @endphp
+                                    <tr x-show="!search || '{{ addslashes($heldSearch) }}'.includes(search.toLowerCase())"
+                                        class="{{ $isEditingHeld ? 'bg-amber-50/60 dark:bg-amber-950/40 ring-1 ring-amber-500/30' : 'hover:bg-gray-50/80 dark:hover:bg-gray-800/50' }} transition">
+                                        <td class="py-3 px-3 text-center text-gray-400 font-mono">{{ $idx + 1 }}</td>
+                                        <td class="py-3 px-3 text-center">
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
+                                                <x-heroicon-m-pause class="w-3 h-3 text-rose-600" />
+                                                <span>HOLD</span>
+                                            </span>
+                                        </td>
+                                        <td class="py-3 px-3 font-bold font-mono text-gray-900 dark:text-white">
+                                            <span class="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                                                {{ $held['employee_code'] }}
+                                            </span>
+                                        </td>
+                                        <td class="py-3 px-3 font-medium text-gray-900 dark:text-gray-100">
+                                            {{ $held['employee_name'] }}
+                                        </td>
+                                        <td class="py-3 px-3">
+                                            <span class="px-2 py-0.5 rounded text-[11px] bg-gray-100 dark:bg-gray-800 font-medium">
+                                                {{ $held['department'] }}
+                                            </span>
+                                        </td>
+                                        <td class="py-3 px-3 text-gray-600 dark:text-gray-400">
+                                            {{ $held['designation'] }}
+                                        </td>
+                                        <td class="py-3 px-3 text-right text-gray-600 dark:text-gray-400">
+                                            Rs. {{ number_format($held['base_tips'], 0) }}
+                                        </td>
+                                        <td class="py-3 px-3 text-right font-bold text-amber-700 dark:text-amber-400">
+                                            Rs. {{ number_format($held['held_amount'], 0) }}
+                                        </td>
+                                        <td class="py-3 px-3">
+                                            @if($isEditingHeld)
+                                                <input type="text"
+                                                       wire:model.defer="editingHeldTipData.reason"
+                                                       wire:keydown.enter="saveEditingHeldTip"
+                                                       wire:keydown.escape="cancelEditingHeldTip"
+                                                       placeholder="Enter reason for holding tips..."
+                                                       class="w-full text-xs rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 py-1 px-2 focus:border-amber-500 focus:ring-amber-500" />
+                                            @else
+                                                @if(!empty($held['reason']))
+                                                    <div class="flex items-start gap-1.5 p-2 rounded-lg bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 text-amber-950 dark:text-amber-200 text-xs">
+                                                        <x-heroicon-m-information-circle class="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                                                        <span class="leading-relaxed">{{ $held['reason'] }}</span>
+                                                    </div>
+                                                @else
+                                                    <span class="text-gray-400 italic text-[11px]">No specific reason specified</span>
+                                                @endif
+                                            @endif
+                                        </td>
+                                        <td class="py-3 px-3 text-center">
+                                            @if($held['is_in_report'])
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                                    <x-heroicon-m-check-circle class="w-3 h-3 text-emerald-500" />
+                                                    <span>In Sheet</span>
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+                                                      title="Staff code was not matched in this month's attendance sheet">
+                                                    <span>Not in Sheet</span>
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td class="py-3 px-3 text-center">
+                                            @if(!$record->isValidated())
+                                                @if($isEditingHeld)
+                                                    <div class="flex items-center justify-center gap-1">
+                                                        <button type="button"
+                                                                wire:click="saveEditingHeldTip"
+                                                                title="Save Hold Reason (Enter)"
+                                                                class="p-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition cursor-pointer">
+                                                            <x-heroicon-m-check class="w-3.5 h-3.5" />
+                                                        </button>
+                                                        <button type="button"
+                                                                wire:click="cancelEditingHeldTip"
+                                                                title="Cancel (Esc)"
+                                                                class="p-1.5 rounded-lg bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 transition cursor-pointer">
+                                                            <x-heroicon-m-x-mark class="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                @else
+                                                    <div class="flex items-center justify-center gap-1">
+                                                        <button type="button"
+                                                                wire:click="startEditingHeldTip('{{ $held['employee_code'] }}')"
+                                                                title="Edit Hold Reason"
+                                                                class="p-1.5 rounded-lg text-gray-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/50 transition cursor-pointer">
+                                                            <x-heroicon-m-pencil-square class="w-4 h-4" />
+                                                        </button>
+                                                        <button type="button"
+                                                                wire:click="deleteHeldTip('{{ $held['employee_code'] }}')"
+                                                                wire:confirm="Are you sure you want to release the hold on employee {{ $held['employee_code'] }} ({{ $held['employee_name'] }})? Their tips status will be reverted to 'Release' and their payout will be recalculated and restored."
+                                                                title="Release Hold (Revert to Release)"
+                                                                class="p-1.5 rounded-lg text-gray-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition cursor-pointer">
+                                                            <x-heroicon-m-trash class="w-4 h-4" />
+                                                        </button>
+                                                    </div>
                                                 @endif
                                             @else
                                                 <span class="text-gray-300 dark:text-gray-700">-</span>

@@ -19,6 +19,7 @@ class TipsReport extends Model
         'collection_summary',
         'company_errors',
         'left_outs',
+        'held_tips',
         'status',
         'validated_at',
         'validated_by',
@@ -33,6 +34,7 @@ class TipsReport extends Model
             'collection_summary' => 'array',
             'company_errors' => 'array',
             'left_outs' => 'array',
+            'held_tips' => 'array',
         ];
     }
 

@@ -308,7 +308,7 @@
     {{-- Main Header --}}
     <div class="header-container">
         <h1 class="header-title">{{ $report->title }}</h1>
-        <div class="header-subtitle">Applied Tips Adjustments & Company Error Penalties Report</div>
+        <div class="header-subtitle">Applied Tips Adjustments, Company Error Penalties & Held Tips Report</div>
 
         <div class="header-meta-box">
             <div class="meta-row">
@@ -344,6 +344,11 @@
             <div class="kpi-title">Company Error Penalties</div>
             <div class="kpi-val" style="color: #b45309;">- Rs. {{ number_format($totalErrorDeduction, 0) }}</div>
             <div class="kpi-sub">{{ $errors->count() }} staff infractions</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">Tips On Hold</div>
+            <div class="kpi-val" style="color: #b45309;">Rs. {{ number_format($totalHeldAmount, 0) }}</div>
+            <div class="kpi-sub">{{ $heldTips->count() }} staff tips held</div>
         </div>
         <div class="kpi-card">
             <div class="kpi-title">Net Adjustment Impact</div>
@@ -467,6 +472,72 @@
                     <td colspan="7" class="text-right nowrap">Total Estimated Error Deduction:</td>
                     <td class="text-right nowrap" style="color: #991b1b;">
                         - Rs. {{ number_format($totalErrorDeduction, 0) }}
+                    </td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    @endif
+
+    {{-- SECTION 3: EMPLOYEES WITH TIPS HELD --}}
+    <div class="section-header" style="margin-top: 14px;">
+        <div class="section-title">3. Employees With Tips Held (On Hold Status)</div>
+        <div class="section-badge">{{ $heldTips->count() }} Staff</div>
+    </div>
+
+    @if($heldTips->isEmpty())
+        <div style="padding: 12px; text-align: center; border: 1px dashed #cbd5e1; border-radius: 4px; color: #64748b; font-size: 11px; margin-bottom: 12px;">
+            No employee tips are placed on hold for {{ ucfirst($report->month) }} {{ $report->year }}.
+        </div>
+    @else
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 3.5%;" class="text-center nowrap">#</th>
+                    <th style="width: 7%;" class="text-center nowrap">Status</th>
+                    <th style="width: 8.5%;" class="text-center nowrap">Code</th>
+                    <th style="width: 17%;" class="nowrap">Employee Name</th>
+                    <th style="width: 9%;" class="nowrap">Department</th>
+                    <th style="width: 12%;" class="nowrap">Designation</th>
+                    <th style="width: 9%;" class="text-right nowrap">Base Tips</th>
+                    <th style="width: 10%;" class="text-right nowrap">Held Amount</th>
+                    <th style="width: 24%;">Hold Reason / Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($heldTips as $idx => $held)
+                    <tr>
+                        <td class="text-center font-bold nowrap" style="color: #64748b;">{{ $idx + 1 }}</td>
+                        <td class="text-center nowrap">
+                            <span style="display: inline-block; padding: 1px 5px; font-size: 8.5px; font-weight: bold; background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; border-radius: 3px;">
+                                HOLD
+                            </span>
+                        </td>
+                        <td class="text-center emp-code nowrap">{{ $held['employee_code'] }}</td>
+                        <td style="font-weight: 600;">{{ $held['employee_name'] }}</td>
+                        <td class="nowrap">{{ $held['department'] }}</td>
+                        <td>{{ $held['designation'] }}</td>
+                        <td class="text-right nowrap" style="color: #475569;">
+                            Rs. {{ number_format($held['base_tips'], 0) }}
+                        </td>
+                        <td class="text-right font-bold nowrap" style="color: #b45309;">
+                            Rs. {{ number_format($held['held_amount'], 0) }}
+                        </td>
+                        <td>
+                            @if(!empty($held['reason']))
+                                <div class="remarks-text" style="color: #78350f;">{{ $held['reason'] }}</div>
+                            @else
+                                <span class="empty-cell">-</span>
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="7" class="text-right nowrap">Total Held Tips Amount:</td>
+                    <td class="text-right nowrap" style="color: #b45309;">
+                        Rs. {{ number_format($totalHeldAmount, 0) }}
                     </td>
                     <td></td>
                 </tr>

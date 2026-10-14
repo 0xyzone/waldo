@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Employee;
 use App\Models\TipsAdjustment;
 use App\Models\TipsReport;
+use App\Services\TipsCalculationService;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -344,13 +346,74 @@ class TipsReportPrintController extends Controller
             ];
         });
 
+        $rawHeld = $report->held_tips ?? [];
+        $heldByCode = collect(is_array($rawHeld) ? $rawHeld : [])->keyBy(fn ($h) => strtoupper(trim((string) ($h['employee_code'] ?? ''))));
+
+        $holdItems = $report->items->filter(fn ($i) => strtoupper(trim((string) $i->tips_status)) === 'HOLD');
+        $allHeldCodes = $heldByCode->keys()
+            ->merge($holdItems->map(fn ($i) => strtoupper(trim((string) $i->employee_code))))
+            ->filter()
+            ->unique()
+            ->values();
+
+        $employees = null;
+        $heldTips = $allHeldCodes->map(function ($code) use ($heldByCode, $reportItems, &$employees) {
+            $item = $reportItems->get($code);
+            $heldData = $heldByCode->get($code);
+
+            $name = $item?->employee_name;
+            $dept = $item?->department;
+            $desig = $item?->designation;
+            $baseTips = (float) ($item?->base_tips_amount ?? 0);
+
+            if (! $item && $code !== '') {
+                if ($employees === null) {
+                    $employees = Employee::with(['department', 'designation'])
+                        ->get()
+                        ->keyBy(fn ($e) => strtoupper(trim((string) $e->employee_code)));
+                }
+                $emp = $employees->get($code);
+                $name = $emp?->name ?? $code;
+                $dept = $emp?->department?->name ?? '-';
+                $desig = $emp?->designation?->name ?? '-';
+                $baseTips = (float) ($emp?->tips_amount ?? 0);
+            }
+
+            $reason = trim((string) ($heldData['reason'] ?? ($item ? 'Employee tips status set to Hold' : 'Tips placed on Hold')));
+
+            $heldAmount = 0.0;
+            if ($item) {
+                $multiplier = $item->is_fixed ? 1.0 : ($item->completion_factor + $item->point_value);
+                $adjustedBase = ($item->base_tips_amount ?? 0) * $multiplier;
+                $effectivePercentage = max(0.0, ($item->tips_percentage - $item->percentage_to_deduct));
+                $rawCalculatedTips = ($adjustedBase * $effectivePercentage) / 100;
+                $rawFinalDistribution = $rawCalculatedTips + ($item->amount_to_adjust ?? 0) - ($item->amount_to_deduct ?? 0);
+                $heldAmount = $rawFinalDistribution > 0 ? TipsCalculationService::roundUpToNearest100($rawFinalDistribution) : 0.0;
+            } elseif ($baseTips) {
+                $heldAmount = $baseTips;
+            }
+
+            return [
+                'employee_code' => $code,
+                'employee_name' => $name ?? $code,
+                'department' => $dept ?? '-',
+                'designation' => $desig ?? '-',
+                'base_tips' => $baseTips,
+                'held_amount' => $heldAmount,
+                'reason' => $reason,
+                'is_applied' => $item !== null,
+            ];
+        });
+
         return response()->view('tips.print-adjustments-errors', [
             'report' => $report,
             'adjustments' => $adjustments,
             'errors' => $errors,
+            'heldTips' => $heldTips,
             'totalAdd' => (float) $adjustments->where('type', 'add')->sum('amount'),
             'totalDeduct' => (float) $adjustments->where('type', 'deduct')->sum('amount'),
             'totalErrorDeduction' => (float) $errors->sum('estimated_deduction'),
+            'totalHeldAmount' => (float) $heldTips->sum('held_amount'),
         ]);
     }
 }
