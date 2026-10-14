@@ -315,7 +315,7 @@ class SsfUploadGenerator extends Page
         $lastName = trim((string) ($employee->last_name ?? ''));
         $gender = trim((string) ($employee->gender ?? ''));
         $dobBs = $this->normalizeDateString($employee->dob_bs);
-        $country = 'Nepal';
+        $country = 'NEPAL';
         $email = trim((string) ($employee->email ?? ''));
         $contactType = 'Mobile';
         $contactNo = trim((string) ($employee->contact_number ?? ''));
