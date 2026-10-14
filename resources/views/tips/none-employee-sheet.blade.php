@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <title>{{ $report->title }} - None Employee Payout Sheet</title>
     <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         @page {
             size: A4 portrait;
-            margin: 10mm 12mm;
+            margin: 8mm 10mm;
         }
 
         body {
@@ -16,6 +20,8 @@
             background: #fff;
             margin: 0;
             padding: 10px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .header-container {
@@ -126,18 +132,22 @@
 
         table.sheet-table {
             width: 100%;
+            max-width: 100%;
             table-layout: fixed;
             border-collapse: collapse;
             margin-bottom: 24px;
+            box-sizing: border-box;
         }
 
         table.sheet-table th,
         table.sheet-table td {
             border: 1px solid #333;
-            padding: 6px 7px;
+            padding: 5px 6px;
             text-align: left;
             vertical-align: middle;
             word-wrap: break-word;
+            overflow-wrap: break-word;
+            box-sizing: border-box;
         }
 
         table.sheet-table th {
@@ -163,11 +173,25 @@
         }
 
         @media print {
+            @page {
+                size: A4 portrait;
+                margin: 8mm 10mm;
+            }
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
             .no-print {
                 display: none !important;
             }
-            body {
-                padding: 0;
+            table.sheet-table {
+                width: 100% !important;
+                max-width: 100% !important;
+                page-break-inside: auto;
+            }
+            table.sheet-table tr {
+                page-break-inside: avoid;
             }
         }
     </style>
@@ -221,13 +245,13 @@
     <table class="sheet-table">
         <thead>
             <tr>
-                <th style="width: 35px;">S.N.</th>
-                <th style="width: 65px;">Code</th>
-                <th style="width: 180px;">Name</th>
-                <th style="width: 150px;">Designation</th>
-                <th style="width: 55px;">Tips %</th>
-                <th style="width: 80px;">Amount</th>
-                <th style="width: 140px;">Signature</th>
+                <th style="width: 5%;">S.N.</th>
+                <th style="width: 10%;">Code</th>
+                <th style="width: 25%;">Name</th>
+                <th style="width: 22%;">Designation</th>
+                <th style="width: 9%;">Tips %</th>
+                <th style="width: 12%;">Amount</th>
+                <th style="width: 17%;">Signature</th>
             </tr>
         </thead>
         <tbody>

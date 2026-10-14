@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <title>Tips Amount Summary - {{ ucfirst($report->month) }} {{ $report->year }}</title>
     <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         @page {
             size: A4 landscape;
-            margin: 10mm 12mm;
+            margin: 8mm 10mm;
         }
 
         body {
@@ -16,6 +20,8 @@
             background: #fff;
             margin: 0;
             padding: 15px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .header-box {
@@ -35,16 +41,22 @@
 
         table.summary-table {
             width: 100%;
+            max-width: 100%;
+            table-layout: fixed;
             border-collapse: collapse;
             border: 2px solid #000;
-            font-size: 12px;
+            font-size: 11px;
+            box-sizing: border-box;
         }
 
         table.summary-table th,
         table.summary-table td {
             border: 1px solid #000;
-            padding: 6px 8px;
+            padding: 5px 6px;
             vertical-align: middle;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            box-sizing: border-box;
         }
 
         table.summary-table th {
@@ -79,11 +91,25 @@
         }
 
         @media print {
+            @page {
+                size: A4 landscape;
+                margin: 8mm 10mm;
+            }
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
             .no-print {
                 display: none !important;
             }
-            body {
-                padding: 0;
+            table.summary-table {
+                width: 100% !important;
+                max-width: 100% !important;
+                page-break-inside: auto;
+            }
+            table.summary-table tr {
+                page-break-inside: avoid;
             }
         }
     </style>
@@ -106,15 +132,15 @@
     <table class="summary-table">
         <thead>
             <tr>
-                <th style="width: 38px;">S.N</th>
-                <th style="width: 220px;" class="text-center">Department</th>
-                <th style="width: 85px;">Chips</th>
-                <th style="width: 85px;">Cash</th>
-                <th style="width: 125px;">Total Amount in<br>{{ ucfirst($report->month) }} {{ $report->year }}</th>
-                <th style="width: 110px;">Back Office<br>contribution</th>
-                <th style="width: 90px;"></th>
-                <th style="width: 135px;">Remaining amount<br>(After Deduction)</th>
-                <th style="width: 95px;">Round up</th>
+                <th style="width: 4%;">S.N</th>
+                <th style="width: 21%;" class="text-center">Department</th>
+                <th style="width: 9%;">Chips</th>
+                <th style="width: 9%;">Cash</th>
+                <th style="width: 13%;">Total Amount in<br>{{ ucfirst($report->month) }} {{ $report->year }}</th>
+                <th style="width: 12%;">Back Office<br>contribution</th>
+                <th style="width: 9%;"></th>
+                <th style="width: 13%;">Remaining amount<br>(After Deduction)</th>
+                <th style="width: 10%;">Round up</th>
             </tr>
         </thead>
         <tbody>

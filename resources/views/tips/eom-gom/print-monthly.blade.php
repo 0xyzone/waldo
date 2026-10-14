@@ -6,9 +6,13 @@
     <title>EOM & GOM Report - {{ $monthName }} {{ $evaluatedYear ?? $report->year }}</title>
     <x-favicon />
     <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         @page {
             size: A4 landscape;
-            margin: 10mm 15mm;
+            margin: 8mm 10mm;
         }
 
         body {
@@ -18,6 +22,8 @@
             background: #fff;
             margin: 0;
             padding: 20px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .header-container {
@@ -74,16 +80,22 @@
 
         table.report-table {
             width: 100%;
+            max-width: 100%;
+            table-layout: fixed;
             border-collapse: collapse;
             font-size: 11px;
             margin-top: 15px;
+            box-sizing: border-box;
         }
 
         table.report-table th,
         table.report-table td {
             border: 1px solid #334155;
-            padding: 9px 8px;
+            padding: 7px 6px;
             vertical-align: middle;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            box-sizing: border-box;
         }
 
         table.report-table th {
@@ -144,11 +156,25 @@
         }
 
         @media print {
+            @page {
+                size: A4 landscape;
+                margin: 8mm 10mm;
+            }
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
             .no-print {
                 display: none !important;
             }
-            body {
-                padding: 0;
+            table.report-table {
+                width: 100% !important;
+                max-width: 100% !important;
+                page-break-inside: auto;
+            }
+            table.report-table tr {
+                page-break-inside: avoid;
             }
         }
     </style>
@@ -239,13 +265,13 @@
     <table class="report-table">
         <thead>
             <tr>
-                <th style="width: 45px;" class="text-center">S.N.</th>
-                <th style="width: 200px;">Award Category</th>
-                <th style="width: 200px;">Department</th>
-                <th style="width: 110px;" class="text-center">Emp Code</th>
-                <th style="width: 260px;">Employee Name</th>
-                <th style="width: 220px;">Designation</th>
-                <th style="width: 160px;" class="text-center">Signature</th>
+                <th style="width: 5%;" class="text-center">S.N.</th>
+                <th style="width: 17%;">Award Category</th>
+                <th style="width: 17%;">Department</th>
+                <th style="width: 10%;" class="text-center">Emp Code</th>
+                <th style="width: 21%;">Employee Name</th>
+                <th style="width: 17%;">Designation</th>
+                <th style="width: 13%;" class="text-center">Signature</th>
             </tr>
         </thead>
         <tbody>

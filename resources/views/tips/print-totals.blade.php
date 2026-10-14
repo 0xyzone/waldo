@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <title>Tips Amount Summary - {{ ucfirst($report->month) }} {{ $report->year }}</title>
     <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         @page {
             size: A4 portrait;
-            margin: 12mm 15mm;
+            margin: 8mm 10mm;
         }
 
         body {
@@ -16,6 +20,8 @@
             background: #fff;
             margin: 0;
             padding: 15px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .header-box {
@@ -35,16 +41,22 @@
 
         table.totals-table {
             width: 100%;
+            max-width: 100%;
+            table-layout: fixed;
             border-collapse: collapse;
             border: 2px solid #000;
-            font-size: 13px;
+            font-size: 12.5px;
+            box-sizing: border-box;
         }
 
         table.totals-table th,
         table.totals-table td {
             border: 2px solid #000;
-            padding: 9px 12px;
+            padding: 7px 10px;
             vertical-align: middle;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            box-sizing: border-box;
         }
 
         table.totals-table th {
@@ -91,11 +103,25 @@
         }
 
         @media print {
+            @page {
+                size: A4 portrait;
+                margin: 8mm 10mm;
+            }
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
             .no-print {
                 display: none !important;
             }
-            body {
-                padding: 0;
+            table.totals-table {
+                width: 100% !important;
+                max-width: 100% !important;
+                page-break-inside: auto;
+            }
+            table.totals-table tr {
+                page-break-inside: avoid;
             }
         }
     </style>
@@ -118,10 +144,10 @@
     <table class="totals-table">
         <thead>
             <tr>
-                <th style="width: 55px;" class="text-center">S. No.</th>
-                <th style="width: 200px;">Department</th>
-                <th style="width: 130px;" class="text-right">To Distribute</th>
-                <th colspan="2" style="background-color: #fff; border-left: 2px solid #000;"></th>
+                <th style="width: 8%;" class="text-center">S. No.</th>
+                <th style="width: 32%;">Department</th>
+                <th style="width: 20%;" class="text-right">To Distribute</th>
+                <th colspan="2" style="width: 40%; background-color: #fff; border-left: 2px solid #000;"></th>
             </tr>
         </thead>
         <tbody>

@@ -257,15 +257,22 @@
         }
 
         @media print {
-            body {
+            @page {
+                size: A4 portrait;
+                margin: 8mm 10mm;
+            }
+            html, body {
                 background: #fff;
-                padding: 0;
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
                 font-size: 10px;
             }
             .sheet-container {
-                max-width: 100%;
-                margin: 0;
-                padding: 0;
+                max-width: 100% !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
                 box-shadow: none;
                 border-radius: 0;
             }
@@ -273,6 +280,8 @@
                 display: none !important;
             }
             table.data-table {
+                width: 100% !important;
+                max-width: 100% !important;
                 page-break-inside: auto;
             }
             table.data-table tr {
