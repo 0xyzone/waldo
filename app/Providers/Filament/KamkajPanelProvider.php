@@ -252,6 +252,10 @@ class KamkajPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::BODY_END,
                 fn () => auth()->check() ? new HtmlString(Blade::render('@livewire(\App\Livewire\FloatingChatWidget::class)')) : ''
+            )
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn () => view('filament.wizard-keyboard-shortcuts')
             );
     }
 }
