@@ -578,6 +578,40 @@ class EmployeesTable
                                 ->success()
                                 ->send();
                         }),
+                    BulkAction::make('release_tips')
+                        ->label('Release Tips')
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Release Tips for Selected Employees')
+                        ->modalDescription('Are you sure you want to release tips for all selected employees?')
+                        ->modalSubmitActionLabel('Confirm Release')
+                        ->action(function (Collection $records): void {
+                            $records->each(fn (Employee $record) => $record->update(['tips_status' => "Release"]));
+
+                            Notification::make()
+                                ->title('Tips Released')
+                                ->body("Tips have been released for {$records->count()} employee(s).")
+                                ->success()
+                                ->send();
+                        }),
+                    BulkAction::make('hold_tips')
+                        ->label('Hold Tips')
+                        ->icon('heroicon-o-arrow-up-tray')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Hold Tips for Selected Employees')
+                        ->modalDescription('Are you sure you want to hold tips for all selected employees?')
+                        ->modalSubmitActionLabel('Confirm Hold')
+                        ->action(function (Collection $records): void {
+                            $records->each(fn (Employee $record) => $record->update(['tips_status' => "Hold"]));
+
+                            Notification::make()
+                                ->title('Tips Held')
+                                ->body("Tips have been released for {$records->count()} employee(s).")
+                                ->success()
+                                ->send();
+                        }),
                     BulkAction::make('onboarded')
                         ->label('Onboard Selected')
                         ->icon('heroicon-o-check')
