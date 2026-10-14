@@ -103,7 +103,7 @@
         </div>
     @else
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-800/60 rounded-xl mb-3 border border-gray-200 dark:border-gray-700 text-xs">
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
                 <span class="font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Active Tab:</span>
                 <span class="font-bold text-sm text-gray-900 dark:text-white">{{ $activeDepartment }}</span>
                 <span class="px-2 py-0.5 rounded-full bg-primary-100 text-primary-700 dark:bg-primary-950 dark:text-primary-300 font-semibold text-[11px]">
@@ -112,6 +112,17 @@
                 <span class="text-gray-500 dark:text-gray-400">
                     • Allocated: <strong class="text-gray-800 dark:text-gray-200">Rs. {{ number_format($this->getDepartmentTotal($activeDepartment), 0) }}</strong>
                 </span>
+                @if(!empty($this->activeDepartmentSelectedDepartments))
+                    <span class="text-gray-400 hidden sm:inline">•</span>
+                    <div class="flex flex-wrap items-center gap-1">
+                        <span class="text-gray-400 text-[11px]">Depts:</span>
+                        @foreach($this->activeDepartmentSelectedDepartments as $sDept)
+                            <span class="px-1.5 py-0.5 rounded bg-gray-200/80 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-[10.5px] font-medium">
+                                {{ $sDept }}
+                            </span>
+                        @endforeach
+                    </div>
+                @endif
             </div>
             <div class="flex items-center gap-2">
                 @if($activeDepartment === 'Left Outs' && !$record->isValidated())

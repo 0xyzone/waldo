@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\TipsAdjustment;
+use App\Models\TipsDepartmentMapping;
 use App\Models\TipsReport;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,9 +23,20 @@ class TipsReportPrintController extends Controller
                 ->orderByNumericCode()
                 ->get();
 
+            $selectedDepartments = TipsDepartmentMapping::getDepartmentNamesForPage('None Employee');
+            if (empty($selectedDepartments) && $items->isNotEmpty()) {
+                $selectedDepartments = $items->loadMissing('employee.department')
+                    ->map(fn ($item) => $item->employee?->department?->name)
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->all();
+            }
+
             return response()->view('tips.none-employee-sheet', [
                 'report' => $report,
                 'department' => 'None Employee',
+                'selectedDepartments' => $selectedDepartments,
                 'items' => $items,
             ]);
         }
@@ -45,9 +57,20 @@ class TipsReportPrintController extends Controller
             $deptTitle = $department;
         }
 
+        $selectedDepartments = TipsDepartmentMapping::getDepartmentNamesForPage($deptTitle);
+        if (empty($selectedDepartments) && $items->isNotEmpty()) {
+            $selectedDepartments = $items->loadMissing('employee.department')
+                ->map(fn ($item) => $item->employee?->department?->name)
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+        }
+
         return response()->view('tips.payout-sheet', [
             'report' => $report,
             'department' => $deptTitle,
+            'selectedDepartments' => $selectedDepartments,
             'items' => $items,
         ]);
     }

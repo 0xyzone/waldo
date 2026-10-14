@@ -41,4 +41,38 @@ class TipsDepartmentMapping extends Model
 
         return $deptName ?: 'Back Office';
     }
+
+    /**
+     * Get the resolved department names assigned to a given page name / category.
+     *
+     * @return array<int, string>
+     */
+    public static function getDepartmentNamesForPage(string $pageName): array
+    {
+        $mapping = static::where('is_active', true)
+            ->whereRaw('LOWER(TRIM(page_name)) = ?', [strtolower(trim($pageName))])
+            ->first();
+
+        if (! $mapping || empty($mapping->department_ids)) {
+            return [];
+        }
+
+        static $departmentMap = null;
+        if ($departmentMap === null) {
+            $departmentMap = Department::pluck('name', 'id')->toArray();
+        }
+
+        $names = [];
+        foreach ((array) $mapping->department_ids as $id) {
+            if (isset($departmentMap[$id])) {
+                $names[] = $departmentMap[$id];
+            } elseif (in_array($id, $departmentMap, true)) {
+                $names[] = (string) $id;
+            } elseif (is_string($id) && filled($id)) {
+                $names[] = $id;
+            }
+        }
+
+        return array_values(array_unique($names));
+    }
 }

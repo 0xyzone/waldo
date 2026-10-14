@@ -40,6 +40,36 @@
             margin: 0 0 6px 0;
         }
 
+        .header-selected-departments {
+            margin: 3px 0 8px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            flex-wrap: wrap;
+            font-size: 11px;
+        }
+
+        .selected-dept-label {
+            font-weight: bold;
+            color: #475569;
+            text-transform: uppercase;
+            font-size: 10px;
+            letter-spacing: 0.4px;
+            margin-right: 2px;
+        }
+
+        .selected-dept-tag {
+            display: inline-block;
+            background-color: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            padding: 1px 7px;
+            border-radius: 3px;
+            font-weight: 600;
+            font-size: 10.5px;
+            color: #0f172a;
+        }
+
         .header-meta-box {
             margin-top: 10px;
             padding: 8px 14px;
@@ -173,6 +203,14 @@
     <div class="header-container">
         <h1 class="header-title">{{ $report->title }}</h1>
         <div class="header-subtitle">DEPARTMENT: {{ strtoupper($department) }} PAYOUT SHEET</div>
+        @if(!empty($selectedDepartments))
+            <div class="header-selected-departments">
+                <span class="selected-dept-label">Selected Departments:</span>
+                @foreach($selectedDepartments as $deptName)
+                    <span class="selected-dept-tag">{{ $deptName }}</span>
+                @endforeach
+            </div>
+        @endif
         <div class="header-meta-box">
             <div class="meta-row">
                 <div class="meta-col">

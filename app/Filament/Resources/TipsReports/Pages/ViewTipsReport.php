@@ -130,6 +130,11 @@ class ViewTipsReport extends ViewRecord implements HasTable
             ->sum('final_distribution_amount');
     }
 
+    public function getActiveDepartmentSelectedDepartmentsProperty(): array
+    {
+        return TipsDepartmentMapping::getDepartmentNamesForPage($this->activeDepartment);
+    }
+
     public function getActualCollectionProperty(): float
     {
         return (float) collect($this->record->collection_summary ?? [])->sum('total_amount');
