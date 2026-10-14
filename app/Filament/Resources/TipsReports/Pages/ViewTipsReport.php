@@ -321,17 +321,7 @@ class ViewTipsReport extends ViewRecord implements HasTable
 
             $reason = trim((string) ($heldData['reason'] ?? ($item ? 'Employee tips status set to Hold' : 'Tips placed on Hold')));
 
-            $heldAmount = 0.0;
-            if ($item) {
-                $multiplier = $item->is_fixed ? 1.0 : ($item->completion_factor + $item->point_value);
-                $adjustedBase = ($item->base_tips_amount ?? 0) * $multiplier;
-                $effectivePercentage = max(0.0, ($item->tips_percentage - $item->percentage_to_deduct));
-                $rawCalculatedTips = ($adjustedBase * $effectivePercentage) / 100;
-                $rawFinalDistribution = $rawCalculatedTips + ($item->amount_to_adjust ?? 0) - ($item->amount_to_deduct ?? 0);
-                $heldAmount = $rawFinalDistribution > 0 ? TipsCalculationService::roundUpToNearest100($rawFinalDistribution) : 0.0;
-            } elseif ($baseTips) {
-                $heldAmount = (float) $baseTips;
-            }
+            $heldAmount = (float) ($baseTips ?? 0);
 
             return [
                 'index' => $idx,
