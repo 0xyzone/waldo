@@ -597,8 +597,8 @@ class EmployeesTable
                         }),
                     BulkAction::make('hold_tips')
                         ->label('Hold Tips')
-                        ->icon('heroicon-o-arrow-down-tray')
-                        ->color('success')
+                        ->icon('heroicon-o-clock')
+                        ->color('warning')
                         ->requiresConfirmation()
                         ->modalHeading('Hold Tips for Selected Employees')
                         ->modalDescription('Are you sure you want to hold tips for all selected employees?')
@@ -608,8 +608,8 @@ class EmployeesTable
 
                             Notification::make()
                                 ->title('Tips Held')
-                                ->body("Tips have been released for {$records->count()} employee(s).")
-                                ->success()
+                                ->body("Tips have been held for {$records->count()} employee(s).")
+                                ->warning()
                                 ->send();
                         }),
                     BulkAction::make('onboarded')
