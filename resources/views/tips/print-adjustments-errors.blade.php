@@ -494,14 +494,14 @@
             <thead>
                 <tr>
                     <th style="width: 3.5%;" class="text-center nowrap">#</th>
-                    <th style="width: 7%;" class="text-center nowrap">Status</th>
+                    <th style="width: 6.5%;" class="text-center nowrap">Status</th>
                     <th style="width: 8.5%;" class="text-center nowrap">Code</th>
-                    <th style="width: 17%;" class="nowrap">Employee Name</th>
-                    <th style="width: 9%;" class="nowrap">Department</th>
-                    <th style="width: 12%;" class="nowrap">Designation</th>
+                    <th style="width: 16%;" class="nowrap">Employee Name</th>
+                    <th style="width: 11%; white-space: normal; word-break: break-word; text-wrap: wrap;">Department</th>
+                    <th style="width: 14%; white-space: normal; word-break: break-word; text-wrap: wrap;">Designation</th>
                     <th style="width: 9%;" class="text-right nowrap">Base Tips</th>
-                    <th style="width: 10%;" class="text-right nowrap">Held Amount</th>
-                    <th style="width: 24%;">Hold Reason / Remarks</th>
+                    <th style="width: 9.5%;" class="text-right nowrap">Held Amount</th>
+                    <th style="width: 22%;">Hold Reason / Remarks</th>
                 </tr>
             </thead>
             <tbody>
@@ -515,8 +515,8 @@
                         </td>
                         <td class="text-center emp-code nowrap">{{ $held['employee_code'] }}</td>
                         <td style="font-weight: 600;">{{ $held['employee_name'] }}</td>
-                        <td class="nowrap">{{ $held['department'] }}</td>
-                        <td>{{ $held['designation'] }}</td>
+                        <td style="white-space: normal; word-break: break-word; overflow-wrap: break-word; text-wrap: wrap; line-height: 1.25;">{{ $held['department'] }}</td>
+                        <td style="white-space: normal; word-break: break-word; overflow-wrap: break-word; text-wrap: wrap; line-height: 1.25;">{{ $held['designation'] }}</td>
                         <td class="text-right nowrap" style="color: #475569;">
                             Rs. {{ number_format($held['base_tips'], 0) }}
                         </td>
