@@ -41,10 +41,10 @@
 ---
 
 ## Task Completion & Notification Rules
-- **Always invoke Discord notification**: At the end of every workflow or upon error, execute:
+- **Always invoke Discord & ntfy.sh notifications**: At the end of every workflow or upon error, execute:
   ```bash
   php scripts/notify_discord.php <success|failure> "<summary of changes or error>"
   ```
-  *(Note: Notification timestamps are in `Asia/Kathmandu` timezone).*
+  *(Note: This automatically dispatches both Discord webhook alerts and mobile push notifications to ntfy.sh topic `waldo_tasks_alerts`. Standalone ntfy script is at `php scripts/notify_ntfy.php <success|failure> "<summary>"`. Notification timestamps are in `Asia/Kathmandu` timezone).*
 - **Automatic Git Commit & Push**: Upon finishing every task or workflow, always automatically stage, commit (using a descriptive conventional commit message), and push changes directly to the `main` branch. Do not prompt or ask the user for confirmation.
 

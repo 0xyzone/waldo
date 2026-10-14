@@ -65,13 +65,22 @@ $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 $error = curl_error($ch);
 curl_close($ch);
 
+// Also send push notification via ntfy.sh
+$ntfyScript = __DIR__.'/notify_ntfy.php';
+if (file_exists($ntfyScript)) {
+    exec('php '.escapeshellarg($ntfyScript).' '.escapeshellarg($status).' '.escapeshellarg($summary), $ntfyOut, $ntfyCode);
+    if (! empty($ntfyOut)) {
+        echo implode("\n", $ntfyOut)."\n";
+    }
+}
+
 if ($error) {
     fwrite(STDERR, "cURL Error: {$error}\n");
     exit(1);
 }
 
 if ($httpCode >= 200 && $httpCode < 300) {
-    echo "Notification sent successfully (HTTP {$httpCode}).\n";
+    echo "Discord notification sent successfully (HTTP {$httpCode}).\n";
     exit(0);
 } else {
     fwrite(STDERR, "Discord API error: HTTP {$httpCode} - {$response}\n");
