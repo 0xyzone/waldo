@@ -31,6 +31,9 @@ class ListEmployees extends ListRecords
             'active' => Tab::make('Active')
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('employee_status', 'Active'))
                 ->badge(Employee::where('employee_status', 'Active')->count()),
+            'completed_six_months' => Tab::make('6 Months Completed')
+                ->modifyQueryUsing(fn (Builder $query) => $query->completedSixMonths())
+                ->badge(Employee::query()->completedSixMonths()->count()),
             'inactive' => Tab::make('Inactive')
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('employee_status', 'Inactive'))
                 ->badge(Employee::where('employee_status', 'Inactive')->count()),

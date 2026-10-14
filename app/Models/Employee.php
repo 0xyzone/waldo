@@ -244,6 +244,23 @@ class Employee extends Model
         });
     }
 
+    /**
+     * Scope a query to only include active employees who completed 6 months last month
+     * (joining date between 1st and 14th of the month that is 7 months prior to current date).
+     */
+    public function scopeCompletedSixMonths(Builder $query, ?Carbon $asOf = null): Builder
+    {
+        $targetMonth = ($asOf ? $asOf->copy() : now())->copy()->startOfMonth()->subMonths(7);
+        $start = $targetMonth->copy()->format('Y-m-01');
+        $end = $targetMonth->copy()->format('Y-m-14');
+
+        return $query->where('employee_status', 'Active')
+            ->whereRaw("COALESCE(STR_TO_DATE(REPLACE(join_date_formatted, ',', ''), '%d %M %Y'), STR_TO_DATE(join_date_formatted, '%Y-%m-%d')) BETWEEN ? AND ?", [
+                $start,
+                $end,
+            ]);
+    }
+
     public function getAgeAttribute()
     {
         if (empty($this->dob_ad)) {
