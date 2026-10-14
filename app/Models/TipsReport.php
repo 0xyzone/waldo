@@ -125,14 +125,20 @@ class TipsReport extends Model
 
         $releasedCount = 0;
         if (! empty($heldCodes)) {
-            $employees = Employee::whereIn(DB::raw('UPPER(TRIM(employee_code))'), $heldCodes)->get();
+            $employees = Employee::all()->filter(function ($e) use ($heldCodes) {
+                return in_array(strtoupper(trim((string) $e->employee_code)), $heldCodes, true);
+            });
             foreach ($employees as $employee) {
                 $employee->update(['tips_status' => 'Release']);
                 $releasedCount++;
             }
 
             $this->items()
-                ->whereIn(DB::raw('UPPER(TRIM(employee_code))'), $heldCodes)
+                ->where(function ($q) use ($heldCodes) {
+                    $q->whereIn('employee_code', $heldCodes)
+                        ->orWhereIn(DB::raw('UPPER(TRIM(employee_code))'), $heldCodes)
+                        ->orWhere(DB::raw('UPPER(TRIM(tips_status))'), 'HOLD');
+                })
                 ->update(['tips_status' => 'Release']);
         }
 
@@ -188,13 +194,18 @@ class TipsReport extends Model
             ->toArray();
 
         if (! empty($heldCodes)) {
-            $employees = Employee::whereIn(DB::raw('UPPER(TRIM(employee_code))'), $heldCodes)->get();
+            $employees = Employee::all()->filter(function ($e) use ($heldCodes) {
+                return in_array(strtoupper(trim((string) $e->employee_code)), $heldCodes, true);
+            });
             foreach ($employees as $employee) {
                 $employee->update(['tips_status' => 'Hold']);
             }
 
             $this->items()
-                ->whereIn(DB::raw('UPPER(TRIM(employee_code))'), $heldCodes)
+                ->where(function ($q) use ($heldCodes) {
+                    $q->whereIn('employee_code', $heldCodes)
+                        ->orWhereIn(DB::raw('UPPER(TRIM(employee_code))'), $heldCodes);
+                })
                 ->update(['tips_status' => 'Hold']);
         }
 

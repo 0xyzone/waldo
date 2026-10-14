@@ -300,11 +300,9 @@ class ViewTipsReport extends ViewRecord implements HasTable
             ->unique()
             ->values();
 
-        if ($employees === null) {
-            $employees = Employee::with(['department', 'designation'])
-                ->get()
-                ->keyBy(fn ($e) => strtoupper(trim((string) $e->employee_code)));
-        }
+        $employees = Employee::with(['department', 'designation'])
+            ->get()
+            ->keyBy(fn ($e) => strtoupper(trim((string) $e->employee_code)));
 
         return $allHeldCodes->map(function ($code, $idx) use ($heldByCode, $reportItems, $employees) {
             $item = $reportItems->get($code);

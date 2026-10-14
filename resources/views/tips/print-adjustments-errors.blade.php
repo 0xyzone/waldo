@@ -518,15 +518,9 @@
                     <tr>
                         <td class="text-center font-bold nowrap" style="color: #64748b;">{{ $idx + 1 }}</td>
                         <td class="text-center nowrap">
-                            @if(($held['tips_status'] ?? '') === 'Release' || $report->isValidated())
-                                <span style="display: inline-block; padding: 1px 5px; font-size: 8.5px; font-weight: bold; background: #dcfce7; color: #166534; border: 1px solid #86efac; border-radius: 3px;">
-                                    RELEASE
-                                </span>
-                            @else
-                                <span style="display: inline-block; padding: 1px 5px; font-size: 8.5px; font-weight: bold; background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; border-radius: 3px;">
-                                    HOLD
-                                </span>
-                            @endif
+                            <span style="display: inline-block; padding: 1px 5px; font-size: 8.5px; font-weight: bold; background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; border-radius: 3px;">
+                                HOLD
+                            </span>
                         </td>
                         <td class="text-center emp-code nowrap">{{ $held['employee_code'] }}</td>
                         <td style="font-weight: 600;">{{ $held['employee_name'] }}</td>

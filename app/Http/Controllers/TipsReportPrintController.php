@@ -402,13 +402,11 @@ class TipsReportPrintController extends Controller
             ->unique()
             ->values();
 
-        if ($employees === null) {
-            $employees = Employee::with(['department', 'designation'])
-                ->get()
-                ->keyBy(fn ($e) => strtoupper(trim((string) $e->employee_code)));
-        }
+        $employees = Employee::with(['department', 'designation'])
+            ->get()
+            ->keyBy(fn ($e) => strtoupper(trim((string) $e->employee_code)));
 
-        $heldTips = $allHeldCodes->map(function ($code) use ($heldByCode, $reportItems, $employees, $report) {
+        $heldTips = $allHeldCodes->map(function ($code) use ($heldByCode, $reportItems, $employees) {
             $item = $reportItems->get($code);
             $heldData = $heldByCode->get($code);
             $emp = $employees->get($code);
@@ -421,7 +419,6 @@ class TipsReportPrintController extends Controller
             $reason = trim((string) ($heldData['reason'] ?? ($item ? 'Employee tips status set to Hold' : 'Tips placed on Hold')));
 
             $heldAmount = (float) ($baseTips ?? 0);
-            $currentTipsStatus = $report->isValidated() ? 'Release' : ($emp?->tips_status ?? ($item?->tips_status ?? 'Hold'));
 
             return [
                 'employee_code' => $code,
@@ -432,7 +429,7 @@ class TipsReportPrintController extends Controller
                 'held_amount' => $heldAmount,
                 'reason' => $reason,
                 'is_applied' => $item !== null,
-                'tips_status' => $currentTipsStatus,
+                'tips_status' => 'Hold',
             ];
         });
 
