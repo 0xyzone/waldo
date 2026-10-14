@@ -793,10 +793,17 @@
                                         class="{{ $isEditingHeld ? 'bg-amber-50/60 dark:bg-amber-950/40 ring-1 ring-amber-500/30' : 'hover:bg-gray-50/80 dark:hover:bg-gray-800/50' }} transition">
                                         <td class="py-3 px-3 text-center text-gray-400 font-mono">{{ $idx + 1 }}</td>
                                         <td class="py-3 px-3 text-center">
-                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
-                                                <x-heroicon-m-pause class="w-3 h-3 text-rose-600" />
-                                                <span>HOLD</span>
-                                            </span>
+                                            @if(($held['tips_status'] ?? '') === 'Release' || $record->isValidated())
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900">
+                                                    <x-heroicon-m-check-badge class="w-3 h-3 text-emerald-600" />
+                                                    <span>RELEASE</span>
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
+                                                    <x-heroicon-m-pause class="w-3 h-3 text-rose-600" />
+                                                    <span>HOLD</span>
+                                                </span>
+                                            @endif
                                         </td>
                                         <td class="py-3 px-3 font-bold font-mono text-gray-900 dark:text-white">
                                             <span class="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">

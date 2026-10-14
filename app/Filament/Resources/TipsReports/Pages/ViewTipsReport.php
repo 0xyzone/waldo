@@ -300,46 +300,40 @@ class ViewTipsReport extends ViewRecord implements HasTable
             ->unique()
             ->values();
 
-        $employees = null;
+        if ($employees === null) {
+            $employees = Employee::with(['department', 'designation'])
+                ->get()
+                ->keyBy(fn ($e) => strtoupper(trim((string) $e->employee_code)));
+        }
 
-        return $allHeldCodes->map(function ($code, $idx) use ($heldByCode, $reportItems, &$employees) {
+        return $allHeldCodes->map(function ($code, $idx) use ($heldByCode, $reportItems, $employees) {
             $item = $reportItems->get($code);
             $heldData = $heldByCode->get($code);
+            $emp = $employees->get($code);
 
-            $name = $item?->employee_name;
-            $dept = $item?->department;
-            $desig = $item?->designation;
-            $baseTips = $item?->base_tips_amount;
-
-            if (! $item && $code !== '') {
-                if ($employees === null) {
-                    $employees = Employee::with(['department', 'designation'])
-                        ->get()
-                        ->keyBy(fn ($e) => strtoupper(trim((string) $e->employee_code)));
-                }
-                $emp = $employees->get($code);
-                $name = $emp?->name ?? $code;
-                $dept = $emp?->department?->name ?? '-';
-                $desig = $emp?->designation?->name ?? '-';
-                $baseTips = (float) ($emp?->tips_amount ?? 0);
-            }
+            $name = $item?->employee_name ?? $emp?->name;
+            $dept = $item?->department ?? ($emp?->department?->name ?? '-');
+            $desig = $item?->designation ?? ($emp?->designation?->name ?? '-');
+            $baseTips = $item?->base_tips_amount ?? (float) ($emp?->tips_amount ?? 0);
 
             $reason = trim((string) ($heldData['reason'] ?? ($item ? 'Employee tips status set to Hold' : 'Tips placed on Hold')));
 
             $heldAmount = (float) ($baseTips ?? 0);
+            $tipsStatus = $this->record->isValidated() ? 'Release' : ($emp?->tips_status ?? ($item?->tips_status ?? 'Hold'));
 
             return [
                 'index' => $idx,
                 'employee_code' => $code,
                 'employee_name' => $name ?? $code,
-                'department' => $dept ?? '-',
-                'designation' => $desig ?? '-',
+                'department' => $dept,
+                'designation' => $desig,
                 'base_tips' => (float) ($baseTips ?? 0),
                 'held_amount' => $heldAmount,
                 'reason' => $reason,
                 'held_at' => $heldData['held_at'] ?? null,
                 'is_in_report' => $item !== null,
                 'report_item' => $item,
+                'tips_status' => $tipsStatus,
             ];
         });
     }
@@ -1288,12 +1282,14 @@ class ViewTipsReport extends ViewRecord implements HasTable
                 ->visible(fn () => ! $this->record->isValidated())
                 ->action(function () {
                     $result = $this->record->validateAndLock(auth()->id());
+                    $this->record->refresh();
+                    $this->resetTable();
                     $body = 'This tips report has been validated and locked.';
                     if (($result['adjustments_count'] ?? 0) > 0) {
                         $body .= " {$result['adjustments_count']} applied tips adjustment(s) updated to 'Updated'.";
                     }
                     if (($result['released_held_count'] ?? 0) > 0) {
-                        $body .= " {$result['released_held_count']} active employee(s) with held tips released to 'Release'.";
+                        $body .= " {$result['released_held_count']} employee(s) with held tips released to 'Release'.";
                     }
                     Notification::make()
                         ->title('Report Validated')
@@ -1312,6 +1308,8 @@ class ViewTipsReport extends ViewRecord implements HasTable
                 ->visible(fn () => $this->record->isValidated() && (auth()->user()?->hasRole('super_admin') ?? true))
                 ->action(function () {
                     $revertedCount = $this->record->unlock();
+                    $this->record->refresh();
+                    $this->resetTable();
                     $body = 'This tips report is now unlocked.';
                     if ($revertedCount > 0) {
                         $body .= " {$revertedCount} tips adjustment(s) reverted to 'Pending'.";

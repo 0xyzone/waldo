@@ -402,42 +402,37 @@ class TipsReportPrintController extends Controller
             ->unique()
             ->values();
 
-        $employees = null;
-        $heldTips = $allHeldCodes->map(function ($code) use ($heldByCode, $reportItems, &$employees) {
+        if ($employees === null) {
+            $employees = Employee::with(['department', 'designation'])
+                ->get()
+                ->keyBy(fn ($e) => strtoupper(trim((string) $e->employee_code)));
+        }
+
+        $heldTips = $allHeldCodes->map(function ($code) use ($heldByCode, $reportItems, $employees, $report) {
             $item = $reportItems->get($code);
             $heldData = $heldByCode->get($code);
+            $emp = $employees->get($code);
 
-            $name = $item?->employee_name;
-            $dept = $item?->department;
-            $desig = $item?->designation;
-            $baseTips = (float) ($item?->base_tips_amount ?? 0);
-
-            if (! $item && $code !== '') {
-                if ($employees === null) {
-                    $employees = Employee::with(['department', 'designation'])
-                        ->get()
-                        ->keyBy(fn ($e) => strtoupper(trim((string) $e->employee_code)));
-                }
-                $emp = $employees->get($code);
-                $name = $emp?->name ?? $code;
-                $dept = $emp?->department?->name ?? '-';
-                $desig = $emp?->designation?->name ?? '-';
-                $baseTips = (float) ($emp?->tips_amount ?? 0);
-            }
+            $name = $item?->employee_name ?? $emp?->name;
+            $dept = $item?->department ?? ($emp?->department?->name ?? '-');
+            $desig = $item?->designation ?? ($emp?->designation?->name ?? '-');
+            $baseTips = (float) ($item?->base_tips_amount ?? ($emp?->tips_amount ?? 0));
 
             $reason = trim((string) ($heldData['reason'] ?? ($item ? 'Employee tips status set to Hold' : 'Tips placed on Hold')));
 
             $heldAmount = (float) ($baseTips ?? 0);
+            $currentTipsStatus = $report->isValidated() ? 'Release' : ($emp?->tips_status ?? ($item?->tips_status ?? 'Hold'));
 
             return [
                 'employee_code' => $code,
                 'employee_name' => $name ?? $code,
-                'department' => $dept ?? '-',
-                'designation' => $desig ?? '-',
+                'department' => $dept,
+                'designation' => $desig,
                 'base_tips' => $baseTips,
                 'held_amount' => $heldAmount,
                 'reason' => $reason,
                 'is_applied' => $item !== null,
+                'tips_status' => $currentTipsStatus,
             ];
         });
 

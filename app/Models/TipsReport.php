@@ -96,8 +96,7 @@ class TipsReport extends Model
                 ->update(['status' => 'updated']);
         }
 
-        // Release tips status to Release for employees whose tips were held for this month,
-        // only if the employee is in active state at the time of validating the report.
+        // Release tips status to Release for employees whose tips were held for this month
         $heldCodes = collect($this->held_tips ?? [])
             ->pluck('employee_code')
             ->merge(
@@ -109,15 +108,37 @@ class TipsReport extends Model
             ->values()
             ->toArray();
 
+        $held = $this->held_tips ?? [];
+        if (! is_array($held)) {
+            $held = [];
+        }
+        $existingHeldCodes = collect($held)->map(fn ($h) => strtoupper(trim((string) ($h['employee_code'] ?? ''))))->filter()->all();
+        foreach ($heldCodes as $code) {
+            if (! in_array($code, $existingHeldCodes, true)) {
+                $held[] = [
+                    'employee_code' => $code,
+                    'reason' => 'Tips held for this report period',
+                    'held_at' => now()->toDateTimeString(),
+                ];
+            }
+        }
+
         $releasedCount = 0;
         if (! empty($heldCodes)) {
-            $releasedCount = Employee::whereIn(DB::raw('UPPER(TRIM(employee_code))'), $heldCodes)
-                ->whereRaw('LOWER(TRIM(employee_status)) = ?', ['active'])
+            $employees = Employee::whereIn(DB::raw('UPPER(TRIM(employee_code))'), $heldCodes)->get();
+            foreach ($employees as $employee) {
+                $employee->update(['tips_status' => 'Release']);
+                $releasedCount++;
+            }
+
+            $this->items()
+                ->whereIn(DB::raw('UPPER(TRIM(employee_code))'), $heldCodes)
                 ->update(['tips_status' => 'Release']);
         }
 
         $this->update([
             'status' => 'validated',
+            'held_tips' => $held,
             'validated_at' => now(),
             'validated_by' => $userId,
         ]);
@@ -129,7 +150,7 @@ class TipsReport extends Model
     }
 
     /**
-     * Unlock the report, reverting applied tips adjustments to 'pending'.
+     * Unlock the report, reverting applied tips adjustments to 'pending' and held employees to 'Hold'.
      */
     public function unlock(): int
     {
@@ -156,6 +177,25 @@ class TipsReport extends Model
                 ->where('status', 'updated')
                 ->whereIn(DB::raw('UPPER(TRIM(employee_id))'), $processedCodes)
                 ->update(['status' => 'pending']);
+        }
+
+        $heldCodes = collect($this->held_tips ?? [])
+            ->pluck('employee_code')
+            ->map(fn ($c) => strtoupper(trim((string) $c)))
+            ->filter()
+            ->unique()
+            ->values()
+            ->toArray();
+
+        if (! empty($heldCodes)) {
+            $employees = Employee::whereIn(DB::raw('UPPER(TRIM(employee_code))'), $heldCodes)->get();
+            foreach ($employees as $employee) {
+                $employee->update(['tips_status' => 'Hold']);
+            }
+
+            $this->items()
+                ->whereIn(DB::raw('UPPER(TRIM(employee_code))'), $heldCodes)
+                ->update(['tips_status' => 'Hold']);
         }
 
         $this->update([
