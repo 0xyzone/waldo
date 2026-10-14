@@ -597,7 +597,7 @@ class EmployeesTable
                         }),
                     BulkAction::make('hold_tips')
                         ->label('Hold Tips')
-                        ->icon('heroicon-o-arrow-up-tray')
+                        ->icon('heroicon-o-arrow-down-tray')
                         ->color('success')
                         ->requiresConfirmation()
                         ->modalHeading('Hold Tips for Selected Employees')
