@@ -4,8 +4,10 @@ namespace App\Filament\Resources\TerminatedEmployees\Tables;
 
 use App\Models\Department;
 use App\Models\Designation;
+use App\Models\TerminatedEmployee;
 use App\Services\TerminatedEmployeeExportService;
 use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -14,12 +16,15 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 class TerminatedEmployeesTable
 {
@@ -52,6 +57,20 @@ class TerminatedEmployeesTable
                 TextColumn::make('last_working_date')
                     ->label('Last Date of Working')
                     ->date()
+                    ->sortable(),
+                TextColumn::make('is_letter_printed')
+                    ->label('Letter Printed')
+                    ->badge()
+                    ->formatStateUsing(fn (bool $state, TerminatedEmployee $record): string => $state ? ($record->letter_printed_at ? 'Printed ('.$record->letter_printed_at->format('M d').')' : 'Printed') : 'Not Printed')
+                    ->color(fn (bool $state): string => $state ? 'info' : 'gray')
+                    ->icon(fn (bool $state): string => $state ? 'heroicon-m-printer' : 'heroicon-m-x-circle')
+                    ->sortable(),
+                TextColumn::make('is_letter_released')
+                    ->label('Letter Released')
+                    ->badge()
+                    ->formatStateUsing(fn (bool $state, TerminatedEmployee $record): string => $state ? ($record->letter_released_at ? 'Released ('.$record->letter_released_at->format('M d').')' : 'Released') : 'Not Released')
+                    ->color(fn (bool $state): string => $state ? 'success' : 'gray')
+                    ->icon(fn (bool $state): string => $state ? 'heroicon-m-check-badge' : 'heroicon-m-clock')
                     ->sortable(),
                 TextColumn::make('reason')
                     ->label('Reason')
@@ -86,6 +105,14 @@ class TerminatedEmployeesTable
                     })
                     ->searchable()
                     ->preload(),
+                TernaryFilter::make('is_letter_printed')
+                    ->label('Letter Printed')
+                    ->trueLabel('Printed')
+                    ->falseLabel('Not Printed'),
+                TernaryFilter::make('is_letter_released')
+                    ->label('Letter Released')
+                    ->trueLabel('Released')
+                    ->falseLabel('Not Released'),
                 Filter::make('termination_date')
                     ->form([
                         DatePicker::make('termination_date_from')
@@ -128,6 +155,54 @@ class TerminatedEmployeesTable
                     }),
             ])
             ->recordActions([
+                Action::make('markLetterPrinted')
+                    ->label(fn (TerminatedEmployee $record): string => $record->is_letter_printed ? 'Printed' : 'Mark as Printed')
+                    ->tooltip(fn (TerminatedEmployee $record): string => $record->is_letter_printed ? 'Letter printed on '.($record->letter_printed_at?->format('M d, Y') ?? 'record').'. Click to revert.' : 'Mark termination letter as Printed')
+                    ->icon(fn (TerminatedEmployee $record): string => $record->is_letter_printed ? 'heroicon-s-printer' : 'heroicon-o-printer')
+                    ->color(fn (TerminatedEmployee $record): string => $record->is_letter_printed ? 'gray' : 'info')
+                    ->requiresConfirmation()
+                    ->modalHeading(fn (TerminatedEmployee $record): string => $record->is_letter_printed ? 'Revert Printed Status' : 'Mark Letter as Printed')
+                    ->modalDescription(fn (TerminatedEmployee $record): string => $record->is_letter_printed
+                        ? "Are you sure you want to revert the printed status for {$record->employee?->name} ({$record->employee_id}) back to Not Printed?"
+                        : "Mark termination letter for {$record->employee?->name} ({$record->employee_id}) as Printed?")
+                    ->modalSubmitActionLabel(fn (TerminatedEmployee $record): string => $record->is_letter_printed ? 'Yes, Revert' : 'Yes, Mark as Printed')
+                    ->action(function (TerminatedEmployee $record) {
+                        $newStatus = ! $record->is_letter_printed;
+                        $record->update([
+                            'is_letter_printed' => $newStatus,
+                            'letter_printed_at' => $newStatus ? now() : null,
+                        ]);
+
+                        Notification::make()
+                            ->title($newStatus ? 'Letter Marked as Printed' : 'Printed Status Reverted')
+                            ->body("{$record->employee?->name} ({$record->employee_id}) letter status updated.")
+                            ->success()
+                            ->send();
+                    }),
+                Action::make('markLetterReleased')
+                    ->label(fn (TerminatedEmployee $record): string => $record->is_letter_released ? 'Released' : 'Mark as Released')
+                    ->tooltip(fn (TerminatedEmployee $record): string => $record->is_letter_released ? 'Letter released on '.($record->letter_released_at?->format('M d, Y') ?? 'record').'. Click to revert.' : 'Mark termination letter as Released to the employee')
+                    ->icon(fn (TerminatedEmployee $record): string => $record->is_letter_released ? 'heroicon-s-check-badge' : 'heroicon-o-paper-airplane')
+                    ->color(fn (TerminatedEmployee $record): string => $record->is_letter_released ? 'gray' : 'success')
+                    ->requiresConfirmation()
+                    ->modalHeading(fn (TerminatedEmployee $record): string => $record->is_letter_released ? 'Revert Released Status' : 'Mark Letter as Released')
+                    ->modalDescription(fn (TerminatedEmployee $record): string => $record->is_letter_released
+                        ? "Are you sure you want to revert the released status for {$record->employee?->name} ({$record->employee_id}) back to Not Released?"
+                        : "Mark termination letter for {$record->employee?->name} ({$record->employee_id}) as Released to the employee?")
+                    ->modalSubmitActionLabel(fn (TerminatedEmployee $record): string => $record->is_letter_released ? 'Yes, Revert' : 'Yes, Mark as Released')
+                    ->action(function (TerminatedEmployee $record) {
+                        $newStatus = ! $record->is_letter_released;
+                        $record->update([
+                            'is_letter_released' => $newStatus,
+                            'letter_released_at' => $newStatus ? now() : null,
+                        ]);
+
+                        Notification::make()
+                            ->title($newStatus ? 'Letter Marked as Released' : 'Released Status Reverted')
+                            ->body("{$record->employee?->name} ({$record->employee_id}) letter release status updated.")
+                            ->success()
+                            ->send();
+                    }),
                 EditAction::make(),
             ])
             ->toolbarActions([
@@ -202,6 +277,44 @@ class TerminatedEmployeesTable
                         );
                     }),
                 BulkActionGroup::make([
+                    BulkAction::make('markLetterPrintedBulk')
+                        ->label('Mark as Letter Printed')
+                        ->icon('heroicon-o-printer')
+                        ->color('info')
+                        ->requiresConfirmation()
+                        ->modalHeading('Mark Selected as Letter Printed')
+                        ->modalDescription('Mark all selected terminated employees as having their termination letter printed?')
+                        ->action(function (Collection $records) {
+                            $records->each(fn (TerminatedEmployee $record) => $record->update([
+                                'is_letter_printed' => true,
+                                'letter_printed_at' => now(),
+                            ]));
+
+                            Notification::make()
+                                ->title('Marked as Letter Printed')
+                                ->body("{$records->count()} employee(s) marked as Letter Printed.")
+                                ->success()
+                                ->send();
+                        }),
+                    BulkAction::make('markLetterReleasedBulk')
+                        ->label('Mark as Letter Released')
+                        ->icon('heroicon-o-paper-airplane')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Mark Selected as Letter Released')
+                        ->modalDescription('Mark all selected terminated employees as having their termination letter released to them?')
+                        ->action(function (Collection $records) {
+                            $records->each(fn (TerminatedEmployee $record) => $record->update([
+                                'is_letter_released' => true,
+                                'letter_released_at' => now(),
+                            ]));
+
+                            Notification::make()
+                                ->title('Marked as Letter Released')
+                                ->body("{$records->count()} employee(s) marked as Letter Released.")
+                                ->success()
+                                ->send();
+                        }),
                     DeleteBulkAction::make(),
                 ]),
             ]);

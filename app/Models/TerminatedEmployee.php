@@ -12,6 +12,19 @@ class TerminatedEmployee extends Model
         'last_working_date',
         'termination_date',
         'reason',
+        'is_letter_printed',
+        'letter_printed_at',
+        'is_letter_released',
+        'letter_released_at',
+    ];
+
+    protected $casts = [
+        'termination_date' => 'date',
+        'last_working_date' => 'date',
+        'is_letter_printed' => 'boolean',
+        'letter_printed_at' => 'datetime',
+        'is_letter_released' => 'boolean',
+        'letter_released_at' => 'datetime',
     ];
 
     /**
