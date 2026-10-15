@@ -584,23 +584,56 @@ select optgroup {
     width: 100% !important;
 }
 
-/* Table Header Row & Cells */
-.fi-ta-header-cell {
+/* Continuous Table Header Bar across entire table width */
+table.fi-ta-table > thead > tr {
     background-color: var(--surface-card-subtle) !important;
     border-bottom: 1px solid var(--surface-border) !important;
-    padding: 0.85rem 1rem !important;
-    font-size: 0.72rem !important;
-    font-weight: 700 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.05em !important;
-    color: var(--text-muted) !important;
+}
+
+:is(.dark, :root.dark) table.fi-ta-table > thead > tr {
+    background-color: #111726 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Top corner rounding for the header bar */
+table.fi-ta-table > thead > tr > th:first-child {
+    border-top-left-radius: calc(var(--radius-card) - 1px) !important;
+}
+table.fi-ta-table > thead > tr > th:last-child {
+    border-top-right-radius: calc(var(--radius-card) - 1px) !important;
+}
+
+/* All Header Cells (columns, selection, actions) */
+table.fi-ta-table > thead > tr > th {
+    background: transparent !important;
+    border: none !important;
     vertical-align: middle !important;
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    color: var(--text-muted) !important;
     line-height: 1.25rem !important;
     white-space: nowrap !important;
 }
 
-:is(.dark, :root.dark) .fi-ta-header-cell {
-    background-color: rgba(18, 24, 38, 0.6) !important;
+:is(.dark, :root.dark) table.fi-ta-table > thead > tr > th {
+    color: #94a3b8 !important;
+}
+
+/* Column Header Specific Padding */
+.fi-ta-header-cell {
+    padding: 0.75rem !important;
+}
+
+/* When first visible column (no checkbox), add comfortable margin */
+table.fi-ta-table:not(.fi-ta-table-stacked-on-mobile) > thead > tr > th.fi-ta-header-cell:first-child {
+    padding-left: 1.5rem !important;
+}
+
+/* When last visible column (no actions), add comfortable margin */
+table.fi-ta-table:not(.fi-ta-table-stacked-on-mobile) > thead > tr > th.fi-ta-header-cell:last-child {
+    padding-right: 1.5rem !important;
 }
 
 /* Header sort button - perfect alignment and spacing with column data */
@@ -642,10 +675,10 @@ select optgroup {
 
 /* Sort Icon Styling */
 .fi-ta-header-cell-sort-btn .fi-icon {
-    width: 0.875rem !important;
-    height: 0.875rem !important;
+    width: 0.8125rem !important;
+    height: 0.8125rem !important;
     flex-shrink: 0 !important;
-    opacity: 0.6;
+    opacity: 0.45;
     transition: opacity var(--duration-fast) ease, color var(--duration-fast) ease;
 }
 
@@ -668,53 +701,60 @@ select optgroup {
     background-color: rgba(249, 115, 22, 0.06) !important;
 }
 
-/* Table Body Cells - matching padding with header cells */
-.fi-ta-cell {
-    padding: 0.85rem 1rem !important;
+/* Table Body Cells - clean borders and vertical alignment */
+table.fi-ta-table:not(.fi-ta-table-stacked-on-mobile) > tbody > tr > td.fi-ta-cell {
+    padding: 0 !important;
     border-bottom: 1px solid var(--surface-border-subtle) !important;
+    vertical-align: middle !important;
     font-size: 0.8125rem !important;
     color: var(--text-primary) !important;
-    vertical-align: middle !important;
 }
 
-/* Neutralize inner padding on Filament column wrappers in standard desktop tables so td padding controls alignment */
-table.fi-ta-table:not(.fi-ta-table-stacked-on-mobile) .fi-ta-cell > .fi-ta-col-wrp > .fi-ta-text:not(.fi-inline),
-table.fi-ta-table:not(.fi-ta-table-stacked-on-mobile) .fi-ta-cell > .fi-ta-text:not(.fi-inline),
-table.fi-ta-table:not(.fi-ta-table-stacked-on-mobile) .fi-ta-cell > .fi-ta-col-wrp,
-table.fi-ta-table:not(.fi-ta-table-stacked-on-mobile) .fi-ta-cell > .fi-ta-actions {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
+/* Standardize column content padding to exactly 0.75rem matching the header */
+table.fi-ta-table:not(.fi-ta-table-stacked-on-mobile) > tbody > tr > td.fi-ta-cell > .fi-ta-col > * {
+    padding-top: 0.85rem !important;
+    padding-bottom: 0.85rem !important;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
 }
 
-/* First & Last Column Spacing on Desktop */
-table.fi-ta-table:not(.fi-ta-table-stacked-on-mobile) > thead > tr > .fi-ta-header-cell:first-child:not(.fi-ta-selection-cell),
-table.fi-ta-table:not(.fi-ta-table-stacked-on-mobile) > tbody > tr > .fi-ta-cell:first-child:not(.fi-ta-selection-cell) {
+/* When first visible column (no checkbox), match the 1.5rem header margin */
+table.fi-ta-table:not(.fi-ta-table-stacked-on-mobile) > tbody > tr > td.fi-ta-cell:first-child:not(.fi-ta-selection-cell) > .fi-ta-col > * {
     padding-left: 1.5rem !important;
 }
 
-table.fi-ta-table:not(.fi-ta-table-stacked-on-mobile) > thead > tr > .fi-ta-header-cell:last-child,
-table.fi-ta-table:not(.fi-ta-table-stacked-on-mobile) > tbody > tr > .fi-ta-cell:last-child {
-    padding-right: 1.5rem !important;
-}
-
-/* Desktop Selection Checkbox Column */
-table.fi-ta-table > tbody > tr > .fi-ta-selection-cell,
-table.fi-ta-table > thead > tr > .fi-ta-selection-cell {
+/* Desktop Selection Checkbox Column - aligned between thead and tbody */
+table.fi-ta-table > thead > tr > th.fi-ta-selection-cell,
+table.fi-ta-table > tbody > tr > td.fi-ta-selection-cell {
     width: 3.25rem !important;
     min-width: 3.25rem !important;
-    max-width: 3.5rem !important;
-    padding-left: 1.25rem !important;
-    padding-right: 0.75rem !important;
+    max-width: 3.25rem !important;
+    padding: 0.75rem 0.5rem 0.75rem 1.25rem !important;
     text-align: center !important;
+    vertical-align: middle !important;
+    background: transparent !important;
+}
+
+table.fi-ta-table > thead > tr > th.fi-ta-selection-cell input[type="checkbox"],
+table.fi-ta-table > tbody > tr > td.fi-ta-selection-cell input[type="checkbox"] {
+    display: inline-block !important;
+    margin: auto !important;
     vertical-align: middle !important;
 }
 
-/* Column directly following selection checkbox gets balanced padding */
-table.fi-ta-table:not(.fi-ta-table-stacked-on-mobile) > thead > tr > .fi-ta-selection-cell + .fi-ta-header-cell,
-table.fi-ta-table:not(.fi-ta-table-stacked-on-mobile) > tbody > tr > .fi-ta-selection-cell + .fi-ta-cell {
+/* Actions Column - aligned between thead and tbody */
+table.fi-ta-table > thead > tr > th.fi-ta-actions-header-cell,
+table.fi-ta-table > tbody > tr > td:has(.fi-ta-actions) {
+    text-align: end !important;
+    padding-right: 1.5rem !important;
     padding-left: 0.75rem !important;
+    white-space: nowrap !important;
+    vertical-align: middle !important;
+    background: transparent !important;
+}
+
+table.fi-ta-table > tbody > tr > td:has(.fi-ta-actions) .fi-ta-actions {
+    justify-content: flex-end !important;
 }
 
 /* ==========================================================================
