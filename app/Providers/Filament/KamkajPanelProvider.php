@@ -72,6 +72,7 @@ class KamkajPanelProvider extends PanelProvider
             ->collapsedSidebarWidth('4.25rem')
             ->colors([
                 'primary' => Color::Orange,
+                'gray' => Color::Slate,
                 'danger' => Color::Red,
                 'warning' => Color::Amber,
                 'info' => Color::Sky,
