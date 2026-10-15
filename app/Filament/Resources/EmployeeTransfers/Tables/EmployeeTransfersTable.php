@@ -183,12 +183,16 @@ class EmployeeTransfersTable
                         FileUpload::make('sample_file')
                             ->label('Upload Latest Sample File (.xlsx)')
                             ->helperText('Optional. Upload the latest change-type-import-sample.xlsx from HRMS to update reference sheets, or leave empty to use the current template.')
-                            ->disk('local')
-                            ->directory('temp-change-type-templates')
+                            ->disk('public')
+                            ->directory('change-type-templates')
                             ->acceptedFileTypes([
                                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                                 'application/vnd.ms-excel',
-                            ]),
+                                'application/octet-stream',
+                                'application/zip',
+                                'application/x-zip-compressed',
+                            ])
+                            ->maxSize(15360),
                     ])
                     ->action(function (array $data, HasTable $livewire, EmployeeTransferExportService $service) {
                         $transfers = $livewire
@@ -206,7 +210,7 @@ class EmployeeTransfersTable
                         }
 
                         $uploadedTemplatePath = ! empty($data['sample_file'])
-                            ? Storage::disk('local')->path($data['sample_file'])
+                            ? Storage::disk('public')->path($data['sample_file'])
                             : null;
 
                         return $service->export($transfers, $uploadedTemplatePath);
@@ -225,12 +229,16 @@ class EmployeeTransfersTable
                             FileUpload::make('sample_file')
                                 ->label('Upload Latest Sample File (.xlsx)')
                                 ->helperText('Optional. Upload the latest change-type-import-sample.xlsx from HRMS to update reference sheets, or leave empty to use the current template.')
-                                ->disk('local')
-                                ->directory('temp-change-type-templates')
+                                ->disk('public')
+                                ->directory('change-type-templates')
                                 ->acceptedFileTypes([
                                     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                                     'application/vnd.ms-excel',
-                                ]),
+                                    'application/octet-stream',
+                                    'application/zip',
+                                    'application/x-zip-compressed',
+                                ])
+                                ->maxSize(15360),
                         ])
                         ->action(function (array $data, Collection $records, EmployeeTransferExportService $service) {
                             if ($records->isEmpty()) {
@@ -245,7 +253,7 @@ class EmployeeTransfersTable
                             $records->loadMissing(['toDepartment', 'toDesignation', 'employee']);
 
                             $uploadedTemplatePath = ! empty($data['sample_file'])
-                                ? Storage::disk('local')->path($data['sample_file'])
+                                ? Storage::disk('public')->path($data['sample_file'])
                                 : null;
 
                             return $service->export($records, $uploadedTemplatePath);

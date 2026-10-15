@@ -243,7 +243,7 @@ class EmployeeTransferExportService
         $rowIdx = 2;
 
         foreach ($records as $record) {
-            $rowContent = "<row r=\"{$rowIdx}\" spans=\"1:11\" x14ac:dyDescent=\"0.25\">";
+            $rowContent = "<row r=\"{$rowIdx}\" spans=\"1:11\">";
             foreach (self::COLUMNS as $col) {
                 $cellRef = "{$col}{$rowIdx}";
                 $val = trim((string) ($record[$keys[$col]] ?? ''));
