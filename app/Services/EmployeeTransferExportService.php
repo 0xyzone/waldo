@@ -79,10 +79,19 @@ class EmployeeTransferExportService
         }
 
         if ($uploadedTemplatePath && file_exists($uploadedTemplatePath)) {
-            $permanentTemplatePath = resource_path('templates/change-type-import-sample.xlsx');
-            @copy($uploadedTemplatePath, $permanentTemplatePath);
-            @copy($uploadedTemplatePath, base_path('change-type-import-sample.xlsx'));
-            $templatePath = $uploadedTemplatePath;
+            $testZip = new ZipArchive;
+            if ($testZip->open($uploadedTemplatePath) === true) {
+                $testZip->close();
+                $permanentTemplatePath = resource_path('templates/change-type-import-sample.xlsx');
+                @copy($uploadedTemplatePath, $permanentTemplatePath);
+                @copy($uploadedTemplatePath, base_path('change-type-import-sample.xlsx'));
+                $templatePath = $uploadedTemplatePath;
+            } else {
+                $templatePath = resource_path('templates/change-type-import-sample.xlsx');
+                if (! file_exists($templatePath)) {
+                    $templatePath = base_path('change-type-import-sample.xlsx');
+                }
+            }
         } else {
             $templatePath = resource_path('templates/change-type-import-sample.xlsx');
             if (! file_exists($templatePath)) {
@@ -94,22 +103,27 @@ class EmployeeTransferExportService
             $tempPath = tempnam(sys_get_temp_dir(), 'transfer_export_');
             copy($templatePath, $tempPath);
 
-            $this->populateTemplate($tempPath, $records);
+            try {
+                $this->populateTemplate($tempPath, $records);
 
-            return response()->streamDownload(function () use ($tempPath) {
-                $handle = fopen($tempPath, 'rb');
-                if ($handle) {
-                    fpassthru($handle);
-                    fclose($handle);
-                }
+                return response()->streamDownload(function () use ($tempPath) {
+                    $handle = fopen($tempPath, 'rb');
+                    if ($handle) {
+                        fpassthru($handle);
+                        fclose($handle);
+                    }
+                    @unlink($tempPath);
+                }, $fileName, [
+                    'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
+                ]);
+            } catch (\Throwable $e) {
                 @unlink($tempPath);
-            }, $fileName, [
-                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
-            ]);
+                report($e);
+            }
         }
 
-        // Fallback using OpenSpout if template file is somehow missing
+        // Fallback using OpenSpout if template file is missing or population failed
         return response()->streamDownload(function () use ($records) {
             $writer = new XlsxWriter;
             $writer->openToFile('php://output');
@@ -146,49 +160,65 @@ class EmployeeTransferExportService
         }
 
         $sheet1Xml = $zip->getFromName('xl/worksheets/sheet1.xml');
-        $sharedStringsXml = $zip->getFromName('xl/sharedStrings.xml');
+        $sheetPath = 'xl/worksheets/sheet1.xml';
 
-        if ($sheet1Xml === false || $sharedStringsXml === false) {
+        if ($sheet1Xml === false) {
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                $name = $zip->getNameIndex($i);
+                if (preg_match('#^xl/worksheets/sheet\d+\.xml$#i', $name)) {
+                    $sheet1Xml = $zip->getFromName($name);
+                    $sheetPath = $name;
+                    break;
+                }
+            }
+        }
+
+        if ($sheet1Xml === false) {
             $zip->close();
-            throw new \RuntimeException('Required worksheet or sharedStrings not found in template XLSX.');
+            throw new \RuntimeException('No worksheet XML found in template XLSX.');
         }
 
-        $sstDoc = new DOMDocument;
-        $sstDoc->loadXML($sharedStringsXml);
-        $sstRoot = $sstDoc->documentElement;
+        $sharedStringsXml = $zip->getFromName('xl/sharedStrings.xml');
+        $useSharedStrings = ($sharedStringsXml !== false);
 
-        $stringCache = [];
-        $index = 0;
-        foreach ($sstRoot->getElementsByTagName('si') as $si) {
-            $t = $si->getElementsByTagName('t')->item(0);
-            $val = $t ? $t->nodeValue : '';
-            if (! isset($stringCache[$val])) {
-                $stringCache[$val] = $index;
+        if ($useSharedStrings) {
+            $sstDoc = new DOMDocument;
+            $sstDoc->loadXML($sharedStringsXml);
+            $sstRoot = $sstDoc->documentElement;
+
+            $stringCache = [];
+            $index = 0;
+            foreach ($sstRoot->getElementsByTagName('si') as $si) {
+                $t = $si->getElementsByTagName('t')->item(0);
+                $val = $t ? $t->nodeValue : '';
+                if (! isset($stringCache[$val])) {
+                    $stringCache[$val] = $index;
+                }
+                $index++;
             }
-            $index++;
+
+            $getSharedStringIndex = function (string $str) use ($sstDoc, $sstRoot, &$stringCache): int {
+                if (isset($stringCache[$str])) {
+                    return $stringCache[$str];
+                }
+
+                $newIndex = $sstRoot->getElementsByTagName('si')->length;
+                $si = $sstDoc->createElement('si');
+                $t = $sstDoc->createElement('t');
+                $t->textContent = $str;
+                $si->appendChild($t);
+                $sstRoot->appendChild($si);
+
+                $count = (int) $sstRoot->getAttribute('count') + 1;
+                $uniqueCount = (int) $sstRoot->getAttribute('uniqueCount') + 1;
+                $sstRoot->setAttribute('count', (string) $count);
+                $sstRoot->setAttribute('uniqueCount', (string) $uniqueCount);
+
+                $stringCache[$str] = $newIndex;
+
+                return $newIndex;
+            };
         }
-
-        $getSharedStringIndex = function (string $str) use ($sstDoc, $sstRoot, &$stringCache): int {
-            if (isset($stringCache[$str])) {
-                return $stringCache[$str];
-            }
-
-            $newIndex = $sstRoot->getElementsByTagName('si')->length;
-            $si = $sstDoc->createElement('si');
-            $t = $sstDoc->createElement('t');
-            $t->textContent = $str;
-            $si->appendChild($t);
-            $sstRoot->appendChild($si);
-
-            $count = (int) $sstRoot->getAttribute('count') + 1;
-            $uniqueCount = (int) $sstRoot->getAttribute('uniqueCount') + 1;
-            $sstRoot->setAttribute('count', (string) $count);
-            $sstRoot->setAttribute('uniqueCount', (string) $uniqueCount);
-
-            $stringCache[$str] = $newIndex;
-
-            return $newIndex;
-        };
 
         $keys = [
             'A' => 'username',
@@ -221,9 +251,12 @@ class EmployeeTransferExportService
                     }
                 } elseif ($val === '') {
                     $rowContent .= "<c r=\"{$cellRef}\"/>";
-                } else {
+                } elseif ($useSharedStrings) {
                     $sId = $getSharedStringIndex($val);
                     $rowContent .= "<c r=\"{$cellRef}\" t=\"s\"><v>{$sId}</v></c>";
+                } else {
+                    $escaped = htmlspecialchars($val, ENT_XML1 | ENT_QUOTES, 'UTF-8');
+                    $rowContent .= "<c r=\"{$cellRef}\" t=\"inlineStr\"><is><t>{$escaped}</t></is></c>";
                 }
             }
             $rowContent .= '</row>';
@@ -231,7 +264,7 @@ class EmployeeTransferExportService
             $rowIdx++;
         }
 
-        // Replace all rows after row 1 in sheet1.xml
+        // Replace all rows after row 1 in sheet XML
         $pattern = '/(<sheetData><row r="1"[^>]*>.*?<\/row>).*?(<\/sheetData>)/s';
         $sheet1Xml = preg_replace($pattern, '$1'.$rowsXml.'$2', $sheet1Xml);
 
@@ -239,8 +272,11 @@ class EmployeeTransferExportService
         $totalRows = count($records) + 1;
         $sheet1Xml = preg_replace('/<dimension ref="A1:[^"]*"/', "<dimension ref=\"A1:K{$totalRows}\"", $sheet1Xml);
 
-        $zip->addFromString('xl/worksheets/sheet1.xml', $sheet1Xml);
-        $zip->addFromString('xl/sharedStrings.xml', $sstDoc->saveXML());
+        $zip->addFromString($sheetPath, $sheet1Xml);
+
+        if ($useSharedStrings) {
+            $zip->addFromString('xl/sharedStrings.xml', $sstDoc->saveXML());
+        }
 
         $zip->close();
     }
