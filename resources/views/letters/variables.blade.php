@@ -137,6 +137,8 @@
                             </span>
                         </div>
                     </div>
+                    @endif
+
                     @if($v->type === 'number')
                     <!-- Tokens list for number: as is, western comma, nepali comma, devanagari, preeti -->
                     <div class="space-y-1 pt-1 border-t border-slate-100 dark:border-zinc-800">
