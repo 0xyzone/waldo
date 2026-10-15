@@ -32,9 +32,12 @@ return [
             'host' => env('REVERB_SERVER_HOST', '0.0.0.0'),
             'port' => env('REVERB_SERVER_PORT', 8080),
             'path' => env('REVERB_SERVER_PATH', ''),
-            'hostname' => env('REVERB_HOST'),
             'options' => [
-                'tls' => [],
+                'tls' => env('REVERB_SCHEME', 'http') === 'https' ? [
+                    'local_cert' => env('REVERB_TLS_CERT') ?: (file_exists('/Applications/MAMP/conf/apache/ssl/waldo.crt') ? '/Applications/MAMP/conf/apache/ssl/waldo.crt' : null),
+                    'local_pk' => env('REVERB_TLS_KEY') ?: (file_exists('/Applications/MAMP/conf/apache/ssl/waldo.key') ? '/Applications/MAMP/conf/apache/ssl/waldo.key' : null),
+                    'verify_peer' => false,
+                ] : [],
             ],
             'max_request_size' => env('REVERB_MAX_REQUEST_SIZE', 10_000),
             'scaling' => [

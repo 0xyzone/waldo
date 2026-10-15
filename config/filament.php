@@ -16,10 +16,10 @@ return [
         'echo' => [
             'broadcaster' => 'reverb',
             'key' => env('VITE_REVERB_APP_KEY', env('REVERB_APP_KEY')),
-            'wsHost' => env('VITE_REVERB_HOST', env('REVERB_HOST', 'localhost')),
+            'wsHost' => env('VITE_REVERB_HOST') ?: (! app()->runningInConsole() ? (request()->getHost() ?: env('REVERB_HOST', 'localhost')) : env('REVERB_HOST', 'localhost')),
             'wsPort' => env('VITE_REVERB_PORT', env('REVERB_PORT', 8080)),
             'wssPort' => env('VITE_REVERB_PORT', env('REVERB_PORT', 8080)),
-            'forceTLS' => (env('VITE_REVERB_SCHEME', env('REVERB_SCHEME', 'http')) === 'https'),
+            'forceTLS' => (env('VITE_REVERB_SCHEME', env('REVERB_SCHEME', 'http')) === 'https') || (! app()->runningInConsole() && request()->isSecure()),
             'enabledTransports' => ['ws', 'wss'],
         ],
     ],
