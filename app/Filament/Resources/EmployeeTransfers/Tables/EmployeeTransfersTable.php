@@ -11,6 +11,7 @@ use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\FileUpload;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -20,6 +21,7 @@ use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class EmployeeTransfersTable
 {
@@ -173,7 +175,22 @@ class EmployeeTransfersTable
                     ->label('Download Excel')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('success')
-                    ->action(function (HasTable $livewire, EmployeeTransferExportService $service) {
+                    ->modalHeading('Export Transfers for HRMS')
+                    ->modalDescription('Download an Excel import file matching the HRMS format. Optionally upload the latest HRMS sample template to update reference sheets and dropdowns.')
+                    ->modalSubmitActionLabel('Download Excel')
+                    ->modalWidth('lg')
+                    ->form([
+                        FileUpload::make('sample_file')
+                            ->label('Upload Latest Sample File (.xlsx)')
+                            ->helperText('Optional. Upload the latest change-type-import-sample.xlsx from HRMS to update reference sheets, or leave empty to use the current template.')
+                            ->disk('local')
+                            ->directory('temp-change-type-templates')
+                            ->acceptedFileTypes([
+                                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                'application/vnd.ms-excel',
+                            ]),
+                    ])
+                    ->action(function (array $data, HasTable $livewire, EmployeeTransferExportService $service) {
                         $transfers = $livewire
                             ->getFilteredTableQuery()
                             ->with(['toDepartment', 'toDesignation', 'employee'])
@@ -188,7 +205,11 @@ class EmployeeTransfersTable
                             return null;
                         }
 
-                        return $service->export($transfers);
+                        $uploadedTemplatePath = ! empty($data['sample_file'])
+                            ? Storage::disk('local')->path($data['sample_file'])
+                            : null;
+
+                        return $service->export($transfers, $uploadedTemplatePath);
                     }),
                 BulkActionGroup::make([
                     Action::make('exportSelectedExcel')
@@ -196,7 +217,22 @@ class EmployeeTransfersTable
                         ->icon('heroicon-o-arrow-down-tray')
                         ->color('success')
                         ->accessSelectedRecords()
-                        ->action(function (Collection $records, EmployeeTransferExportService $service) {
+                        ->modalHeading('Export Selected Transfers for HRMS')
+                        ->modalDescription('Download an Excel import file matching the HRMS format. Optionally upload the latest HRMS sample template to update reference sheets and dropdowns.')
+                        ->modalSubmitActionLabel('Download Excel')
+                        ->modalWidth('lg')
+                        ->form([
+                            FileUpload::make('sample_file')
+                                ->label('Upload Latest Sample File (.xlsx)')
+                                ->helperText('Optional. Upload the latest change-type-import-sample.xlsx from HRMS to update reference sheets, or leave empty to use the current template.')
+                                ->disk('local')
+                                ->directory('temp-change-type-templates')
+                                ->acceptedFileTypes([
+                                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                    'application/vnd.ms-excel',
+                                ]),
+                        ])
+                        ->action(function (array $data, Collection $records, EmployeeTransferExportService $service) {
                             if ($records->isEmpty()) {
                                 Notification::make()
                                     ->title('No records selected')
@@ -208,7 +244,11 @@ class EmployeeTransfersTable
 
                             $records->loadMissing(['toDepartment', 'toDesignation', 'employee']);
 
-                            return $service->export($records);
+                            $uploadedTemplatePath = ! empty($data['sample_file'])
+                                ? Storage::disk('local')->path($data['sample_file'])
+                                : null;
+
+                            return $service->export($records, $uploadedTemplatePath);
                         }),
                     DeleteBulkAction::make(),
                 ]),

@@ -57,7 +57,7 @@ class EmployeePromotionExportService
      *
      * @param  Collection<int, EmployeePromotion>  $promotions
      */
-    public function export(Collection $promotions): StreamedResponse
+    public function export(Collection $promotions, ?string $uploadedTemplatePath = null): StreamedResponse
     {
         $fileName = 'employee_promotions_import_'.now()->format('Y_m_d_His').'.xlsx';
 
@@ -78,9 +78,16 @@ class EmployeePromotionExportService
             ];
         }
 
-        $templatePath = resource_path('templates/change-type-import-sample.xlsx');
-        if (! file_exists($templatePath)) {
-            $templatePath = base_path('change-type-import-sample.xlsx');
+        if ($uploadedTemplatePath && file_exists($uploadedTemplatePath)) {
+            $permanentTemplatePath = resource_path('templates/change-type-import-sample.xlsx');
+            @copy($uploadedTemplatePath, $permanentTemplatePath);
+            @copy($uploadedTemplatePath, base_path('change-type-import-sample.xlsx'));
+            $templatePath = $uploadedTemplatePath;
+        } else {
+            $templatePath = resource_path('templates/change-type-import-sample.xlsx');
+            if (! file_exists($templatePath)) {
+                $templatePath = base_path('change-type-import-sample.xlsx');
+            }
         }
 
         if (file_exists($templatePath)) {
