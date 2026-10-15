@@ -164,7 +164,8 @@ class TipsAdjustmentsTable
                     }),
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->modalWidth('5xl'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
