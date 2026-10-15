@@ -24,13 +24,13 @@
                     },
                     colors: {
                         brand: {
-                            50: '#f0f7ff',
-                            100: '#e0effe',
-                            200: '#bae0fd',
-                            500: '#0284c7',
-                            600: '#0284c7',
-                            700: '#0369a1',
-                            900: '#0c4a6e',
+                            50: '#fff7ed',
+                            100: '#ffedd5',
+                            200: '#fed7aa',
+                            500: '#f97316',
+                            600: '#ea580c',
+                            700: '#c2410c',
+                            900: '#7c2d12',
                         }
                     }
                 }
@@ -40,41 +40,41 @@
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #0f172a;
+            background-color: #090d16;
             color: #f8fafc;
         }
 
         .glass-card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(19, 27, 46, 0.85);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .glass-input {
-            background: rgba(15, 23, 42, 0.6);
+            background: rgba(15, 23, 42, 0.7);
             border: 1px solid rgba(255, 255, 255, 0.12);
         }
 
         .glass-input:focus {
-            border-color: #38bdf8;
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+            border-color: #f97316;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
         }
 
         .glow-effect {
-            box-shadow: 0 0 25px -5px rgba(14, 165, 233, 0.25);
+            box-shadow: 0 0 25px -5px rgba(249, 115, 22, 0.25);
         }
     </style>
 </head>
 
-<body class="min-h-screen bg-slate-950 text-slate-100 antialiased selection:bg-sky-500 selection:text-white pb-16">
+<body class="min-h-screen bg-[#090d16] text-slate-100 antialiased selection:bg-orange-500 selection:text-white pb-16">
     <!-- Header / Navbar -->
-    <header class="border-b border-slate-800/80 bg-slate-900/60 sticky top-0 z-50 backdrop-blur-md">
+    <header class="border-b border-slate-800/80 bg-[#131b2e]/80 sticky top-0 z-50 backdrop-blur-md">
         <div
             class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
             <div class="flex items-center space-x-3">
                 <div
-                    class="h-10 w-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20 text-white font-bold text-xl shrink-0">
+                    class="h-10 w-10 rounded-xl bg-gradient-to-tr from-orange-500 to-red-600 flex items-center justify-center shadow-lg shadow-orange-500/25 text-white font-bold text-xl shrink-0">
                     S
                 </div>
                 <div>
@@ -82,7 +82,7 @@
                         class="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2 flex-wrap">
                         Employee SSID Directory
                         <span
-                            class="text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20">Public
+                            class="text-xs font-semibold px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20">Public
                             View</span>
                     </h1>
                     <p class="text-xs text-slate-400">Search and verify employee SSID records by Employee Code</p>
@@ -184,7 +184,7 @@
                     <!-- Action Buttons -->
                     <div class="md:col-span-2">
                         <button type="submit"
-                            class="w-full py-2.5 sm:py-3 px-4 bg-sky-500 hover:bg-sky-400 text-white text-sm font-semibold rounded-xl transition shadow-lg shadow-sky-500/25 flex items-center justify-center gap-2 cursor-pointer">
+                            class="w-full py-2.5 sm:py-3 px-4 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 active:scale-95 text-white text-sm font-semibold rounded-xl transition shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2 cursor-pointer">
                             <svg class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -200,14 +200,14 @@
                         class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-3 border-t border-slate-800 text-xs text-slate-400">
                         <span>Showing search results for:
                             @if (!empty($search))
-                                <strong class="text-sky-400">"{{ $search }}"</strong>
+                                <strong class="text-orange-400">"{{ $search }}"</strong>
                             @endif
                             @if (!empty($selectedDepartment))
                                 in <strong
-                                    class="text-sky-400">{{ optional($departments->firstWhere('id', $selectedDepartment))->name }}</strong>
+                                    class="text-orange-400">{{ optional($departments->firstWhere('id', $selectedDepartment))->name }}</strong>
                             @endif
                             @if (!empty($selectedStatus))
-                                with status <strong class="text-sky-400">"{{ $selectedStatus }}"</strong>
+                                with status <strong class="text-orange-400">"{{ $selectedStatus }}"</strong>
                             @endif
                         </span>
                         <a href="{{ route('employees.ssid-list') }}"
@@ -250,9 +250,9 @@
                             @foreach ($employees as $employee)
                                 <tr class="hover:bg-slate-800/40 transition">
                                     <!-- Employee Code -->
-                                    <td class="py-4 px-6 font-mono font-bold text-sky-400">
+                                    <td class="py-4 px-6 font-mono font-bold text-orange-400">
                                         <div class="flex items-center gap-2">
-                                            <span class="h-2 w-2 rounded-full bg-sky-400"></span>
+                                            <span class="h-2 w-2 rounded-full bg-orange-400"></span>
                                             {{ $employee->employee_code }}
                                         </div>
                                     </td>
@@ -354,8 +354,8 @@
                             <!-- Header Row: Code & Status -->
                             <div class="flex items-center justify-between gap-2">
                                 <div
-                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-500/10 text-sky-400 font-mono font-bold text-xs border border-sky-500/20">
-                                    <span class="h-2 w-2 rounded-full bg-sky-400"></span>
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500/10 text-orange-400 font-mono font-bold text-xs border border-orange-500/20">
+                                    <span class="h-2 w-2 rounded-full bg-orange-400"></span>
                                     <span>{{ $employee->employee_code }}</span>
                                 </div>
 
@@ -538,10 +538,10 @@
                         </label>
                         <div class="space-x-2 text-xs">
                             <button type="button" onclick="selectAllModalEmployees(true)"
-                                class="text-sky-400 hover:underline">Select All</button>
+                                class="text-orange-400 hover:underline">Select All</button>
                             <span class="text-slate-600">|</span>
                             <button type="button" onclick="selectAllModalEmployees(false)"
-                                class="text-sky-400 hover:underline">Clear</button>
+                                class="text-orange-400 hover:underline">Clear</button>
                         </div>
                     </div>
 
@@ -570,8 +570,8 @@
                                 data-text="{{ strtolower($emp->employee_code . ' ' . $empName) }}">
                                 <div class="flex items-center gap-2.5">
                                     <input type="checkbox" name="employee_ids[]" value="{{ $emp->employee_code }}"
-                                        class="modal-emp-checkbox rounded border-slate-700 bg-slate-900 text-emerald-500 focus:ring-emerald-500 focus:ring-offset-slate-900">
-                                    <span class="font-mono font-bold text-sky-400">{{ $emp->employee_code }}</span>
+                                        class="modal-emp-checkbox rounded border-slate-700 bg-slate-900 text-orange-500 focus:ring-orange-500 focus:ring-offset-slate-900">
+                                    <span class="font-mono font-bold text-orange-400">{{ $emp->employee_code }}</span>
                                     <span class="text-slate-200 font-medium">{{ $empName }}</span>
                                 </div>
                                 <div class="flex items-center gap-2 text-[10px] text-slate-400">

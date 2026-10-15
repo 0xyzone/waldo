@@ -68,22 +68,22 @@
     <div class="max-w-7xl mx-auto space-y-8">
         
         <!-- Header dashboard summary card -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white dark:bg-zinc-900 p-8 rounded-2xl border border-slate-200/80 dark:border-zinc-800/80 shadow-sm transition-all duration-300">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white dark:bg-[#131b2e] p-8 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm transition-all duration-300">
             <div class="space-y-1.5">
                 <div class="flex items-center gap-3">
-                    <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-zinc-50">Document Templates</h1>
-                    <span id="template-count-badge" class="text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold px-2.5 py-1 rounded-full border border-amber-500/20">
+                    <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50">Document Templates</h1>
+                    <span id="template-count-badge" class="text-xs bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold px-2.5 py-1 rounded-full border border-orange-500/20">
                         {{ $templates->total() }} {{ \Illuminate\Support\Str::plural('Template', $templates->total()) }}
                     </span>
                 </div>
-                <p class="text-sm font-medium text-slate-500 dark:text-zinc-400">Design letter templates with placeholders and generate bulk letters with dynamic variable replacement.</p>
+                <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Design letter templates with placeholders and generate bulk letters with dynamic variable replacement.</p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
-                <a href="{{ route('letters.generate') }}" class="px-5 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl text-sm font-bold tracking-wide transition-all duration-200 shadow-md shadow-amber-500/10 flex items-center gap-2 active:scale-95 cursor-pointer">
+                <a href="{{ route('letters.generate') }}" class="px-5 py-3 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white rounded-xl text-sm font-bold tracking-wide transition-all duration-200 shadow-md shadow-orange-500/20 flex items-center gap-2 active:scale-95 cursor-pointer">
                     <i class="fa-solid fa-file-invoice text-base"></i> Generate Letters
                 </a>
-                <a href="{{ route('letters.create') }}" class="px-5 py-3 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-750 text-slate-800 dark:text-zinc-200 rounded-xl text-sm font-bold tracking-wide transition-all duration-200 shadow-sm flex items-center gap-2 active:scale-95">
-                    <i class="fa-solid fa-circle-plus text-base text-amber-500"></i> New Template
+                <a href="{{ route('letters.create') }}" class="px-5 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-800 dark:text-slate-200 rounded-xl text-sm font-bold tracking-wide transition-all duration-200 shadow-sm flex items-center gap-2 active:scale-95">
+                    <i class="fa-solid fa-circle-plus text-base text-orange-500"></i> New Template
                 </a>
             </div>
         </div>
@@ -96,12 +96,12 @@
         @endif
 
         <!-- Search and Filter Bar -->
-        <div class="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-slate-200/80 dark:border-zinc-800/80 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
+        <div class="bg-white dark:bg-[#131b2e] p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
             <form method="GET" action="{{ route('letters.index') }}" @submit.prevent="fetchTemplates()" class="w-full flex flex-col md:flex-row gap-3 items-center">
                 <!-- Search Input with Instant Typing Search -->
                 <div class="relative flex-1 w-full">
                     <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs" x-show="!loading"></i>
-                    <i class="fa-solid fa-circle-notch fa-spin absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-500 text-xs" x-show="loading" style="display: none;"></i>
+                    <i class="fa-solid fa-circle-notch fa-spin absolute left-3.5 top-1/2 -translate-y-1/2 text-orange-500 text-xs" x-show="loading" style="display: none;"></i>
                     
                     <input type="text" 
                            name="search" 
@@ -109,12 +109,12 @@
                            x-model="search"
                            @input.debounce.300ms="fetchTemplates()"
                            placeholder="Search templates by name or ID..." 
-                           class="w-full pl-9 pr-8 py-2.5 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-200 text-xs rounded-xl focus:outline-none focus:border-amber-500 transition-colors">
+                           class="w-full pl-9 pr-8 py-2.5 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 text-xs rounded-xl focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-colors">
                     
                     <button type="button" 
                             x-show="search.length > 0" 
                             @click="clearSearch()"
-                            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 p-1 cursor-pointer transition-colors"
+                            class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 cursor-pointer transition-colors"
                             title="Clear search"
                             style="display: none;">
                         <i class="fa-solid fa-xmark text-xs"></i>
@@ -123,13 +123,13 @@
 
                 <!-- Per Page Dropdown (Multiples of 6 up to 60) -->
                 <div class="flex items-center gap-2 shrink-0 w-full md:w-auto">
-                    <label for="per_page_select" class="text-xs font-semibold text-slate-500 dark:text-zinc-400 whitespace-nowrap">Show:</label>
+                    <label for="per_page_select" class="text-xs font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap">Show:</label>
                     <div class="relative w-full md:w-auto">
                         <select name="per_page" 
                                 id="per_page_select"
                                 x-model="perPage" 
                                 @change="fetchTemplates()"
-                                class="w-full md:w-auto pl-3 pr-8 py-2.5 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-200 text-xs rounded-xl focus:outline-none focus:border-amber-500 cursor-pointer appearance-none">
+                                class="w-full md:w-auto pl-3 pr-8 py-2.5 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 text-xs rounded-xl focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 cursor-pointer appearance-none">
                             @foreach($allowedPerPage as $count)
                                 <option value="{{ $count }}" {{ request('per_page', 6) == $count ? 'selected' : '' }}>
                                     {{ $count }} per page
@@ -170,32 +170,32 @@
                     @else
                         <h3 class="text-xl font-bold text-slate-850 dark:text-zinc-200">No Templates Found</h3>
                         <p class="text-sm text-slate-500 dark:text-zinc-400 max-w-sm mt-2 mb-8 leading-relaxed">Start by creating your first document template such as an Appointment letter, Promotion notice, or Certificate.</p>
-                        <a href="{{ route('letters.create') }}" class="px-5 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl text-sm font-bold transition-all duration-200 shadow-md shadow-amber-500/10">Create Template</a>
+                        <a href="{{ route('letters.create') }}" class="px-5 py-3 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white rounded-xl text-sm font-bold transition-all duration-200 shadow-md shadow-orange-500/20">Create Template</a>
                     @endif
                 </div>
             @else
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     @foreach($templates as $template)
-                        <div class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800/60 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-amber-500/40 dark:hover:border-amber-500/40 transition-all duration-300 flex flex-col justify-between gap-6 group">
+                        <div class="bg-white dark:bg-[#131b2e] border border-slate-200 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-orange-500/40 dark:hover:border-orange-500/40 transition-all duration-300 flex flex-col justify-between gap-6 group">
                             
                             <!-- Top Details -->
                             <div class="space-y-4">
                                 <div class="flex items-start justify-between gap-3">
                                     <div class="flex items-start gap-2.5 min-w-0">
-                                        <span class="text-xs font-mono font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/20 px-2 py-0.5 rounded-lg shrink-0 mt-0.5" title="Template ID: {{ $template->id }}">
+                                        <span class="text-xs font-mono font-bold text-orange-600 dark:text-orange-400 bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 px-2 py-0.5 rounded-lg shrink-0 mt-0.5" title="Template ID: {{ $template->id }}">
                                             #{{ $template->id }}
                                         </span>
-                                        <h3 class="font-bold text-slate-900 dark:text-zinc-50 group-hover:text-amber-500 dark:group-hover:text-amber-500 transition-colors text-lg line-clamp-2" title="{{ $template->title }}">{{ $template->title }}</h3>
+                                        <h3 class="font-bold text-slate-900 dark:text-slate-50 group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors text-lg line-clamp-2" title="{{ $template->title }}">{{ $template->title }}</h3>
                                     </div>
-                                    <span class="text-[11px] text-slate-400 dark:text-zinc-500 font-semibold whitespace-nowrap bg-slate-100 dark:bg-zinc-800 px-2 py-1 rounded-md shrink-0">{{ $template->created_at->format('M d, Y') }}</span>
+                                    <span class="text-[11px] text-slate-400 dark:text-slate-500 font-semibold whitespace-nowrap bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md shrink-0">{{ $template->created_at->format('M d, Y') }}</span>
                                 </div>
                                 
                                 <!-- Margins config preview -->
-                                <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-zinc-400 font-medium">
+                                <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
                                     <i class="fa-solid fa-crop text-slate-400"></i>
                                     Margins: {{ $template->margin_top }} • {{ $template->margin_bottom }} • {{ $template->margin_left }} • {{ $template->margin_right }} (mm)
                                     @if($template->different_first_page_margins)
-                                        <span class="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">(1st: {{ $template->first_page_margin_top ?? $template->margin_top }}•{{ $template->first_page_margin_bottom ?? $template->margin_bottom }}•{{ $template->first_page_margin_left ?? $template->margin_left }}•{{ $template->first_page_margin_right ?? $template->margin_right }})</span>
+                                        <span class="text-[10px] text-orange-600 dark:text-orange-400 font-semibold">(1st: {{ $template->first_page_margin_top ?? $template->margin_top }}•{{ $template->first_page_margin_bottom ?? $template->margin_bottom }}•{{ $template->first_page_margin_left ?? $template->margin_left }}•{{ $template->first_page_margin_right ?? $template->margin_right }})</span>
                                     @endif
                                 </div>
 
@@ -203,7 +203,7 @@
                                 <div class="space-y-2">
                                     <span class="block text-[10px] uppercase font-bold tracking-wider text-slate-400">Custom Variables:</span>
                                     @if(empty($template->variables))
-                                        <span class="text-xs text-slate-400 dark:text-zinc-500 italic block">None required</span>
+                                        <span class="text-xs text-slate-400 dark:text-slate-500 italic block">None required</span>
                                     @else
                                         <div class="flex flex-wrap gap-1.5">
                                             @foreach($template->variables as $var)
@@ -211,7 +211,7 @@
                                                     $varKey = is_array($var) ? ($var['key'] ?? '') : $var; 
                                                     $varType = is_array($var) ? ($var['type'] ?? 'text') : 'text';
                                                 @endphp
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 font-mono border border-slate-200/40 dark:border-zinc-700/40" title="Type: {{ $varType }}">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-mono border border-slate-200/40 dark:border-slate-700/40" title="Type: {{ $varType }}">
                                                     {{ $varKey }}
                                                 </span>
                                             @endforeach
@@ -221,9 +221,9 @@
                             </div>
 
                             <!-- Card Action Buttons -->
-                            <div class="flex items-center justify-between border-t border-slate-100 dark:border-zinc-800/80 pt-4 mt-auto">
+                            <div class="flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 pt-4 mt-auto">
                                 <!-- Generate Button -->
-                                <a href="{{ route('letters.generate') }}?template_id={{ $template->id }}" class="text-xs font-bold text-amber-600 dark:text-amber-500 hover:text-amber-700 dark:hover:text-amber-400 flex items-center gap-1.5 transition-colors cursor-pointer">
+                                <a href="{{ route('letters.generate') }}?template_id={{ $template->id }}" class="text-xs font-bold text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 flex items-center gap-1.5 transition-colors cursor-pointer">
                                     <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
                                     Generate Letters
                                 </a>

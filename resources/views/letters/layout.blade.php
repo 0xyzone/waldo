@@ -9,14 +9,18 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
     <script>
         (function() {
             try {
-                if (localStorage.getItem('darkMode') === 'true' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                const storedTheme = localStorage.getItem('theme');
+                const storedDarkMode = localStorage.getItem('darkMode');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                
+                if (storedTheme === 'dark' || storedDarkMode === 'true' || ((!storedTheme && !storedDarkMode) && prefersDark)) {
                     document.documentElement.classList.add('dark');
                 } else {
                     document.documentElement.classList.remove('dark');
@@ -65,23 +69,23 @@
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
         }
 
-        /* 1. Prebuilt Variables: Primary color (Amber) */
+        /* 1. Prebuilt Variables: Brand Orange */
         .template-variable.var-type-prebuilt,
         .template-variable[data-var-type="prebuilt"] {
-            background-color: rgba(245, 158, 11, 0.12) !important;
-            color: #b45309 !important;
-            border: 1px solid rgba(245, 158, 11, 0.38) !important;
+            background-color: rgba(249, 115, 22, 0.12) !important;
+            color: #c2410c !important;
+            border: 1px solid rgba(249, 115, 22, 0.38) !important;
         }
         .template-variable.var-type-prebuilt:hover,
         .template-variable[data-var-type="prebuilt"]:hover {
-            background-color: rgba(245, 158, 11, 0.22) !important;
-            border-color: rgba(245, 158, 11, 0.6) !important;
+            background-color: rgba(249, 115, 22, 0.22) !important;
+            border-color: rgba(249, 115, 22, 0.6) !important;
         }
         .dark .template-variable.var-type-prebuilt,
         .dark .template-variable[data-var-type="prebuilt"] {
-            background-color: rgba(245, 158, 11, 0.18) !important;
-            color: #fbbf24 !important;
-            border-color: rgba(245, 158, 11, 0.45) !important;
+            background-color: rgba(249, 115, 22, 0.18) !important;
+            color: #fb923c !important;
+            border-color: rgba(249, 115, 22, 0.45) !important;
         }
 
         /* 2. Permanent Variables: Lime */
@@ -180,45 +184,45 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
         .dark .flatpickr-calendar {
-            background: #18181b;
-            border-color: #27272a;
+            background: #0f172a;
+            border-color: #334155;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-            color: #f4f4f5;
+            color: #f8fafc;
         }
         .dark .flatpickr-day {
-            color: #e4e4e7;
+            color: #e2e8f0;
         }
         .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange {
-            background: #f59e0b !important;
-            border-color: #f59e0b !important;
+            background: #f97316 !important;
+            border-color: #f97316 !important;
             color: #ffffff !important;
             font-weight: 700;
         }
         .flatpickr-day.inRange {
-            background: rgba(245, 158, 11, 0.15) !important;
+            background: rgba(249, 115, 22, 0.15) !important;
             border-color: transparent !important;
-            box-shadow: -5px 0 0 rgba(245, 158, 11, 0.15), 5px 0 0 rgba(245, 158, 11, 0.15);
+            box-shadow: -5px 0 0 rgba(249, 115, 22, 0.15), 5px 0 0 rgba(249, 115, 22, 0.15);
         }
         .dark .flatpickr-day.inRange {
-            background: rgba(245, 158, 11, 0.25) !important;
-            box-shadow: -5px 0 0 rgba(245, 158, 11, 0.25), 5px 0 0 rgba(245, 158, 11, 0.25);
-            color: #fbbf24;
+            background: rgba(249, 115, 22, 0.25) !important;
+            box-shadow: -5px 0 0 rgba(249, 115, 22, 0.25), 5px 0 0 rgba(249, 115, 22, 0.25);
+            color: #fb923c;
         }
         .flatpickr-day:hover {
             background: #f1f5f9;
         }
         .dark .flatpickr-day:hover {
-            background: #27272a;
+            background: #1e293b;
         }
         .dark .flatpickr-months .flatpickr-month,
         .dark .flatpickr-current-month .flatpickr-monthDropdown-months,
         .dark .flatpickr-current-month input.cur-year {
-            color: #f4f4f5;
-            fill: #f4f4f5;
+            color: #f8fafc;
+            fill: #f8fafc;
         }
         .dark .flatpickr-weekdays,
         .dark span.flatpickr-weekday {
-            color: #a1a1aa;
+            color: #94a3b8;
         }
         /* Custom scrollbar */
         ::-webkit-scrollbar {
@@ -233,13 +237,13 @@
             border-radius: 9999px;
         }
         .dark ::-webkit-scrollbar-thumb {
-            background: #3f3f46;
+            background: #334155;
         }
         ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
         .dark ::-webkit-scrollbar-thumb:hover {
-            background: #52525b;
+            background: #475569;
         }
     </style>
     @yield('styles')
@@ -249,6 +253,7 @@
           toggleTheme() {
               this.darkMode = !this.darkMode;
               localStorage.setItem('darkMode', this.darkMode);
+              localStorage.setItem('theme', this.darkMode ? 'dark' : 'light');
               if (this.darkMode) {
                   document.documentElement.classList.add('dark');
               } else {
@@ -256,45 +261,45 @@
               }
           }
       }" 
-      class="h-full flex flex-col bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 transition-colors duration-200">
+      class="h-full flex flex-col bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 transition-colors duration-200">
 
     <!-- Header bar -->
-    <header class="no-print bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border-b border-slate-200 dark:border-zinc-800 px-8 flex items-center justify-between h-[64px] shrink-0 z-30 transition-colors duration-300 shadow-sm">
+    <header class="no-print bg-white/90 dark:bg-[#131b2e]/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-8 flex items-center justify-between h-[64px] shrink-0 z-30 transition-colors duration-300 shadow-sm">
         <div class="flex items-center gap-4">
             <a href="{{ route('letters.index') }}" class="flex items-center gap-3 group">
-                <div class="bg-gradient-to-br from-amber-500 to-amber-600 text-white w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform">
+                <div class="bg-gradient-to-br from-orange-500 to-red-600 text-white w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg shadow-md shadow-orange-500/25 group-hover:scale-105 transition-transform">
                     W
                 </div>
                 <div class="flex flex-col">
-                    <span class="text-base font-bold tracking-tight text-slate-900 dark:text-zinc-50">Waldo Letters</span>
-                    <span class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Document Studio</span>
+                    <span class="text-base font-bold tracking-tight text-slate-900 dark:text-slate-50">Waldo Letters</span>
+                    <span class="text-[10px] text-orange-600 dark:text-orange-400 font-bold uppercase tracking-wider">Document Studio</span>
                 </div>
             </a>
         </div>
 
         <nav class="hidden md:flex items-center gap-2">
             <a href="{{ route('letters.index') }}" 
-               class="px-4 py-2 text-sm font-semibold rounded-xl transition-all {{ request()->routeIs('letters.index') ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-950 dark:hover:text-zinc-50' }}">
+               class="px-4 py-2 text-sm font-semibold rounded-xl transition-all {{ request()->routeIs('letters.index') ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-950 dark:hover:text-slate-50' }}">
                 <i class="fa-solid fa-folder-open mr-1.5 text-base"></i> Templates
             </a>
             <a href="{{ route('letters.create') }}" 
-               class="px-4 py-2 text-sm font-semibold rounded-xl transition-all {{ request()->routeIs('letters.create') ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-950 dark:hover:text-zinc-50' }}">
+               class="px-4 py-2 text-sm font-semibold rounded-xl transition-all {{ request()->routeIs('letters.create') ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-950 dark:hover:text-slate-50' }}">
                 <i class="fa-solid fa-circle-plus mr-1.5 text-base"></i> New Template
             </a>
             <a href="{{ route('letters.generate') }}" 
-               class="px-4 py-2 text-sm font-semibold rounded-xl transition-all {{ request()->routeIs('letters.generate') ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-950 dark:hover:text-zinc-50' }}">
+               class="px-4 py-2 text-sm font-semibold rounded-xl transition-all {{ request()->routeIs('letters.generate') ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-950 dark:hover:text-slate-50' }}">
                 <i class="fa-solid fa-file-invoice mr-1.5 text-base"></i> Generate Letters
             </a>
             <a href="{{ route('letters.history') }}" 
-               class="px-4 py-2 text-sm font-semibold rounded-xl transition-all {{ request()->routeIs('letters.history*') ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-950 dark:hover:text-zinc-50' }}">
+               class="px-4 py-2 text-sm font-semibold rounded-xl transition-all {{ request()->routeIs('letters.history*') ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-950 dark:hover:text-slate-50' }}">
                 <i class="fa-solid fa-clock-rotate-left mr-1.5 text-base"></i> Generated History
             </a>
             <a href="{{ route('letters.variables.index') }}" 
-               class="px-4 py-2 text-sm font-semibold rounded-xl transition-all {{ request()->routeIs('letters.variables.*') ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-950 dark:hover:text-zinc-50' }}">
+               class="px-4 py-2 text-sm font-semibold rounded-xl transition-all {{ request()->routeIs('letters.variables.*') ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-950 dark:hover:text-slate-50' }}">
                 <i class="fa-solid fa-sliders mr-1.5 text-base"></i> Global Variables
             </a>
             <a href="{{ route('letters.fonts') }}" 
-               class="px-4 py-2 text-sm font-semibold rounded-xl transition-all {{ request()->routeIs('letters.fonts') ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-950 dark:hover:text-zinc-50' }}">
+               class="px-4 py-2 text-sm font-semibold rounded-xl transition-all {{ request()->routeIs('letters.fonts') ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-950 dark:hover:text-slate-50' }}">
                 <i class="fa-solid fa-font mr-1.5 text-base"></i> Fonts
             </a>
         </nav>
@@ -302,17 +307,18 @@
         <div class="flex items-center gap-3">
             <!-- Theme Toggle -->
             <button @click="toggleTheme()" 
-                    class="p-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 transition-all shadow-sm active:scale-95 cursor-pointer">
+                    class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-all shadow-sm active:scale-95 cursor-pointer">
                 <i x-show="!darkMode" class="fa-solid fa-sun text-base"></i>
                 <i x-show="darkMode" class="fa-solid fa-moon text-base" style="display:none"></i>
             </button>
 
             <!-- Dashboard Button -->
             <a href="{{ route('filament.kamkaj.pages.dashboard') }}" 
-               class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-600 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-zinc-100 text-sm font-semibold transition-all shadow-sm active:scale-95">
+               class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 text-sm font-semibold transition-all shadow-sm active:scale-95">
                 <i class="fa-solid fa-house text-base"></i> Dashboard
             </a>
         </div>
+    </header>
     </header>
 
     <!-- Main Content Area -->

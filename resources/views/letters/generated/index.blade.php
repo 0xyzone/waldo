@@ -11,7 +11,7 @@
             <div class="space-y-1.5">
                 <div class="flex items-center gap-3">
                     <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-zinc-50">Generated History</h1>
-                    <span class="text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold px-2.5 py-1 rounded-full border border-amber-500/20">
+                    <span class="text-xs bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold px-2.5 py-1 rounded-full border border-orange-500/20">
                         {{ $letters->total() }} Record{{ $letters->total() === 1 ? '' : 's' }}
                     </span>
                 </div>
@@ -19,7 +19,7 @@
             </div>
             
             <div class="flex flex-wrap items-center gap-3">
-                <a href="{{ route('letters.generate') }}" class="px-5 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl text-sm font-bold tracking-wide transition-all duration-200 shadow-md shadow-amber-500/10 flex items-center gap-2 active:scale-95 cursor-pointer">
+                <a href="{{ route('letters.generate') }}" class="px-5 py-3 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white rounded-xl text-sm font-bold tracking-wide transition-all duration-200 shadow-md shadow-orange-500/20 flex items-center gap-2 active:scale-95 cursor-pointer">
                     <i class="fa-solid fa-wand-magic-sparkles text-base"></i> Generate New Letters
                 </a>
             </div>
@@ -41,13 +41,13 @@
                     <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                     <input type="text" name="search" value="{{ request('search') }}" 
                            placeholder="Search by employee name, code, or template title..." 
-                           class="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-200 text-xs rounded-xl focus:outline-none focus:border-amber-500">
+                           class="w-full pl-9 pr-4 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-200 text-xs rounded-xl focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30">
                 </div>
 
                 <!-- Template Filter -->
                 <div class="w-full md:w-64">
                     <select name="template_id" onchange="this.form.submit()" 
-                            class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-200 text-xs rounded-xl focus:outline-none focus:border-amber-500">
+                            class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-slate-800 dark:text-zinc-200 text-xs rounded-xl focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30">
                         <option value="">— All Templates —</option>
                         @foreach($templates as $t)
                             <option value="{{ $t->id }}" {{ request('template_id') == $t->id ? 'selected' : '' }}>
@@ -81,23 +81,23 @@
                     <h3 class="text-xl font-bold text-slate-850 dark:text-zinc-200">No Generated Letters Found</h3>
                     <p class="text-sm text-slate-500 dark:text-zinc-400 max-w-sm">No historical letter records match your search query or filters.</p>
                 </div>
-                <a href="{{ route('letters.generate') }}" class="px-5 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white rounded-xl text-sm font-bold shadow-md shadow-amber-500/10">
+                <a href="{{ route('letters.generate') }}" class="px-5 py-3 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white rounded-xl text-sm font-bold shadow-md shadow-orange-500/20">
                     Generate Letters Now
                 </a>
             </div>
         @else
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach($letters as $letter)
-                    <div class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800/60 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-amber-500/40 transition-all duration-300 flex flex-col justify-between gap-6 group">
+                    <div class="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800/60 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-orange-500/40 transition-all duration-300 flex flex-col justify-between gap-6 group">
                         
                         <!-- Top Header -->
                         <div class="space-y-3">
                             <div class="flex items-start justify-between gap-2">
                                 <div>
-                                    <h3 class="font-bold text-slate-900 dark:text-zinc-50 group-hover:text-amber-500 transition-colors text-base line-clamp-1">
+                                    <h3 class="font-bold text-slate-900 dark:text-zinc-50 group-hover:text-orange-500 transition-colors text-base line-clamp-1">
                                         {{ $letter->template_title }}
                                     </h3>
-                                    <div class="flex items-center gap-1.5 mt-1 text-xs text-amber-600 dark:text-amber-400 font-bold">
+                                    <div class="flex items-center gap-1.5 mt-1 text-xs text-orange-600 dark:text-orange-400 font-bold">
                                         <i class="fa-solid fa-user-check text-xs"></i>
                                         <span>{{ $letter->employee_name }}</span>
                                         @if($letter->employee_code)
@@ -134,7 +134,7 @@
                         <div class="flex items-center justify-between border-t border-slate-100 dark:border-zinc-800/80 pt-4 mt-auto">
                             <!-- View / Print button -->
                             <a href="{{ route('letters.history.show', $letter->id) }}" 
-                               class="px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/20 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer">
+                               class="px-3 py-1.5 bg-orange-500/10 hover:bg-orange-500/20 text-orange-700 dark:text-orange-400 border border-orange-500/20 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer">
                                 <i class="fa-solid fa-eye text-xs"></i> View & Print
                             </a>
 

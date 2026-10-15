@@ -1452,11 +1452,11 @@
                 <div
                     class="p-4 border-t border-slate-200 dark:border-zinc-800 space-y-2 shrink-0 bg-white dark:bg-zinc-900">
                     <button type="submit"
-                        class="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm rounded-xl shadow-md shadow-amber-500/20 transition-all cursor-pointer">
+                        class="w-full py-2.5 px-4 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold text-sm rounded-xl shadow-md shadow-orange-500/20 active:scale-98 transition-all cursor-pointer">
                         <i class="fa-solid fa-floppy-disk mr-1.5"></i> Update Template
                     </button>
                     <a href="{{ route('letters.generate') }}?template_id={{ $template->id }}"
-                        class="flex items-center justify-center gap-1.5 w-full py-2 px-4 border border-amber-500/30 hover:border-amber-500/60 bg-amber-500/10 hover:bg-amber-500/15 text-amber-700 dark:text-amber-400 font-bold text-xs rounded-xl transition-all">
+                        class="flex items-center justify-center gap-1.5 w-full py-2 px-4 border border-orange-500/30 hover:border-orange-500/60 bg-orange-500/10 hover:bg-orange-500/15 text-orange-700 dark:text-orange-400 font-bold text-xs rounded-xl transition-all">
                         <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Letters
                     </a>
                     <a href="{{ route('letters.index') }}"

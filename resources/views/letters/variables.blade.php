@@ -27,7 +27,7 @@
             </div>
             <div class="flex items-center gap-3">
                 <button type="button" @click="openCreateModal()"
-                        class="flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-xl shadow-md shadow-amber-500/20 active:scale-95 transition-all cursor-pointer">
+                        class="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white text-sm font-bold rounded-xl shadow-md shadow-orange-500/25 active:scale-95 transition-all cursor-pointer">
                     <i class="fa-solid fa-plus text-xs"></i> New Variable
                 </button>
                 <a href="{{ route('letters.index') }}"
@@ -56,7 +56,7 @@
                 <div class="relative flex-1 max-w-md">
                     <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by key, label, or description..."
-                           class="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-amber-500 transition-all">
+                           class="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all">
                 </div>
                 <button type="submit" class="px-4 py-2 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-bold rounded-xl transition-all cursor-pointer">
                     Search
@@ -87,7 +87,7 @@
                                     @elseif($v->type === 'dropdown') bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20
                                     @elseif($v->type === 'number') bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20
                                     @elseif($v->type === 'boolean') bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20
-                                    @else bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 @endif">
+                                    @else bg-orange-500/10 text-orange-700 dark:text-orange-400 border border-orange-500/20 @endif">
                                     {{ $v->type === 'daterange' ? 'Date Range' : $v->type }}
                                 </span>
 
@@ -107,7 +107,7 @@
                         <!-- Actions -->
                         <div class="flex items-center gap-1 shrink-0">
                             <button type="button" @click="openEditModal({{ json_encode($v) }})"
-                                    class="p-1.5 text-slate-400 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
+                                    class="p-1.5 text-slate-400 hover:text-orange-500 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
                                     title="Edit Variable">
                                 <i class="fa-solid fa-pen-to-square text-xs"></i>
                             </button>
@@ -237,7 +237,7 @@
         </div>
         @else
         <div class="bg-white dark:bg-zinc-900 rounded-2xl border border-dashed border-slate-200 dark:border-zinc-800 p-12 text-center space-y-4">
-            <div class="w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center text-2xl mx-auto">
+            <div class="w-16 h-16 rounded-2xl bg-orange-500/10 text-orange-500 flex items-center justify-center text-2xl mx-auto">
                 <i class="fa-solid fa-sliders"></i>
             </div>
             <div class="space-y-1">
@@ -245,7 +245,7 @@
                 <p class="text-xs text-slate-400 max-w-sm mx-auto">Create global custom variables that can be imported anytime you build or edit letter templates.</p>
             </div>
             <button type="button" @click="openCreateModal()"
-                    class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-md shadow-amber-500/20 active:scale-95 transition-all cursor-pointer">
+                    class="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white text-xs font-bold rounded-xl shadow-md shadow-orange-500/25 active:scale-95 transition-all cursor-pointer">
                 <i class="fa-solid fa-plus mr-1"></i> Add First Variable
             </button>
         </div>
@@ -285,7 +285,7 @@
                     <div class="space-y-1.5">
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Key (Variable Name) *</label>
                         <input type="text" name="key" x-model="form.key" required placeholder="e.g. probation_period"
-                               class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs font-mono text-slate-900 dark:text-zinc-100 focus:border-amber-500 outline-none">
+                               class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs font-mono text-slate-900 dark:text-zinc-100 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 outline-none">
                         <p class="text-[10px] text-slate-400">Letters, numbers, dashes, underscores.</p>
                     </div>
 
@@ -293,7 +293,7 @@
                     <div class="space-y-1.5">
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Type *</label>
                         <select name="type" x-model="form.type" required
-                                class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs font-semibold text-slate-900 dark:text-zinc-100 focus:border-amber-500 outline-none cursor-pointer">
+                                class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs font-semibold text-slate-900 dark:text-zinc-100 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 outline-none cursor-pointer">
                             <option value="text">Text</option>
                             <option value="date">Date</option>
                             <option value="daterange">Date Range</option>
@@ -311,21 +311,21 @@
                 <div class="space-y-1.5">
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Display Label *</label>
                     <input type="text" name="label" x-model="form.label" required placeholder="e.g. Probation Period (Months)"
-                           class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs font-semibold text-slate-900 dark:text-zinc-100 focus:border-amber-500 outline-none">
+                           class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs font-semibold text-slate-900 dark:text-zinc-100 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 outline-none">
                 </div>
 
                 <!-- Default / Dummy Value -->
                 <div class="space-y-1.5">
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Default Value / Sample <span class="font-normal text-slate-400">(optional)</span></label>
                     <input type="text" name="default_value" x-model="form.default_value" placeholder="e.g. 6"
-                           class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-900 dark:text-zinc-100 focus:border-amber-500 outline-none">
+                           class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-900 dark:text-zinc-100 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 outline-none">
                 </div>
 
                 <!-- Dropdown Options -->
                 <div x-show="form.type === 'dropdown'" class="space-y-1.5">
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Options (Comma separated)</label>
                     <input type="text" name="options" x-model="form.options" placeholder="Option 1, Option 2, Option 3"
-                           class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-900 dark:text-zinc-100 focus:border-amber-500 outline-none">
+                           class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-900 dark:text-zinc-100 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 outline-none">
                 </div>
 
                 <!-- Calculated Formulas Sub-editor -->
@@ -381,7 +381,7 @@
                 <div class="space-y-1.5">
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Description / Usage Notes <span class="font-normal text-slate-400">(optional)</span></label>
                     <textarea name="description" x-model="form.description" rows="2" placeholder="Brief note explaining where or how this variable is used..."
-                              class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-900 dark:text-zinc-100 focus:border-amber-500 outline-none"></textarea>
+                              class="w-full px-3 py-2 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 rounded-xl text-xs text-slate-900 dark:text-zinc-100 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/30 outline-none"></textarea>
                 </div>
 
                 <!-- Modal Footer -->
@@ -391,7 +391,7 @@
                         Cancel
                     </button>
                     <button type="submit"
-                            class="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-md shadow-amber-500/20 active:scale-95 transition-all cursor-pointer">
+                            class="px-5 py-2 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white text-xs font-bold rounded-xl shadow-md shadow-orange-500/20 active:scale-95 transition-all cursor-pointer">
                         <span x-text="isEdit ? 'Save Changes' : 'Create Variable'"></span>
                     </button>
                 </div>

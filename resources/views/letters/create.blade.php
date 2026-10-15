@@ -1448,7 +1448,7 @@
                 <div
                     class="p-4 border-t border-slate-200 dark:border-zinc-800 space-y-2 shrink-0 bg-white dark:bg-zinc-900">
                     <button type="submit"
-                        class="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm rounded-xl shadow-md shadow-amber-500/20 active:scale-98 transition-all cursor-pointer">
+                        class="w-full py-2.5 px-4 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold text-sm rounded-xl shadow-md shadow-orange-500/20 active:scale-98 transition-all cursor-pointer">
                         <i class="fa-solid fa-floppy-disk mr-1.5"></i> Save Template
                     </button>
                     <a href="{{ route('letters.index') }}"

@@ -1,14 +1,14 @@
 <x-filament-panels::page>
     <div class="space-y-6">
         <!-- Hero Summary Banner -->
-        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 md:p-8 text-white shadow-xl border border-slate-800">
-            <!-- Decorative Amber Glow -->
-            <div class="absolute -top-12 -right-12 w-56 h-56 rounded-full bg-amber-500/20 blur-3xl pointer-events-none"></div>
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-[#131b2e] p-6 md:p-8 text-white shadow-xl border border-slate-800">
+            <!-- Decorative Orange Glow -->
+            <div class="absolute -top-12 -right-12 w-64 h-64 rounded-full bg-orange-500/15 blur-3xl pointer-events-none"></div>
 
             <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div class="space-y-2">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-semibold uppercase tracking-wider">
-                        <span class="h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/15 border border-orange-500/30 text-orange-400 text-xs font-semibold uppercase tracking-wider">
+                        <span class="h-2 w-2 rounded-full bg-orange-500 animate-pulse"></span>
                         Active Release v{{ $this->getCurrentVersion() }}
                     </div>
                     <h2 class="text-2xl md:text-3xl font-bold tracking-tight text-white">
@@ -25,7 +25,7 @@
                         <span class="text-[11px] text-slate-400 uppercase tracking-wider">Releases</span>
                     </div>
                     <div class="px-4 py-3 rounded-xl bg-white/5 border border-white/10 backdrop-blur-xs text-center">
-                        <span class="block text-xl font-bold text-amber-400">SemVer</span>
+                        <span class="block text-xl font-bold text-orange-400">SemVer</span>
                         <span class="text-[11px] text-slate-400 uppercase tracking-wider">Standard</span>
                     </div>
                 </div>
@@ -37,9 +37,9 @@
             @foreach ($this->getReleases() as $release)
                 <div class="relative group">
                     <!-- Timeline Dot -->
-                    <div class="absolute -left-[23px] md:-left-[39px] top-6 flex h-4 w-4 items-center justify-center rounded-full bg-white dark:bg-slate-900 border-2 {{ $loop->first ? 'border-amber-500 ring-4 ring-amber-500/20' : 'border-slate-400 dark:border-slate-600' }}">
+                    <div class="absolute -left-[23px] md:-left-[39px] top-6 flex h-4 w-4 items-center justify-center rounded-full bg-white dark:bg-slate-900 border-2 {{ $loop->first ? 'border-orange-500 ring-4 ring-orange-500/20' : 'border-slate-400 dark:border-slate-600' }}">
                         @if ($loop->first)
-                            <div class="h-1.5 w-1.5 rounded-full bg-amber-500"></div>
+                            <div class="h-1.5 w-1.5 rounded-full bg-orange-500"></div>
                         @endif
                     </div>
 
@@ -48,12 +48,12 @@
                         <!-- Header Row -->
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-4 border-b border-slate-100 dark:border-slate-800/60">
                             <div class="flex flex-wrap items-center gap-2.5">
-                                <span class="px-3 py-1 rounded-lg font-mono text-sm font-bold {{ $loop->first ? 'bg-amber-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200' }}">
+                                <span class="px-3 py-1 rounded-lg font-mono text-sm font-bold {{ $loop->first ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-xs' : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200' }}">
                                     v{{ $release['version'] }}
                                 </span>
 
                                 <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold
-                                    @if($release['badge_color'] === 'primary') bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/40
+                                    @if($release['badge_color'] === 'primary') bg-orange-50 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 border border-orange-200/60 dark:border-orange-800/40
                                     @elseif($release['badge_color'] === 'warning') bg-orange-50 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 border border-orange-200/60 dark:border-orange-800/40
                                     @elseif($release['badge_color'] === 'success') bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40
                                     @else bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700

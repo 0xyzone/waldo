@@ -395,12 +395,54 @@ html, body, .fi-body {
         width: 100% !important;
     }
 
-    /* Selection checkbox position */
+    /* Selection checkbox position: Dedicated top row inside card with clean label */
     table.fi-ta-table.fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-selection-cell {
-        position: absolute !important;
-        top: 0.75rem !important;
-        right: 0.75rem !important;
-        z-index: 10 !important;
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        width: 100% !important;
+        order: -1 !important;
+        padding: 0.25rem 0 0.5rem 0 !important;
+        margin-bottom: 0.35rem !important;
+        border-bottom: 1px dashed rgba(226, 232, 240, 0.9) !important;
+        position: static !important;
+        z-index: auto !important;
+    }
+
+    :is(.dark, :root.dark) table.fi-ta-table.fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-selection-cell {
+        border-bottom-color: rgba(51, 65, 85, 0.5) !important;
+    }
+
+    table.fi-ta-table.fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-selection-cell::before {
+        content: 'Select Record' !important;
+        font-size: 0.72rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        color: #64748b !important;
+    }
+
+    :is(.dark, :root.dark) table.fi-ta-table.fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-selection-cell::before {
+        color: #94a3b8 !important;
+    }
+
+    /* Stacked table select-all page header cell */
+    table.fi-ta-table.fi-ta-table-stacked-on-mobile .fi-ta-table-stacked-header-cell {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 0.75rem !important;
+        padding: 0.75rem 1rem !important;
+        background: rgba(248, 250, 252, 0.9) !important;
+        border-radius: 0.875rem !important;
+        margin-bottom: 0.75rem !important;
+        border: 1px solid rgba(226, 232, 240, 0.9) !important;
+    }
+
+    :is(.dark, :root.dark) table.fi-ta-table.fi-ta-table-stacked-on-mobile .fi-ta-table-stacked-header-cell {
+        background: rgba(30, 41, 59, 0.7) !important;
+        border-color: rgba(51, 65, 85, 0.6) !important;
     }
 
     /* Toolbar & Search Bar layout */
@@ -409,6 +451,26 @@ html, body, .fi-body {
         gap: 0.625rem !important;
         align-items: stretch !important;
     }
+}
+
+/* ==========================================================================
+   Desktop Table Selection Column & Spacing
+   ========================================================================== */
+table.fi-ta-table > tbody > tr > .fi-ta-selection-cell,
+table.fi-ta-table > thead > tr > .fi-ta-selection-cell {
+    width: 3.25rem !important;
+    min-width: 3.25rem !important;
+    max-width: 3.5rem !important;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
+table.fi-ta-table > tbody > tr > .fi-ta-selection-cell .fi-ta-record-checkbox,
+table.fi-ta-table > thead > tr > .fi-ta-selection-cell .fi-ta-page-checkbox {
+    margin: 0 auto !important;
+    display: inline-block !important;
 }
 
 /* ==========================================================================

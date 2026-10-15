@@ -55,27 +55,27 @@
                         <label class="block text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Family Name *</label>
                         <input type="text" name="family_name" value="{{ old('family_name') }}" required
                                placeholder="e.g. MyCompanyFont"
-                               class="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all">
+                               class="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all">
                         <p class="text-[10px] text-slate-400 dark:text-zinc-500">This is what will appear in the font dropdown in the editor.</p>
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Font File *</label>
                         <input type="file" name="font_file" required accept=".ttf,.otf,.woff,.woff2"
-                               class="w-full text-sm text-slate-700 dark:text-zinc-300 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 dark:file:bg-amber-950/30 file:text-amber-700 dark:file:text-amber-400 hover:file:bg-amber-100 dark:hover:file:bg-amber-900/40 file:cursor-pointer cursor-pointer transition-all">
+                               class="w-full text-sm text-slate-700 dark:text-zinc-300 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-orange-50 dark:file:bg-orange-950/30 file:text-orange-700 dark:file:text-orange-400 hover:file:bg-orange-100 dark:hover:file:bg-orange-900/40 file:cursor-pointer cursor-pointer transition-all">
                         <p class="text-[10px] text-slate-400 dark:text-zinc-500">Accepted: .ttf, .otf, .woff, .woff2 (max 5 MB)</p>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-1.5">
                         <label class="block text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Style</label>
-                        <select name="style" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-sm text-slate-900 dark:text-zinc-100 focus:border-amber-500 outline-none">
+                        <select name="style" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-sm text-slate-900 dark:text-zinc-100 focus:border-orange-500 outline-none">
                             <option value="normal" selected>Normal</option>
                             <option value="italic">Italic</option>
                         </select>
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Weight</label>
-                        <select name="weight" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-sm text-slate-900 dark:text-zinc-100 focus:border-amber-500 outline-none">
+                        <select name="weight" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-950 text-sm text-slate-900 dark:text-zinc-100 focus:border-orange-500 outline-none">
                             <option value="100">100 — Thin</option>
                             <option value="200">200 — Extra Light</option>
                             <option value="300">300 — Light</option>
@@ -90,7 +90,7 @@
                 </div>
                 <div class="flex justify-end">
                     <button type="submit"
-                            class="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-sm font-semibold rounded-xl shadow shadow-amber-500/20 transition-all active:scale-[0.98] cursor-pointer flex items-center gap-2">
+                            class="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white text-sm font-semibold rounded-xl shadow shadow-orange-500/25 transition-all active:scale-[0.98] cursor-pointer flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
                         Upload Font
                     </button>
@@ -117,15 +117,15 @@
                 @foreach($fonts as $font)
                 <div class="font-card bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 p-4 flex items-center gap-4 shadow-sm">
                     <!-- Font preview swatch -->
-                    <div class="w-14 h-14 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/30 dark:to-amber-900/20 rounded-xl flex items-center justify-center border border-amber-200/50 dark:border-amber-800/30 shrink-0">
-                        <span class="text-2xl font-bold text-amber-600 dark:text-amber-400 leading-none select-none">Aa</span>
+                    <div class="w-14 h-14 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/30 dark:to-orange-900/20 rounded-xl flex items-center justify-center border border-orange-200/50 dark:border-orange-800/30 shrink-0">
+                        <span class="text-2xl font-bold text-orange-600 dark:text-orange-400 leading-none select-none">Aa</span>
                     </div>
                     <!-- Info -->
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2 flex-wrap">
                             <p class="font-semibold text-slate-900 dark:text-zinc-100 text-sm truncate">{{ $font->family_name }}</p>
                             <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 uppercase tracking-wide">{{ $font->style }}</span>
-                            <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 uppercase tracking-wide">W{{ $font->weight }}</span>
+                            <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 uppercase tracking-wide">W{{ $font->weight }}</span>
                         </div>
                         <p class="text-xs text-slate-400 dark:text-zinc-500 mt-0.5 truncate">{{ $font->original_name }}</p>
                         <p class="text-[10px] text-slate-300 dark:text-zinc-600 mt-0.5">Uploaded {{ $font->created_at->diffForHumans() }}</p>

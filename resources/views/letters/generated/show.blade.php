@@ -109,10 +109,10 @@
                     <a href="{{ route('letters.history.edit', $letter->id) }}" 
                        class="px-3 py-2 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-xs font-bold rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
                        title="Edit Letter">
-                        <i class="fa-solid fa-pen text-amber-500"></i> Edit
+                        <i class="fa-solid fa-pen text-orange-500"></i> Edit
                     </a>
                     <button type="button" onclick="window.print()" 
-                            class="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-bold rounded-xl shadow-md tracking-wide transition-all active:scale-95 cursor-pointer flex items-center gap-1.5">
+                            class="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white text-xs font-bold rounded-xl shadow-md tracking-wide transition-all active:scale-95 cursor-pointer flex items-center gap-1.5">
                         <i class="fa-solid fa-print"></i> Print
                     </button>
                 </div>
@@ -164,14 +164,14 @@
             <div class="p-4 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl space-y-2">
                 <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Document Margins</span>
                 @if($hasDiff)
-                    <div class="text-[10px] font-bold uppercase text-amber-600 dark:text-amber-400">1st Page</div>
+                    <div class="text-[10px] font-bold uppercase text-orange-600 dark:text-orange-400">1st Page</div>
                     <div class="grid grid-cols-2 gap-1 text-xs font-semibold text-slate-700 dark:text-zinc-300">
                         <div>Top: {{ $fp['top'] ?? $m['top'] ?? 25 }}mm</div>
                         <div>Bottom: {{ $fp['bottom'] ?? $m['bottom'] ?? 25 }}mm</div>
                         <div>Left: {{ $fp['left'] ?? $m['left'] ?? 20 }}mm</div>
                         <div>Right: {{ $fp['right'] ?? $m['right'] ?? 20 }}mm</div>
                     </div>
-                    <div class="text-[10px] font-bold uppercase text-amber-600 dark:text-amber-400 pt-1 border-t border-slate-200/50 dark:border-zinc-800">Other Pages</div>
+                    <div class="text-[10px] font-bold uppercase text-orange-600 dark:text-orange-400 pt-1 border-t border-slate-200/50 dark:border-zinc-800">Other Pages</div>
                     <div class="grid grid-cols-2 gap-1 text-xs font-semibold text-slate-700 dark:text-zinc-300">
                         <div>Top: {{ $m['top'] ?? 25 }}mm</div>
                         <div>Bottom: {{ $m['bottom'] ?? 25 }}mm</div>

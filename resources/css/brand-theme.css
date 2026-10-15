@@ -1,0 +1,235 @@
+/* ==========================================================================
+   Waldo Operations Unified Brand Theme
+   Brand Identity: Vibrant Corporate Orange (#f97316), Fiery Red (#ef4444),
+   Plus Jakarta Sans, Crisp White & Deep Slate Surfaces (#090d16).
+   ========================================================================== */
+
+:root {
+    --brand-primary: #f97316;
+    --brand-primary-hover: #ea580c;
+    --brand-primary-dark: #c2410c;
+    --brand-primary-light: #ffedd5;
+    --brand-accent: #ef4444;
+    --brand-accent-hover: #dc2626;
+    --brand-gradient: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
+    --brand-gradient-hover: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
+    --brand-glow: 0 10px 25px -5px rgba(249, 115, 22, 0.25);
+    --brand-glow-lg: 0 20px 40px -10px rgba(249, 115, 22, 0.35);
+
+    --surface-light-bg: #f8fafc;
+    --surface-light-card: #ffffff;
+    --surface-light-border: rgba(226, 232, 240, 0.9);
+    --surface-light-text: #0f172a;
+    --surface-light-muted: #64748b;
+
+    --surface-dark-bg: #090d16;
+    --surface-dark-card: rgba(19, 27, 46, 0.85);
+    --surface-dark-card-solid: #111827;
+    --surface-dark-border: rgba(255, 255, 255, 0.08);
+    --surface-dark-text: #f8fafc;
+    --surface-dark-muted: #94a3b8;
+}
+
+/* Global Font Enforcement */
+body, button, input, select, textarea {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* Base Canvas & Text */
+.brand-canvas {
+    background-color: var(--surface-light-bg);
+    color: var(--surface-light-text);
+}
+
+:is(.dark, :root.dark, html.dark) .brand-canvas {
+    background-color: var(--surface-dark-bg);
+    color: var(--surface-dark-text);
+}
+
+/* Standardized Glass Card */
+.brand-card,
+.glass-card {
+    background: var(--surface-light-card);
+    border: 1px solid var(--surface-light-border);
+    border-radius: 1rem;
+    box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+:is(.dark, :root.dark, html.dark) .brand-card,
+:is(.dark, :root.dark, html.dark) .glass-card {
+    background: var(--surface-dark-card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-color: var(--surface-dark-border);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.35);
+}
+
+/* Interactive Card Hover */
+.brand-card-hover:hover,
+.glass-card-hover:hover {
+    border-color: rgba(249, 115, 22, 0.4) !important;
+    box-shadow: var(--brand-glow) !important;
+}
+
+/* High-Impact Brand Gradients */
+.brand-gradient-bg {
+    background: var(--brand-gradient) !important;
+    color: #ffffff !important;
+}
+
+.brand-gradient-text {
+    background: var(--brand-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Primary Brand Action Button */
+.brand-btn-primary {
+    background: var(--brand-gradient);
+    color: #ffffff !important;
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 14px -1px rgba(249, 115, 22, 0.3);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+}
+
+.brand-btn-primary:hover {
+    background: var(--brand-gradient-hover);
+    box-shadow: 0 6px 20px -2px rgba(249, 115, 22, 0.45);
+    transform: translateY(-1px);
+}
+
+.brand-btn-primary:active {
+    transform: scale(0.98);
+}
+
+/* Secondary Neutral Action Button */
+.brand-btn-secondary {
+    background-color: #ffffff;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+:is(.dark, :root.dark, html.dark) .brand-btn-secondary {
+    background-color: rgba(30, 41, 59, 0.8);
+    color: #e2e8f0;
+    border-color: rgba(71, 85, 105, 0.6);
+}
+
+.brand-btn-secondary:hover {
+    background-color: #f1f5f9;
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+
+:is(.dark, :root.dark, html.dark) .brand-btn-secondary:hover {
+    background-color: #334155;
+    border-color: #64748b;
+    color: #ffffff;
+}
+
+/* Standardized Glass & Clean Input Fields */
+.brand-input,
+.glass-input {
+    background-color: #ffffff;
+    color: #0f172a;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.75rem;
+    padding: 0.55rem 0.875rem;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+:is(.dark, :root.dark, html.dark) .brand-input,
+:is(.dark, :root.dark, html.dark) .glass-input {
+    background-color: rgba(15, 23, 42, 0.75);
+    color: #f8fafc;
+    border-color: rgba(71, 85, 105, 0.5);
+}
+
+.brand-input:focus,
+.glass-input:focus {
+    border-color: var(--brand-primary) !important;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2) !important;
+}
+
+/* Brand Pills & Badges */
+.brand-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.025em;
+    background-color: rgba(249, 115, 22, 0.1);
+    color: #ea580c;
+    border: 1px solid rgba(249, 115, 22, 0.25);
+}
+
+:is(.dark, :root.dark, html.dark) .brand-badge {
+    background-color: rgba(249, 115, 22, 0.16);
+    color: #fb923c;
+    border-color: rgba(249, 115, 22, 0.35);
+}
+
+/* Flatpickr Datepicker Unified Brand Theme */
+.flatpickr-calendar {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 16px 36px -4px rgba(15, 23, 42, 0.15) !important;
+    border: 1px solid #e2e8f0 !important;
+    background: #ffffff !important;
+}
+
+:is(.dark, :root.dark, html.dark) .flatpickr-calendar {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    box-shadow: 0 20px 40px -6px rgba(0, 0, 0, 0.6) !important;
+    color: #f8fafc !important;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+    background: var(--brand-primary) !important;
+    border-color: var(--brand-primary) !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+}
+
+.flatpickr-day.inRange {
+    background: rgba(249, 115, 22, 0.15) !important;
+    border-color: transparent !important;
+    box-shadow: -5px 0 0 rgba(249, 115, 22, 0.15), 5px 0 0 rgba(249, 115, 22, 0.15) !important;
+}
+
+:is(.dark, :root.dark, html.dark) .flatpickr-day.inRange {
+    background: rgba(249, 115, 22, 0.25) !important;
+    box-shadow: -5px 0 0 rgba(249, 115, 22, 0.25), 5px 0 0 rgba(249, 115, 22, 0.25) !important;
+    color: #fb923c !important;
+}
