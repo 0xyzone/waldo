@@ -161,9 +161,7 @@ a,
    Topbar / Header: Frosted Glass & Floating Cleanliness
    ========================================================================== */
 .fi-topbar {
-    background-color: rgba(255, 255, 255, 0.82) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
+    background-color: var(--surface-card) !important;
     border-bottom: 1px solid var(--surface-border) !important;
     position: sticky;
     top: 0;
@@ -172,7 +170,7 @@ a,
 }
 
 :is(.dark, :root.dark) .fi-topbar {
-    background-color: rgba(11, 15, 25, 0.8) !important;
+    background-color: #0e1320 !important;
     border-bottom-color: var(--surface-border) !important;
 }
 
@@ -551,14 +549,17 @@ select optgroup {
    Modals & Popups: Strictly Page-Centered (CRITICAL FIX)
    ========================================================================== */
 .fi-modal:not(.fi-modal-slide-over) > .fi-modal-window-ctn {
-    display: flex !important;
+    display: grid !important;
+    grid-template-rows: 1fr auto 1fr !important;
+    justify-items: center !important;
     align-items: center !important;
-    justify-content: center !important;
     min-height: 100dvh !important;
     padding: 1.5rem !important;
+    overflow-y: auto !important;
 }
 
 .fi-modal:not(.fi-modal-slide-over) > .fi-modal-window-ctn > .fi-modal-window {
+    grid-row-start: 2 !important;
     margin: auto !important;
     align-self: center !important;
     max-height: calc(100dvh - 3rem) !important;

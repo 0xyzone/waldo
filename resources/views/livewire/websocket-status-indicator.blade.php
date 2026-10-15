@@ -1,4 +1,4 @@
-<div wire:poll.60s="checkStatus" class="relative inline-flex items-center">
+<div x-data="{}" wire:poll.60s="checkStatus" class="relative inline-flex items-center">
     <!-- Topbar Pill -->
     <div class="flex items-center gap-1.5">
         @if($isRunning)
@@ -51,11 +51,15 @@
 
     <!-- Status Modal -->
     @if($showInfoModal)
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 p-4 backdrop-blur-sm">
+        <template x-teleport="body">
             <div
-                wire:click.outside="closeModal"
-                class="relative w-full max-w-md overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900 max-h-[90vh] flex flex-col"
+                x-data
+                class="fixed inset-0 z-[99999] flex items-center justify-center bg-gray-900/60 p-4 backdrop-blur-xs"
             >
+                <div
+                    @click.outside="$wire.closeModal()"
+                    class="relative w-full max-w-md overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900 max-h-[85vh] flex flex-col"
+                >
                 <!-- Modal Header -->
                 <div class="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-slate-800">
                     <div class="flex items-center gap-2.5">
@@ -230,5 +234,6 @@
                 </div>
             </div>
         </div>
+        </template>
     @endif
 </div>
