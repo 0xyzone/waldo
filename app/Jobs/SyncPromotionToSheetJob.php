@@ -14,8 +14,6 @@ class SyncPromotionToSheetJob implements ShouldQueue
 {
     use Queueable;
 
-    public $connection = 'database';
-
     /**
      * Create a new job instance.
      */
@@ -23,7 +21,9 @@ class SyncPromotionToSheetJob implements ShouldQueue
         public readonly int $promotionId,
         public readonly ?int $userId,
         public readonly bool $isSyncing = true,
-    ) {}
+    ) {
+        $this->onConnection('database');
+    }
 
     /**
      * Execute the job.

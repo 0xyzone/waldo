@@ -13,15 +13,15 @@ class SyncTransferToSheetJob implements ShouldQueue
 {
     use Queueable;
 
-    public $connection = 'database';
-
     /**
      * Create a new job instance.
      */
     public function __construct(
         public readonly int $transferId,
         public readonly ?int $userId,
-    ) {}
+    ) {
+        $this->onConnection('database');
+    }
 
     /**
      * Execute the job.
