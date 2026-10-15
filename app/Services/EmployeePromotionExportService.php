@@ -45,6 +45,7 @@ class EmployeePromotionExportService
         return response()->streamDownload(function () use ($promotions) {
             $writer = new XlsxWriter;
             $writer->openToFile('php://output');
+            $writer->getCurrentSheet()->setName('Sheet');
 
             // Header row style
             $headerStyle = (new Style)
@@ -77,13 +78,13 @@ class EmployeePromotionExportService
                 $endDate = '';
 
                 // job_title: updated designation, lowercase, no dots, spaces replaced by '-'
-                $jobTitle = self::formatSlugValue($promotion->toDesignation?->name);
+                $jobTitle = self::formatSlugValue($promotion->toDesignation?->name ?? $promotion->employee?->designation?->name);
 
                 // branch: constant casino-ktm
                 $branch = 'casino-ktm';
 
                 // division: updated department, lowercase, no dots, spaces replaced by '-'
-                $division = self::formatSlugValue($promotion->toDepartment?->name);
+                $division = self::formatSlugValue($promotion->toDepartment?->name ?? $promotion->employee?->department?->name);
 
                 // employment_type: constant full-time
                 $employmentType = 'full-time';
@@ -92,7 +93,7 @@ class EmployeePromotionExportService
                 $employmentLevel = 'basic-staff';
 
                 // employment_step: constant 1
-                $employmentStep = 1;
+                $employmentStep = '1';
 
                 // change_type: constant promotion
                 $changeType = 'promotion';

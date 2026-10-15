@@ -45,6 +45,7 @@ class EmployeeTransferExportService
         return response()->streamDownload(function () use ($transfers) {
             $writer = new XlsxWriter;
             $writer->openToFile('php://output');
+            $writer->getCurrentSheet()->setName('Sheet');
 
             // Header row style
             $headerStyle = (new Style)
@@ -77,13 +78,13 @@ class EmployeeTransferExportService
                 $endDate = '';
 
                 // job_title: updated designation, lowercase, no dots, spaces replaced by '-'
-                $jobTitle = self::formatSlugValue($transfer->toDesignation?->name);
+                $jobTitle = self::formatSlugValue($transfer->toDesignation?->name ?? $transfer->employee?->designation?->name);
 
                 // branch: constant casino-ktm
                 $branch = 'casino-ktm';
 
                 // division: updated department, lowercase, no dots, spaces replaced by '-'
-                $division = self::formatSlugValue($transfer->toDepartment?->name);
+                $division = self::formatSlugValue($transfer->toDepartment?->name ?? $transfer->employee?->department?->name);
 
                 // employment_type: constant full-time
                 $employmentType = 'full-time';
@@ -92,7 +93,7 @@ class EmployeeTransferExportService
                 $employmentLevel = 'basic-staff';
 
                 // employment_step: constant 1
-                $employmentStep = 1;
+                $employmentStep = '1';
 
                 // change_type: constant transfer
                 $changeType = 'transfer';
