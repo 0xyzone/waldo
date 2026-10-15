@@ -78,22 +78,27 @@ class EmployeePromotionExportService
             ];
         }
 
+        $storageDir = storage_path('app/templates');
+        $customTemplatePath = storage_path('app/templates/change-type-import-sample.xlsx');
+        $defaultTemplatePath = resource_path('templates/change-type-import-sample.xlsx');
+
         if ($uploadedTemplatePath && file_exists($uploadedTemplatePath)) {
             $testZip = new ZipArchive;
             if ($testZip->open($uploadedTemplatePath) === true) {
                 $testZip->close();
-                $permanentTemplatePath = resource_path('templates/change-type-import-sample.xlsx');
-                @copy($uploadedTemplatePath, $permanentTemplatePath);
-                @copy($uploadedTemplatePath, base_path('change-type-import-sample.xlsx'));
+                if (! is_dir($storageDir)) {
+                    @mkdir($storageDir, 0755, true);
+                }
+                @copy($uploadedTemplatePath, $customTemplatePath);
                 $templatePath = $uploadedTemplatePath;
             } else {
-                $templatePath = resource_path('templates/change-type-import-sample.xlsx');
+                $templatePath = file_exists($customTemplatePath) ? $customTemplatePath : $defaultTemplatePath;
                 if (! file_exists($templatePath)) {
                     $templatePath = base_path('change-type-import-sample.xlsx');
                 }
             }
         } else {
-            $templatePath = resource_path('templates/change-type-import-sample.xlsx');
+            $templatePath = file_exists($customTemplatePath) ? $customTemplatePath : $defaultTemplatePath;
             if (! file_exists($templatePath)) {
                 $templatePath = base_path('change-type-import-sample.xlsx');
             }
