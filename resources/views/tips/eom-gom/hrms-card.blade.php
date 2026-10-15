@@ -1,24 +1,23 @@
 <!DOCTYPE html>
-<html lang="en" style="background: #1e293b;">
+<html lang="en" style="background: #0f172a;">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HRMS Recognition Card (4K) - {{ $monthName }} {{ $evaluatedYear ?? $report->year }}</title>
+    <title>Employee & Grooming of the Month - {{ $monthName }} {{ $evaluatedYear ?? $report->year }}</title>
     <x-favicon />
 
-    {{-- Google Fonts: Plus Jakarta Sans, Outfit & JetBrains Mono --}}
+    {{-- Google Fonts: Plus Jakarta Sans & JetBrains Mono --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@700;800&display=swap"
         rel="stylesheet">
 
-    {{-- Client-side rasterization engine --}}
+    {{-- Client-side rasterization engine for 1:1 export --}}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
-        /* Base typography & resets */
         *, *::before, *::after {
             box-sizing: border-box;
         }
@@ -31,10 +30,6 @@
             color: #0f172a;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
-        }
-
-        .font-display {
-            font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
         }
 
         .font-mono-code {
@@ -109,7 +104,7 @@
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            padding: 28px 16px 56px;
+            padding: 24px 16px 48px;
             box-sizing: border-box;
             min-height: calc(100vh - 70px);
         }
@@ -119,13 +114,13 @@
             transition: transform 0.15s ease-out;
             flex-shrink: 0;
             box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
+            border-radius: 28px;
             overflow: hidden;
         }
 
         /* ------------------------------------------------------------- */
-        /* MASTER 4K CANVAS (3840 x 1920 - EXACT 2:1 ASPECT RATIO)       */
-        /* Warm champagne textured background with minimal brand patterns */
+        /* MASTER 4K CANVAS (3840 x 1920 - 2:1 RATIO)                    */
+        /* Modern Glassmorphism with Warm Orange Tint & Minimal Styling  */
         /* ------------------------------------------------------------- */
         #master-wish-card-canvas {
             width: 3840px;
@@ -134,54 +129,65 @@
             min-height: 1920px;
             max-width: 3840px;
             max-height: 1920px;
-            background-color: #f5f0e8;
-            /* Minimal luxury pattern in brand orange & red tints (not blinding white) */
-            background-image: 
-                radial-gradient(circle, rgba(234, 88, 12, 0.14) 2px, transparent 2px),
-                radial-gradient(circle, rgba(220, 38, 38, 0.10) 2px, transparent 2px),
-                radial-gradient(at 0% 0%, rgba(234, 88, 12, 0.08) 0px, transparent 40%),
-                radial-gradient(at 100% 100%, rgba(220, 38, 38, 0.07) 0px, transparent 45%);
-            background-size: 48px 48px, 48px 48px, 100% 100%, 100% 100%;
-            background-position: 0 0, 24px 24px, 0 0, 0 0;
             box-sizing: border-box;
             position: relative;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 48px 72px;
+            padding: 52px 64px;
             overflow: hidden;
             color: #0f172a;
+
+            /* Luxury Orange-Tinted Ambient Glass Canvas */
+            background-color: #fff7ed;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(249, 115, 22, 0.22) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(234, 88, 12, 0.18) 0px, transparent 45%),
+                radial-gradient(at 100% 100%, rgba(220, 38, 38, 0.16) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(251, 146, 60, 0.15) 0px, transparent 45%),
+                radial-gradient(circle, rgba(234, 88, 12, 0.08) 2px, transparent 2px);
+            background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 48px 48px;
         }
 
-        /* Top decorative brand stripe */
-        .brand-top-stripe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 14px;
-            background: linear-gradient(90deg, #ea580c 0%, #f97316 35%, #dc2626 70%, #b91c1c 100%);
+        /* Glassmorphism Header Card */
+        .glass-header-card {
+            background: rgba(255, 255, 255, 0.78);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 2px solid rgba(255, 255, 255, 0.95);
+            border-radius: 26px;
+            box-shadow: 0 16px 40px rgba(234, 88, 12, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            padding: 24px 44px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 190px;
+            box-sizing: border-box;
+            width: 100%;
         }
 
-        /* Table modern container styles */
-        .recognition-table-card {
-            background: #ffffff;
-            border-radius: 20px;
-            border: 2px solid #e7ded4;
-            box-shadow: 0 10px 30px rgba(45, 26, 14, 0.05);
+        /* Glassmorphism Table Cards */
+        .glass-table-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.92);
+            border-radius: 26px;
+            box-shadow: 0 18px 45px rgba(234, 88, 12, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.9);
             overflow: hidden;
             display: flex;
             flex-direction: column;
             width: 100%;
         }
 
+        /* Table Rows */
         .table-row {
             display: flex;
             align-items: center;
             box-sizing: border-box;
-            padding: 0 36px;
-            border-bottom: 2px solid #f1ece4;
-            background: #ffffff;
+            padding: 0 40px;
+            border-bottom: 2px solid rgba(251, 146, 60, 0.16);
+            background: rgba(255, 255, 255, 0.65);
             width: 100%;
         }
 
@@ -190,43 +196,43 @@
         }
 
         .table-row-eom {
-            border-left: 10px solid #ea580c;
-            height: 172px;
+            border-left: 12px solid #ea580c;
+            height: 202px;
         }
 
         .table-row-gom {
-            border-left: 10px solid #dc2626;
-            height: 178px;
+            border-left: 12px solid #dc2626;
+            height: 206px;
         }
 
         .table-header-row {
             display: flex;
             align-items: center;
             box-sizing: border-box;
-            padding: 0 36px 0 46px;
-            height: 56px;
-            background: #faf6f0;
-            border-bottom: 2px solid #e7ded4;
-            font-size: 20px;
+            padding: 0 40px 0 52px;
+            height: 60px;
+            background: rgba(255, 247, 237, 0.85);
+            border-bottom: 2px solid rgba(251, 146, 60, 0.22);
+            font-size: 22px;
             font-weight: 800;
-            color: #78716c;
+            color: #9a3412;
             text-transform: uppercase;
             letter-spacing: 2px;
             width: 100%;
         }
 
-        /* Column width allocations (3696px available width) */
+        /* Column width allocations across 3712px available width */
         .col-honoree {
-            width: 34%;
+            width: 35%;
             display: flex;
             align-items: center;
-            gap: 24px;
+            gap: 28px;
             box-sizing: border-box;
-            padding-right: 20px;
+            padding-right: 24px;
         }
 
         .col-code {
-            width: 13%;
+            width: 12%;
             display: flex;
             align-items: center;
             box-sizing: border-box;
@@ -237,7 +243,7 @@
             display: flex;
             align-items: center;
             box-sizing: border-box;
-            padding-right: 20px;
+            padding-right: 24px;
         }
 
         .col-desig {
@@ -245,7 +251,7 @@
             display: flex;
             align-items: center;
             box-sizing: border-box;
-            padding-right: 20px;
+            padding-right: 24px;
         }
 
         .col-badge {
@@ -282,7 +288,7 @@
 
 <body>
 
-    {{-- TOP MATERIAL TOOLBAR --}}
+    {{-- TOP TOOLBAR --}}
     <header class="toolbar no-print">
         <div style="display: flex; align-items: center; gap: 16px;">
             <div style="width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%); display: flex; align-items: center; justify-content: center; font-size: 20px; color: #ffffff; box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);">
@@ -297,17 +303,16 @@
                         4K UHD • 3840 × 1920 (2:1)
                     </span>
                     <span style="font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: #cbd5e1;">
-                        Champagne Pattern & Brand Colors
+                        Minimalist Glassmorphism (Orange Tint)
                     </span>
                 </div>
                 <p style="margin: 3px 0 0; font-size: 12px; color: #94a3b8;">
-                    Honorees for <strong style="color: #f1f5f9;">{{ $monthName }} {{ $evaluatedYear ?? $report->year }}</strong> ({{ $releaseLabel }} Cycle)
+                    {{ $monthName }} {{ $evaluatedYear ?? $report->year }}
                 </p>
             </div>
         </div>
 
         <div style="display: flex; align-items: center; gap: 12px;">
-            {{-- Zoom indicator & controls --}}
             <div style="display: flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.08); padding: 4px 10px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.12);">
                 <span style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Scale:</span>
                 <span id="scaleIndicator" style="font-size: 12px; font-weight: 800; color: #f8fafc; font-family: monospace;">35%</span>
@@ -315,7 +320,6 @@
                 <button type="button" onclick="setZoomMode('50')" class="btn-secondary" style="padding: 3px 8px; font-size: 11px; border-radius: 6px;">50%</button>
             </div>
 
-            {{-- Download High-Res JPG button --}}
             <button type="button" id="downloadBtn" onclick="downloadCard('jpg')" class="btn-brand">
                 <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
@@ -324,7 +328,6 @@
                 <span id="downloadBtnText">Download 4K Card (JPG)</span>
             </button>
 
-            {{-- Download High-Res PNG button --}}
             <button type="button" id="downloadPngBtn" onclick="downloadCard('png')" class="btn-secondary" title="Lossless 4K PNG">
                 <span>PNG</span>
             </button>
@@ -350,172 +353,142 @@
         <div class="preview-scale-wrapper">
 
             {{-- ============================================================= --}}
-            {{-- MASTER 3840 x 1920 CANVAS (EXACT 2:1 RATIO IN 4K RESOLUTION)  --}}
-            {{-- Modern Table Layout with Warm Textured Pattern & Brand Colors --}}
+            {{-- MASTER 3840 x 1920 CANVAS (2:1 RATIO IN 4K RESOLUTION)        --}}
+            {{-- Modern Glassmorphism with Warm Orange Tint & Clean Typography --}}
             {{-- ============================================================= --}}
             <div id="master-wish-card-canvas">
 
-                {{-- Top Brand Accent Stripe (Orange to Red) --}}
-                <div class="brand-top-stripe"></div>
-
                 {{-- ========================================================= --}}
-                {{-- 1. HEADER SECTION (EXECUTIVE BRANDING & PERIOD BADGE)     --}}
+                {{-- 1. HEADER SECTION (MINIMALIST GLASS BANNER)               --}}
                 {{-- ========================================================= --}}
-                <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 8px; padding-bottom: 22px; border-bottom: 3px solid #e7ded4; height: 215px; box-sizing: border-box;">
-                    
-                    {{-- Left Brand Block --}}
+                <div class="glass-header-card">
                     <div style="display: flex; align-items: center; gap: 32px;">
-                        {{-- Casino Logo Frame --}}
-                        <div style="width: 136px; height: 136px; border-radius: 24px; background: #ffffff; border: 3px solid #fdba74; box-shadow: 0 10px 25px -5px rgba(234, 88, 12, 0.18); display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 10px; box-sizing: border-box; flex-shrink: 0;">
+                        {{-- Logo --}}
+                        <div style="width: 130px; height: 130px; border-radius: 22px; background: #ffffff; border: 3px solid rgba(251, 146, 60, 0.6); box-shadow: 0 10px 24px rgba(234, 88, 12, 0.15); display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 10px; box-sizing: border-box; flex-shrink: 0;">
                             <img src="{{ $logoBase64 ?? asset('img/logo.jpg') }}" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;">
                         </div>
 
                         <div>
-                            <div style="display: flex; align-items: center; gap: 14px;">
-                                <span class="font-display" style="font-size: 26px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; color: #ea580c;">
-                                    Waldo Dynasty Entertainment Pvt. Ltd.
-                                </span>
-                                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #a8a29e;"></span>
-                                <span style="font-size: 20px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #57534e;">
-                                    Human Resources & Talent Recognition
-                                </span>
-                            </div>
-                            <h2 class="font-display" style="margin: 8px 0 0; font-size: 58px; font-weight: 900; color: #0f172a; letter-spacing: -1px; line-height: 1.15;">
+                            <span style="font-size: 26px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #ea580c;">
+                                Waldo Dynasty Entertainment
+                            </span>
+                            <h2 style="margin: 6px 0 0; font-size: 64px; font-weight: 900; color: #0f172a; letter-spacing: -1px; line-height: 1.1;">
                                 Employee & Grooming of the Month
                             </h2>
-                            <p style="margin: 6px 0 0; font-size: 22px; font-weight: 600; color: #57534e;">
-                                Celebrating Outstanding Workplace Dedication, Integrity, and Exemplary Presentation Standards
-                            </p>
                         </div>
                     </div>
 
-                    {{-- Right Month & Cycle Pill Badge --}}
-                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0;">
-                        <div style="display: inline-flex; align-items: center; gap: 18px; padding: 20px 42px; border-radius: 24px; background: linear-gradient(135deg, #ea580c 0%, #f97316 45%, #dc2626 100%); box-shadow: 0 12px 30px rgba(234, 88, 12, 0.35); box-sizing: border-box;">
-                            <span style="width: 16px; height: 16px; border-radius: 50%; background: #ffffff; flex-shrink: 0;"></span>
-                            <span class="font-display" style="font-size: 42px; font-weight: 900; color: #ffffff; letter-spacing: 1.5px; text-transform: uppercase; white-space: nowrap;">
-                                {{ $monthName }} {{ $evaluatedYear ?? $report->year }}
-                            </span>
-                        </div>
-                        <span style="font-size: 22px; font-weight: 800; color: #ea580c; text-transform: uppercase; letter-spacing: 1.5px; padding-right: 6px; white-space: nowrap;">
-                            {{ $releaseLabel }} Cycle Award Release
+                    {{-- Month Badge --}}
+                    <div style="display: inline-flex; align-items: center; gap: 16px; padding: 22px 46px; border-radius: 22px; background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%); box-shadow: 0 12px 30px rgba(234, 88, 12, 0.35); flex-shrink: 0;">
+                        <span style="width: 16px; height: 16px; border-radius: 50%; background: #ffffff;"></span>
+                        <span style="font-size: 46px; font-weight: 900; color: #ffffff; letter-spacing: 1.5px; text-transform: uppercase; white-space: nowrap;">
+                            {{ $monthName }} {{ $evaluatedYear ?? $report->year }}
                         </span>
                     </div>
                 </div>
 
                 {{-- ========================================================= --}}
-                {{-- 2. MAIN TABLES AREA (EOM: 4 HONOREES + GOM: 2 HONOREES)   --}}
+                {{-- 2. MAIN TABLES (FULLY EXPANDED TO FILL CANVAS VERTICALLY) --}}
                 {{-- ========================================================= --}}
-                <div style="display: flex; flex-direction: column; justify-content: space-between; flex: 1; padding: 24px 0 16px; gap: 24px; box-sizing: border-box;">
+                <div style="display: flex; flex-direction: column; justify-content: space-between; flex: 1; padding: 24px 0 8px; gap: 28px; box-sizing: border-box;">
 
                     {{-- ----------------------------------------------------- --}}
-                    {{-- SECTION 1: EMPLOYEES OF THE MONTH (4 TABLE ROWS)      --}}
+                    {{-- SECTION 1: EMPLOYEE OF THE MONTH (4 TABLE ROWS)       --}}
                     {{-- ----------------------------------------------------- --}}
                     <div style="display: flex; flex-direction: column; gap: 12px;">
                         
-                        {{-- Section Title Bar --}}
-                        <div style="display: flex; align-items: center; justify-content: space-between; height: 56px;">
-                            <div style="display: inline-flex; align-items: center; gap: 14px; padding: 10px 24px; border-radius: 16px; background: #fff7ed; border: 2px solid #fdba74; box-sizing: border-box;">
-                                <span style="font-size: 28px;">🏆</span>
-                                <span class="font-display" style="font-size: 26px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; color: #c2410c; white-space: nowrap;">
-                                    Employees of the Month (EOM)
+                        {{-- Section Title Pill --}}
+                        <div style="display: flex; align-items: center;">
+                            <div style="display: inline-flex; align-items: center; gap: 14px; padding: 12px 28px; border-radius: 18px; background: rgba(255, 237, 213, 0.9); border: 2px solid rgba(251, 146, 60, 0.5); backdrop-filter: blur(12px);">
+                                <span style="font-size: 30px;">🏆</span>
+                                <span style="font-size: 30px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; color: #c2410c; white-space: nowrap;">
+                                    Employee of the Month
                                 </span>
                             </div>
-                            <span style="font-size: 24px; font-weight: 800; color: #ea580c; text-transform: uppercase; letter-spacing: 1.5px; white-space: nowrap;">
-                                4 Honorees Awarded • General Operational Excellence
-                            </span>
                         </div>
 
-                        {{-- Modern Table --}}
-                        <div class="recognition-table-card">
-                            {{-- Header --}}
+                        {{-- Glassmorphism Table --}}
+                        <div class="glass-table-card">
                             <div class="table-header-row">
-                                <div class="col-honoree">Honoree</div>
-                                <div class="col-code">Employee ID</div>
+                                <div class="col-honoree">Employee</div>
+                                <div class="col-code">ID</div>
                                 <div class="col-dept">Department</div>
                                 <div class="col-desig">Designation</div>
-                                <div class="col-badge">Award Status</div>
+                                <div class="col-badge">Award</div>
                             </div>
 
-                            {{-- 4 Honoree Rows --}}
                             @foreach ($eomWinners as $winner)
                                 @php $emp = $winner['employee']; @endphp
                                 @if ($emp)
                                     <div class="table-row table-row-eom">
-                                        {{-- Honoree Info --}}
+                                        {{-- Employee Name + Avatar --}}
                                         <div class="col-honoree">
-                                            <div style="width: 96px; height: 96px; border-radius: 22px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 38px; font-weight: 900; box-shadow: 0 6px 18px rgba(234, 88, 12, 0.28); flex-shrink: 0;">
+                                            <div style="width: 110px; height: 110px; border-radius: 26px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 44px; font-weight: 900; box-shadow: 0 8px 22px rgba(234, 88, 12, 0.32); flex-shrink: 0;">
                                                 {{ strtoupper(substr($emp->name, 0, 2)) }}
                                             </div>
                                             <div style="flex: 1; min-width: 0;">
-                                                <h3 class="font-display" style="margin: 0; font-size: 40px; font-weight: 900; color: #0f172a; line-height: 1.2; word-break: break-word;">
+                                                <h3 style="margin: 0; font-size: 48px; font-weight: 900; color: #0f172a; line-height: 1.15; word-break: break-word;">
                                                     {{ $emp->name }}
                                                 </h3>
-                                                <span style="display: inline-block; margin-top: 4px; font-size: 20px; font-weight: 800; color: #ea580c; text-transform: uppercase; letter-spacing: 1px;">
-                                                    {{ $winner['entry_label'] }}
-                                                </span>
                                             </div>
                                         </div>
 
                                         {{-- Employee ID --}}
                                         <div class="col-code">
-                                            <span class="font-mono-code" style="font-size: 28px; font-weight: 800; color: #1c1917; background: #f4efe6; border: 2px solid #dcd3c5; padding: 12px 24px; border-radius: 12px; letter-spacing: 1px; white-space: nowrap;">
+                                            <span class="font-mono-code" style="font-size: 32px; font-weight: 800; color: #0f172a; background: rgba(255, 255, 255, 0.9); border: 2px solid rgba(251, 146, 60, 0.35); padding: 14px 26px; border-radius: 14px; letter-spacing: 1px; white-space: nowrap;">
                                                 {{ $emp->employee_code }}
                                             </span>
                                         </div>
 
                                         {{-- Department --}}
                                         <div class="col-dept">
-                                            <span style="font-size: 32px; font-weight: 800; color: #1c1917; line-height: 1.25; word-break: break-word;">
+                                            <span style="font-size: 36px; font-weight: 800; color: #1e293b; line-height: 1.25; word-break: break-word;">
                                                 {{ $winner['department'] }}
                                             </span>
                                         </div>
 
                                         {{-- Designation --}}
                                         <div class="col-desig">
-                                            <span style="font-size: 28px; font-weight: 700; color: #44403c; line-height: 1.25; word-break: break-word;">
+                                            <span style="font-size: 32px; font-weight: 700; color: #475569; line-height: 1.25; word-break: break-word;">
                                                 {{ $emp->designation?->name ?: 'Staff' }}
                                             </span>
                                         </div>
 
                                         {{-- Award Badge --}}
                                         <div class="col-badge">
-                                            <span style="display: inline-flex; align-items: center; gap: 10px; background: #fff7ed; border: 2px solid #ea580c; color: #c2410c; font-size: 22px; font-weight: 900; padding: 12px 26px; border-radius: 14px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(234, 88, 12, 0.12); white-space: nowrap;">
+                                            <span style="display: inline-flex; align-items: center; gap: 10px; background: rgba(255, 237, 213, 0.95); border: 2px solid #ea580c; color: #c2410c; font-size: 26px; font-weight: 900; padding: 14px 30px; border-radius: 16px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 12px rgba(234, 88, 12, 0.15); white-space: nowrap;">
                                                 <span>🏆</span>
-                                                <span>EOM Winner</span>
+                                                <span>EOM</span>
                                             </span>
                                         </div>
                                     </div>
                                 @else
                                     {{-- Unassigned Slot Row --}}
-                                    <div class="table-row table-row-eom" style="background: #faf7f2;">
+                                    <div class="table-row table-row-eom" style="background: rgba(255, 255, 255, 0.45);">
                                         <div class="col-honoree">
-                                            <div style="width: 96px; height: 96px; border-radius: 22px; background: #e7ded4; display: flex; align-items: center; justify-content: center; color: #78716c; font-size: 34px; font-weight: 900; flex-shrink: 0;">
+                                            <div style="width: 110px; height: 110px; border-radius: 26px; background: rgba(203, 213, 225, 0.6); display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 38px; font-weight: 900; flex-shrink: 0;">
                                                 ✦
                                             </div>
                                             <div>
-                                                <h3 class="font-display" style="margin: 0; font-size: 36px; font-weight: 700; color: #78716c; font-style: italic;">
+                                                <h3 style="margin: 0; font-size: 40px; font-weight: 700; color: #94a3b8; font-style: italic;">
                                                     Slot Unassigned
                                                 </h3>
-                                                <span style="font-size: 20px; font-weight: 600; color: #78716c;">
-                                                    {{ $winner['entry_label'] }}
-                                                </span>
                                             </div>
                                         </div>
                                         <div class="col-code">
-                                            <span style="font-size: 26px; color: #a8a29e;">—</span>
+                                            <span style="font-size: 30px; color: #94a3b8;">—</span>
                                         </div>
                                         <div class="col-dept">
-                                            <span style="font-size: 28px; color: #57534e;">
+                                            <span style="font-size: 32px; color: #64748b;">
                                                 {{ $winner['department'] }}
                                             </span>
                                         </div>
                                         <div class="col-desig">
-                                            <span style="font-size: 26px; color: #a8a29e;">—</span>
+                                            <span style="font-size: 30px; color: #94a3b8;">—</span>
                                         </div>
                                         <div class="col-badge">
-                                            <span style="background: #f4efe6; border: 1.5px solid #dcd3c5; color: #78716c; font-size: 20px; font-weight: 800; padding: 10px 22px; border-radius: 12px; text-transform: uppercase;">
-                                                Pending Nomination
+                                            <span style="background: rgba(241, 245, 249, 0.8); border: 1.5px solid #cbd5e1; color: #64748b; font-size: 22px; font-weight: 800; padding: 12px 24px; border-radius: 14px; text-transform: uppercase;">
+                                                Pending
                                             </span>
                                         </div>
                                     </div>
@@ -529,109 +502,98 @@
                     {{-- ----------------------------------------------------- --}}
                     <div style="display: flex; flex-direction: column; gap: 12px;">
                         
-                        {{-- Section Title Bar --}}
-                        <div style="display: flex; align-items: center; justify-content: space-between; height: 56px;">
-                            <div style="display: inline-flex; align-items: center; gap: 14px; padding: 10px 24px; border-radius: 16px; background: #fef2f2; border: 2px solid #fca5a5; box-sizing: border-box;">
-                                <span style="font-size: 28px;">✨</span>
-                                <span class="font-display" style="font-size: 26px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; color: #b91c1c; white-space: nowrap;">
-                                    Grooming of the Month (GOM)
+                        {{-- Section Title Pill --}}
+                        <div style="display: flex; align-items: center;">
+                            <div style="display: inline-flex; align-items: center; gap: 14px; padding: 12px 28px; border-radius: 18px; background: rgba(254, 226, 226, 0.9); border: 2px solid rgba(248, 113, 113, 0.5); backdrop-filter: blur(12px);">
+                                <span style="font-size: 30px;">✨</span>
+                                <span style="font-size: 30px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; color: #b91c1c; white-space: nowrap;">
+                                    Grooming of the Month
                                 </span>
                             </div>
-                            <span style="font-size: 24px; font-weight: 800; color: #dc2626; text-transform: uppercase; letter-spacing: 1.5px; white-space: nowrap;">
-                                2 Honorees Awarded • Corporate Etiquette & Flawless Presentation
-                            </span>
                         </div>
 
-                        {{-- Modern Table --}}
-                        <div class="recognition-table-card">
-                            {{-- Header --}}
+                        {{-- Glassmorphism Table --}}
+                        <div class="glass-table-card">
                             <div class="table-header-row">
-                                <div class="col-honoree">Honoree</div>
-                                <div class="col-code">Employee ID</div>
+                                <div class="col-honoree">Employee</div>
+                                <div class="col-code">ID</div>
                                 <div class="col-dept">Department</div>
                                 <div class="col-desig">Designation</div>
-                                <div class="col-badge">Award Status</div>
+                                <div class="col-badge">Award</div>
                             </div>
 
-                            {{-- 2 Honoree Rows --}}
                             @foreach ($gomWinners as $winner)
                                 @php $emp = $winner['employee']; @endphp
                                 @if ($emp)
                                     <div class="table-row table-row-gom">
-                                        {{-- Honoree Info --}}
+                                        {{-- Employee Name + Avatar --}}
                                         <div class="col-honoree">
-                                            <div style="width: 96px; height: 96px; border-radius: 22px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 38px; font-weight: 900; box-shadow: 0 6px 18px rgba(220, 38, 38, 0.28); flex-shrink: 0;">
+                                            <div style="width: 110px; height: 110px; border-radius: 26px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 44px; font-weight: 900; box-shadow: 0 8px 22px rgba(220, 38, 38, 0.32); flex-shrink: 0;">
                                                 {{ strtoupper(substr($emp->name, 0, 2)) }}
                                             </div>
                                             <div style="flex: 1; min-width: 0;">
-                                                <h3 class="font-display" style="margin: 0; font-size: 40px; font-weight: 900; color: #0f172a; line-height: 1.2; word-break: break-word;">
+                                                <h3 style="margin: 0; font-size: 48px; font-weight: 900; color: #0f172a; line-height: 1.15; word-break: break-word;">
                                                     {{ $emp->name }}
                                                 </h3>
-                                                <span style="display: inline-block; margin-top: 4px; font-size: 20px; font-weight: 800; color: #dc2626; text-transform: uppercase; letter-spacing: 1px;">
-                                                    {{ $winner['entry_label'] }}
-                                                </span>
                                             </div>
                                         </div>
 
                                         {{-- Employee ID --}}
                                         <div class="col-code">
-                                            <span class="font-mono-code" style="font-size: 28px; font-weight: 800; color: #1c1917; background: #f4efe6; border: 2px solid #dcd3c5; padding: 12px 24px; border-radius: 12px; letter-spacing: 1px; white-space: nowrap;">
+                                            <span class="font-mono-code" style="font-size: 32px; font-weight: 800; color: #0f172a; background: rgba(255, 255, 255, 0.9); border: 2px solid rgba(248, 113, 113, 0.35); padding: 14px 26px; border-radius: 14px; letter-spacing: 1px; white-space: nowrap;">
                                                 {{ $emp->employee_code }}
                                             </span>
                                         </div>
 
                                         {{-- Department --}}
                                         <div class="col-dept">
-                                            <span style="font-size: 32px; font-weight: 800; color: #1c1917; line-height: 1.25; word-break: break-word;">
+                                            <span style="font-size: 36px; font-weight: 800; color: #1e293b; line-height: 1.25; word-break: break-word;">
                                                 {{ $winner['department'] }}
                                             </span>
                                         </div>
 
                                         {{-- Designation --}}
                                         <div class="col-desig">
-                                            <span style="font-size: 28px; font-weight: 700; color: #44403c; line-height: 1.25; word-break: break-word;">
+                                            <span style="font-size: 32px; font-weight: 700; color: #475569; line-height: 1.25; word-break: break-word;">
                                                 {{ $emp->designation?->name ?: 'Staff' }}
                                             </span>
                                         </div>
 
                                         {{-- Award Badge --}}
                                         <div class="col-badge">
-                                            <span style="display: inline-flex; align-items: center; gap: 10px; background: #fef2f2; border: 2px solid #dc2626; color: #b91c1c; font-size: 22px; font-weight: 900; padding: 12px 26px; border-radius: 14px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(220, 38, 38, 0.12); white-space: nowrap;">
+                                            <span style="display: inline-flex; align-items: center; gap: 10px; background: rgba(254, 226, 226, 0.95); border: 2px solid #dc2626; color: #b91c1c; font-size: 26px; font-weight: 900; padding: 14px 30px; border-radius: 16px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15); white-space: nowrap;">
                                                 <span>✨</span>
-                                                <span>GOM Winner</span>
+                                                <span>GOM</span>
                                             </span>
                                         </div>
                                     </div>
                                 @else
                                     {{-- Unassigned Slot Row --}}
-                                    <div class="table-row table-row-gom" style="background: #faf7f2;">
+                                    <div class="table-row table-row-gom" style="background: rgba(255, 255, 255, 0.45);">
                                         <div class="col-honoree">
-                                            <div style="width: 96px; height: 96px; border-radius: 22px; background: #e7ded4; display: flex; align-items: center; justify-content: center; color: #78716c; font-size: 34px; font-weight: 900; flex-shrink: 0;">
+                                            <div style="width: 110px; height: 110px; border-radius: 26px; background: rgba(203, 213, 225, 0.6); display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 38px; font-weight: 900; flex-shrink: 0;">
                                                 ✦
                                             </div>
                                             <div>
-                                                <h3 class="font-display" style="margin: 0; font-size: 36px; font-weight: 700; color: #78716c; font-style: italic;">
+                                                <h3 style="margin: 0; font-size: 40px; font-weight: 700; color: #94a3b8; font-style: italic;">
                                                     Slot Unassigned
                                                 </h3>
-                                                <span style="font-size: 20px; font-weight: 600; color: #78716c;">
-                                                    {{ $winner['entry_label'] }}
-                                                </span>
                                             </div>
                                         </div>
                                         <div class="col-code">
-                                            <span style="font-size: 26px; color: #a8a29e;">—</span>
+                                            <span style="font-size: 30px; color: #94a3b8;">—</span>
                                         </div>
                                         <div class="col-dept">
-                                            <span style="font-size: 28px; color: #57534e;">
+                                            <span style="font-size: 32px; color: #64748b;">
                                                 {{ $winner['department'] }}
                                             </span>
                                         </div>
                                         <div class="col-desig">
-                                            <span style="font-size: 26px; color: #a8a29e;">—</span>
+                                            <span style="font-size: 30px; color: #94a3b8;">—</span>
                                         </div>
                                         <div class="col-badge">
-                                            <span style="background: #f4efe6; border: 1.5px solid #dcd3c5; color: #78716c; font-size: 20px; font-weight: 800; padding: 10px 22px; border-radius: 12px; text-transform: uppercase;">
-                                                Pending Nomination
+                                            <span style="background: rgba(241, 245, 249, 0.8); border: 1.5px solid #cbd5e1; color: #64748b; font-size: 22px; font-weight: 800; padding: 12px 24px; border-radius: 14px; text-transform: uppercase;">
+                                                Pending
                                             </span>
                                         </div>
                                     </div>
@@ -640,37 +602,6 @@
                         </div>
                     </div>
 
-                </div>
-
-                {{-- ========================================================= --}}
-                {{-- 3. FOOTER SECTION (HRMS CERTIFICATION & CYCLE META)       --}}
-                {{-- ========================================================= --}}
-                <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 18px; border-top: 3px solid #e7ded4; height: 74px; box-sizing: border-box;">
-                    
-                    {{-- Left Verification Seal --}}
-                    <div style="display: flex; align-items: center; gap: 20px;">
-                        <span style="display: inline-flex; align-items: center; gap: 10px; padding: 10px 22px; border-radius: 12px; background: #fff7ed; border: 2px solid #fdba74; font-size: 22px; font-weight: 900; color: #c2410c; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;">
-                            <span>🛡️</span>
-                            <span>Official HRMS Certified</span>
-                        </span>
-                        <span style="font-size: 22px; font-weight: 800; color: #0f172a; white-space: nowrap;">
-                            Waldo Dynasty Entertainment Pvt. Ltd.
-                        </span>
-                        <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #a8a29e;"></span>
-                        <span style="font-size: 20px; font-weight: 600; color: #57534e; white-space: nowrap;">
-                            Casino Pride Kathmandu • Human Resources Department
-                        </span>
-                    </div>
-
-                    {{-- Right Cycle & Spec Tag --}}
-                    <div style="display: flex; align-items: center; gap: 20px;">
-                        <span class="font-mono-code" style="font-size: 22px; font-weight: 800; color: #57534e; background: #ffffff; border: 2px solid #e7ded4; padding: 10px 22px; border-radius: 12px; white-space: nowrap;">
-                            Evaluation Cycle: {{ $periodLabel }}
-                        </span>
-                        <span class="font-mono-code" style="font-size: 22px; font-weight: 800; color: #ea580c; background: #fff7ed; border: 2px solid #fed7aa; padding: 10px 22px; border-radius: 12px; white-space: nowrap;">
-                            4K Ultra HD • 3840 × 1920 (2:1 Ratio)
-                        </span>
-                    </div>
                 </div>
 
             </div>
@@ -711,8 +642,8 @@
 
         /**
          * Capture the 3840x1920 card canvas with 100% exact design fidelity.
-         * Temporarily un-scales the live element directly so that html2canvas captures
-         * the exact computed layout, fonts, and colors that the browser is displaying.
+         * Un-scales the live element directly so that html2canvas captures
+         * the exact computed layout, fonts, and colors displayed in the preview.
          */
         async function downloadCard(format = 'jpg') {
             const btn = document.getElementById('downloadBtn');
@@ -728,27 +659,23 @@
             btn.disabled = true;
             btnText.textContent = `Rendering 4K ${format.toUpperCase()}...`;
 
-            // Wait for all fonts to be 100% ready
             if (document.fonts && document.fonts.ready) {
                 try {
                     await document.fonts.ready;
                 } catch (e) {}
             }
 
-            // Save live styling states
             const origWrapperTransform = wrapper.style.transform;
             const origWrapperBoxShadow = wrapper.style.boxShadow;
             const origBodyOverflow = document.body.style.overflow;
             const origBodyWidth = document.body.style.width;
 
             try {
-                // Remove scaling temporarily so targetEl is at true 3840 x 1920
                 wrapper.style.transform = 'none';
                 wrapper.style.boxShadow = 'none';
                 document.body.style.overflow = 'visible';
                 document.body.style.width = '3840px';
 
-                // Ensure layout has settled at 1:1 scale
                 await new Promise(r => setTimeout(r, 150));
 
                 const canvas = await window.html2canvas(targetEl, {
@@ -763,7 +690,7 @@
                     scrollY: 0,
                     useCORS: true,
                     allowTaint: true,
-                    backgroundColor: '#f5f0e8',
+                    backgroundColor: '#fff7ed',
                     logging: false,
                 });
 
@@ -775,7 +702,6 @@
                     throw new Error('Canvas render produced empty result.');
                 }
 
-                // Trigger download
                 const filename = `EOM-GOM-WishCard-{{ \Illuminate\Support\Str::slug($monthName) }}-{{ $evaluatedYear ?? $report->year }}-4K.${format}`;
                 const link = document.createElement('a');
                 link.download = filename;
@@ -788,7 +714,6 @@
                 console.error('Error generating card image:', err);
                 alert('Could not generate 4K image automatically. You can use the "Print" button to save as PDF or image.');
             } finally {
-                // Restore original preview styling states
                 wrapper.style.transform = origWrapperTransform;
                 wrapper.style.boxShadow = origWrapperBoxShadow;
                 document.body.style.overflow = origBodyOverflow;
