@@ -125,6 +125,17 @@ html, body, .fi-body {
     scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
 }
 
+/* Remove number input spinners globally */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+
 /* ==========================================================================
    Tactile Micro-Interactions & Animation Standards
    ========================================================================== */
@@ -133,8 +144,7 @@ a,
 .fi-btn,
 .fi-icon-btn,
 .fi-badge,
-.fi-tabs-item,
-.fi-dropdown-list-item {
+.fi-tabs-item {
     transition: transform var(--duration-fast) var(--ease-spring),
                 box-shadow var(--duration-fast) ease,
                 background-color var(--duration-fast) ease,
@@ -283,6 +293,7 @@ a,
 
 /* ==========================================================================
    Cards, Widgets & Section Containers: "Zen Soft" Elevation
+   NOTE: Do NOT apply overflow:hidden to containers as it clips dropdowns!
    ========================================================================== */
 .fi-section,
 .fi-card,
@@ -295,7 +306,6 @@ a,
     transition: transform var(--duration-fast) var(--ease-spring),
                 box-shadow var(--duration-fast) ease,
                 border-color var(--duration-fast) ease !important;
-    overflow: hidden;
 }
 
 .fi-section:hover,
@@ -403,18 +413,40 @@ a,
 }
 
 /* ==========================================================================
-   Form Controls: Soft Inputs, Custom Rings & Fluid Focus
+   Form Controls: Input Wrapper Architecture
+   Styles the wrapper properly without breaking inner select/inputs or dropdowns
    ========================================================================== */
-.fi-input,
-.fi-select-input,
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="number"],
-input[type="date"],
-input[type="search"],
-textarea,
-select {
+.fi-input-wrp {
+    border-radius: var(--radius-control) !important;
+    border: 1px solid var(--surface-border) !important;
+    background-color: #ffffff !important;
+    box-shadow: var(--shadow-soft-xs) !important;
+    transition: border-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease !important;
+}
+
+:is(.dark, :root.dark) .fi-input-wrp {
+    background-color: #0c101c !important;
+    border-color: var(--surface-border) !important;
+}
+
+.fi-input-wrp:focus-within {
+    border-color: var(--brand-orange-500) !important;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.16) !important;
+}
+
+/* Inner inputs inside wrapper: transparent background and clean padding */
+.fi-input-wrp input,
+.fi-input-wrp textarea,
+.fi-input-wrp select {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Standalone inputs/textareas outside fi-input-wrp */
+input:not(.fi-input-wrp input):not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+textarea:not(.fi-input-wrp textarea) {
     font-family: var(--font-sans) !important;
     border-radius: var(--radius-control) !important;
     border: 1px solid var(--surface-border) !important;
@@ -426,22 +458,15 @@ select {
     transition: all var(--duration-fast) var(--ease-spring) !important;
 }
 
-:is(.dark, :root.dark) .fi-input,
-:is(.dark, :root.dark) .fi-select-input,
-:is(.dark, :root.dark) input,
-:is(.dark, :root.dark) textarea,
-:is(.dark, :root.dark) select {
+:is(.dark, :root.dark) input:not(.fi-input-wrp input):not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+:is(.dark, :root.dark) textarea:not(.fi-input-wrp textarea) {
     background-color: #0c101c !important;
     border-color: var(--surface-border) !important;
     color: var(--text-primary) !important;
 }
 
-/* Fluid Brand Focus States */
-.fi-input:focus,
-.fi-select-input:focus,
-input:focus,
-textarea:focus,
-select:focus {
+input:not(.fi-input-wrp input):focus,
+textarea:not(.fi-input-wrp textarea):focus {
     border-color: var(--brand-orange-500) !important;
     outline: none !important;
     box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.16) !important;
@@ -464,6 +489,89 @@ input[type="radio"] {
     border-radius: 0.375rem !important;
     border-color: var(--surface-border) !important;
     cursor: pointer !important;
+}
+
+/* ==========================================================================
+   Dropdown Panels, Menus & Select Options (CRITICAL FIX)
+   ========================================================================== */
+.fi-dropdown-panel {
+    z-index: 1000 !important;
+    border-radius: var(--radius-control) !important;
+    background-color: var(--surface-card) !important;
+    border: 1px solid var(--surface-border) !important;
+    box-shadow: 0 12px 32px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.04) !important;
+    overflow-y: auto !important;
+    max-height: 20rem !important;
+}
+
+:is(.dark, :root.dark) .fi-dropdown-panel {
+    background-color: #161e30 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 20px 50px -4px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Dropdown list items & action items */
+.fi-dropdown-list-item {
+    border-radius: 0.5rem !important;
+    margin: 0.125rem 0.25rem !important;
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.8125rem !important;
+    color: var(--text-primary) !important;
+    transition: background-color var(--duration-fast) ease, color var(--duration-fast) ease !important;
+}
+
+.fi-dropdown-list-item:hover,
+.fi-dropdown-list-item:focus,
+.fi-dropdown-list-item-focused {
+    background-color: rgba(249, 115, 22, 0.08) !important;
+    color: var(--brand-orange-600) !important;
+}
+
+:is(.dark, :root.dark) .fi-dropdown-list-item:hover,
+:is(.dark, :root.dark) .fi-dropdown-list-item:focus,
+:is(.dark, :root.dark) .fi-dropdown-list-item-focused {
+    background-color: rgba(249, 115, 22, 0.16) !important;
+    color: #fed7aa !important;
+}
+
+/* Native select tag options */
+select option,
+select optgroup {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+}
+
+:is(.dark, :root.dark) select option,
+:is(.dark, :root.dark) select optgroup {
+    background-color: #121826 !important;
+    color: #f8fafc !important;
+}
+
+/* ==========================================================================
+   Modals & Popups: Strictly Page-Centered (CRITICAL FIX)
+   ========================================================================== */
+.fi-modal:not(.fi-modal-slide-over) > .fi-modal-window-ctn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 100dvh !important;
+    padding: 1.5rem !important;
+}
+
+.fi-modal:not(.fi-modal-slide-over) > .fi-modal-window-ctn > .fi-modal-window {
+    margin: auto !important;
+    align-self: center !important;
+    max-height: calc(100dvh - 3rem) !important;
+    background-color: var(--surface-card) !important;
+    border: 1px solid var(--surface-border) !important;
+    border-radius: 1.5rem !important;
+    box-shadow: var(--shadow-soft-lg) !important;
+}
+
+.fi-modal-close-overlay {
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    background-color: rgba(11, 15, 25, 0.65) !important;
 }
 
 /* ==========================================================================
@@ -528,7 +636,6 @@ table.fi-ta-table > thead > tr > .fi-ta-selection-cell {
    Mobile-Native Table Card Transformation (Skip Horizontal Scroll)
    ========================================================================== */
 @media (max-width: 767.98px) {
-    /* Container resets */
     .fi-ta-ctn {
         background: transparent !important;
         border: none !important;
@@ -639,23 +746,6 @@ table.fi-ta-table > thead > tr > .fi-ta-selection-cell {
 }
 
 /* ==========================================================================
-   Modals & Drawers: Soft Backdrop & Smooth Scaling
-   ========================================================================== */
-.fi-modal-window {
-    background-color: var(--surface-card) !important;
-    border: 1px solid var(--surface-border) !important;
-    border-radius: 1.5rem !important;
-    box-shadow: var(--shadow-soft-lg) !important;
-    overflow: hidden !important;
-}
-
-.fi-modal-close-overlay {
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-    background-color: rgba(11, 15, 25, 0.65) !important;
-}
-
-/* ==========================================================================
    Tabs & Segmented Controls: Modern Floating Sliders
    ========================================================================== */
 .fi-tabs {
@@ -692,4 +782,25 @@ table.fi-ta-table > thead > tr > .fi-ta-selection-cell {
    ========================================================================== */
 .fi-pagination-item {
     border-radius: var(--radius-control) !important;
+}
+
+/* ==========================================================================
+   App-Specific Helper Classes
+   ========================================================================== */
+:is(.dark, :root.dark, html.dark) .chat-input-field {
+    background-color: #1e293b !important;
+    color: #f8fafc !important;
+    border-color: #334155 !important;
+}
+
+.ssf-table-header,
+.ssf-table-header th {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+}
+
+:is(.dark, :root.dark) .ssf-table-header,
+:is(.dark, :root.dark) .ssf-table-header th {
+    background-color: #0f172a !important;
+    color: #ffffff !important;
 }
