@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\EmployeePromotions\Tables;
 
+use App\Jobs\SyncBulkPromotionsToSheetJob;
 use App\Jobs\SyncPromotionToSheetJob;
 use App\Models\Department;
 use App\Models\Designation;
@@ -280,6 +281,7 @@ class EmployeePromotionsTable
                         ->modalDescription('Confirm that you have updated HRMS for all selected promotions. This will update the employee department and designation, and sync to Google Sheets.')
                         ->modalSubmitActionLabel('Mark Selected as Synced')
                         ->action(function (Collection $records) {
+                            $syncedIds = [];
                             $count = 0;
                             $userId = Auth::id();
 
@@ -298,12 +300,13 @@ class EmployeePromotionsTable
                                         ]);
                                     }
 
-                                    SyncPromotionToSheetJob::dispatch($record->id, $userId, true)->onConnection('database');
+                                    $syncedIds[] = $record->id;
                                     $count++;
                                 }
                             }
 
                             if ($count > 0) {
+                                SyncBulkPromotionsToSheetJob::dispatch($syncedIds, $userId, true)->onConnection('database');
                                 static::dispatchBackgroundQueueWorker();
 
                                 Notification::make()
@@ -330,6 +333,7 @@ class EmployeePromotionsTable
                         ->modalDescription('This will mark the HRMS sync as incomplete for all selected promotions and revert employee department/designation.')
                         ->modalSubmitActionLabel('Unmark Selected')
                         ->action(function (Collection $records) {
+                            $unmarkedIds = [];
                             $count = 0;
                             $userId = Auth::id();
 
@@ -348,12 +352,13 @@ class EmployeePromotionsTable
                                         ]);
                                     }
 
-                                    SyncPromotionToSheetJob::dispatch($record->id, $userId, false)->onConnection('database');
+                                    $unmarkedIds[] = $record->id;
                                     $count++;
                                 }
                             }
 
                             if ($count > 0) {
+                                SyncBulkPromotionsToSheetJob::dispatch($unmarkedIds, $userId, false)->onConnection('database');
                                 static::dispatchBackgroundQueueWorker();
 
                                 Notification::make()
