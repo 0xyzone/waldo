@@ -66,7 +66,7 @@ class KamkajPanelProvider extends PanelProvider
             ->globalSearch(false)
             ->databaseNotifications()
             ->broadcasting()
-            ->font('Plus Jakarta Sans')
+            ->font('Plus Jakarta Sans', preload: [])
             ->maxContentWidth('full')
             ->sidebarCollapsibleOnDesktop()
             ->colors([
