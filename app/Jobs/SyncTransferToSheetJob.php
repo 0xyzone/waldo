@@ -13,6 +13,8 @@ class SyncTransferToSheetJob implements ShouldQueue
 {
     use Queueable;
 
+    public $connection = 'database';
+
     /**
      * Create a new job instance.
      */
@@ -49,7 +51,8 @@ class SyncTransferToSheetJob implements ShouldQueue
                     ->title('Transfer Synced to Sheet')
                     ->body("Employee {$transfer->employee_id} — {$employeeName} transferred to {$toDesig}, {$toDept}. Google Sheet updated.")
                     ->success()
-                    ->sendToDatabase($user);
+                    ->sendToDatabase($user, isEventDispatched: true)
+                    ->broadcast($user);
             }
         }
     }

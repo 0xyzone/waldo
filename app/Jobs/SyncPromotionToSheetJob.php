@@ -8,10 +8,13 @@ use App\Services\GoogleSheetsService;
 use Filament\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Log;
 
 class SyncPromotionToSheetJob implements ShouldQueue
 {
     use Queueable;
+
+    public $connection = 'database';
 
     /**
      * Create a new job instance.
@@ -19,6 +22,7 @@ class SyncPromotionToSheetJob implements ShouldQueue
     public function __construct(
         public readonly int $promotionId,
         public readonly ?int $userId,
+        public readonly bool $isSyncing = true,
     ) {}
 
     /**
@@ -32,25 +36,54 @@ class SyncPromotionToSheetJob implements ShouldQueue
             return;
         }
 
-        $employee = $promotion->employee->fresh(['department', 'designation']);
+        try {
+            $employee = $promotion->employee->fresh(['department', 'designation']);
 
-        $sheetsService->syncEmployee($employee, ['department_id', 'designation_id']);
+            $sheetsService->syncEmployee($employee, ['department_id', 'designation_id']);
 
-        // Send database notification to the triggering user if available
-        if ($this->userId) {
-            $user = User::find($this->userId);
+            // Send notification to the triggering user once completed
+            if ($this->userId) {
+                $user = User::find($this->userId);
 
-            if ($user) {
-                $toDept = $promotion->toDepartment?->name ?? 'N/A';
-                $toDesig = $promotion->toDesignation?->name ?? 'N/A';
-                $employeeName = $promotion->employee->name ?? $promotion->employee_id;
+                if ($user) {
+                    $toDept = $promotion->toDepartment?->name ?? 'N/A';
+                    $toDesig = $promotion->toDesignation?->name ?? 'N/A';
+                    $employeeName = $promotion->employee->name ?? $promotion->employee_id;
 
-                Notification::make()
-                    ->title('Promotion Synced to Sheet')
-                    ->body("Employee {$promotion->employee_id} — {$employeeName} promoted to {$toDesig}, {$toDept}. Google Sheet updated.")
-                    ->success()
-                    ->sendToDatabase($user);
+                    $title = $this->isSyncing ? 'Promotion Synced to Sheet' : 'HRMS Sync Reset in Sheet';
+                    $body = $this->isSyncing
+                        ? "Employee {$promotion->employee_id} — {$employeeName} ({$toDesig}, {$toDept}) successfully updated in Google Sheet."
+                        : "Employee {$promotion->employee_id} — {$employeeName} status updated in Google Sheet.";
+
+                    Notification::make()
+                        ->title($title)
+                        ->body($body)
+                        ->success()
+                        ->sendToDatabase($user, isEventDispatched: true)
+                        ->broadcast($user);
+                }
             }
+        } catch (\Throwable $e) {
+            Log::error('SyncPromotionToSheetJob failed: '.$e->getMessage(), [
+                'promotion_id' => $this->promotionId,
+                'user_id' => $this->userId,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            if ($this->userId) {
+                $user = User::find($this->userId);
+
+                if ($user) {
+                    Notification::make()
+                        ->title('Google Sheet Sync Failed')
+                        ->body("Failed to sync promotion for {$promotion->employee_id} to Google Sheet: {$e->getMessage()}")
+                        ->danger()
+                        ->sendToDatabase($user, isEventDispatched: true)
+                        ->broadcast($user);
+                }
+            }
+
+            throw $e;
         }
     }
 }

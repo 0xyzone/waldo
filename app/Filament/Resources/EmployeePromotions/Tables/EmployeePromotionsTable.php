@@ -21,6 +21,7 @@ use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class EmployeePromotionsTable
 {
@@ -164,12 +165,15 @@ class EmployeePromotionsTable
 
                         // Dispatch background Google Sheets sync
                         $userId = Auth::id();
-                        SyncPromotionToSheetJob::dispatch($record->id, $userId);
+                        SyncPromotionToSheetJob::dispatch($record->id, $userId, $isSyncing)->onConnection('database');
+
+                        // Ensure background queue worker executes if no daemon is running
+                        static::dispatchBackgroundQueueWorker();
 
                         Notification::make()
                             ->title($isSyncing ? 'Marked as HRMS Synced' : 'HRMS Sync Unmarked')
                             ->body($isSyncing
-                                ? "Promotion for {$record->employee_id} has been marked as synced to HRMS."
+                                ? "Promotion for {$record->employee_id} marked as synced. Google Sheet update is running in the background."
                                 : "Promotion for {$record->employee_id} HRMS sync status has been reset.")
                             ->color($isSyncing ? 'info' : 'warning')
                             ->send();
@@ -247,5 +251,25 @@ class EmployeePromotionsTable
                     DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    /**
+     * Dispatch background queue worker asynchronously to process queued jobs
+     * without blocking the HTTP request or requiring a persistent daemon on local environments.
+     */
+    public static function dispatchBackgroundQueueWorker(): void
+    {
+        try {
+            $php = PHP_BINARY;
+            $artisan = base_path('artisan');
+
+            if (DIRECTORY_SEPARATOR === '\\') {
+                pclose(popen("start /B \"\" \"{$php}\" \"{$artisan}\" queue:work database --stop-when-empty > NUL 2>&1", 'r'));
+            } else {
+                exec("\"{$php}\" \"{$artisan}\" queue:work database --stop-when-empty > /dev/null 2>&1 &");
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Failed to spawn background queue worker: '.$e->getMessage());
+        }
     }
 }
