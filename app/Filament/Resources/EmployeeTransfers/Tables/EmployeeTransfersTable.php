@@ -216,6 +216,41 @@ class EmployeeTransfersTable
                         return $service->export($transfers, $uploadedTemplatePath);
                     }),
                 BulkActionGroup::make([
+                    Action::make('bulkAcknowledge')
+                        ->label('Acknowledge Selected')
+                        ->icon('heroicon-o-check-badge')
+                        ->color('success')
+                        ->accessSelectedRecords()
+                        ->requiresConfirmation()
+                        ->modalHeading('Acknowledge Selected Transfers')
+                        ->modalDescription('Are you sure you want to mark all selected transfers as acknowledged?')
+                        ->modalSubmitActionLabel('Acknowledge Selected')
+                        ->action(function (Collection $records) {
+                            $count = 0;
+                            foreach ($records as $record) {
+                                if (! $record->acknowledged) {
+                                    $record->update([
+                                        'acknowledged' => true,
+                                        'acknowledged_at' => now(),
+                                    ]);
+                                    $count++;
+                                }
+                            }
+
+                            if ($count > 0) {
+                                Notification::make()
+                                    ->title('Transfers Acknowledged')
+                                    ->body("Successfully marked {$count} transfer(s) as acknowledged.")
+                                    ->success()
+                                    ->send();
+                            } else {
+                                Notification::make()
+                                    ->title('Already Acknowledged')
+                                    ->body('All selected transfers were already acknowledged.')
+                                    ->info()
+                                    ->send();
+                            }
+                        }),
                     Action::make('exportSelectedExcel')
                         ->label('Download Selected Excel')
                         ->icon('heroicon-o-arrow-down-tray')

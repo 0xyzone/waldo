@@ -31,12 +31,7 @@ class EmployeeTransferExportService
     ];
 
     /**
-     * Format a string into a slug-like string:
-     * - All lowercase
-     * - Remove dots
-     * - Spaces and punctuation become dashes (-)
-     *
-     * Example: "Jr. Dealer" -> "jr-dealer"
+     * Format a string into a clean lowercase slug.
      */
     public static function formatSlugValue(?string $value): string
     {
@@ -44,11 +39,108 @@ class EmployeeTransferExportService
             return '';
         }
 
-        // Remove dots
-        $cleaned = str_replace('.', '', $value);
+        return Str::slug(trim($value));
+    }
 
-        // Convert to lowercase slug using hyphens
-        return Str::slug($cleaned, '-');
+    /**
+     * Normalize division/department name to match the HRMS reference division list.
+     */
+    public static function normalizeDivision(?string $value): string
+    {
+        if ($value === null || trim($value) === '') {
+            return '';
+        }
+
+        $slug = self::formatSlugValue($value);
+
+        $map = [
+            'purchase-and-store' => 'purchase-store',
+            'food-beverage' => 'food-beverage-service',
+            'food-and-beverage' => 'food-beverage-service',
+            'account-finance' => 'finance',
+            'accounts-finance' => 'finance',
+            'accounts' => 'finance',
+            'main-finance' => 'finance',
+        ];
+
+        return $map[$slug] ?? $slug;
+    }
+
+    /**
+     * Normalize job title/designation to match the HRMS reference job_title list.
+     */
+    public static function normalizeJobTitle(?string $value): string
+    {
+        if ($value === null || trim($value) === '') {
+            return '';
+        }
+
+        $slug = self::formatSlugValue($value);
+
+        $map = [
+            'senior-dealer' => 'sr-dealer',
+            'senior-attendant' => 'senior-attendant',
+            'sr-attendant' => 'senior-attendant',
+            'senior-cashier' => 'sr-cashier',
+            'senior-bouncer' => 'sr-bouncer',
+            'senior-driver' => 'sr-driver',
+            'senior-gra' => 'sr-gra',
+            'senior-waitress' => 'sr-waitress',
+            'senior-translator' => 'translator',
+            'sr-translator' => 'translator',
+            'trainee-dealer' => 'tr-dealer',
+            'trainee-attendant' => 'tr-attendant',
+            'trainee-cashier' => 'tr-cashier',
+            'trainee-waiter' => 'tr-waiter',
+            'trainee-waitress' => 'tr-waitress',
+            'trainee-cctv-operator' => 'tr-cctv-operator',
+            'trainee-video-operator' => 'trainee-video-operator',
+            'junior-dealer' => 'jr-dealer',
+            'junior-attendant' => 'jr-attendant',
+            'junior-cashier' => 'jr-cashier',
+            'junior-officer' => 'jr-officer',
+            'junior-waiter' => 'jr-waiter',
+            'junior-waitress' => 'jr-waitress',
+            'junior-executive' => 'jr-executive',
+            'junior-technician' => 'jr-technician',
+            'receving-officer' => 'receiving-officer',
+            'co-ordinator' => 'coordinator',
+            'operations-manager' => 'operation-manager',
+            'maintenance-manager' => 'maintainance-manager',
+            'gra-manager' => 'customer-service-manager',
+            'hk-shift-incharge' => 'shift-incharge',
+            'maintenance-shift-incharge' => 'shift-incharge',
+            'surveillance-shift-incharge' => 'security-shift-incharge',
+            'surveillance-manager' => 'security-manager',
+            'cage-assistant-manager' => 'cage-manager',
+            'sk-commi-i' => 'commis-i',
+            'sk-commi-ii' => 'commis-ii',
+            'sk-commi-iii' => 'commis-iii',
+            'lk-commi-ii' => 'commis-ii',
+            'lk-manager' => 'manager',
+            'admin-assistant' => 'hr-admin-assistant',
+            'management-officer' => 'officer',
+            'jr-dealer-shuffler' => 'jr-dealer-shuffuler',
+            'jr-marketing-associates' => 'marketing-associate',
+            'driver-co-ordinator' => 'driver',
+            'driver-coordinator' => 'driver',
+            'assistant-security-manager' => 'asst-security-manager',
+            'assistant-shift-manager' => 'asst-shift-manager',
+            'assistant-pit-manager' => 'asst-pit-manager',
+            'assistant-marketing-manager' => 'asst-marketing-manager',
+            'assistant-incharge' => 'asst-incharge',
+        ];
+
+        if (isset($map[$slug])) {
+            return $map[$slug];
+        }
+
+        $alt = preg_replace('/^senior-/', 'sr-', $slug);
+        $alt = preg_replace('/^trainee-/', 'tr-', (string) $alt);
+        $alt = preg_replace('/^junior-/', 'jr-', (string) $alt);
+        $alt = preg_replace('/^assistant-/', 'asst-', (string) $alt);
+
+        return $map[$alt] ?? (string) $alt;
     }
 
     /**
@@ -67,9 +159,9 @@ class EmployeeTransferExportService
                 'username' => strtolower((string) ($transfer->employee_id ?? '')),
                 'start_date' => $transfer->transfer_date ? $transfer->transfer_date->format('Y-m-d') : '',
                 'end_date' => '',
-                'job_title' => self::formatSlugValue($transfer->toDesignation?->name ?? $transfer->employee?->designation?->name),
+                'job_title' => self::normalizeJobTitle($transfer->toDesignation?->name ?? $transfer->employee?->designation?->name),
                 'branch' => 'casino-ktm',
-                'division' => self::formatSlugValue($transfer->toDepartment?->name ?? $transfer->employee?->department?->name),
+                'division' => self::normalizeDivision($transfer->toDepartment?->name ?? $transfer->employee?->department?->name),
                 'employment_type' => 'full-time',
                 'employment_level' => 'basic-staff',
                 'employment_step' => '1',
@@ -185,6 +277,7 @@ class EmployeeTransferExportService
 
         $sharedStringsXml = $zip->getFromName('xl/sharedStrings.xml');
         $useSharedStrings = ($sharedStringsXml !== false);
+        $addedOccurrences = 0;
 
         if ($useSharedStrings) {
             $sstDoc = new DOMDocument;
@@ -202,7 +295,8 @@ class EmployeeTransferExportService
                 $index++;
             }
 
-            $getSharedStringIndex = function (string $str) use ($sstDoc, $sstRoot, &$stringCache): int {
+            $getSharedStringIndex = function (string $str) use ($sstDoc, $sstRoot, &$stringCache, &$addedOccurrences): int {
+                $addedOccurrences++;
                 if (isset($stringCache[$str])) {
                     return $stringCache[$str];
                 }
@@ -213,11 +307,6 @@ class EmployeeTransferExportService
                 $t->textContent = $str;
                 $si->appendChild($t);
                 $sstRoot->appendChild($si);
-
-                $count = (int) $sstRoot->getAttribute('count') + 1;
-                $uniqueCount = (int) $sstRoot->getAttribute('uniqueCount') + 1;
-                $sstRoot->setAttribute('count', (string) $count);
-                $sstRoot->setAttribute('uniqueCount', (string) $uniqueCount);
 
                 $stringCache[$str] = $newIndex;
 
@@ -239,23 +328,25 @@ class EmployeeTransferExportService
             'K' => 'use_existing_payroll_package',
         ];
 
+        $hasX14ac = str_contains($sheet1Xml, 'xmlns:x14ac');
+        $rowAttrs = 'spans="1:11"'.($hasX14ac ? ' x14ac:dyDescent="0.25"' : '');
+
         $rowsXml = '';
         $rowIdx = 2;
 
         foreach ($records as $record) {
-            $rowContent = "<row r=\"{$rowIdx}\" spans=\"1:11\">";
+            $rowContent = "<row r=\"{$rowIdx}\" {$rowAttrs}>";
             foreach (self::COLUMNS as $col) {
                 $cellRef = "{$col}{$rowIdx}";
                 $val = trim((string) ($record[$keys[$col]] ?? ''));
 
-                if ($col === 'I') {
-                    if ($val !== '') {
-                        $rowContent .= "<c r=\"{$cellRef}\"><v>{$val}</v></c>";
-                    } else {
-                        $rowContent .= "<c r=\"{$cellRef}\"/>";
-                    }
-                } elseif ($val === '') {
-                    $rowContent .= "<c r=\"{$cellRef}\"/>";
+                // Omit empty cells completely (e.g. end_date), exactly matching the template
+                if ($val === '') {
+                    continue;
+                }
+
+                if ($col === 'I' && is_numeric($val)) {
+                    $rowContent .= "<c r=\"{$cellRef}\"><v>{$val}</v></c>";
                 } elseif ($useSharedStrings) {
                     $sId = $getSharedStringIndex($val);
                     $rowContent .= "<c r=\"{$cellRef}\" t=\"s\"><v>{$sId}</v></c>";
@@ -280,6 +371,9 @@ class EmployeeTransferExportService
         $zip->addFromString($sheetPath, $sheet1Xml);
 
         if ($useSharedStrings) {
+            $currentCount = (int) $sstRoot->getAttribute('count');
+            $sstRoot->setAttribute('count', (string) ($currentCount + $addedOccurrences));
+            $sstRoot->setAttribute('uniqueCount', (string) $sstRoot->getElementsByTagName('si')->length);
             $zip->addFromString('xl/sharedStrings.xml', $sstDoc->saveXML());
         }
 

@@ -234,6 +234,41 @@ class EmployeePromotionsTable
                         return $service->export($promotions, $uploadedTemplatePath);
                     }),
                 BulkActionGroup::make([
+                    Action::make('bulkAcknowledge')
+                        ->label('Acknowledge Selected')
+                        ->icon('heroicon-o-check-badge')
+                        ->color('success')
+                        ->accessSelectedRecords()
+                        ->requiresConfirmation()
+                        ->modalHeading('Acknowledge Selected Promotions')
+                        ->modalDescription('Are you sure you want to mark all selected promotions as acknowledged?')
+                        ->modalSubmitActionLabel('Acknowledge Selected')
+                        ->action(function (Collection $records) {
+                            $count = 0;
+                            foreach ($records as $record) {
+                                if (! $record->acknowledged) {
+                                    $record->update([
+                                        'acknowledged' => true,
+                                        'acknowledged_at' => now(),
+                                    ]);
+                                    $count++;
+                                }
+                            }
+
+                            if ($count > 0) {
+                                Notification::make()
+                                    ->title('Promotions Acknowledged')
+                                    ->body("Successfully marked {$count} promotion(s) as acknowledged.")
+                                    ->success()
+                                    ->send();
+                            } else {
+                                Notification::make()
+                                    ->title('Already Acknowledged')
+                                    ->body('All selected promotions were already acknowledged.')
+                                    ->info()
+                                    ->send();
+                            }
+                        }),
                     Action::make('printCongratulations')
                         ->label('Print Congratulation Note')
                         ->icon('heroicon-o-printer')
