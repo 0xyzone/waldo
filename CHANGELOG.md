@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [2.0.0] - 2026-10-16
+
+### Added
+- **Universal Responsive Mobile Card Transform**: Every standard table row across the entire portal automatically transforms on mobile devices into a high-contrast, touch-friendly card with neat label-value pairs and dedicated action bars, completely eliminating horizontal scrolling.
+- **Enterprise Typography (Plus Jakarta Sans)**: Replaced default system typography with Plus Jakarta Sans across the entire portal for a clean, sharp, corporate aesthetic.
+- **Brand Identity & Color System**: Shifted the portal theme to a high-contrast Vibrant Orange (`#f97316`) and Fiery Red (`#ef4444`) modern tech palette with crisp white surfaces and slate dark mode.
+- **Native Mobile Application Experience**: Added native iOS/Android safe-area-inset padding, momentum touch scrolling, tap-highlight suppression, and mobile sheet sidebar with rounded corners.
+- **Tactile Micro-Interactions**: Tactile button press scaling (`active:scale-[0.96]`), smooth card slide-in animations, modal entrance transitions, and topbar brand gradient accent.
+
+### Changed
+- Refactored sidebar active indicators with brand orange gradients and live status ping.
+- Enhanced form inputs with rounded-xl containers, smooth focus halo transitions, and responsive touch padding.
+- Upgraded PWA theme color to brand orange (`#ea580c`) and enabled `viewport-fit=cover`.
+
+---
+
 ## [1.4.0] - 2026-10-16
 
 ### Added

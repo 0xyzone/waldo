@@ -1,3 +1,4 @@
+@import url('https://fonts.bunny.net/css?family=plus-jakarta-sans:300,400,500,600,700,800&display=swap');
 @import 'tailwindcss';
 @import '../../../../vendor/filament/filament/resources/css/theme.css';
 
@@ -8,7 +9,69 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Thin & attractive scrollbar styling globally */
+/* ==========================================================================
+   Brand & Typography Tokens (Corporate High-Contrast Tech: Orange, Red & White)
+   ========================================================================== */
+:root {
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --brand-orange-50: #fff7ed;
+    --brand-orange-100: #ffedd5;
+    --brand-orange-200: #fed7aa;
+    --brand-orange-400: #fb923c;
+    --brand-orange-500: #f97316;
+    --brand-orange-600: #ea580c;
+    --brand-orange-700: #c2410c;
+    --brand-red-500: #ef4444;
+    --brand-red-600: #dc2626;
+    --brand-red-700: #b91c1c;
+}
+
+html, body, .fi-body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    letter-spacing: -0.011em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==========================================================================
+   Smooth Animations & Tactile Micro-Interactions
+   ========================================================================== */
+@keyframes cardSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes subtlePulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.65; }
+}
+
+/* Tactile button & touch feedback */
+.fi-btn,
+.fi-icon-btn,
+.fi-badge {
+    transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s ease, background-color 0.15s ease, border-color 0.15s ease !important;
+}
+
+.fi-btn:active,
+.fi-icon-btn:active {
+    transform: scale(0.96) !important;
+}
+
+/* Smooth modal pop */
+.fi-modal-window {
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease !important;
+}
+
+/* ==========================================================================
+   Scrollbars: Ultra-Thin & Brand Responsive
+   ========================================================================== */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -19,19 +82,102 @@
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(156, 163, 175, 0.2);
+    background: rgba(156, 163, 175, 0.25);
     border-radius: 9999px;
     transition: background 0.2s ease-in-out;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(249, 115, 22, 0.5); /* Brand Orange/Amber highlight */
+    background: rgba(249, 115, 22, 0.6); /* Vibrant Brand Orange */
 }
 
-/* Firefox scrollbar compatibility */
 * {
     scrollbar-width: thin;
-    scrollbar-color: rgba(156, 163, 175, 0.2) transparent;
+    scrollbar-color: rgba(156, 163, 175, 0.25) transparent;
+}
+
+/* ==========================================================================
+   Topbar / Navigation Bar: Glassmorphism & Brand Header Accent
+   ========================================================================== */
+.fi-topbar {
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
+    position: relative;
+}
+
+:is(.dark, :root.dark) .fi-topbar {
+    border-bottom: 1px solid rgba(51, 65, 85, 0.5) !important;
+}
+
+/* Top brand gradient line */
+.fi-topbar::before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #f97316 0%, #ef4444 50%, #f97316 100%);
+    z-index: 50;
+}
+
+/* ==========================================================================
+   Sidebar Navigation: Corporate Polish & Active Indicator
+   ========================================================================== */
+.fi-sidebar-item-active > a,
+.fi-sidebar-item-active > button {
+    background: linear-gradient(90deg, rgba(249, 115, 22, 0.12) 0%, rgba(239, 68, 68, 0.04) 100%) !important;
+    border-left: 3.5px solid #ea580c !important;
+    font-weight: 600 !important;
+    color: #ea580c !important;
+    border-radius: 0 0.75rem 0.75rem 0 !important;
+}
+
+:is(.dark, :root.dark) .fi-sidebar-item-active > a,
+:is(.dark, :root.dark) .fi-sidebar-item-active > button {
+    background: linear-gradient(90deg, rgba(249, 115, 22, 0.18) 0%, rgba(239, 68, 68, 0.06) 100%) !important;
+    border-left-color: #f97316 !important;
+    color: #fb923c !important;
+}
+
+.fi-sidebar-item > a:hover:not(.fi-sidebar-item-active > a),
+.fi-sidebar-item > button:hover:not(.fi-sidebar-item-active > button) {
+    background-color: rgba(249, 115, 22, 0.05) !important;
+}
+
+:is(.dark, :root.dark) .fi-sidebar-item > a:hover:not(.fi-sidebar-item-active > a),
+:is(.dark, :root.dark) .fi-sidebar-item > button:hover:not(.fi-sidebar-item-active > button) {
+    background-color: rgba(249, 115, 22, 0.08) !important;
+}
+
+/* ==========================================================================
+   Desktop Table Refinement
+   ========================================================================== */
+.fi-ta-ctn {
+    border-radius: 1rem !important;
+    overflow: hidden;
+    border: 1px solid rgba(226, 232, 240, 0.8) !important;
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04) !important;
+    transition: box-shadow 0.2s ease;
+}
+
+:is(.dark, :root.dark) .fi-ta-ctn {
+    border-color: rgba(51, 65, 85, 0.6) !important;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.25) !important;
+}
+
+.fi-ta-header-cell {
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    font-weight: 700 !important;
+    color: #475569 !important;
+}
+
+:is(.dark, :root.dark) .fi-ta-header-cell {
+    color: #94a3b8 !important;
 }
 
 /* Filament sticky table header background fix */
@@ -43,7 +189,220 @@
     background-color: var(--color-gray-900, #111827) !important;
 }
 
-/* Remove number input spinners / arrows globally */
+/* ==========================================================================
+   Mobile-Native Application Experience & Safe-Area Insets
+   ========================================================================== */
+@media (max-width: 767.98px) {
+    /* Touch & momentum scrolling */
+    * {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    .fi-main {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 2rem) !important;
+    }
+
+    /* Topbar compact touch layout */
+    .fi-topbar {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+    }
+
+    /* Mobile sheet drawer */
+    .fi-sidebar {
+        border-top-right-radius: 1.5rem !important;
+        border-bottom-right-radius: 1.5rem !important;
+        box-shadow: 4px 0 24px -2px rgba(0, 0, 0, 0.25) !important;
+    }
+}
+
+/* ==========================================================================
+   Universal Mobile Table Transformation: Row -> High-End Card
+   (Eliminates horizontal scrolling, presents clean label-value pairs & touch actions)
+   ========================================================================== */
+@media (max-width: 767.98px) {
+    /* Unbox the outer container on mobile */
+    .fi-ta-ctn {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .fi-ta-content {
+        overflow-x: visible !important;
+    }
+
+    /* Transform table into flex list of cards */
+    table.fi-ta-table.fi-ta-table-stacked-on-mobile {
+        display: block !important;
+        width: 100% !important;
+        border: none !important;
+        background: transparent !important;
+    }
+
+    table.fi-ta-table.fi-ta-table-stacked-on-mobile > thead:not(:has(.fi-ta-table-stacked-header-row)) {
+        display: none !important;
+    }
+
+    table.fi-ta-table.fi-ta-table-stacked-on-mobile > tbody {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.875rem !important;
+        background: transparent !important;
+        padding: 0.25rem 0 !important;
+    }
+
+    /* Individual Card Structure */
+    table.fi-ta-table.fi-ta-table-stacked-on-mobile > tbody > tr:not(.fi-ta-group-header-row):not(.fi-ta-summary-row) {
+        display: flex !important;
+        flex-direction: column !important;
+        position: relative !important;
+        background-color: #ffffff !important;
+        border: 1px solid rgba(226, 232, 240, 0.95) !important;
+        border-radius: 1.125rem !important;
+        padding: 1rem 1.125rem !important;
+        box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.03) !important;
+        animation: cardSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+        transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+        overflow: hidden !important;
+    }
+
+    :is(.dark, :root.dark) table.fi-ta-table.fi-ta-table-stacked-on-mobile > tbody > tr:not(.fi-ta-group-header-row):not(.fi-ta-summary-row) {
+        background-color: #1e293b !important;
+        border-color: rgba(51, 65, 85, 0.6) !important;
+        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    /* Subtle Brand Accent Stripe on each card */
+    table.fi-ta-table.fi-ta-table-stacked-on-mobile > tbody > tr:not(.fi-ta-group-header-row):not(.fi-ta-summary-row)::before {
+        content: '' !important;
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        width: 4px !important;
+        background: linear-gradient(180deg, #f97316 0%, #ef4444 100%) !important;
+        border-radius: 1.125rem 0 0 1.125rem !important;
+    }
+
+    /* Card active tactile press */
+    table.fi-ta-table.fi-ta-table-stacked-on-mobile > tbody > tr:not(.fi-ta-group-header-row):not(.fi-ta-summary-row):active {
+        transform: scale(0.99) !important;
+    }
+
+    /* Individual Data Cells inside Card */
+    table.fi-ta-table.fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-cell:not(.fi-ta-selection-cell) {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 0.4rem 0 !important;
+        border-bottom: 1px dashed rgba(241, 245, 249, 1) !important;
+        width: 100% !important;
+    }
+
+    :is(.dark, :root.dark) table.fi-ta-table.fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-cell:not(.fi-ta-selection-cell) {
+        border-bottom-color: rgba(51, 65, 85, 0.4) !important;
+    }
+
+    table.fi-ta-table.fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-cell:not(.fi-ta-selection-cell):last-of-type {
+        border-bottom: none !important;
+    }
+
+    /* Cell Label: Clean muted corporate badge */
+    table.fi-ta-table.fi-ta-table-stacked-on-mobile .fi-ta-cell-label {
+        display: inline-block !important;
+        font-size: 0.72rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+        color: #64748b !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        flex-shrink: 0 !important;
+    }
+
+    :is(.dark, :root.dark) table.fi-ta-table.fi-ta-table-stacked-on-mobile .fi-ta-cell-label {
+        color: #94a3b8 !important;
+    }
+
+    /* Cell Content: High-contrast readable typography */
+    table.fi-ta-table.fi-ta-table-stacked-on-mobile .fi-ta-cell-content {
+        text-align: right !important;
+        font-size: 0.875rem !important;
+        font-weight: 500 !important;
+        color: #0f172a !important;
+        word-break: break-word !important;
+    }
+
+    :is(.dark, :root.dark) table.fi-ta-table.fi-ta-table-stacked-on-mobile .fi-ta-cell-content {
+        color: #f8fafc !important;
+    }
+
+    /* Action Cell at Card Bottom */
+    table.fi-ta-table.fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-cell:has(.fi-ta-actions),
+    table.fi-ta-table.fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-cell:has(.fi-ta-actions-cell) {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: flex-end !important;
+        align-items: center !important;
+        border-top: 1px solid rgba(226, 232, 240, 0.8) !important;
+        border-bottom: none !important;
+        margin-top: 0.5rem !important;
+        padding-top: 0.75rem !important;
+        padding-bottom: 0 !important;
+    }
+
+    :is(.dark, :root.dark) table.fi-ta-table.fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-cell:has(.fi-ta-actions),
+    :is(.dark, :root.dark) table.fi-ta-table.fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-cell:has(.fi-ta-actions-cell) {
+        border-top-color: rgba(51, 65, 85, 0.6) !important;
+    }
+
+    table.fi-ta-table.fi-ta-table-stacked-on-mobile .fi-ta-actions {
+        display: flex !important;
+        gap: 0.5rem !important;
+        justify-content: flex-end !important;
+        flex-wrap: wrap !important;
+        width: 100% !important;
+    }
+
+    /* Selection checkbox position */
+    table.fi-ta-table.fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-selection-cell {
+        position: absolute !important;
+        top: 0.75rem !important;
+        right: 0.75rem !important;
+        z-index: 10 !important;
+    }
+
+    /* Toolbar & Search Bar layout */
+    .fi-ta-header-toolbar {
+        flex-direction: column !important;
+        gap: 0.625rem !important;
+        align-items: stretch !important;
+    }
+}
+
+/* ==========================================================================
+   Form Controls: Clean Corporate Tech Styling
+   ========================================================================== */
+.fi-input-wrp {
+    border-radius: 0.75rem !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.fi-input-wrp:focus-within {
+    border-color: #ea580c !important;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.18) !important;
+}
+
+/* Remove number input spinners globally */
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none !important;
@@ -68,7 +427,7 @@ input[type="number"] {
 
 :is(.dark, :root.dark, html.dark) .chat-input-field:focus {
     background-color: #0f172a !important;
-    border-color: #f59e0b !important;
+    border-color: #f97316 !important;
     color: #ffffff !important;
 }
 
@@ -84,6 +443,3 @@ input[type="number"] {
     background-color: #0f172a !important;
     color: #ffffff !important;
 }
-
-
-

@@ -12,7 +12,8 @@
 @endphp
 <link rel="icon" type="image/png" sizes="32x32" href="{{ $icon32 }}">
 <link rel="icon" type="image/png" sizes="16x16" href="{{ $icon16 }}">
-<meta name="theme-color" media="(prefers-color-scheme: light)" content="#d97706">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ea580c">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f172a">
 <meta name="vapid-public-key" content="{{ config('webpush.vapid.public_key') ?: env('VAPID_PUBLIC_KEY', '') }}">
 <meta name="csrf-token" content="{{ csrf_token() }}">

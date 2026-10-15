@@ -13,6 +13,7 @@ use App\Observers\EmployeeObserver;
 use Filament\Auth\Notifications\VerifyEmail;
 use Filament\Facades\Filament;
 use Filament\Support\Facades\FilamentView;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Notifications\Events\NotificationSent;
@@ -60,6 +61,11 @@ class AppServiceProvider extends ServiceProvider
 
         Event::listen(NotificationSent::class, SendWebPushOnDatabaseNotification::class);
         Event::listen(MessageSent::class, SendWebPushOnChatMessage::class);
+
+        // Transform all tables into clean, responsive mobile cards
+        Table::configureUsing(function (Table $table): void {
+            $table->stackedOnMobile();
+        });
 
         // Inject custom CSS to style employees table rows based on status
         FilamentView::registerRenderHook(

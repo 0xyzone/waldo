@@ -66,11 +66,15 @@ class KamkajPanelProvider extends PanelProvider
             ->globalSearch(false)
             ->databaseNotifications()
             ->broadcasting()
-            ->font(family: null, preload: [])
+            ->font('Plus Jakarta Sans')
             ->maxContentWidth('full')
             ->sidebarCollapsibleOnDesktop()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Orange,
+                'danger' => Color::Red,
+                'warning' => Color::Amber,
+                'info' => Color::Sky,
+                'success' => Color::Emerald,
             ])
             ->navigationItems([
                 NavigationItem::make('Letters & Templates')

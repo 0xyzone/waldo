@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '1.4.0';
+    public const CURRENT_VERSION = '2.0.0';
 
     public static function getCurrentVersion(): string
     {
@@ -17,6 +17,29 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.0.0',
+                'date' => '2026-10-16',
+                'title' => 'Major UI Revamp: Mobile-Native Experience & Brand Identity',
+                'type' => 'major',
+                'badge' => 'Major Upgrade',
+                'badge_color' => 'primary',
+                'highlights' => 'Complete visual redesign of the Waldo Portal: Plus Jakarta Sans enterprise typography, Vibrant Orange and Fiery Red tech brand identity, universal mobile card-based table transformation eliminating horizontal scroll, tactile micro-interactions, and iOS/Android native app optimization.',
+                'changes' => [
+                    'added' => [
+                        'Universal Responsive Mobile Card Transform: Automatically transforms every standard table row on mobile devices into an elevated, touch-friendly card with neat label-value pairs and dedicated action bars.',
+                        'Enterprise Typography: Adopted Plus Jakarta Sans as the system-wide font for crisp readability and modern corporate look.',
+                        'Brand Color Palette: High-contrast Vibrant Orange (#f97316) and Fiery Red (#ef4444) tech palette with crisp white surfaces and sleek slate dark mode.',
+                        'Native Mobile App Feel: Full iOS & Android safe-area-inset padding, momentum scrolling (-webkit-overflow-scrolling), tap-highlight suppression, and mobile sheet sidebar with rounded corners.',
+                        'Tactile Micro-Animations: Added tactile button press scaling, card slide-in animations, smooth modal entrances, and brand gradient topbar accents.',
+                    ],
+                    'changed' => [
+                        'Modernized sidebar active indicators with brand orange gradients and animated live indicator.',
+                        'Polished form inputs with rounded-xl containers and brand focus halos.',
+                        'Upgraded PWA theme colors and viewport configuration (viewport-fit=cover).',
+                    ],
+                ],
+            ],
             [
                 'version' => '1.4.0',
                 'date' => '2026-10-16',
