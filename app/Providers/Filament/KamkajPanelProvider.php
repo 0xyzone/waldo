@@ -69,6 +69,7 @@ class KamkajPanelProvider extends PanelProvider
             ->font('Plus Jakarta Sans', preload: [])
             ->maxContentWidth('full')
             ->sidebarCollapsibleOnDesktop()
+            ->collapsedSidebarWidth('4.25rem')
             ->colors([
                 'primary' => Color::Orange,
                 'danger' => Color::Red,
