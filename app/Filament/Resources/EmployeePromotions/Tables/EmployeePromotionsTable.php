@@ -269,6 +269,106 @@ class EmployeePromotionsTable
                                     ->send();
                             }
                         }),
+                    Action::make('bulkMarkHrmsSynced')
+                        ->label('Mark HRMS Synced')
+                        ->icon('heroicon-o-computer-desktop')
+                        ->color('info')
+                        ->visible(fn () => Auth::user()->hasRole(['super_admin', 'HR']))
+                        ->accessSelectedRecords()
+                        ->requiresConfirmation()
+                        ->modalHeading('Mark Selected Promotions as HRMS Synced')
+                        ->modalDescription('Confirm that you have updated HRMS for all selected promotions. This will update the employee department and designation, and sync to Google Sheets.')
+                        ->modalSubmitActionLabel('Mark Selected as Synced')
+                        ->action(function (Collection $records) {
+                            $count = 0;
+                            $userId = Auth::id();
+
+                            foreach ($records as $record) {
+                                if (! $record->hrms_synced) {
+                                    $record->update([
+                                        'hrms_synced' => true,
+                                        'hrms_synced_at' => now(),
+                                    ]);
+
+                                    $employee = Employee::find($record->employee_id);
+                                    if ($employee) {
+                                        $employee->update([
+                                            'department_id' => $record->to_department_id,
+                                            'designation_id' => $record->to_designation_id,
+                                        ]);
+                                    }
+
+                                    SyncPromotionToSheetJob::dispatch($record->id, $userId, true)->onConnection('database');
+                                    $count++;
+                                }
+                            }
+
+                            if ($count > 0) {
+                                static::dispatchBackgroundQueueWorker();
+
+                                Notification::make()
+                                    ->title('Promotions Marked as HRMS Synced')
+                                    ->body("Successfully marked {$count} promotion(s) as HRMS synced. Google Sheets sync is running in the background.")
+                                    ->success()
+                                    ->send();
+                            } else {
+                                Notification::make()
+                                    ->title('Already Synced')
+                                    ->body('All selected promotions were already marked as HRMS synced.')
+                                    ->info()
+                                    ->send();
+                            }
+                        }),
+                    Action::make('bulkUnmarkHrmsSynced')
+                        ->label('Unmark HRMS Synced')
+                        ->icon('heroicon-o-arrow-uturn-left')
+                        ->color('gray')
+                        ->visible(fn () => Auth::user()->hasRole(['super_admin', 'HR']))
+                        ->accessSelectedRecords()
+                        ->requiresConfirmation()
+                        ->modalHeading('Unmark HRMS Sync for Selected Promotions')
+                        ->modalDescription('This will mark the HRMS sync as incomplete for all selected promotions and revert employee department/designation.')
+                        ->modalSubmitActionLabel('Unmark Selected')
+                        ->action(function (Collection $records) {
+                            $count = 0;
+                            $userId = Auth::id();
+
+                            foreach ($records as $record) {
+                                if ($record->hrms_synced) {
+                                    $record->update([
+                                        'hrms_synced' => false,
+                                        'hrms_synced_at' => null,
+                                    ]);
+
+                                    $employee = Employee::find($record->employee_id);
+                                    if ($employee) {
+                                        $employee->update([
+                                            'department_id' => $record->from_department_id,
+                                            'designation_id' => $record->from_designation_id,
+                                        ]);
+                                    }
+
+                                    SyncPromotionToSheetJob::dispatch($record->id, $userId, false)->onConnection('database');
+                                    $count++;
+                                }
+                            }
+
+                            if ($count > 0) {
+                                static::dispatchBackgroundQueueWorker();
+
+                                Notification::make()
+                                    ->title('HRMS Sync Unmarked')
+                                    ->body("Successfully unmarked HRMS sync for {$count} promotion(s).")
+                                    ->warning()
+                                    ->send();
+                            } else {
+                                Notification::make()
+                                    ->title('Not Synced')
+                                    ->body('None of the selected promotions were marked as HRMS synced.')
+                                    ->info()
+                                    ->send();
+                            }
+                        }),
                     Action::make('printCongratulations')
                         ->label('Print Congratulation Note')
                         ->icon('heroicon-o-printer')
