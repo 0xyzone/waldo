@@ -35,9 +35,7 @@ class TipsAdjustmentForm
                         }
 
                         $employee = Employee::with(['department', 'designation'])
-                            ->where('employee_code', $code)
-                            ->orWhere('id', $code)
-                            ->first();
+                            ->find($code);
 
                         if (! $employee) {
                             return new HtmlString('
@@ -94,7 +92,7 @@ class TipsAdjustmentForm
 
                         $percentage = $get('percentage');
                         if ($percentage !== null && $percentage !== '' && is_numeric($percentage)) {
-                            $employee = Employee::where('employee_code', $state)->orWhere('id', $state)->first();
+                            $employee = Employee::find($state);
                             $base = (float) ($employee?->tips_amount ?? 0);
                             if ($base > 0) {
                                 $calculated = round($base * ((float) $percentage / 100), 2);
@@ -166,7 +164,7 @@ class TipsAdjustmentForm
                             return;
                         }
 
-                        $employee = Employee::where('employee_code', $employeeId)->orWhere('id', $employeeId)->first();
+                        $employee = Employee::find($employeeId);
                         $base = (float) ($employee?->tips_amount ?? 0);
 
                         if ($base > 0) {
