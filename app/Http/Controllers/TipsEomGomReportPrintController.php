@@ -124,6 +124,11 @@ class TipsEomGomReportPrintController extends Controller
             ],
         ]);
 
+        $logoPath = public_path('img/logo.jpg');
+        $logoBase64 = file_exists($logoPath)
+            ? 'data:image/jpeg;base64,'.base64_encode(file_get_contents($logoPath))
+            : asset('img/logo.jpg');
+
         return response()->view('tips.eom-gom.hrms-card', [
             'report' => $report,
             'month' => $month,
@@ -135,6 +140,7 @@ class TipsEomGomReportPrintController extends Controller
             'entries' => $entries,
             'eomWinners' => $eomWinners,
             'gomWinners' => $gomWinners,
+            'logoBase64' => $logoBase64,
         ]);
     }
 }

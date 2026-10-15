@@ -1,604 +1,817 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-950">
+<html lang="en" class="h-full bg-slate-900">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HRMS Recognition Card - {{ $monthName }} {{ $evaluatedYear ?? $report->year }}</title>
+    <title>HRMS Recognition Card (4K) - {{ $monthName }} {{ $evaluatedYear ?? $report->year }}</title>
     <x-favicon />
 
-    {{-- Google Fonts: Outfit & Plus Jakarta Sans for Material Typography --}}
+    {{-- Google Fonts: Plus Jakarta Sans, Outfit & JetBrains Mono --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@700;800&display=swap"
         rel="stylesheet">
 
-    {{-- Vite Directive (Tailwind CSS v4 & App JS) --}}
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    {{-- html2canvas & html-to-image libraries for crisp pixel-perfect client-side JPG generation --}}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    {{-- Client-side rasterization engines for 1:1 pixel-perfect export --}}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap');
-
+        /* Base typography */
         body {
-            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #020617;
-            color: #f8fafc;
+            background-color: #0f172a;
+            color: #0f172a;
+            overflow-x: hidden;
         }
 
         .font-display {
-            font-family: 'Outfit', system-ui, sans-serif;
+            font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
         }
 
         .font-mono-code {
             font-family: 'JetBrains Mono', monospace;
         }
 
-        /* Ambient background glow meshes */
-        .ambient-mesh {
-            background-image:
-                radial-gradient(at 15% 15%, rgba(245, 158, 11, 0.18) 0px, transparent 45%),
-                radial-gradient(at 85% 20%, rgba(14, 165, 233, 0.16) 0px, transparent 45%),
-                radial-gradient(at 50% 85%, rgba(99, 102, 241, 0.14) 0px, transparent 50%),
-                radial-gradient(at 80% 80%, rgba(245, 158, 11, 0.12) 0px, transparent 40%);
+        /* Top Toolbar */
+        .toolbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
         }
 
-        /* Subtle dot-grid texture overlay */
-        .dot-grid {
-            background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1.2px, transparent 1.2px);
-            background-size: 32px 32px;
+        .btn-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 800;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35);
+            transition: all 0.2s ease;
         }
 
-        /* Responsive scale container for the fixed 2400x1350 canvas */
-        .preview-viewport {
+        .btn-brand:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(234, 88, 12, 0.45);
+        }
+
+        .btn-brand:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+        }
+
+        /* Responsive preview viewport */
+        .preview-container {
             width: 100%;
-            max-width: 1400px;
-            margin: 0 auto;
-            overflow-x: auto;
             display: flex;
             justify-content: center;
-            padding: 24px 16px 48px;
+            align-items: flex-start;
+            padding: 32px 16px 64px;
+            box-sizing: border-box;
+            min-height: calc(100vh - 70px);
         }
 
-        .canvas-scale-wrapper {
-            width: 2400px;
-            height: 1350px;
+        .preview-scale-wrapper {
             transform-origin: top center;
-            transform: scale(0.55);
-            margin-bottom: -607px;
-            /* Collapse negative margin due to transform */
+            transition: transform 0.15s ease-out;
             flex-shrink: 0;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            overflow: hidden;
         }
 
-        @media (max-width: 1350px) {
-            .canvas-scale-wrapper {
-                transform: scale(0.42);
-                margin-bottom: -783px;
-            }
+        /* ------------------------------------------------------------- */
+        /* MASTER 4K CANVAS (3840 x 1920 - EXACT 2:1 ASPECT RATIO)       */
+        /* Uses standard, explicit CSS so preview and download match 1:1  */
+        /* ------------------------------------------------------------- */
+        #master-wish-card-canvas {
+            width: 3840px;
+            height: 1920px;
+            min-width: 3840px;
+            min-height: 1920px;
+            background: #f8fafc;
+            box-sizing: border-box;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 56px 72px 52px;
+            overflow: hidden;
+            color: #0f172a;
         }
 
-        @media (max-width: 1024px) {
-            .canvas-scale-wrapper {
-                transform: scale(0.34);
-                margin-bottom: -891px;
-            }
+        /* Top decorative brand stripe */
+        .brand-top-stripe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 14px;
+            background: linear-gradient(90deg, #ea580c 0%, #f97316 35%, #dc2626 70%, #b91c1c 100%);
         }
 
-        @media (max-width: 768px) {
-            .canvas-scale-wrapper {
-                transform: scale(0.24);
-                margin-bottom: -1026px;
-            }
+        /* Table modern container styles */
+        .recognition-table-card {
+            background: #ffffff;
+            border-radius: 22px;
+            border: 2px solid #e2e8f0;
+            box-shadow: 0 8px 30px rgba(15, 23, 42, 0.04);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
+        .table-row {
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+            padding: 0 36px;
+            border-bottom: 2px solid #f1f5f9;
+            background: #ffffff;
+            transition: background 0.15s ease;
+        }
+
+        .table-row:last-child {
+            border-bottom: none;
+        }
+
+        .table-row-eom {
+            border-left: 10px solid #ea580c;
+            height: 138px;
+        }
+
+        .table-row-gom {
+            border-left: 10px solid #dc2626;
+            height: 138px;
+        }
+
+        .table-header-row {
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+            padding: 0 36px 0 46px;
+            height: 58px;
+            background: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+            font-size: 20px;
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Column width allocations */
+        .col-honoree {
+            width: 32%;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            min-width: 0;
+        }
+
+        .col-code {
+            width: 14%;
+            display: flex;
+            align-items: center;
+        }
+
+        .col-dept {
+            width: 22%;
+            display: flex;
+            align-items: center;
+            padding-right: 20px;
+            min-width: 0;
+        }
+
+        .col-desig {
+            width: 18%;
+            display: flex;
+            align-items: center;
+            padding-right: 20px;
+            min-width: 0;
+        }
+
+        .col-badge {
+            width: 14%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        /* Print styles */
         @media print {
             .no-print {
                 display: none !important;
             }
 
             body {
-                background: #020617 !important;
+                background: #ffffff !important;
                 padding: 0 !important;
             }
 
-            .preview-viewport {
-                max-width: none !important;
+            .preview-container {
                 padding: 0 !important;
             }
 
-            .canvas-scale-wrapper {
-                transform: scale(0.38) !important;
-                margin: 0 !important;
+            .preview-scale-wrapper {
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                transform: scale(0.25) !important;
             }
         }
     </style>
 </head>
 
-<body class="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+<body>
 
-    {{-- TOP MATERIAL TOOLBAR (Hidden during print) --}}
-    <header
-        class="no-print sticky top-0 z-50 bg-slate-900/80 backdrop-blur-xl border-b border-white/10 px-6 py-3.5 shadow-lg">
-        <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <div
-                    class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-slate-950 font-black text-lg shadow-md shadow-amber-500/20">
-                    🏆
-                </div>
-                <div>
-                    <h1 class="text-sm font-bold text-white flex items-center gap-2">
-                        <span>HRMS Wish Card Preview</span>
-                        <span
-                            class="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold font-mono">
-                            2400 × 1350 QHD
-                        </span>
+    {{-- TOP MATERIAL TOOLBAR --}}
+    <header class="toolbar no-print">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%); display: flex; align-items: center; justify-content: center; font-size: 20px; color: #ffffff; box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);">
+                🏆
+            </div>
+            <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <h1 style="margin: 0; font-size: 15px; font-weight: 800; color: #ffffff; letter-spacing: -0.2px;">
+                        HRMS Wish Card
                     </h1>
-                    <p class="text-xs text-slate-400 mt-0.5">
-                        Honorees for <strong class="text-slate-200">{{ $monthName }}
-                            {{ $evaluatedYear ?? $report->year }}</strong> ({{ $releaseLabel }})
-                    </p>
+                    <span style="font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 6px; background: rgba(234, 88, 12, 0.2); color: #fb923c; border: 1px solid rgba(234, 88, 12, 0.4); font-family: monospace;">
+                        4K UHD • 3840 × 1920 (2:1)
+                    </span>
+                    <span style="font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: rgba(255, 255, 255, 0.1); color: #cbd5e1;">
+                        Light Modern Table Theme
+                    </span>
                 </div>
+                <p style="margin: 3px 0 0; font-size: 12px; color: #94a3b8;">
+                    Honoring winners for <strong style="color: #f1f5f9;">{{ $monthName }} {{ $evaluatedYear ?? $report->year }}</strong> ({{ $releaseLabel }} Cycle)
+                </p>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px;">
+            {{-- Zoom indicator & controls --}}
+            <div style="display: flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.08); padding: 4px 10px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.12);">
+                <span style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Scale:</span>
+                <span id="scaleIndicator" style="font-size: 12px; font-weight: 800; color: #f8fafc; font-family: monospace;">35%</span>
+                <button type="button" onclick="setZoomMode('fit')" class="btn-secondary" style="padding: 3px 8px; font-size: 11px; border-radius: 6px;">Fit</button>
+                <button type="button" onclick="setZoomMode('50')" class="btn-secondary" style="padding: 3px 8px; font-size: 11px; border-radius: 6px;">50%</button>
             </div>
 
-            <div class="flex items-center gap-3">
-                <button type="button" id="downloadBtn" onclick="downloadCardAsJpg()"
-                    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 hover:from-amber-600 hover:to-amber-500 text-slate-950 font-extrabold text-xs shadow-md shadow-amber-500/25 transition cursor-pointer active:scale-95">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    <span id="downloadBtnText">Download Card (JPG)</span>
-                </button>
+            {{-- Download High-Res JPG button --}}
+            <button type="button" id="downloadBtn" onclick="downloadCard('jpg')" class="btn-brand">
+                <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                <span id="downloadBtnText">Download 4K Card (JPG)</span>
+            </button>
 
-                <button type="button" onclick="window.print()"
-                    class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 border border-white/15 text-xs font-semibold transition cursor-pointer active:scale-95">
-                    <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                    </svg>
-                    <span>Print</span>
-                </button>
+            {{-- Download High-Res PNG button --}}
+            <button type="button" id="downloadPngBtn" onclick="downloadCard('png')" class="btn-secondary" title="Lossless 4K PNG">
+                <span>PNG</span>
+            </button>
 
-                <button type="button" onclick="window.close()"
-                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-400 hover:text-white text-xs font-medium transition cursor-pointer">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    <span>Close</span>
-                </button>
-            </div>
+            <button type="button" onclick="window.print()" class="btn-secondary">
+                <svg style="width: 15px; height: 15px; color: #94a3b8;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                <span>Print</span>
+            </button>
+
+            <button type="button" onclick="window.close()" class="btn-secondary" style="padding: 10px 14px;">
+                <svg style="width: 15px; height: 15px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
         </div>
     </header>
 
-    {{-- PREVIEW CONTAINER --}}
-    <main class="flex-1 flex justify-center items-start overflow-hidden">
-        <div class="preview-viewport">
-            <div class="canvas-scale-wrapper">
+    {{-- PREVIEW VIEWPORT --}}
+    <main class="preview-container">
+        <div class="preview-scale-wrapper">
 
-                {{-- ================================================================= --}}
-                {{-- MASTER 2400 x 1350 WISH CARD CANVAS (MATERIAL 3 AESTHETIC)       --}}
-                {{-- ================================================================= --}}
-                <div id="master-wish-card-canvas"
-                    class="w-[2400px] h-[1350px] min-w-[2400px] min-h-[1350px] bg-slate-950 relative overflow-hidden ambient-mesh flex flex-col justify-between p-[48px] box-border select-none border border-slate-800 shadow-2xl">
+            {{-- ============================================================= --}}
+            {{-- MASTER 3840 x 1920 CANVAS (EXACT 2:1 RATIO IN 4K RESOLUTION)  --}}
+            {{-- Modern Table Layout with Clean Light Brand Theme             --}}
+            {{-- ============================================================= --}}
+            <div id="master-wish-card-canvas">
 
-                    {{-- Dot Grid Background Texture --}}
-                    <div class="absolute inset-0 dot-grid pointer-events-none opacity-40"></div>
+                {{-- Top Brand Accent Stripe (Orange to Red) --}}
+                <div class="brand-top-stripe"></div>
 
-                    {{-- Subtle Glowing Edge Beams --}}
-                    <div
-                        class="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-amber-400/60 to-transparent">
-                    </div>
-                    <div
-                        class="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-sky-400/60 to-transparent">
-                    </div>
-
-                    {{-- ============================================================= --}}
-                    {{-- 1. HEADER SECTION (MATERIAL DESIGN BRANDING & TITLE)          --}}
-                    {{-- ============================================================= --}}
-                    <div class="relative z-10 flex items-center justify-between border-b border-white/10 pb-6">
-                        <div class="flex items-center gap-6">
-                            {{-- Casino Brand Medallion --}}
-                            <div
-                                class="w-22 h-22 rounded-2xl bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-200 p-[3px] shadow-xl shadow-amber-500/20 flex-shrink-0">
-                                <div
-                                    class="w-full h-full rounded-[14px] bg-slate-950 flex flex-col items-center justify-center overflow-hidden">
-                                    <img src="{{ asset('img/logo.jpg') }}" alt="Logo">
-                                </div>
-                            </div>
-
-                            <div>
-                                <div class="flex items-center gap-3">
-                                    <span
-                                        class="font-display text-base font-extrabold tracking-[4px] uppercase text-amber-400">
-                                        Waldo Dynasty Entertainment Pvt. Ltd.
-                                    </span>
-                                    <span class="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
-                                    <span class="text-sm font-semibold tracking-wider uppercase text-slate-400">
-                                        Human Resources & Talent Recognition
-                                    </span>
-                                </div>
-                                <h2 class="font-display text-5xl font-black text-white tracking-tight mt-1">
-                                    Employee & Grooming of the Month
-                                </h2>
-                            </div>
+                {{-- ========================================================= --}}
+                {{-- 1. HEADER SECTION (EXECUTIVE BRANDING & PERIOD BADGE)     --}}
+                {{-- ========================================================= --}}
+                <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 24px; border-bottom: 3px solid #e2e8f0;">
+                    
+                    {{-- Left Brand Block --}}
+                    <div style="display: flex; align-items: center; gap: 32px;">
+                        {{-- Casino Logo Frame --}}
+                        <div style="width: 136px; height: 136px; border-radius: 24px; background: #ffffff; border: 3px solid #fdba74; box-shadow: 0 10px 25px -5px rgba(234, 88, 12, 0.18); display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 10px; box-sizing: border-box; flex-shrink: 0;">
+                            <img src="{{ $logoBase64 ?? asset('img/logo.jpg') }}" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;">
                         </div>
 
-                        {{-- Month Pill Badge --}}
-                        <div class="flex flex-col items-end gap-1.5">
-                            <div
-                                class="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-slate-900/90 border border-amber-400/40 shadow-xl shadow-amber-950/40 backdrop-blur-md">
-                                <span class="w-3 h-3 rounded-full bg-amber-400 animate-pulse"></span>
-                                <span class="font-display text-3xl font-black tracking-wide text-amber-300 drop-shadow">
-                                    {{ strtoupper($monthName) }} {{ $evaluatedYear ?? $report->year }}
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 14px;">
+                                <span class="font-display" style="font-size: 26px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; color: #ea580c;">
+                                    Waldo Dynasty Entertainment Pvt. Ltd.
+                                </span>
+                                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #cbd5e1;"></span>
+                                <span style="font-size: 20px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #64748b;">
+                                    Human Resources & Talent Recognition
                                 </span>
                             </div>
-                            <span class="text-xs font-bold tracking-wider text-slate-400 uppercase pr-1">
-                                {{ $releaseLabel }} Cycle
+                            <h2 class="font-display" style="margin: 8px 0 0; font-size: 58px; font-weight: 900; color: #0f172a; letter-spacing: -1px; line-height: 1.1;">
+                                Employee & Grooming of the Month
+                            </h2>
+                            <p style="margin: 6px 0 0; font-size: 22px; font-weight: 600; color: #64748b;">
+                                Celebrating Outstanding Workplace Dedication, Integrity, and Exemplary Presentation Standards
+                            </p>
+                        </div>
+                    </div>
+
+                    {{-- Right Month & Cycle Pill Badge --}}
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                        <div style="display: inline-flex; align-items: center; gap: 18px; padding: 22px 42px; border-radius: 24px; background: linear-gradient(135deg, #ea580c 0%, #f97316 45%, #dc2626 100%); box-shadow: 0 12px 30px rgba(234, 88, 12, 0.35);">
+                            <span style="width: 16px; height: 16px; border-radius: 50%; background: #ffffff;"></span>
+                            <span class="font-display" style="font-size: 44px; font-weight: 900; color: #ffffff; letter-spacing: 1px; text-transform: uppercase;">
+                                {{ $monthName }} {{ $evaluatedYear ?? $report->year }}
                             </span>
                         </div>
+                        <span style="font-size: 22px; font-weight: 800; color: #ea580c; text-transform: uppercase; letter-spacing: 1.5px; padding-right: 6px;">
+                            {{ $releaseLabel }} Cycle Award Release
+                        </span>
                     </div>
+                </div>
 
-                    {{-- ============================================================= --}}
-                    {{-- 2. MAIN BODY (2 TIERS: 4 EOM CARDS + 2 GOM CARDS)             --}}
-                    {{-- ============================================================= --}}
-                    <div class="relative z-10 flex-1 flex flex-col justify-between py-5 gap-6">
+                {{-- ========================================================= --}}
+                {{-- 2. MAIN TABLES AREA (EOM: 4 HONOREES + GOM: 2 HONOREES)   --}}
+                {{-- ========================================================= --}}
+                <div style="display: flex; flex-direction: column; justify-content: space-between; flex: 1; padding: 28px 0 20px; gap: 32px;">
 
-                        {{-- TIER 1: EMPLOYEES OF THE MONTH (4 HONOREES ACROSS) --}}
-                        <div class="flex flex-col gap-3.5">
-                            {{-- Tier 1 Header Chip --}}
-                            <div class="flex items-center justify-between">
-                                <div
-                                    class="inline-flex items-center gap-3 px-5 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300">
-                                    <span class="text-xl">🏆</span>
-                                    <span class="font-display text-base font-extrabold tracking-widest uppercase">
-                                        Employees of the Month
-                                    </span>
-                                </div>
-                                <span class="text-2xl font-bold uppercase tracking-wider text-amber-400 font-mono">
-                                    4 Honorees Awarded
+                    {{-- ----------------------------------------------------- --}}
+                    {{-- SECTION 1: EMPLOYEES OF THE MONTH (4 TABLE ROWS)      --}}
+                    {{-- ----------------------------------------------------- --}}
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                        
+                        {{-- Section Title Bar --}}
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: inline-flex; align-items: center; gap: 14px; padding: 10px 24px; border-radius: 16px; background: #fff7ed; border: 2px solid #fdba74;">
+                                <span style="font-size: 28px;">🏆</span>
+                                <span class="font-display" style="font-size: 28px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; color: #c2410c;">
+                                    Employees of the Month (EOM)
                                 </span>
                             </div>
+                            <span style="font-size: 24px; font-weight: 800; color: #ea580c; text-transform: uppercase; letter-spacing: 1.5px;">
+                                4 Honorees Awarded • General Operational Excellence
+                            </span>
+                        </div>
 
-                            {{-- 4 Columns Grid --}}
-                            <div class="grid grid-cols-4 gap-6">
-                                @foreach ($eomWinners as $winner)
-                                    @php $emp = $winner['employee']; @endphp
-                                    @if ($emp)
-                                        <div
-                                            class="relative rounded-3xl bg-slate-900/85 border border-amber-500/35 p-7 flex flex-col justify-between shadow-xl shadow-amber-950/30 backdrop-blur-xl hover:border-amber-400/60 transition-all min-h-[485px]">
-                                            {{-- Top Card Meta (Department & Winner Badge) --}}
-                                            <div
-                                                class="flex items-center justify-between gap-3 pb-3.5 border-b border-white/10">
-                                                <span
-                                                    class="text-sm font-extrabold uppercase tracking-wider px-3.5 py-1.5 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/25 truncate max-w-[62%]"
-                                                    title="{{ $winner['department'] }}">
-                                                    {{ $winner['department'] }}
-                                                </span>
-                                                <span
-                                                    class="text-xl font-black uppercase tracking-wider px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-sm shrink-0 flex-nowrap text-nowrap">
-                                                    🏆 EOM Winner
-                                                </span>
+                        {{-- Modern Table --}}
+                        <div class="recognition-table-card">
+                            {{-- Header --}}
+                            <div class="table-header-row">
+                                <div class="col-honoree">Honoree</div>
+                                <div class="col-code">Employee ID</div>
+                                <div class="col-dept">Department</div>
+                                <div class="col-desig">Designation</div>
+                                <div class="col-badge">Award Status</div>
+                            </div>
+
+                            {{-- 4 Honoree Rows --}}
+                            @foreach ($eomWinners as $winner)
+                                @php $emp = $winner['employee']; @endphp
+                                @if ($emp)
+                                    <div class="table-row table-row-eom">
+                                        {{-- Honoree Info --}}
+                                        <div class="col-honoree">
+                                            <div style="width: 82px; height: 82px; border-radius: 20px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 34px; font-weight: 900; box-shadow: 0 6px 16px rgba(234, 88, 12, 0.28); flex-shrink: 0;">
+                                                {{ strtoupper(substr($emp->name, 0, 2)) }}
                                             </div>
-
-                                            {{-- Center: Medallion + Name + Title --}}
-                                            <div class="flex flex-col items-center text-center my-auto py-3">
-                                                {{-- Vibrant Gold Medallion --}}
-                                                <div
-                                                    class="w-36 h-36 rounded-full bg-gradient-to-tr from-amber-600 via-amber-400 to-yellow-200 p-1 shadow-xl shadow-amber-500/30 shrink-0 flex items-center justify-center">
-                                                    <div
-                                                        class="w-full h-full rounded-full bg-slate-950 flex items-center justify-center">
-                                                        <span
-                                                            class="font-display text-5xl font-black text-amber-300 tracking-wider">
-                                                            {{ strtoupper(substr($emp->name, 0, 2)) }}
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                                {{-- Name --}}
-                                                <h3 class="font-display text-3xl font-black text-white tracking-tight mt-4 line-clamp-1 w-full"
-                                                    title="{{ $emp->name }}">
+                                            <div style="min-width: 0;">
+                                                <h3 class="font-display" style="margin: 0; font-size: 40px; font-weight: 900; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15;" title="{{ $emp->name }}">
                                                     {{ $emp->name }}
                                                 </h3>
-
-                                                {{-- Designation & Code Chips --}}
-                                                <div class="flex items-center justify-center gap-2.5 mt-2 flex-wrap">
-                                                    <span
-                                                        class="font-mono-code text-sm font-bold px-2.5 py-1 rounded-md bg-white/10 text-slate-200 border border-white/15">
-                                                        {{ $emp->employee_code }}
-                                                    </span>
-                                                    <span
-                                                        class="text-base font-semibold text-slate-200 truncate max-w-[210px]">
-                                                        {{ $emp->designation?->name ?: 'Staff' }}
-                                                    </span>
-                                                </div>
+                                                <span style="display: inline-block; margin-top: 4px; font-size: 19px; font-weight: 700; color: #ea580c; text-transform: uppercase; letter-spacing: 1px;">
+                                                    {{ $winner['entry_label'] }}
+                                                </span>
                                             </div>
-
-                                            {{-- Bottom: Remarks or Accolade Note --}}
-                                            {{-- <div class="pt-3 border-t border-white/10">
-                                                <div class="min-h-[50px] flex items-center justify-center px-4 rounded-xl bg-white/[0.04] text-center">
-                                                    <p class="text-sm italic text-slate-300 line-clamp-2">
-                                                        {{ !empty($winner['remarks']) ? '“' . $winner['remarks'] . '”' : '“Exemplary dedication, leadership & peer support”' }}
-                                                    </p>
-                                                </div>
-                                            </div> --}}
                                         </div>
-                                    @else
-                                        {{-- Empty / Unassigned Slot Placeholder --}}
-                                        <div
-                                            class="rounded-3xl bg-slate-900/40 border border-dashed border-slate-800 p-7 flex flex-col items-center justify-center text-center min-h-[485px]">
-                                            <div
-                                                class="w-20 h-20 rounded-full bg-slate-800/80 flex items-center justify-center text-slate-600 text-3xl mb-3">
+
+                                        {{-- Employee ID --}}
+                                        <div class="col-code">
+                                            <span class="font-mono-code" style="font-size: 28px; font-weight: 800; color: #0f172a; background: #f1f5f9; border: 1.5px solid #cbd5e1; padding: 10px 22px; border-radius: 12px; letter-spacing: 1px;">
+                                                {{ $emp->employee_code }}
+                                            </span>
+                                        </div>
+
+                                        {{-- Department --}}
+                                        <div class="col-dept">
+                                            <span style="font-size: 30px; font-weight: 800; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $winner['department'] }}">
+                                                {{ $winner['department'] }}
+                                            </span>
+                                        </div>
+
+                                        {{-- Designation --}}
+                                        <div class="col-desig">
+                                            <span style="font-size: 28px; font-weight: 700; color: #475569; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $emp->designation?->name ?: 'Staff' }}">
+                                                {{ $emp->designation?->name ?: 'Staff' }}
+                                            </span>
+                                        </div>
+
+                                        {{-- Award Badge --}}
+                                        <div class="col-badge">
+                                            <span style="display: inline-flex; align-items: center; gap: 10px; background: #fff7ed; border: 2px solid #ea580c; color: #c2410c; font-size: 22px; font-weight: 900; padding: 12px 26px; border-radius: 14px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(234, 88, 12, 0.12); white-space: nowrap;">
+                                                <span>🏆</span>
+                                                <span>EOM Winner</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                @else
+                                    {{-- Unassigned Slot Row --}}
+                                    <div class="table-row table-row-eom" style="opacity: 0.6; background: #fafafa;">
+                                        <div class="col-honoree">
+                                            <div style="width: 82px; height: 82px; border-radius: 20px; background: #e2e8f0; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 32px; font-weight: 900; flex-shrink: 0;">
                                                 ✦
                                             </div>
-                                            <span
-                                                class="text-sm font-bold text-slate-400 uppercase tracking-wider">Slot
-                                                Unassigned</span>
-                                            <span
-                                                class="text-xs text-slate-500 mt-1">{{ $winner['entry_label'] }}</span>
-                                        </div>
-                                    @endif
-                                @endforeach
-                            </div>
-                        </div>
-
-                        {{-- TIER 2: GROOMINGS OF THE MONTH (2 HONOREES CENTERED) --}}
-                        <div class="flex flex-col gap-3.5">
-                            {{-- Tier 2 Header Chip --}}
-                            <div class="flex items-center justify-between">
-                                <div
-                                    class="inline-flex items-center gap-3 px-5 py-2 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-300">
-                                    <span class="text-xl">✨</span>
-                                    <span class="font-display text-base font-extrabold tracking-widest uppercase">
-                                        Grooming of the Month
-                                    </span>
-                                </div>
-                                <span class="text-2xl font-bold uppercase tracking-wider text-sky-400 font-mono">
-                                    2 Honorees Awarded
-                                </span>
-                            </div>
-
-                            {{-- 2 Columns Centered Grid --}}
-                            <div class="grid grid-cols-2 gap-8 max-w-[1900px] w-full mx-auto">
-                                @foreach ($gomWinners as $winner)
-                                    @php $emp = $winner['employee']; @endphp
-                                    @if ($emp)
-                                        <div
-                                            class="relative rounded-3xl bg-slate-900/85 border border-sky-500/35 p-8 flex flex-col justify-between shadow-xl shadow-sky-950/30 backdrop-blur-xl hover:border-sky-400/60 transition-all min-h-[405px]">
-                                            {{-- Top Card Meta --}}
-                                            <div
-                                                class="flex items-center justify-between gap-4 pb-4 border-b border-white/10">
-                                                <span
-                                                    class="text-sm font-extrabold uppercase tracking-wider px-4 py-1.5 rounded-full bg-sky-400/10 text-sky-300 border border-sky-400/25 truncate max-w-[62%]"
-                                                    title="{{ $winner['department'] }}">
-                                                    {{ $winner['department'] }}
-                                                </span>
-                                                <span
-                                                    class="text-xl font-black uppercase tracking-wider px-4 py-1.5 rounded-full bg-gradient-to-r from-sky-400 to-blue-500 text-slate-950 shadow-sm shrink-0 flex-nowrap text-nowrap">
-                                                    ✨ GOM Winner
+                                            <div>
+                                                <h3 class="font-display" style="margin: 0; font-size: 36px; font-weight: 700; color: #94a3b8; font-style: italic;">
+                                                    Slot Unassigned
+                                                </h3>
+                                                <span style="font-size: 19px; font-weight: 600; color: #94a3b8;">
+                                                    {{ $winner['entry_label'] }}
                                                 </span>
                                             </div>
-
-                                            {{-- Center: Horizontal Layout for Roomy GOM Cards --}}
-                                            <div class="flex items-center gap-8 my-auto py-3 px-3">
-                                                {{-- Radiant Cyan Medallion --}}
-                                                <div
-                                                    class="w-36 h-36 rounded-full bg-gradient-to-tr from-sky-500 via-cyan-300 to-blue-600 p-1 shadow-xl shadow-sky-500/30 shrink-0 flex items-center justify-center">
-                                                    <div
-                                                        class="w-full h-full rounded-full bg-slate-950 flex items-center justify-center">
-                                                        <span
-                                                            class="font-display text-5xl font-black text-sky-300 tracking-wider">
-                                                            {{ strtoupper(substr($emp->name, 0, 2)) }}
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                                {{-- Details Column --}}
-                                                <div class="flex-1 min-w-0">
-                                                    <h3 class="font-display text-4xl font-black text-white tracking-tight truncate"
-                                                        title="{{ $emp->name }}">
-                                                        {{ $emp->name }}
-                                                    </h3>
-                                                    <div class="flex items-center gap-3 mt-3">
-                                                        <span
-                                                            class="font-mono-code text-sm font-bold px-3 py-1 rounded-md bg-white/10 text-slate-200 border border-white/15 shrink-0">
-                                                            {{ $emp->employee_code }}
-                                                        </span>
-                                                        <span class="text-lg font-semibold text-slate-200 truncate">
-                                                            {{ $emp->designation?->name ?: 'Staff' }}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {{-- Bottom: Remarks Box --}}
-                                            {{-- <div class="pt-3 border-t border-white/10">
-                                                <div class="min-h-[48px] flex items-center px-4 rounded-xl bg-white/[0.04]">
-                                                    <p class="text-sm italic text-slate-300 truncate">
-                                                        {{ !empty($winner['remarks']) ? '“' . $winner['remarks'] . '”' : '“Pristine grooming, flawless posture & corporate etiquette standards”' }}
-                                                    </p>
-                                                </div>
-                                            </div> --}}
                                         </div>
-                                    @else
-                                        {{-- Empty / Unassigned Slot Placeholder --}}
-                                        <div
-                                            class="rounded-3xl bg-slate-900/40 border border-dashed border-slate-800 p-8 flex flex-col items-center justify-center text-center min-h-[405px]">
-                                            <div
-                                                class="w-20 h-20 rounded-full bg-slate-800/80 flex items-center justify-center text-slate-600 text-3xl mb-3">
-                                                ✨
-                                            </div>
-                                            <span
-                                                class="text-sm font-bold text-slate-400 uppercase tracking-wider">Slot
-                                                Unassigned</span>
-                                            <span
-                                                class="text-xs text-slate-500 mt-1">{{ $winner['entry_label'] }}</span>
+                                        <div class="col-code">
+                                            <span style="font-size: 26px; color: #94a3b8;">—</span>
                                         </div>
-                                    @endif
-                                @endforeach
-                            </div>
+                                        <div class="col-dept">
+                                            <span style="font-size: 28px; color: #64748b;">
+                                                {{ $winner['department'] }}
+                                            </span>
+                                        </div>
+                                        <div class="col-desig">
+                                            <span style="font-size: 26px; color: #94a3b8;">—</span>
+                                        </div>
+                                        <div class="col-badge">
+                                            <span style="background: #f1f5f9; border: 1.5px solid #cbd5e1; color: #64748b; font-size: 20px; font-weight: 800; padding: 10px 22px; border-radius: 12px; text-transform: uppercase;">
+                                                Pending Nomination
+                                            </span>
+                                        </div>
+                                    </div>
+                                @endif
+                            @endforeach
                         </div>
-
                     </div>
 
-                    {{-- ============================================================= --}}
-                    {{-- 3. FOOTER SECTION (MATERIAL MOTTO & VERIFIED CREST)           --}}
-                    {{-- ============================================================= --}}
-                    <div
-                        class="relative z-10 flex items-center justify-between border-t border-white/10 pt-5 text-slate-400">
-                        <div class="flex items-center gap-4">
-                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-                            <span class="font-display text-sm font-bold tracking-wider uppercase text-slate-300">
-                                Waldo Dynasty Entertainment Pvt. Ltd.
-                            </span>
-                            <span class="text-xs text-slate-600">•</span>
-                            <span class="text-xs text-slate-500">
-                                Recognizing Excellence, Attitude & Professional Presentation
+                    {{-- ----------------------------------------------------- --}}
+                    {{-- SECTION 2: GROOMING OF THE MONTH (2 TABLE ROWS)       --}}
+                    {{-- ----------------------------------------------------- --}}
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                        
+                        {{-- Section Title Bar --}}
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: inline-flex; align-items: center; gap: 14px; padding: 10px 24px; border-radius: 16px; background: #fef2f2; border: 2px solid #fca5a5;">
+                                <span style="font-size: 28px;">✨</span>
+                                <span class="font-display" style="font-size: 28px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; color: #b91c1c;">
+                                    Grooming of the Month (GOM)
+                                </span>
+                            </div>
+                            <span style="font-size: 24px; font-weight: 800; color: #dc2626; text-transform: uppercase; letter-spacing: 1.5px;">
+                                2 Honorees Awarded • Corporate Etiquette & Flawless Presentation
                             </span>
                         </div>
 
-                        <div class="flex items-center gap-6 text-xs text-slate-400">
-                            <span class="font-mono text-slate-500">
-                                Cycle: {{ $periodLabel }}
-                            </span>
-                            <div
-                                class="flex items-center gap-2 px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-slate-300">
-                                <span>🛡️</span>
-                                <span class="font-bold text-[11px] uppercase tracking-wider">Official HRMS
-                                    Certified</span>
+                        {{-- Modern Table --}}
+                        <div class="recognition-table-card">
+                            {{-- Header --}}
+                            <div class="table-header-row">
+                                <div class="col-honoree">Honoree</div>
+                                <div class="col-code">Employee ID</div>
+                                <div class="col-dept">Department</div>
+                                <div class="col-desig">Designation</div>
+                                <div class="col-badge">Award Status</div>
                             </div>
+
+                            {{-- 2 Honoree Rows --}}
+                            @foreach ($gomWinners as $winner)
+                                @php $emp = $winner['employee']; @endphp
+                                @if ($emp)
+                                    <div class="table-row table-row-gom">
+                                        {{-- Honoree Info --}}
+                                        <div class="col-honoree">
+                                            <div style="width: 82px; height: 82px; border-radius: 20px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 34px; font-weight: 900; box-shadow: 0 6px 16px rgba(220, 38, 38, 0.28); flex-shrink: 0;">
+                                                {{ strtoupper(substr($emp->name, 0, 2)) }}
+                                            </div>
+                                            <div style="min-width: 0;">
+                                                <h3 class="font-display" style="margin: 0; font-size: 40px; font-weight: 900; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15;" title="{{ $emp->name }}">
+                                                    {{ $emp->name }}
+                                                </h3>
+                                                <span style="display: inline-block; margin-top: 4px; font-size: 19px; font-weight: 700; color: #dc2626; text-transform: uppercase; letter-spacing: 1px;">
+                                                    {{ $winner['entry_label'] }}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {{-- Employee ID --}}
+                                        <div class="col-code">
+                                            <span class="font-mono-code" style="font-size: 28px; font-weight: 800; color: #0f172a; background: #f1f5f9; border: 1.5px solid #cbd5e1; padding: 10px 22px; border-radius: 12px; letter-spacing: 1px;">
+                                                {{ $emp->employee_code }}
+                                            </span>
+                                        </div>
+
+                                        {{-- Department --}}
+                                        <div class="col-dept">
+                                            <span style="font-size: 30px; font-weight: 800; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $winner['department'] }}">
+                                                {{ $winner['department'] }}
+                                            </span>
+                                        </div>
+
+                                        {{-- Designation --}}
+                                        <div class="col-desig">
+                                            <span style="font-size: 28px; font-weight: 700; color: #475569; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $emp->designation?->name ?: 'Staff' }}">
+                                                {{ $emp->designation?->name ?: 'Staff' }}
+                                            </span>
+                                        </div>
+
+                                        {{-- Award Badge --}}
+                                        <div class="col-badge">
+                                            <span style="display: inline-flex; align-items: center; gap: 10px; background: #fef2f2; border: 2px solid #dc2626; color: #b91c1c; font-size: 22px; font-weight: 900; padding: 12px 26px; border-radius: 14px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(220, 38, 38, 0.12); white-space: nowrap;">
+                                                <span>✨</span>
+                                                <span>GOM Winner</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                @else
+                                    {{-- Unassigned Slot Row --}}
+                                    <div class="table-row table-row-gom" style="opacity: 0.6; background: #fafafa;">
+                                        <div class="col-honoree">
+                                            <div style="width: 82px; height: 82px; border-radius: 20px; background: #e2e8f0; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 32px; font-weight: 900; flex-shrink: 0;">
+                                                ✦
+                                            </div>
+                                            <div>
+                                                <h3 class="font-display" style="margin: 0; font-size: 36px; font-weight: 700; color: #94a3b8; font-style: italic;">
+                                                    Slot Unassigned
+                                                </h3>
+                                                <span style="font-size: 19px; font-weight: 600; color: #94a3b8;">
+                                                    {{ $winner['entry_label'] }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col-code">
+                                            <span style="font-size: 26px; color: #94a3b8;">—</span>
+                                        </div>
+                                        <div class="col-dept">
+                                            <span style="font-size: 28px; color: #64748b;">
+                                                {{ $winner['department'] }}
+                                            </span>
+                                        </div>
+                                        <div class="col-desig">
+                                            <span style="font-size: 26px; color: #94a3b8;">—</span>
+                                        </div>
+                                        <div class="col-badge">
+                                            <span style="background: #f1f5f9; border: 1.5px solid #cbd5e1; color: #64748b; font-size: 20px; font-weight: 800; padding: 10px 22px; border-radius: 12px; text-transform: uppercase;">
+                                                Pending Nomination
+                                            </span>
+                                        </div>
+                                    </div>
+                                @endif
+                            @endforeach
                         </div>
                     </div>
 
                 </div>
+
+                {{-- ========================================================= --}}
+                {{-- 3. FOOTER SECTION (HRMS CERTIFICATION & CYCLE META)       --}}
+                {{-- ========================================================= --}}
+                <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 22px; border-top: 3px solid #e2e8f0;">
+                    
+                    {{-- Left Verification Seal --}}
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <span style="display: inline-flex; align-items: center; gap: 10px; padding: 10px 22px; border-radius: 12px; background: #fff7ed; border: 2px solid #fdba74; font-size: 22px; font-weight: 900; color: #c2410c; text-transform: uppercase; letter-spacing: 1px;">
+                            <span>🛡️</span>
+                            <span>Official HRMS Certified</span>
+                        </span>
+                        <span style="font-size: 22px; font-weight: 800; color: #0f172a;">
+                            Waldo Dynasty Entertainment Pvt. Ltd.
+                        </span>
+                        <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #94a3b8;"></span>
+                        <span style="font-size: 20px; font-weight: 600; color: #64748b;">
+                            Casino Pride Kathmandu • Human Resources Department
+                        </span>
+                    </div>
+
+                    {{-- Right Cycle & Spec Tag --}}
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <span class="font-mono-code" style="font-size: 22px; font-weight: 800; color: #475569; background: #ffffff; border: 2px solid #e2e8f0; padding: 10px 22px; border-radius: 12px;">
+                            Evaluation Cycle: {{ $periodLabel }}
+                        </span>
+                        <span class="font-mono-code" style="font-size: 22px; font-weight: 800; color: #ea580c; background: #fff7ed; border: 2px solid #fed7aa; padding: 10px 22px; border-radius: 12px;">
+                            4K Ultra HD • 3840 × 1920 (2:1 Ratio)
+                        </span>
+                    </div>
+                </div>
+
             </div>
         </div>
     </main>
 
-    {{-- CLIENT-SIDE HIGH-RESOLUTION EXPORT ENGINE (JPG DOWNLOAD) --}}
+    {{-- CLIENT-SIDE HIGH-RESOLUTION EXPORT ENGINE (1:1 PIXEL IDENTICAL) --}}
     <script>
-        async function downloadCardAsJpg() {
+        let currentZoomMode = 'fit';
+
+        function updatePreviewScale() {
+            const wrapper = document.querySelector('.preview-scale-wrapper');
+            const indicator = document.getElementById('scaleIndicator');
+            if (!wrapper) return;
+
+            let scale = 0.35;
+            if (currentZoomMode === 'fit') {
+                const availableWidth = window.innerWidth - 64;
+                scale = Math.min(Math.max(availableWidth / 3840, 0.18), 0.50);
+            } else if (currentZoomMode === '50') {
+                scale = 0.50;
+            }
+
+            wrapper.style.transform = `scale(${scale})`;
+            if (indicator) {
+                indicator.textContent = `${Math.round(scale * 100)}%`;
+            }
+        }
+
+        function setZoomMode(mode) {
+            currentZoomMode = mode;
+            updatePreviewScale();
+        }
+
+        window.addEventListener('resize', updatePreviewScale);
+        window.addEventListener('DOMContentLoaded', updatePreviewScale);
+        setTimeout(updatePreviewScale, 100);
+
+        /**
+         * Capture the 3840x1920 card canvas with 100% exact design fidelity.
+         * Creates an isolated offscreen clone at 1:1 scale so browser viewport size,
+         * zoom levels, or transform scaling never distort or clip the output image.
+         */
+        async function downloadCard(format = 'jpg') {
             const btn = document.getElementById('downloadBtn');
             const btnText = document.getElementById('downloadBtnText');
-            const wrapper = document.querySelector('.canvas-scale-wrapper');
             const targetEl = document.getElementById('master-wish-card-canvas');
 
-            if (!targetEl || !wrapper) {
+            if (!targetEl) {
                 alert('Card canvas element not found.');
                 return;
             }
 
             btn.disabled = true;
-            btnText.textContent = 'Generating High-Res JPG...';
+            btnText.textContent = `Rendering 4K ${format.toUpperCase()}...`;
 
-            // Save original styling
-            const origWrapperTransform = wrapper.style.transform;
-            const origWrapperMargin = wrapper.style.marginBottom;
-            const origTargetPosition = targetEl.style.position;
-            const origTargetLeft = targetEl.style.left;
-            const origTargetTop = targetEl.style.top;
-            const origTargetZIndex = targetEl.style.zIndex;
-            const origTargetWidth = targetEl.style.width;
-            const origTargetHeight = targetEl.style.height;
+            // Wait for all fonts to be 100% loaded
+            if (document.fonts && document.fonts.ready) {
+                try {
+                    await document.fonts.ready;
+                } catch (e) {}
+            }
+
+            // Create an isolated offscreen sandbox container
+            const offscreenContainer = document.createElement('div');
+            offscreenContainer.style.position = 'fixed';
+            offscreenContainer.style.left = '0';
+            offscreenContainer.style.top = '0';
+            offscreenContainer.style.width = '3840px';
+            offscreenContainer.style.height = '1920px';
+            offscreenContainer.style.zIndex = '-999999';
+            offscreenContainer.style.pointerEvents = 'none';
+            offscreenContainer.style.opacity = '1';
+            offscreenContainer.style.overflow = 'hidden';
+            offscreenContainer.style.transform = 'none';
+
+            // Clone target directly
+            const clone = targetEl.cloneNode(true);
+            clone.id = 'master-wish-card-canvas-export-clone';
+            clone.style.transform = 'none';
+            clone.style.margin = '0';
+            clone.style.width = '3840px';
+            clone.style.height = '1920px';
+            clone.style.position = 'relative';
+
+            offscreenContainer.appendChild(clone);
+            document.body.appendChild(offscreenContainer);
+
+            // Small tick for DOM attachment
+            await new Promise(r => setTimeout(r, 200));
+
+            let dataUrl = null;
 
             try {
-                // Temporarily disable wrapper scale transform and bring target canvas to 1:1 scale
-                wrapper.style.transform = 'none';
-                wrapper.style.marginBottom = '0';
-                targetEl.style.position = 'fixed';
-                targetEl.style.left = '0';
-                targetEl.style.top = '0';
-                targetEl.style.width = '2400px';
-                targetEl.style.height = '1350px';
-                targetEl.style.zIndex = '999999';
-
-                // Ensure all Google fonts are fully loaded into memory before capture
-                if (document.fonts && document.fonts.ready) {
+                // 1. Try htmlToImage first (produces flawless SVG foreignObject rasterization identical to browser DOM)
+                if (typeof window.htmlToImage !== 'undefined') {
                     try {
-                        await document.fonts.ready;
-                    } catch (e) {}
-                }
-                await new Promise(r => setTimeout(r, 250));
-
-                let dataUrl = null;
-
-                // 1. Try html2canvas first (renders raster directly from browser's live computed layout)
-                if (typeof window.html2canvas !== 'undefined') {
-                    try {
-                        const canvas = await window.html2canvas(targetEl, {
-                            width: 2400,
-                            height: 1350,
-                            scale: 1,
-                            useCORS: true,
-                            allowTaint: true,
-                            backgroundColor: '#020617',
-                            logging: false,
-                            windowWidth: 2400,
-                            windowHeight: 1350,
-                            x: 0,
-                            y: 0,
-                        });
-                        dataUrl = canvas.toDataURL('image/jpeg', 0.96);
-                    } catch (canvasErr) {
-                        console.warn('html2canvas capture failed, falling back to htmlToImage:', canvasErr);
-                    }
-                }
-
-                // 2. Fallback to htmlToImage if html2canvas is unavailable or failed
-                if (!dataUrl && typeof window.htmlToImage !== 'undefined') {
-                    try {
-                        dataUrl = await window.htmlToImage.toJpeg(targetEl, {
-                            quality: 0.96,
-                            width: 2400,
-                            height: 1350,
-                            canvasWidth: 2400,
-                            canvasHeight: 1350,
+                        const options = {
+                            quality: 0.98,
+                            width: 3840,
+                            height: 1920,
+                            canvasWidth: 3840,
+                            canvasHeight: 1920,
                             pixelRatio: 1,
-                            style: {
-                                transform: 'none',
-                                margin: '0',
-                                position: 'static'
-                            }
-                        });
+                            backgroundColor: '#f8fafc',
+                        };
+
+                        if (format === 'png') {
+                            dataUrl = await window.htmlToImage.toPng(clone, options);
+                        } else {
+                            dataUrl = await window.htmlToImage.toJpeg(clone, options);
+                        }
                     } catch (imageErr) {
-                        console.warn('htmlToImage capture failed:', imageErr);
+                        console.warn('htmlToImage capture failed, falling back to html2canvas:', imageErr);
                     }
+                }
+
+                // 2. Fallback to html2canvas if htmlToImage failed
+                if (!dataUrl && typeof window.html2canvas !== 'undefined') {
+                    const canvas = await window.html2canvas(clone, {
+                        width: 3840,
+                        height: 1920,
+                        windowWidth: 3840,
+                        windowHeight: 1920,
+                        scale: 1,
+                        useCORS: true,
+                        allowTaint: true,
+                        backgroundColor: '#f8fafc',
+                        logging: false,
+                        x: 0,
+                        y: 0,
+                    });
+
+                    dataUrl = canvas.toDataURL(format === 'png' ? 'image/png' : 'image/jpeg', 0.98);
                 }
 
                 if (!dataUrl) {
-                    throw new Error('Failed to generate image data.');
+                    throw new Error('Canvas render produced empty result.');
                 }
 
-                const filename =
-                    'EOM-GOM-WishCard-{{ \Illuminate\Support\Str::slug($monthName) }}-{{ $evaluatedYear ?? $report->year }}.jpg';
+                // Trigger download
+                const filename = `EOM-GOM-WishCard-{{ \Illuminate\Support\Str::slug($monthName) }}-{{ $evaluatedYear ?? $report->year }}-4K.${format}`;
                 const link = document.createElement('a');
                 link.download = filename;
                 link.href = dataUrl;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
+
             } catch (err) {
                 console.error('Error generating card image:', err);
-                alert('Could not generate JPG automatically. You can use the "Print" button to save as PDF or image.');
+                alert('Could not generate 4K image automatically. You can use the "Print" button to save as PDF or image.');
             } finally {
-                // Restore original preview scale
-                wrapper.style.transform = origWrapperTransform;
-                wrapper.style.marginBottom = origWrapperMargin;
-                targetEl.style.position = origTargetPosition;
-                targetEl.style.left = origTargetLeft;
-                targetEl.style.top = origTargetTop;
-                targetEl.style.zIndex = origTargetZIndex;
-                targetEl.style.width = origTargetWidth;
-                targetEl.style.height = origTargetHeight;
+                // Clean up offscreen sandbox
+                if (offscreenContainer.parentNode) {
+                    offscreenContainer.parentNode.removeChild(offscreenContainer);
+                }
 
                 btn.disabled = false;
-                btnText.textContent = 'Download Card (JPG)';
+                btnText.textContent = 'Download 4K Card (JPG)';
             }
         }
     </script>
