@@ -59,6 +59,10 @@ class KamkajPanelProvider extends PanelProvider
                     })();
                 </script>')
             )
+            ->renderHook(
+                PanelsRenderHook::SIDEBAR_FOOTER,
+                fn () => view('filament.components.sidebar-version'),
+            )
             ->globalSearch(false)
             ->databaseNotifications()
             ->broadcasting()

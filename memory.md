@@ -96,3 +96,9 @@
   - Explicitly prioritizes direct `Absent Days` (Col I) and `Total Leave` (Col J) values from the HRMS export.
   - Preserves backward compatibility for earlier exports summing LOP / individual leave categories.
 
+### 11. In-App Changelog & Semantic Versioning
+- **Service**: `App\Services\ChangelogService` (`CURRENT_VERSION = '1.4.0'`).
+- **Page**: `App\Filament\Pages\Changelog` (`/kamkaj/changelog`).
+- **Sidebar Footer**: Dynamic version pill in `KamkajPanelProvider` linking directly to `/kamkaj/changelog`.
+- **Changelog File**: `CHANGELOG.md` in root adhering to Keep a Changelog specifications.
+
