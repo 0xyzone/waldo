@@ -9,6 +9,7 @@ use App\Models\Designation;
 use App\Models\Employee;
 use App\Models\EmployeePromotion;
 use App\Services\EmployeePromotionExportService;
+use App\Services\EmployeePromotionImportService;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -16,6 +17,7 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -290,6 +292,64 @@ class EmployeePromotionsTable
                     ->openUrlInNewTab(),
             ])
             ->toolbarActions([
+                Action::make('importExcel')
+                    ->label('Import Excel')
+                    ->icon('heroicon-o-arrow-up-tray')
+                    ->color('primary')
+                    ->modalHeading('Import Promotions from Excel')
+                    ->modalDescription('Upload an Excel (.xlsx) or CSV file exported from Production or Local. Records will be created in the database without altering Google Sheets or triggering sync jobs.')
+                    ->modalSubmitActionLabel('Import Records')
+                    ->modalWidth('lg')
+                    ->form([
+                        FileUpload::make('file')
+                            ->label('Excel / CSV File')
+                            ->helperText('Accepts .xlsx or .csv matching the download format (username, start_date, job_title, division).')
+                            ->required()
+                            ->disk('local')
+                            ->directory('imports')
+                            ->acceptedFileTypes([
+                                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                'application/vnd.ms-excel',
+                                'text/csv',
+                                'text/plain',
+                                'application/csv',
+                            ])
+                            ->maxSize(20480),
+                        Toggle::make('update_existing')
+                            ->label('Update Existing Records')
+                            ->helperText('If enabled, records with matching employee code and promotion date will be updated quietly.')
+                            ->default(false),
+                    ])
+                    ->action(function (array $data, EmployeePromotionImportService $service) {
+                        $path = Storage::disk('local')->path($data['file']);
+
+                        try {
+                            $result = $service->import($path, (bool) ($data['update_existing'] ?? false));
+
+                            @Storage::disk('local')->delete($data['file']);
+
+                            $body = "Import completed: {$result['imported']} created, {$result['updated']} updated, {$result['skipped']} skipped.";
+                            if (! empty($result['errors'])) {
+                                $body .= "\n\nNotices:\n• ".implode("\n• ", $result['errors']);
+                            }
+
+                            Notification::make()
+                                ->title('Import Completed')
+                                ->body($body)
+                                ->color($result['imported'] > 0 || $result['updated'] > 0 ? 'success' : 'warning')
+                                ->persistent(! empty($result['errors']))
+                                ->send();
+                        } catch (\Throwable $e) {
+                            @Storage::disk('local')->delete($data['file']);
+                            report($e);
+
+                            Notification::make()
+                                ->title('Import Failed')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
+                    }),
                 Action::make('exportExcel')
                     ->label('Download Excel')
                     ->icon('heroicon-o-arrow-down-tray')

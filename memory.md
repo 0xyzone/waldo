@@ -69,8 +69,19 @@
   - Simple resource (ManageRecords) with modal create/edit.
   - Table Actions: **Acknowledge** (one-way, shows when not acknowledged), **Mark HRMS Synced** (reversible toggle), **Congratulation Note** (A4 letterhead print with designation rank sorting and without ref number), **Wish Card** (16:9 1080p downloadable congratulation wish card with modern minimal light-glass design, promotion dates on cards, gap-free full-height grid, single spotlight layout, official Management copy, & max 25 records chunking per card).
   - Bulk Actions: **Acknowledge Selected**, **Mark HRMS Synced**, **Unmark HRMS Synced**, **Print Congratulation Note**, **Wish Card (16:9)**, **Download Selected Excel**.
+  - Toolbar Actions: **Import Excel** (`EmployeePromotionImportService`), **Download Excel** (`EmployeePromotionExportService`).
   - Filters: New Department (`to_department_id`), New Designation (`to_designation_id` dependent multi-select), Promotion Date range (`promotion_date_from`, `promotion_date_to`), Acknowledged, HRMS Synced.
   - Row colors: emerald (acknowledged + hrms_synced), amber (acknowledged only).
+
+### 7b. Employee Transfers & Ingestion
+- **Model**: `App\Models\EmployeeTransfer`
+  - Fields: `employee_id`, `from_department_id`, `from_designation_id`, `to_department_id`, `to_designation_id`, `transfer_date`, `acknowledged`, `acknowledged_at`, `hrms_synced`, `hrms_synced_at`, `remarks`.
+- **Resource**: `App\Filament\Resources\EmployeeTransfers\EmployeeTransferResource`
+  - Toolbar Actions: **Import Excel** (`EmployeeTransferImportService`), **Download Excel** (`EmployeeTransferExportService`).
+- **Import Services**:
+  - `App\Services\EmployeePromotionImportService` & `App\Services\EmployeeTransferImportService`.
+  - Format mirrors downloaded HRMS change-type Excel export (`username`, `start_date`, `job_title`, `division`).
+  - Imports execute quietly via `withoutEvents()` and `saveQuietly()`, deliberately avoiding external Google Sheet synchronization or background worker triggers.
 
 ### 8. Reports & Department Analytics
 - **Department Statistics Widget**: `App\Filament\Widgets\DepartmentEmployeeStatsWidget`
@@ -99,9 +110,10 @@
   - Preserves backward compatibility for earlier exports summing LOP / individual leave categories.
 
 ### 11. In-App Changelog & Semantic Versioning
-- **Service**: `App\Services\ChangelogService` (`CURRENT_VERSION = '2.0.6'`). Provides `getCurrentVersion()`, `getCompactVersion()` (for collapsed sidebar), `parseVersion()`, and `getNextVersion()`.
+- **Service**: `App\Services\ChangelogService` (`CURRENT_VERSION = '2.1.0'`). Provides `getCurrentVersion()`, `getCompactVersion()` (for collapsed sidebar), `parseVersion()`, and `getNextVersion()`.
 - **Page**: `App\Filament\Pages\Changelog` (`/kamkaj/changelog`).
 - **Sidebar Footer**: Dynamic version pill in `KamkajPanelProvider` linking directly to `/kamkaj/changelog`, supporting dynamic major, minor, and micro/patch displays.
 - **Artisan Command**: `php artisan version:bump [micro|minor|major]` (`BumpVersionCommand`).
 - **Changelog File**: `CHANGELOG.md` in root adhering to Keep a Changelog specifications.
+
 

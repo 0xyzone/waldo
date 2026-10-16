@@ -4,6 +4,15 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-10-16
+
+### Added
+- **Excel & CSV Import for Promotions**: Added toolbar action to upload and import promotions from Excel (.xlsx) and CSV files matching the HRMS change-type format, enabling seamless transfer of entries between production and local environments.
+- **Excel & CSV Import for Transfers**: Added toolbar action to upload and import employee transfers from Excel (.xlsx) and CSV files matching the HRMS change-type format.
+- **Silent Database Ingestion**: Guaranteed zero Google Sheets updates or background queue jobs during import via Eloquent `withoutEvents()` and `saveQuietly()`, fulfilling data isolation requirements.
+- **Intelligent Division & Job Title Mapping**: Auto-normalization of HRMS slug variants and cross-department designation resolution.
+- **Update Existing Toggle**: Optional switch to quietly update existing records matching employee code and effective date.
+
 ---
 
 ## [2.0.6] - 2026-10-16

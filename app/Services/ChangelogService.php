@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.0.6';
+    public const CURRENT_VERSION = '2.1.0';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,23 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.1.0',
+                'date' => '2026-10-16',
+                'title' => 'Excel & CSV Import for Promotions and Transfers',
+                'type' => 'minor',
+                'badge' => 'New Feature',
+                'badge_color' => 'success',
+                'highlights' => 'Introduced seamless Excel (.xlsx) and CSV record import capability for both Employee Promotions and Employee Transfers. Formatted to perfectly mirror the downloaded HRMS change-type Excel export for bidirectional sync between production and local environments. Imports operate purely at the database model level without triggering external Google Sheet sync jobs.',
+                'changes' => [
+                    'added' => [
+                        'Promotions Excel Import: Toolbar modal allowing upload of downloaded promotions Excel/CSV files with optional updating of existing records by employee code and effective date.',
+                        'Transfers Excel Import: Toolbar modal allowing upload of downloaded transfers Excel/CSV files with optional updating of existing records by employee code and effective date.',
+                        'Silent Database Ingestion: Imports execute with Eloquent withoutEvents() and saveQuietly() ensuring zero Google Sheets updates or background queue job dispatches.',
+                        'Intelligent Designation & Division Mapping: Built-in normalization recognizing HRMS slug abbreviations and department cross-references.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.0.6',
                 'date' => '2026-10-16',
