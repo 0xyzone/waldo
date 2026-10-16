@@ -13,15 +13,19 @@ use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -98,6 +102,37 @@ class EmployeePromotionsTable
                     ->options(fn () => Designation::active()->ordered()->pluck('name', 'id')->toArray())
                     ->searchable()
                     ->preload(),
+                Filter::make('promotion_date')
+                    ->form([
+                        DatePicker::make('promotion_date_from')
+                            ->label('Promoted From')
+                            ->native(false),
+                        DatePicker::make('promotion_date_to')
+                            ->label('Promoted To')
+                            ->native(false),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['promotion_date_from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('promotion_date', '>=', $date)
+                            )
+                            ->when(
+                                $data['promotion_date_to'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('promotion_date', '<=', $date)
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['promotion_date_from'] ?? null) {
+                            $indicators[] = 'Promoted from '.Carbon::parse($data['promotion_date_from'])->toFormattedDateString();
+                        }
+                        if ($data['promotion_date_to'] ?? null) {
+                            $indicators[] = 'Promoted until '.Carbon::parse($data['promotion_date_to'])->toFormattedDateString();
+                        }
+
+                        return $indicators;
+                    }),
                 TernaryFilter::make('acknowledged')
                     ->label('Acknowledged')
                     ->placeholder('All Records')

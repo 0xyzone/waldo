@@ -4,11 +4,65 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.0.0';
+    public const CURRENT_VERSION = '2.0.1';
 
     public static function getCurrentVersion(): string
     {
-        return self::CURRENT_VERSION;
+        $releases = self::getReleases();
+
+        return ! empty($releases) ? $releases[0]['version'] : self::CURRENT_VERSION;
+    }
+
+    /**
+     * Parse semver components [major, minor, patch] from a version string.
+     *
+     * @return array{major: int, minor: int, patch: int}
+     */
+    public static function parseVersion(?string $version = null): array
+    {
+        $version = $version ?? self::getCurrentVersion();
+        if (preg_match('/^v?(\d+)\.(\d+)(?:\.(\d+))?/', $version, $matches)) {
+            return [
+                'major' => (int) $matches[1],
+                'minor' => (int) $matches[2],
+                'patch' => isset($matches[3]) ? (int) $matches[3] : 0,
+            ];
+        }
+
+        return ['major' => 2, 'minor' => 0, 'patch' => 0];
+    }
+
+    /**
+     * Get a compact version string for narrow UI containers (e.g. collapsed sidebar).
+     * Returns "X.Y" when patch is 0, or "X.Y.Z" when patch is non-zero.
+     */
+    public static function getCompactVersion(?string $version = null): string
+    {
+        $parts = self::parseVersion($version);
+
+        if ($parts['patch'] > 0) {
+            return "{$parts['major']}.{$parts['minor']}.{$parts['patch']}";
+        }
+
+        return "{$parts['major']}.{$parts['minor']}";
+    }
+
+    /**
+     * Calculate next semantic version.
+     *
+     * @param  string  $type  'major', 'minor', or 'micro'/'patch'
+     */
+    public static function getNextVersion(string $type = 'micro', ?string $currentVersion = null): string
+    {
+        $parts = self::parseVersion($currentVersion);
+        $type = strtolower($type);
+
+        return match ($type) {
+            'major' => ($parts['major'] + 1).'.0.0',
+            'minor' => $parts['major'].'.'.($parts['minor'] + 1).'.0',
+            'micro', 'patch' => $parts['major'].'.'.$parts['minor'].'.'.($parts['patch'] + 1),
+            default => $parts['major'].'.'.$parts['minor'].'.'.($parts['patch'] + 1),
+        };
     }
 
     /**
@@ -17,6 +71,28 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.0.1',
+                'date' => '2026-10-16',
+                'title' => 'Promotion Date Filter, Rank Print Sorting & SemVer Fix',
+                'type' => 'patch',
+                'badge' => 'Bug Fixes & Refinements',
+                'badge_color' => 'success',
+                'highlights' => 'Added date range filtering on promotions, sorted congratulation printouts by updated designation rank, removed document reference numbers, and resolved major/minor/micro versioning synchronization across collapsed and expanded sidebar views.',
+                'changes' => [
+                    'added' => [
+                        'Promotion Date Range Filter: Filter employee promotions by effective promotion date range with active date indicators.',
+                    ],
+                    'changed' => [
+                        'Promotion Congratulations Print: Records are now ordered by updated designation rank (hierarchical order) with unranked entries at the bottom.',
+                        'Clean Congratulations Letterhead: Completely eliminated REF number from congratulatory print header.',
+                        'Dynamic Sidebar Version Indicator: Collapsed sidebar now dynamically computes major, minor, and micro versions without static truncation.',
+                    ],
+                    'fixed' => [
+                        'Semantic version synchronization for major, minor, and micro releases in `ChangelogService` and sidebar view.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.0.0',
                 'date' => '2026-10-16',

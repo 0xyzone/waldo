@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [2.0.1] - 2026-10-16
+
+### Added
+- **Promotion Date Range Filter**: Added a comprehensive date range filter (`From Date` and `To Date`) to the Employee Promotions table with active indicator tags for easy filtering and reset.
+
+### Changed
+- **Rank-Sorted Promotion Congratulations**: Printed congratulatory announcements now sort promoted employees strictly by their updated designation rank in ascending hierarchical order, with unranked designations positioned at the bottom.
+- **Reference Number Removal**: Completely stripped internal reference number (`REF: WLD/HR/PROMO/...`) from the promotion congratulations print letterhead for a cleaner presentation.
+- **Dynamic Compact Versioning**: Fixed collapsed desktop sidebar version pill to dynamically calculate and display major, minor, and micro versions rather than truncating to a static value.
+
+### Fixed
+- **Semantic Versioning Synchronization**: Added dynamic version resolution and semver parsing in `ChangelogService`, ensuring major, minor, and micro/patch version bumps propagate automatically across the application.
+
+---
+
 ## [2.0.0] - 2026-10-16
 
 ### Added

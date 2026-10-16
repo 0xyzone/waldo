@@ -25,8 +25,8 @@
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-orange-500"></span>
         </span>
-        <span class="font-mono text-[9px] font-bold text-orange-600 dark:text-orange-400 group-hover:text-orange-500 leading-none">
-            v2.0
+        <span class="font-mono text-[8px] font-bold text-orange-600 dark:text-orange-400 group-hover:text-orange-500 leading-none truncate max-w-full">
+            v{{ \App\Services\ChangelogService::getCompactVersion() }}
         </span>
     </a>
 </div>

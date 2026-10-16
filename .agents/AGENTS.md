@@ -45,6 +45,10 @@
   ```bash
   php scripts/notify_discord.php <success|failure> "<summary of changes or error>"
   ```
-  *(Note: This automatically dispatches both Discord webhook alerts and mobile push notifications to ntfy.sh topic `waldo_tasks_alerts`. Standalone ntfy script is at `php scripts/notify_ntfy.php <success|failure> "<summary>"`. Notification timestamps are in `Asia/Kathmandu` timezone).*
+- **Always update Version & Changelog**: Before committing, update the semantic version in `app/Services/ChangelogService.php`, `CHANGELOG.md`, and `memory.md`:
+  - **Micro / Patch update** (`X.Y.Z`): For bug fixes, UI adjustments, tweaks, filters, or minor refinements.
+  - **Minor update** (`X.Y.0`): For new features, modules, or significant enhancements.
+  - **Major update** (`X.0.0`): For architectural overhauls, redesigns, or breaking changes.
+  Ensure both the expanded version (`getCurrentVersion()`) and compact version (`getCompactVersion()`) reflect the update properly.
 - **Automatic Git Commit & Push**: Upon finishing every task or workflow, always automatically stage, commit (using a descriptive conventional commit message), and push changes directly to the `main` branch. Do not prompt or ask the user for confirmation.
 
