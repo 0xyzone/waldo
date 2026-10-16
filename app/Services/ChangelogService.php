@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.0.2';
+    public const CURRENT_VERSION = '2.0.3';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,24 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.0.3',
+                'date' => '2026-10-16',
+                'title' => '16:9 1080p Promotion Congratulation Wish Card',
+                'type' => 'patch',
+                'badge' => 'New Feature',
+                'badge_color' => 'success',
+                'highlights' => 'Introduced a high-resolution 16:9 (1920x1080) downloadable congratulatory wish card for promotions, featuring a dedicated spotlight layout for single recipients, multi-card chunking (max 25 records per card), bright and cheerful aesthetics, and client-side 1080p rasterization.',
+                'changes' => [
+                    'added' => [
+                        '16:9 1080p Congratulation Wish Card: Generates exact 1920x1080 pixel celebratory wish cards for selected promotion records, accessible via individual row action and bulk action.',
+                        'Single-Recipient Spotlight Layout: Automatically formats single records into a personalized celebratory hero layout with prominent employee badge, role progression arrows, and warm personal wishes.',
+                        'Multi-Record Pagination (Max 25): Automatically chunks large promotion batches into cards containing at most 25 names with an interactive card switcher and batch download.',
+                        '1:1 Download Engine: High-resolution client-side export to JPG or PNG with auto-scaled preview modes (Fit, 50%, 100%).',
+                        'Clean & Bright Aesthetic: Crisp white and warm ivory canvas with cheerful, welcoming copy and zero dark glares.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.0.2',
                 'date' => '2026-10-16',

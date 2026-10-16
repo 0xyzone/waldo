@@ -127,6 +127,11 @@ Route::get('/employee-promotions/print-congratulations', [EmployeePromotionPrint
     ->name('employee-promotions.print-congratulations')
     ->middleware('auth');
 
+// Employee Promotions Congratulations 16:9 Wish Card
+Route::get('/employee-promotions/wish-card', [EmployeePromotionPrintController::class, 'wishCard'])
+    ->name('employee-promotions.wish-card')
+    ->middleware('auth');
+
 // API Documentation & Testing Console
 Route::get('/api-docs', [ApiDocsController::class, 'index'])->name('api.docs');
 Route::get('/api-docs/spec', [ApiDocsController::class, 'spec'])->name('api.docs.spec');

@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [2.0.3] - 2026-10-16
+
+### Added
+- **16:9 1080p Promotion Congratulation Wish Card**: Full high-resolution (1920x1080) celebratory wish card generator available via both row and bulk actions in Employee Promotions.
+- **Dedicated Single Spotlight Design**: When a single promotion record is chosen, renders a personalized celebratory spotlight layout with prominent employee badge, role progression comparison, and welcoming personal wishes.
+- **Multi-Card Pagination (Max 25)**: When multiple records are selected, cards are automatically chunked into at most 25 names per card (e.g. 30 records chunk into Card 1 with 25 and Card 2 with 5), with interactive card switcher tabs and batch export.
+- **Client-Side High-Res Rasterization**: Instant 1:1 image download as crisp JPG or PNG using unscaled html2canvas rendering with interactive zoom preview controls (Fit, 50%, 100%).
+- **Clean & Bright Aesthetic**: Pure white and warm ivory canvas styling with cheerful, welcoming copy and zero dark glares.
+
+---
+
 ## [2.0.2] - 2026-10-16
 
 ### Added

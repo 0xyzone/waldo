@@ -281,6 +281,13 @@ class EmployeePromotionsTable
                     ->tooltip('Print Congratulatory Note (A4 Letterhead)')
                     ->url(fn (EmployeePromotion $record): string => route('employee-promotions.print-congratulations', ['ids' => $record->id]))
                     ->openUrlInNewTab(),
+                Action::make('wishCard')
+                    ->label('Wish Card')
+                    ->icon('heroicon-o-sparkles')
+                    ->color('success')
+                    ->tooltip('16:9 Congratulation Wish Card')
+                    ->url(fn (EmployeePromotion $record): string => route('employee-promotions.wish-card', ['ids' => $record->id]))
+                    ->openUrlInNewTab(),
             ])
             ->toolbarActions([
                 Action::make('exportExcel')
@@ -484,6 +491,26 @@ class EmployeePromotionsTable
 
                             $ids = $records->pluck('id')->join(',');
                             $url = route('employee-promotions.print-congratulations', ['ids' => $ids]);
+
+                            $livewire->js("window.open('{$url}', '_blank');");
+                        }),
+                    Action::make('wishCard')
+                        ->label('Wish Card (16:9)')
+                        ->icon('heroicon-o-sparkles')
+                        ->color('success')
+                        ->accessSelectedRecords()
+                        ->action(function (Collection $records, HasTable $livewire) {
+                            if ($records->isEmpty()) {
+                                Notification::make()
+                                    ->title('No records selected')
+                                    ->warning()
+                                    ->send();
+
+                                return null;
+                            }
+
+                            $ids = $records->pluck('id')->join(',');
+                            $url = route('employee-promotions.wish-card', ['ids' => $ids]);
 
                             $livewire->js("window.open('{$url}', '_blank');");
                         }),
