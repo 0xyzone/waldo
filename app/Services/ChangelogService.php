@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.0.1';
+    public const CURRENT_VERSION = '2.0.2';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,23 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.0.2',
+                'date' => '2026-10-16',
+                'title' => 'Dependent Multi-Select Designation Filters',
+                'type' => 'patch',
+                'badge' => 'Filter Enhancement',
+                'badge_color' => 'primary',
+                'highlights' => 'Transformed designation filters into dynamic, department-dependent multi-select components across Employee Promotions, Transfers, and Employees tables. The designation filter dynamically shows only related designations for the chosen department and is hidden/disabled until a department is selected.',
+                'changes' => [
+                    'added' => [
+                        'Dependent Designation Filtering: Designation options reactively query and show only designations belonging to the currently selected department.',
+                        'Multi-Select Designations: Table filters now support multi-select for designations, allowing records from multiple designations within a department to be filtered simultaneously.',
+                        'Conditional Visibility & Guarding: Designation filter is cleanly hidden and disabled when no department has been selected.',
+                        'Automatic Cascading Reset: Changing or clearing the department automatically resets selected designations.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.0.1',
                 'date' => '2026-10-16',

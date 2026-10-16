@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Employees\Tables;
 
+use App\Models\Department;
+use App\Models\Designation;
 use App\Models\Employee;
 use App\Models\EmployeeSuspension;
 use App\Models\TerminatedEmployee;
@@ -18,6 +20,7 @@ use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
@@ -26,6 +29,7 @@ use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\Indicator;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
@@ -198,17 +202,73 @@ class EmployeesTable
             })
             ->paginationPageOptions([4 * 2, 4 * 4, 4 * 8, 4 * 10, 4 * 20])
             ->filters([
-                SelectFilter::make('department_id')
-                    ->label('Department')
-                    ->relationship('department', 'name')
-                    ->searchable()
-                    ->preload(),
-                SelectFilter::make('designation_id')
-                    ->label('Designation')
-                    ->relationship('designation', 'name', fn ($query) => $query->where('is_active', true)->orderBy('rank'))
-                    ->searchable()
-                    ->preload()
-                    ->multiple(),
+                Filter::make('department_designation')
+                    ->schema([
+                        Select::make('department_id')
+                            ->label('Department')
+                            ->placeholder('All Departments')
+                            ->options(fn () => Department::pluck('name', 'id')->toArray())
+                            ->searchable()
+                            ->preload()
+                            ->native(false)
+                            ->live()
+                            ->afterStateUpdated(fn (callable $set) => $set('designation_ids', [])),
+                        Select::make('designation_ids')
+                            ->label('Designation')
+                            ->placeholder('All Related Designations')
+                            ->multiple()
+                            ->searchable()
+                            ->native(false)
+                            ->hidden(fn (callable $get): bool => blank($get('department_id')))
+                            ->disabled(fn (callable $get): bool => blank($get('department_id')))
+                            ->options(function (callable $get) {
+                                $deptId = $get('department_id');
+                                if (blank($deptId)) {
+                                    return [];
+                                }
+
+                                return Designation::where('department_id', $deptId)
+                                    ->active()
+                                    ->ordered()
+                                    ->pluck('name', 'id')
+                                    ->toArray();
+                            }),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['department_id'] ?? null,
+                                fn (Builder $query, $deptId): Builder => $query->where('department_id', $deptId)
+                            )
+                            ->when(
+                                ! empty($data['designation_ids']),
+                                fn (Builder $query): Builder => $query->whereIn('designation_id', (array) $data['designation_ids'])
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+
+                        if (! empty($data['department_id'])) {
+                            $dept = Department::find($data['department_id']);
+                            if ($dept) {
+                                $indicators[] = Indicator::make("Department: {$dept->name}")
+                                    ->removeField('department_id');
+                            }
+                        }
+
+                        if (! empty($data['designation_ids'])) {
+                            $desigNames = Designation::whereIn('id', (array) $data['designation_ids'])
+                                ->pluck('name')
+                                ->join(', ');
+
+                            if ($desigNames) {
+                                $indicators[] = Indicator::make("Designations: {$desigNames}")
+                                    ->removeField('designation_ids');
+                            }
+                        }
+
+                        return $indicators;
+                    }),
                 SelectFilter::make('employee_status')
                     ->label('Status')
                     ->options([
@@ -587,7 +647,7 @@ class EmployeesTable
                         ->modalDescription('Are you sure you want to release tips for all selected employees?')
                         ->modalSubmitActionLabel('Confirm Release')
                         ->action(function (Collection $records): void {
-                            $records->each(fn (Employee $record) => $record->update(['tips_status' => "Release"]));
+                            $records->each(fn (Employee $record) => $record->update(['tips_status' => 'Release']));
 
                             Notification::make()
                                 ->title('Tips Released')
@@ -604,7 +664,7 @@ class EmployeesTable
                         ->modalDescription('Are you sure you want to hold tips for all selected employees?')
                         ->modalSubmitActionLabel('Confirm Hold')
                         ->action(function (Collection $records): void {
-                            $records->each(fn (Employee $record) => $record->update(['tips_status' => "Hold"]));
+                            $records->each(fn (Employee $record) => $record->update(['tips_status' => 'Hold']));
 
                             Notification::make()
                                 ->title('Tips Held')

@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [2.0.2] - 2026-10-16
+
+### Added
+- **Dependent Multi-Select Designation Filters**: Table filters for designations (in Employee Promotions, Employee Transfers, and Employees) now dynamically display only the designations related to the chosen department.
+- **Multi-Select Capability**: Users can select multiple designations simultaneously to filter tables across career milestones and employee directories.
+- **Conditional Visibility & Auto-Reset**: The designation filter is automatically hidden and disabled until a department is selected, and automatically resets if the selected department changes or is cleared.
+
+---
+
 ## [2.0.1] - 2026-10-16
 
 ### Added

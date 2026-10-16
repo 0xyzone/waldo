@@ -12,13 +12,16 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
-use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\Indicator;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -85,16 +88,73 @@ class EmployeeTransfersTable
                 default => null,
             })
             ->filters([
-                SelectFilter::make('to_department_id')
-                    ->label('New Department')
-                    ->options(fn () => Department::pluck('name', 'id')->toArray())
-                    ->searchable()
-                    ->preload(),
-                SelectFilter::make('to_designation_id')
-                    ->label('New Designation')
-                    ->options(fn () => Designation::active()->ordered()->pluck('name', 'id')->toArray())
-                    ->searchable()
-                    ->preload(),
+                Filter::make('department_designation')
+                    ->schema([
+                        Select::make('to_department_id')
+                            ->label('New Department')
+                            ->placeholder('All Departments')
+                            ->options(fn () => Department::pluck('name', 'id')->toArray())
+                            ->searchable()
+                            ->preload()
+                            ->native(false)
+                            ->live()
+                            ->afterStateUpdated(fn (callable $set) => $set('to_designation_ids', [])),
+                        Select::make('to_designation_ids')
+                            ->label('New Designation')
+                            ->placeholder('All Related Designations')
+                            ->multiple()
+                            ->searchable()
+                            ->native(false)
+                            ->hidden(fn (callable $get): bool => blank($get('to_department_id')))
+                            ->disabled(fn (callable $get): bool => blank($get('to_department_id')))
+                            ->options(function (callable $get) {
+                                $deptId = $get('to_department_id');
+                                if (blank($deptId)) {
+                                    return [];
+                                }
+
+                                return Designation::where('department_id', $deptId)
+                                    ->active()
+                                    ->ordered()
+                                    ->pluck('name', 'id')
+                                    ->toArray();
+                            }),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['to_department_id'] ?? null,
+                                fn (Builder $query, $deptId): Builder => $query->where('to_department_id', $deptId)
+                            )
+                            ->when(
+                                ! empty($data['to_designation_ids']),
+                                fn (Builder $query): Builder => $query->whereIn('to_designation_id', (array) $data['to_designation_ids'])
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+
+                        if (! empty($data['to_department_id'])) {
+                            $dept = Department::find($data['to_department_id']);
+                            if ($dept) {
+                                $indicators[] = Indicator::make("New Department: {$dept->name}")
+                                    ->removeField('to_department_id');
+                            }
+                        }
+
+                        if (! empty($data['to_designation_ids'])) {
+                            $desigNames = Designation::whereIn('id', (array) $data['to_designation_ids'])
+                                ->pluck('name')
+                                ->join(', ');
+
+                            if ($desigNames) {
+                                $indicators[] = Indicator::make("New Designations: {$desigNames}")
+                                    ->removeField('to_designation_ids');
+                            }
+                        }
+
+                        return $indicators;
+                    }),
                 TernaryFilter::make('acknowledged')
                     ->label('Acknowledged')
                     ->placeholder('All Records')
