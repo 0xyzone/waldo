@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [2.0.5] - 2026-10-16
+
+### Changed
+- **Modern Minimal Light-Glass Wish Card Redesign**: Complete architectural design overhaul of the promotion wish card using a minimal light glass concept. Built on a soft, calm slate-ivory canvas with clean translucent frosted glass panels and high-contrast typography.
+- **Promotion Date Display**: Added the effective promotion date to every individual card within the multi-record grid.
+- **Gap-Free Full-Height Grid**: Re-engineered CSS grid to proportionally stretch all rows to fill the 1080p canvas, completely resolving bottom spacing gaps.
+- **Streamlined Minimal Header & Footer**: Removed awkward floating footer container, seamlessly weaving the Management congratulatory note into the header and adding a subtle, unobtrusive watermark line at the bottom.
+
+---
+
 ## [2.0.4] - 2026-10-16
 
 ### Changed

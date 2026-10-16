@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.0.4';
+    public const CURRENT_VERSION = '2.0.5';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,23 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.0.5',
+                'date' => '2026-10-16',
+                'title' => 'Modern Minimal Light-Glass Wish Card Redesign',
+                'type' => 'patch',
+                'badge' => 'Design Overhaul',
+                'badge_color' => 'success',
+                'highlights' => 'Re-architected the promotion congratulation wish card with a modern minimal light glass concept. Replaced heavy dark cards with a calm slate and oyster-ivory palette, added promotion dates to all employee cards, eliminated awkward bottom spacing with a balanced full-height grid, and streamlined the layout without detached footers.',
+                'changes' => [
+                    'changed' => [
+                        'Minimal Light-Glass Palette: Soft, non-glaring slate and ivory background with clean translucent frosted glass cards and sharp, high-contrast typography.',
+                        'Promotion Date Integration: Every employee card in the multi-grid now explicitly shows their effective promotion date alongside department and employee code.',
+                        'Gap-Free Full-Height Grid: Re-engineered CSS grid rows to stretch and fill the exact 1080p canvas with balanced padding, eliminating empty bottom gaps.',
+                        'Streamlined Footer: Eliminated the detached bottom footer card, seamlessly integrating management wishes into the header and adding a minimal unobtrusive watermark line.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.0.4',
                 'date' => '2026-10-16',

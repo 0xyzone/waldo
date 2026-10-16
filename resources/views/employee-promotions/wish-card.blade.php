@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" style="background: #090d16;">
+<html lang="en" style="background: #0f172a;">
 
 <head>
     <meta charset="UTF-8">
@@ -26,8 +26,8 @@
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #070a12;
-            color: #f1f5f9;
+            background-color: #0b1120;
+            color: #0f172a;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
         }
@@ -37,16 +37,16 @@
         }
 
         /* ------------------------------------------------------------- */
-        /* TOP TOOLBAR (Sleek Glassmorphism Control Bar)                 */
+        /* TOP SCREEN TOOLBAR                                            */
         /* ------------------------------------------------------------- */
         .toolbar {
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(9, 13, 22, 0.88);
+            background: rgba(11, 17, 32, 0.94);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             padding: 12px 28px;
             display: flex;
             align-items: center;
@@ -68,13 +68,12 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            letter-spacing: 0.2px;
         }
 
         .toolbar-badge {
-            background: rgba(255, 255, 255, 0.06);
-            color: #94a3b8;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
+            color: #cbd5e1;
+            border: 1px solid rgba(255, 255, 255, 0.14);
             font-size: 11px;
             font-weight: 700;
             padding: 3px 10px;
@@ -86,17 +85,17 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.05);
             padding: 3px;
             border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .tab-btn {
             background: transparent;
             color: #94a3b8;
             border: none;
-            padding: 5px 12px;
+            padding: 6px 14px;
             border-radius: 7px;
             font-size: 12px;
             font-weight: 600;
@@ -105,14 +104,14 @@
         }
 
         .tab-btn:hover {
-            color: #f8fafc;
-            background: rgba(255, 255, 255, 0.06);
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .tab-btn.active {
-            background: rgba(245, 158, 11, 0.18);
-            color: #fbbf24;
-            border: 1px solid rgba(245, 158, 11, 0.35);
+            background: #d97706;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(217, 119, 6, 0.35);
         }
 
         .toolbar-right {
@@ -124,17 +123,17 @@
         .zoom-group {
             display: flex;
             align-items: center;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.06);
             border-radius: 8px;
             padding: 2px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .zoom-btn {
             background: transparent;
-            color: #94a3b8;
+            color: #cbd5e1;
             border: none;
-            padding: 5px 10px;
+            padding: 5px 11px;
             font-size: 11px;
             font-weight: 600;
             cursor: pointer;
@@ -144,48 +143,47 @@
 
         .zoom-btn:hover {
             color: #ffffff;
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.12);
         }
 
-        .btn-glass-primary {
+        .btn-action-primary {
             display: inline-flex;
             align-items: center;
             gap: 8px;
             padding: 8px 18px;
             border-radius: 10px;
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(217, 119, 6, 0.25) 100%);
-            color: #fef3c7;
-            border: 1px solid rgba(245, 158, 11, 0.45);
+            background: #d97706;
+            color: #ffffff;
+            border: none;
             font-size: 12.5px;
             font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 14px rgba(217, 119, 6, 0.3);
             transition: all 0.2s ease;
         }
 
-        .btn-glass-primary:hover {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.35) 0%, rgba(217, 119, 6, 0.35) 100%);
-            border-color: rgba(245, 158, 11, 0.6);
-            color: #ffffff;
+        .btn-action-primary:hover {
+            background: #b45309;
+            box-shadow: 0 6px 18px rgba(217, 119, 6, 0.4);
         }
 
-        .btn-glass-secondary {
+        .btn-action-secondary {
             display: inline-flex;
             align-items: center;
             gap: 6px;
             padding: 8px 14px;
             border-radius: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            color: #cbd5e1;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.14);
             font-size: 12.5px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
         }
 
-        .btn-glass-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
+        .btn-action-secondary:hover {
+            background: rgba(255, 255, 255, 0.14);
             color: #ffffff;
         }
 
@@ -197,7 +195,7 @@
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            padding: 32px 16px 64px;
+            padding: 30px 16px 60px;
             box-sizing: border-box;
             min-height: calc(100vh - 65px);
         }
@@ -206,15 +204,15 @@
             transform-origin: top center;
             transition: transform 0.15s ease-out;
             flex-shrink: 0;
-            box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.08);
-            border-radius: 24px;
+            box-shadow: 0 30px 80px -15px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
             overflow: hidden;
-            background: #090d16;
+            background: #f1f5f9;
         }
 
         /* ------------------------------------------------------------- */
         /* EXACT 16:9 1080p CANVAS (1920 x 1080 PIXELS)                  */
-        /* Clean, Sophisticated, Non-Flashy Glassmorphism               */
+        /* Modern Minimal Executive Light Glass Aesthetic               */
         /* ------------------------------------------------------------- */
         .wish-card-canvas {
             width: 1920px;
@@ -229,506 +227,525 @@
             flex-direction: column;
             justify-content: space-between;
             overflow: hidden;
-            color: #f1f5f9;
+            color: #0f172a;
 
-            /* Deep Obsidian Canvas with Refined Ambient Mesh Orbs */
-            background-color: #090d16;
+            /* Soft, Calm Light Canvas (cool slate & warm ivory subtle ambience) */
+            background-color: #f1f5f9;
             background-image: 
-                radial-gradient(circle at 18% 15%, rgba(59, 130, 246, 0.09) 0%, transparent 45%),
-                radial-gradient(circle at 82% 18%, rgba(245, 158, 11, 0.08) 0%, transparent 45%),
-                radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.07) 0%, transparent 45%),
-                radial-gradient(circle at 85% 85%, rgba(99, 102, 241, 0.06) 0%, transparent 40%);
+                radial-gradient(circle at 10% 10%, rgba(255, 255, 255, 0.95) 0%, transparent 45%),
+                radial-gradient(circle at 90% 12%, rgba(254, 243, 199, 0.45) 0%, transparent 40%),
+                radial-gradient(circle at 50% 90%, rgba(241, 245, 249, 0.9) 0%, transparent 50%),
+                radial-gradient(circle at 85% 85%, rgba(226, 232, 240, 0.6) 0%, transparent 45%);
+            border: 1px solid #cbd5e1;
         }
 
-        /* Universal Glass Container Token */
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.035);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        /* Frosted Glass Container Token */
+        .light-glass-panel {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.95);
+            box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
         }
 
         /* ------------------------------------------------------------- */
-        /* SINGLE PROMOTION SPOTLIGHT (A4 Equivalent 16:9 Focus)         */
+        /* SINGLE PROMOTION SPOTLIGHT (MINIMAL EXECUTIVE FOCUS)          */
         /* ------------------------------------------------------------- */
-        .single-wrapper {
+        .single-layout-container {
             height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 44px 64px 38px;
+            padding: 44px 64px 36px;
             position: relative;
             z-index: 2;
         }
 
-        .single-header-panel {
-            padding: 18px 36px;
+        .single-header-card {
+            padding: 16px 36px;
             border-radius: 18px;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
-        .brand-cluster {
+        .brand-inline-cluster {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
         }
 
-        .brand-monogram {
-            width: 46px;
-            height: 46px;
+        .brand-monogram-circle {
+            width: 44px;
+            height: 44px;
             border-radius: 12px;
-            background: rgba(245, 158, 11, 0.12);
-            border: 1px solid rgba(245, 158, 11, 0.3);
-            color: #fbbf24;
+            background: #0f172a;
+            color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 800;
+            letter-spacing: -0.5px;
         }
 
-        .brand-titles h2 {
+        .brand-identity h2 {
             margin: 0;
-            font-size: 19px;
+            font-size: 18px;
             font-weight: 800;
-            color: #f8fafc;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-        }
-
-        .brand-titles p {
-            margin: 2px 0 0 0;
-            font-size: 11.5px;
-            font-weight: 600;
-            color: #94a3b8;
+            color: #0f172a;
             letter-spacing: 1px;
             text-transform: uppercase;
         }
 
-        .header-meta-group {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+        .brand-identity p {
+            margin: 2px 0 0 0;
+            font-size: 11px;
+            font-weight: 600;
+            color: #64748b;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
         }
 
-        .glass-pill {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 6px 14px;
+        .header-status-badge {
+            background: #fef3c7;
+            border: 1px solid #fde68a;
+            color: #92400e;
+            padding: 5px 14px;
             border-radius: 9999px;
             font-size: 12px;
-            font-weight: 600;
-            color: #cbd5e1;
+            font-weight: 700;
             display: inline-flex;
             align-items: center;
             gap: 6px;
         }
 
-        .glass-pill-amber {
-            background: rgba(245, 158, 11, 0.1);
-            border-color: rgba(245, 158, 11, 0.25);
-            color: #fbbf24;
-            font-weight: 700;
-        }
-
-        /* Central Spotlight Card */
-        .single-spotlight-card {
+        /* Center Hero Spotlight */
+        .single-hero-card {
             border-radius: 24px;
-            padding: 42px 64px 38px;
+            padding: 44px 64px 38px;
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
-            margin: 18px 0;
-            position: relative;
+            margin: auto 0;
+            max-width: 1300px;
+            width: 100%;
+            align-self: center;
         }
 
-        .spotlight-eyebrow {
-            font-size: 13px;
-            font-weight: 700;
-            color: #fbbf24;
+        .single-caption-eyebrow {
+            font-size: 12px;
+            font-weight: 800;
+            color: #d97706;
             letter-spacing: 2.5px;
             text-transform: uppercase;
             margin-bottom: 8px;
         }
 
-        .spotlight-title {
-            font-size: 38px;
+        .single-main-headline {
+            font-size: 36px;
             font-weight: 800;
-            color: #ffffff;
+            color: #0f172a;
             letter-spacing: -0.5px;
-            margin: 0 0 24px 0;
+            margin: 0 0 20px 0;
         }
 
-        .emp-name-headline {
-            font-size: 46px;
+        .single-emp-name {
+            font-size: 48px;
             font-weight: 800;
-            color: #f8fafc;
+            color: #0f172a;
             letter-spacing: -0.5px;
             margin: 0 0 14px 0;
             line-height: 1.15;
         }
 
-        .emp-tags-deck {
+        .single-meta-row {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 12px;
             margin-bottom: 30px;
+            flex-wrap: wrap;
         }
 
-        /* Role Progression Tiles */
-        .progression-deck {
+        .meta-pill {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 5px 14px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .meta-pill-amber {
+            background: #fffbeb;
+            border-color: #fde68a;
+            color: #92400e;
+            font-weight: 700;
+        }
+
+        .meta-pill-green {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #166534;
+            font-weight: 700;
+        }
+
+        /* Progression Deck */
+        .single-progression-deck {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 24px;
             width: 100%;
-            max-width: 1100px;
-            margin-bottom: 32px;
+            max-width: 980px;
+            margin-bottom: 28px;
         }
 
-        .prog-card {
+        .single-prog-tile {
             flex: 1;
-            padding: 22px 28px;
+            padding: 20px 24px;
             border-radius: 16px;
             text-align: center;
         }
 
-        .prog-card-from {
-            background: rgba(255, 255, 255, 0.025);
-            border: 1px solid rgba(255, 255, 255, 0.07);
+        .tile-from {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
         }
 
-        .prog-card-to {
-            background: rgba(245, 158, 11, 0.06);
-            border: 1px solid rgba(245, 158, 11, 0.28);
-            box-shadow: 0 12px 30px -10px rgba(245, 158, 11, 0.15);
+        .tile-to {
+            background: #fffbeb;
+            border: 1.5px solid #f59e0b;
+            box-shadow: 0 8px 24px -4px rgba(245, 158, 11, 0.12);
         }
 
-        .prog-label {
-            font-size: 11.5px;
+        .tile-label {
+            font-size: 11px;
             font-weight: 700;
             letter-spacing: 1.5px;
             text-transform: uppercase;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
-        .prog-card-from .prog-label {
-            color: #94a3b8;
+        .tile-from .tile-label {
+            color: #64748b;
         }
 
-        .prog-card-to .prog-label {
-            color: #fbbf24;
+        .tile-to .tile-label {
+            color: #b45309;
         }
 
-        .prog-val {
+        .tile-title {
             font-size: 24px;
             font-weight: 800;
+            color: #0f172a;
             margin: 0;
             line-height: 1.25;
         }
 
-        .prog-card-from .prog-val {
-            color: #cbd5e1;
-        }
-
-        .prog-card-to .prog-val {
-            color: #ffffff;
-        }
-
-        .prog-separator {
+        .prog-arrow-circle {
             width: 44px;
             height: 44px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fbbf24;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            color: #d97706;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 20px;
+            font-weight: 800;
             flex-shrink: 0;
         }
 
-        /* Management Memo Line */
-        .management-quote-panel {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.07);
-            border-left: 3px solid #fbbf24;
+        /* Management Memo Block */
+        .single-management-memo {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-left: 3.5px solid #d97706;
             border-radius: 12px;
             padding: 16px 28px;
-            max-width: 1040px;
+            max-width: 980px;
+            width: 100%;
             text-align: left;
         }
 
-        .management-quote-text {
+        .single-management-text {
             font-size: 14.5px;
             line-height: 1.6;
-            color: #cbd5e1;
+            color: #334155;
             margin: 0;
             font-weight: 500;
         }
 
-        .management-quote-text strong {
-            color: #f8fafc;
+        .single-management-text strong {
+            color: #0f172a;
             font-weight: 700;
         }
 
-        .single-footer-panel {
-            padding: 16px 36px;
-            border-radius: 16px;
+        .single-bottom-credit {
             display: flex;
             align-items: center;
             justify-content: space-between;
-        }
-
-        .footer-org {
-            font-size: 12.5px;
-            color: #94a3b8;
+            font-size: 12px;
+            color: #64748b;
             font-weight: 500;
-        }
-
-        .footer-signoff {
-            font-size: 13px;
-            font-weight: 700;
-            color: #e2e8f0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            padding: 0 10px;
         }
 
         /* ------------------------------------------------------------- */
         /* MULTI-RECORD GRID LAYOUT (MAX 25 PER CARD)                     */
         /* ------------------------------------------------------------- */
-        .multi-wrapper {
+        .multi-layout-container {
             height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 34px 48px 28px;
+            padding: 30px 44px 24px;
             position: relative;
             z-index: 2;
         }
 
-        .multi-header-panel {
-            padding: 18px 32px;
-            border-radius: 18px;
+        .multi-header-bar {
+            padding: 16px 28px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 20px;
             margin-bottom: 14px;
+            flex-shrink: 0;
         }
 
-        .multi-header-left {
+        .header-content-left {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 3px;
         }
 
-        .multi-super-title {
+        .header-brand-line {
             display: flex;
             align-items: center;
-            gap: 10px;
-        }
-
-        .multi-brand-text {
-            font-size: 13px;
-            font-weight: 800;
-            color: #fbbf24;
-            letter-spacing: 1.5px;
+            gap: 8px;
+            font-size: 11.5px;
+            font-weight: 700;
+            letter-spacing: 1px;
             text-transform: uppercase;
+            color: #d97706;
         }
 
-        .multi-title {
+        .header-brand-line .dot {
+            color: #cbd5e1;
+        }
+
+        .header-brand-line .sub {
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .multi-heading-title {
             margin: 0;
             font-size: 26px;
             font-weight: 800;
-            color: #ffffff;
-            letter-spacing: -0.3px;
+            color: #0f172a;
+            letter-spacing: -0.4px;
         }
 
-        .multi-management-line {
+        .multi-management-sentence {
             margin: 2px 0 0 0;
             font-size: 13px;
-            color: #94a3b8;
             line-height: 1.45;
+            color: #475569;
             max-width: 1200px;
         }
 
-        .multi-management-line strong {
-            color: #e2e8f0;
+        .multi-management-sentence strong {
+            color: #0f172a;
         }
 
-        /* 5-Column Grid for up to 25 records */
-        .records-grid {
+        .header-counter-badge {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #0f172a;
+            padding: 7px 16px;
+            border-radius: 10px;
+            font-size: 12.5px;
+            font-weight: 700;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        /* Full Height 5-Column Grid */
+        .multi-records-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 12px;
+            grid-template-rows: repeat(5, 1fr);
+            gap: 10px;
             flex: 1;
+            margin-bottom: 10px;
+        }
+
+        /* Adaptive row sizing when chunk has fewer than 25 records */
+        .multi-records-grid.fewer-rows {
+            grid-template-rows: auto;
             align-content: start;
-            margin-bottom: 14px;
+            gap: 12px;
         }
 
-        /* Responsive centered variations for chunks with <= 10 records */
-        .records-grid.grid-count-5 {
-            grid-template-columns: repeat(5, 1fr);
-        }
-
-        .records-grid.grid-count-4 {
-            grid-template-columns: repeat(4, 1fr);
-        }
-
-        .records-grid.grid-count-3 {
-            grid-template-columns: repeat(3, 1fr);
-        }
-
-        .records-grid.grid-count-2 {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        .records-grid.grid-count-1 {
+        .multi-records-grid.few-records-1 {
             grid-template-columns: 1fr;
             max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
+            margin: auto;
         }
 
-        /* Employee Record Glass Card */
-        .record-card {
+        .multi-records-grid.few-records-2 {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: auto;
+        }
+
+        .multi-records-grid.few-records-3 {
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: auto;
+        }
+
+        .multi-records-grid.few-records-4 {
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: auto;
+        }
+
+        .multi-records-grid.few-records-5 {
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: auto;
+        }
+
+        /* Individual Employee Card */
+        .emp-glass-card {
             border-radius: 12px;
-            padding: 12px 14px;
+            padding: 11px 14px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            min-height: 126px;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
+            box-shadow: 0 2px 10px -2px rgba(15, 23, 42, 0.04);
         }
 
-        .record-card:hover {
-            border-color: rgba(255, 255, 255, 0.16);
-            background: rgba(255, 255, 255, 0.05);
+        .emp-glass-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.08);
         }
 
-        .card-top {
+        .card-header-line {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             justify-content: space-between;
             gap: 8px;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
 
-        .rec-name {
+        .card-emp-name {
             font-size: 14.5px;
-            font-weight: 700;
-            color: #f8fafc;
+            font-weight: 800;
+            color: #0f172a;
             line-height: 1.25;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 230px;
+            max-width: 220px;
         }
 
-        .rec-code {
+        .card-emp-code {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 10.5px;
+            font-size: 10px;
             font-weight: 700;
-            color: #fbbf24;
-            background: rgba(245, 158, 11, 0.1);
-            border: 1px solid rgba(245, 158, 11, 0.22);
+            color: #475569;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
             padding: 2px 6px;
             border-radius: 5px;
             white-space: nowrap;
             flex-shrink: 0;
         }
 
-        .rec-dept {
+        .card-sub-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            margin-bottom: 6px;
             font-size: 10.5px;
             font-weight: 600;
-            color: #94a3b8;
+        }
+
+        .card-dept-name {
+            color: #64748b;
             text-transform: uppercase;
             letter-spacing: 0.4px;
-            margin-bottom: 6px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .rec-transition {
-            background: rgba(255, 255, 255, 0.025);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            padding: 5px 8px;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
+        .card-promo-date {
+            color: #d97706;
+            font-weight: 700;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            flex-shrink: 0;
         }
 
-        .rec-flow-row {
+        .card-progression-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 7px;
+            padding: 5px 8px;
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 6px;
             font-size: 11px;
         }
 
-        .flow-from {
-            color: #94a3b8;
+        .role-from {
+            color: #64748b;
             font-weight: 500;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 120px;
+            flex: 1;
         }
 
-        .flow-arrow {
-            color: #fbbf24;
-            font-weight: 700;
+        .role-arrow {
+            color: #d97706;
+            font-weight: 800;
             font-size: 11px;
             flex-shrink: 0;
         }
 
-        .flow-to {
-            color: #ffffff;
+        .role-to {
+            color: #0f172a;
             font-weight: 700;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            flex: 1;
+            text-align: right;
         }
 
-        .flow-to-accent {
-            color: #fef08a;
-            font-weight: 700;
-        }
-
-        .multi-footer-panel {
-            padding: 14px 30px;
-            border-radius: 14px;
+        /* Subtle Bottom Watermark Line */
+        .canvas-footer-minimal {
             display: flex;
             align-items: center;
             justify-content: space-between;
-        }
-
-        .multi-footer-note {
-            font-size: 12.5px;
-            color: #cbd5e1;
+            font-size: 11.5px;
+            color: #64748b;
             font-weight: 500;
-        }
-
-        .multi-footer-note strong {
-            color: #fbbf24;
-        }
-
-        .multi-footer-meta {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            font-size: 12px;
-            color: #94a3b8;
-            font-weight: 500;
+            padding: 0 6px;
+            flex-shrink: 0;
         }
     </style>
 </head>
@@ -738,7 +755,7 @@
     <div class="toolbar no-print">
         <div class="toolbar-left">
             <div class="toolbar-title">
-                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#fbbf24" stroke-width="2.2">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#d97706" stroke-width="2.2">
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                 </svg>
@@ -764,24 +781,24 @@
                 <button type="button" class="zoom-btn" onclick="setZoomMode('100')" id="zoom100Btn">100%</button>
             </div>
 
-            <button type="button" class="btn-glass-primary" id="downloadJpgBtn" onclick="downloadCurrentCard('jpg')">
+            <button type="button" class="btn-action-primary" id="downloadJpgBtn" onclick="downloadCurrentCard('jpg')">
                 <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
                 <span id="downloadBtnText">Download Card (JPG)</span>
             </button>
 
-            <button type="button" class="btn-glass-secondary" onclick="downloadCurrentCard('png')">
+            <button type="button" class="btn-action-secondary" onclick="downloadCurrentCard('png')">
                 PNG
             </button>
 
             @if($totalCards > 1)
-                <button type="button" class="btn-glass-secondary" onclick="downloadAllCards()">
+                <button type="button" class="btn-action-secondary" onclick="downloadAllCards()">
                     Download All ({{ $totalCards }})
                 </button>
             @endif
 
-            <button type="button" class="btn-glass-secondary" onclick="window.close()">
+            <button type="button" class="btn-action-secondary" onclick="window.close()">
                 Close
             </button>
         </div>
@@ -790,11 +807,11 @@
     @if($promotions->isEmpty())
         {{-- Empty State Fallback --}}
         <div style="display: flex; justify-content: center; align-items: center; min-height: 80vh;">
-            <div class="glass-panel" style="border-radius: 20px; padding: 48px; max-width: 520px; text-align: center;">
-                <div style="font-size: 36px; margin-bottom: 12px; color: #fbbf24;">✦</div>
-                <h2 style="font-size: 20px; font-weight: 800; color: #ffffff; margin: 0 0 10px 0;">No Promotions Selected</h2>
-                <p style="font-size: 13.5px; color: #94a3b8; line-height: 1.5; margin: 0 0 24px 0;">Please select one or more promotion records from the promotions table to generate congratulation wish cards.</p>
-                <button type="button" class="btn-glass-primary" onclick="window.close()" style="margin: 0 auto;">Close</button>
+            <div class="light-glass-panel" style="border-radius: 20px; padding: 48px; max-width: 520px; text-align: center;">
+                <div style="font-size: 36px; margin-bottom: 12px; color: #d97706;">✦</div>
+                <h2 style="font-size: 20px; font-weight: 800; color: #0f172a; margin: 0 0 10px 0;">No Promotions Selected</h2>
+                <p style="font-size: 13.5px; color: #64748b; line-height: 1.5; margin: 0 0 24px 0;">Please select one or more promotion records from the promotions table to generate congratulation wish cards.</p>
+                <button type="button" class="btn-action-primary" onclick="window.close()" style="margin: 0 auto;">Close</button>
             </div>
         </div>
     @else
@@ -805,161 +822,152 @@
                     <div class="wish-card-canvas" id="wish-card-canvas-{{ $cardIndex }}" style="{{ $cardIndex !== 0 ? 'display: none;' : '' }}">
                         @if($isSingle)
                             {{-- ============================================================== --}}
-                            {{-- SINGLE PROMOTION SPOTLIGHT (CLEAN GLASSMORPHISM)               --}}
+                            {{-- SINGLE PROMOTION SPOTLIGHT (MINIMAL EXECUTIVE LIGHT GLASS)     --}}
                             {{-- ============================================================== --}}
                             @php
                                 $promo = $chunk->first();
                                 $emp = $promo->employee;
                             @endphp
-                            <div class="single-wrapper">
+                            <div class="single-layout-container">
                                 {{-- Header --}}
-                                <div class="single-header-panel glass-panel">
-                                    <div class="brand-cluster">
-                                        <div class="brand-monogram">W</div>
-                                        <div class="brand-titles">
+                                <div class="single-header-card light-glass-panel">
+                                    <div class="brand-inline-cluster">
+                                        <div class="brand-monogram-circle">W</div>
+                                        <div class="brand-identity">
                                             <h2>Waldo Dynasty</h2>
                                             <p>Career Advancement & Leadership</p>
                                         </div>
                                     </div>
-                                    <div class="header-meta-group">
-                                        <div class="glass-pill glass-pill-amber">
-                                            <span>Promotion Recognition</span>
-                                        </div>
-                                        <div class="glass-pill">
-                                            <span>{{ $generatedDate->format('F d, Y') }}</span>
-                                        </div>
+                                    <div class="header-status-badge">
+                                        <span>Official Promotion Announcement</span>
                                     </div>
                                 </div>
 
                                 {{-- Main Spotlight Card --}}
-                                <div class="single-spotlight-card glass-panel">
-                                    <div class="spotlight-eyebrow">A Celebration of Professional Growth</div>
-                                    <h1 class="spotlight-title">Congratulations on Your Promotion</h1>
+                                <div class="single-hero-card light-glass-panel">
+                                    <div class="single-caption-eyebrow">Professional Milestone Recognition</div>
+                                    <h1 class="single-main-headline">Congratulations on Your Promotion</h1>
 
-                                    <div class="emp-name-headline">{{ $emp?->name ?? 'Team Member' }}</div>
-                                    <div class="emp-tags-deck">
-                                        <span class="glass-pill font-mono-code">ID: {{ $promo->employee_id }}</span>
-                                        <span class="glass-pill">{{ $promo->toDepartment?->name ?? $promo->fromDepartment?->name ?? 'Department' }}</span>
+                                    <div class="single-emp-name">{{ $emp?->name ?? 'Team Member' }}</div>
+                                    <div class="single-meta-row">
+                                        <span class="meta-pill font-mono-code">ID: {{ $promo->employee_id }}</span>
+                                        <span class="meta-pill">{{ $promo->toDepartment?->name ?? $promo->fromDepartment?->name ?? 'Department' }}</span>
                                         @if($promo->promotion_date)
-                                            <span class="glass-pill glass-pill-amber">Effective: {{ $promo->promotion_date->format('F d, Y') }}</span>
+                                            <span class="meta-pill meta-pill-green">
+                                                Effective: {{ $promo->promotion_date->format('F d, Y') }}
+                                            </span>
                                         @endif
                                     </div>
 
                                     {{-- Role Progression Deck --}}
-                                    <div class="progression-deck">
-                                        <div class="prog-card prog-card-from">
-                                            <div class="prog-label">Previous Designation</div>
-                                            <h3 class="prog-val">{{ $promo->fromDesignation?->name ?? 'Previous Role' }}</h3>
+                                    <div class="single-progression-deck">
+                                        <div class="single-prog-tile tile-from">
+                                            <div class="tile-label">Previous Designation</div>
+                                            <h3 class="tile-title">{{ $promo->fromDesignation?->name ?? 'Previous Role' }}</h3>
                                         </div>
 
-                                        <div class="prog-separator">&rarr;</div>
+                                        <div class="prog-arrow-circle">&rarr;</div>
 
-                                        <div class="prog-card prog-card-to">
-                                            <div class="prog-label">Promoted Designation</div>
-                                            <h3 class="prog-val">{{ $promo->toDesignation?->name ?? 'New Designation' }}</h3>
+                                        <div class="single-prog-tile tile-to">
+                                            <div class="tile-label">Promoted Designation</div>
+                                            <h3 class="tile-title">{{ $promo->toDesignation?->name ?? 'New Designation' }}</h3>
                                         </div>
                                     </div>
 
-                                    {{-- Exact Management Note from Print Memo --}}
-                                    <div class="management-quote-panel">
-                                        <p class="management-quote-text">
+                                    {{-- Management Note from Memo --}}
+                                    <div class="single-management-memo">
+                                        <p class="single-management-text">
                                             "<strong>The Management is pleased to congratulate you on your well-deserved promotion.</strong> We appreciate your dedication and valuable contributions to the organization, and wish you continued success in your new role."
                                         </p>
                                     </div>
                                 </div>
 
-                                {{-- Footer --}}
-                                <div class="single-footer-panel glass-panel">
-                                    <div class="footer-org">
-                                        Waldo Dynasty Entertainment Pvt. Ltd. • Official Career Recognition
-                                    </div>
-                                    <div class="footer-signoff">
-                                        <span>Authorized by</span>
-                                        <span style="color: #fbbf24;">The Management</span>
-                                    </div>
+                                {{-- Bottom Footnote Line --}}
+                                <div class="single-bottom-credit">
+                                    <span>Waldo Dynasty Entertainment Pvt. Ltd. • Human Resources Management</span>
+                                    <span>Issued: {{ $generatedDate->format('F d, Y') }}</span>
                                 </div>
                             </div>
 
                         @else
                             {{-- ============================================================== --}}
-                            {{-- MULTI-RECORD GRID DESIGN (CLEAN GLASSMORPHISM • MAX 25)        --}}
+                            {{-- MULTI-RECORD GRID DESIGN (MINIMAL EXECUTIVE LIGHT GLASS • 25) --}}
                             {{-- ============================================================== --}}
                             @php
                                 $chunkCount = $chunk->count();
-                                $gridClass = '';
-                                if ($chunkCount <= 5) {
-                                    $gridClass = 'grid-count-' . $chunkCount;
+                                $gridModifier = '';
+                                if ($chunkCount < 25) {
+                                    $gridModifier = 'fewer-rows';
+                                    if ($chunkCount <= 5) {
+                                        $gridModifier .= ' few-records-' . $chunkCount;
+                                    }
                                 }
                             @endphp
-                            <div class="multi-wrapper">
-                                {{-- Header --}}
-                                <div class="multi-header-panel glass-panel">
-                                    <div class="multi-header-left">
-                                        <div class="multi-super-title">
-                                            <span class="multi-brand-text">Waldo Dynasty</span>
-                                            <span style="color: rgba(255, 255, 255, 0.25);">•</span>
-                                            <span style="font-size: 11.5px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Official Promotion Announcement</span>
+                            <div class="multi-layout-container">
+                                {{-- Header Bar with Integrated Management Note --}}
+                                <div class="multi-header-bar light-glass-panel">
+                                    <div class="header-content-left">
+                                        <div class="header-brand-line">
+                                            <span>Waldo Dynasty</span>
+                                            <span class="dot">•</span>
+                                            <span class="sub">Official Promotion Announcement</span>
                                         </div>
-                                        <h1 class="multi-title">Congratulations on Your Promotion</h1>
-                                        <p class="multi-management-line">
-                                            <strong>The Management is pleased to congratulate the following employees on their well-deserved promotions.</strong> We appreciate your dedication and valuable contributions to the organization.
+                                        <h1 class="multi-heading-title">Congratulations on Your Promotion</h1>
+                                        <p class="multi-management-sentence">
+                                            <strong>The Management is pleased to congratulate the following employees on their well-deserved promotions.</strong> We appreciate your dedication and valuable contributions to the organization, and wish you continued success in your new roles.
                                         </p>
                                     </div>
 
-                                    <div>
+                                    <div class="header-counter-badge">
                                         @if($totalCards > 1)
-                                            <div class="glass-pill glass-pill-amber">
-                                                Card {{ $cardIndex + 1 }} of {{ $totalCards }} • {{ $chunkCount }} Members
-                                            </div>
+                                            Card {{ $cardIndex + 1 }} of {{ $totalCards }} • {{ $chunkCount }} Members
                                         @else
-                                            <div class="glass-pill glass-pill-amber">
-                                                {{ $chunkCount }} Promoted Team Members
-                                            </div>
+                                            {{ $chunkCount }} Promoted Team Members
                                         @endif
                                     </div>
                                 </div>
 
-                                {{-- 5-Column Grid (Max 25 Items) --}}
-                                <div class="records-grid {{ $gridClass }}">
+                                {{-- Full-Height 5-Column Grid (Max 25 Items) --}}
+                                <div class="multi-records-grid {{ $gridModifier }}">
                                     @foreach($chunk as $promo)
-                                        <div class="record-card glass-panel">
+                                        <div class="emp-glass-card light-glass-panel">
                                             <div>
-                                                <div class="card-top">
-                                                    <span class="rec-name" title="{{ $promo->employee?->name ?? 'N/A' }}">
+                                                <div class="card-header-line">
+                                                    <span class="card-emp-name" title="{{ $promo->employee?->name ?? 'N/A' }}">
                                                         {{ $promo->employee?->name ?? 'N/A' }}
                                                     </span>
-                                                    <span class="rec-code">{{ $promo->employee_id }}</span>
+                                                    <span class="card-emp-code">{{ $promo->employee_id }}</span>
                                                 </div>
-                                                <div class="rec-dept" title="{{ $promo->toDepartment?->name ?? $promo->fromDepartment?->name ?? '-' }}">
-                                                    {{ $promo->toDepartment?->name ?? $promo->fromDepartment?->name ?? '-' }}
+
+                                                <div class="card-sub-line">
+                                                    <span class="card-dept-name" title="{{ $promo->toDepartment?->name ?? $promo->fromDepartment?->name ?? '-' }}">
+                                                        {{ $promo->toDepartment?->name ?? $promo->fromDepartment?->name ?? '-' }}
+                                                    </span>
+                                                    @if($promo->promotion_date)
+                                                        <span class="card-promo-date" title="Promotion Date">
+                                                            {{ $promo->promotion_date->format('d M, Y') }}
+                                                        </span>
+                                                    @endif
                                                 </div>
                                             </div>
 
-                                            <div class="rec-transition">
-                                                <div class="rec-flow-row">
-                                                    <span class="flow-from" title="{{ $promo->fromDesignation?->name ?? '-' }}">
-                                                        {{ $promo->fromDesignation?->name ?? '-' }}
-                                                    </span>
-                                                    <span class="flow-arrow">&rarr;</span>
-                                                    <span class="flow-to flow-to-accent" title="{{ $promo->toDesignation?->name ?? '-' }}">
-                                                        {{ $promo->toDesignation?->name ?? '-' }}
-                                                    </span>
-                                                </div>
+                                            <div class="card-progression-box">
+                                                <span class="role-from" title="{{ $promo->fromDesignation?->name ?? '-' }}">
+                                                    {{ $promo->fromDesignation?->name ?? '-' }}
+                                                </span>
+                                                <span class="role-arrow">&rarr;</span>
+                                                <span class="role-to" title="{{ $promo->toDesignation?->name ?? '-' }}">
+                                                    {{ $promo->toDesignation?->name ?? '-' }}
+                                                </span>
                                             </div>
                                         </div>
                                     @endforeach
                                 </div>
 
-                                {{-- Footer --}}
-                                <div class="multi-footer-panel glass-panel">
-                                    <div class="multi-footer-note">
-                                        "We wish you continued success in your new {{ Str::plural('role', $chunkCount) }}."
-                                    </div>
-                                    <div class="multi-footer-meta">
-                                        <span>Waldo Dynasty Entertainment Pvt. Ltd.</span>
-                                        <span>•</span>
-                                        <span>{{ $generatedDate->format('F d, Y') }}</span>
-                                    </div>
+                                {{-- Minimal Footer Watermark --}}
+                                <div class="canvas-footer-minimal">
+                                    <span>Waldo Dynasty Entertainment Pvt. Ltd.</span>
+                                    <span>Date of Issue: {{ $generatedDate->format('F d, Y') }}</span>
                                 </div>
                             </div>
                         @endif
@@ -1066,7 +1074,7 @@
                     scrollY: 0,
                     useCORS: true,
                     allowTaint: true,
-                    backgroundColor: '#090d16',
+                    backgroundColor: '#f1f5f9',
                     logging: false,
                 });
 
