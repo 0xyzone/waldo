@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html lang="en" style="background: #0f172a;">
+<html lang="en" style="background: #090d16;">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Promotion Congratulations Wish Card (16:9 1080p) - {{ $generatedDate->format('d M Y') }}</title>
+    <title>Promotion Congratulations Wish Card (16:9 • 1080p) - {{ $generatedDate->format('d M Y') }}</title>
     <x-favicon />
 
     {{-- Google Fonts: Plus Jakarta Sans & JetBrains Mono --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=JetBrains+Mono:wght@600;700;800&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap"
         rel="stylesheet">
 
     {{-- Client-side rasterization engine for 1:1 1080p export --}}
@@ -26,8 +26,8 @@
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #0f172a;
-            color: #0f172a;
+            background-color: #070a12;
+            color: #f1f5f9;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
         }
@@ -36,20 +36,18 @@
             font-family: 'JetBrains Mono', monospace;
         }
 
-        .font-serif-title {
-            font-family: 'Playfair Display', Georgia, serif;
-        }
-
-        /* Top Toolbar */
+        /* ------------------------------------------------------------- */
+        /* TOP TOOLBAR (Sleek Glassmorphism Control Bar)                 */
+        /* ------------------------------------------------------------- */
         .toolbar {
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(15, 23, 42, 0.96);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-            padding: 12px 24px;
+            background: rgba(9, 13, 22, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 12px 28px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -60,65 +58,61 @@
         .toolbar-left {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
         }
 
         .toolbar-title {
-            color: #ffffff;
+            color: #f8fafc;
             font-size: 14px;
-            font-weight: 800;
-            letter-spacing: 0.3px;
+            font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            letter-spacing: 0.2px;
         }
 
         .toolbar-badge {
-            background: rgba(249, 115, 22, 0.2);
-            color: #fb923c;
-            border: 1px solid rgba(249, 115, 22, 0.4);
+            background: rgba(255, 255, 255, 0.06);
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             font-size: 11px;
-            font-weight: 800;
+            font-weight: 700;
             padding: 3px 10px;
             border-radius: 9999px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
 
         .card-switcher-tabs {
             display: flex;
             align-items: center;
             gap: 6px;
-            background: rgba(255, 255, 255, 0.06);
-            padding: 4px;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 3px;
             border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .tab-btn {
             background: transparent;
             color: #94a3b8;
             border: none;
-            padding: 6px 14px;
+            padding: 5px 12px;
             border-radius: 7px;
             font-size: 12px;
-            font-weight: 700;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.15s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
         }
 
         .tab-btn:hover {
-            color: #ffffff;
-            background: rgba(255, 255, 255, 0.08);
+            color: #f8fafc;
+            background: rgba(255, 255, 255, 0.06);
         }
 
         .tab-btn.active {
-            background: #f97316;
-            color: #ffffff;
-            box-shadow: 0 2px 8px rgba(249, 115, 22, 0.4);
+            background: rgba(245, 158, 11, 0.18);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.35);
         }
 
         .toolbar-right {
@@ -130,19 +124,19 @@
         .zoom-group {
             display: flex;
             align-items: center;
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 8px;
             padding: 2px;
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .zoom-btn {
             background: transparent;
-            color: #cbd5e1;
+            color: #94a3b8;
             border: none;
             padding: 5px 10px;
             font-size: 11px;
-            font-weight: 700;
+            font-weight: 600;
             cursor: pointer;
             border-radius: 6px;
             transition: all 0.15s;
@@ -150,75 +144,77 @@
 
         .zoom-btn:hover {
             color: #ffffff;
-            background: rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.08);
         }
 
-        .btn-brand {
+        .btn-glass-primary {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 9px 20px;
+            padding: 8px 18px;
             border-radius: 10px;
-            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-            color: #ffffff;
-            font-size: 12.5px;
-            font-weight: 800;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35);
-            transition: all 0.2s ease;
-        }
-
-        .btn-brand:hover {
-            opacity: 0.95;
-            transform: translateY(-1px);
-            box-shadow: 0 6px 18px rgba(234, 88, 12, 0.45);
-        }
-
-        .btn-secondary {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 9px 16px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            color: #e2e8f0;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(217, 119, 6, 0.25) 100%);
+            color: #fef3c7;
+            border: 1px solid rgba(245, 158, 11, 0.45);
             font-size: 12.5px;
             font-weight: 700;
             cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
             transition: all 0.2s ease;
         }
 
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.18);
+        .btn-glass-primary:hover {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.35) 0%, rgba(217, 119, 6, 0.35) 100%);
+            border-color: rgba(245, 158, 11, 0.6);
             color: #ffffff;
         }
 
-        /* Responsive preview viewport */
+        .btn-glass-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #cbd5e1;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-glass-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        /* ------------------------------------------------------------- */
+        /* PREVIEW VIEWPORT                                              */
+        /* ------------------------------------------------------------- */
         .preview-container {
             width: 100%;
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            padding: 30px 16px 60px;
+            padding: 32px 16px 64px;
             box-sizing: border-box;
-            min-height: calc(100vh - 70px);
+            min-height: calc(100vh - 65px);
         }
 
         .preview-scale-wrapper {
             transform-origin: top center;
             transition: transform 0.15s ease-out;
             flex-shrink: 0;
-            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.15);
-            border-radius: 20px;
+            box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
             overflow: hidden;
-            background: #ffffff;
+            background: #090d16;
         }
 
         /* ------------------------------------------------------------- */
-        /* EXACT 16:9 CARD CANVAS (1920 x 1080 PIXELS)                   */
-        /* Clean, Bright, Simple, Cheerful with NO dark glares          */
+        /* EXACT 16:9 1080p CANVAS (1920 x 1080 PIXELS)                  */
+        /* Clean, Sophisticated, Non-Flashy Glassmorphism               */
         /* ------------------------------------------------------------- */
         .wish-card-canvas {
             width: 1920px;
@@ -232,523 +228,507 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 44px 56px 36px;
             overflow: hidden;
-            color: #0f172a;
+            color: #f1f5f9;
 
-            /* Crisp, Bright Ivory & White Palette with subtle warm ambient glow */
-            background-color: #ffffff;
+            /* Deep Obsidian Canvas with Refined Ambient Mesh Orbs */
+            background-color: #090d16;
             background-image: 
-                radial-gradient(at 0% 0%, rgba(254, 243, 199, 0.5) 0px, transparent 40%),
-                radial-gradient(at 100% 0%, rgba(255, 237, 213, 0.5) 0px, transparent 40%),
-                radial-gradient(at 50% 100%, rgba(240, 253, 244, 0.4) 0px, transparent 45%);
-            border: 1px solid #e2e8f0;
+                radial-gradient(circle at 18% 15%, rgba(59, 130, 246, 0.09) 0%, transparent 45%),
+                radial-gradient(circle at 82% 18%, rgba(245, 158, 11, 0.08) 0%, transparent 45%),
+                radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.07) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(99, 102, 241, 0.06) 0%, transparent 40%);
         }
 
-        /* Inner Decorative Frame Border */
-        .card-inner-frame {
-            position: absolute;
-            inset: 16px;
-            border: 2px solid #fed7aa;
-            border-radius: 16px;
-            pointer-events: none;
-            z-index: 1;
+        /* Universal Glass Container Token */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.035);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
         }
 
-        .card-inner-frame::after {
-            content: '';
-            position: absolute;
-            inset: 4px;
-            border: 1px dashed rgba(249, 115, 22, 0.35);
-            border-radius: 12px;
-        }
-
-        .canvas-content {
+        /* ------------------------------------------------------------- */
+        /* SINGLE PROMOTION SPOTLIGHT (A4 Equivalent 16:9 Focus)         */
+        /* ------------------------------------------------------------- */
+        .single-wrapper {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 44px 64px 38px;
             position: relative;
             z-index: 2;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
         }
 
-        /* ------------------------------------------------------------- */
-        /* SINGLE ENTRY SPOTLIGHT LAYOUT                                 */
-        /* ------------------------------------------------------------- */
-        .single-layout {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 100%;
-        }
-
-        .single-header {
+        .single-header-panel {
+            padding: 18px 36px;
+            border-radius: 18px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 2px solid #ffedd5;
-            padding-bottom: 22px;
         }
 
-        .brand-block {
+        .brand-cluster {
             display: flex;
             align-items: center;
             gap: 16px;
         }
 
-        .brand-badge {
-            width: 58px;
-            height: 58px;
-            border-radius: 14px;
-            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        .brand-monogram {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #fbbf24;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #ffffff;
-            font-size: 26px;
-            font-weight: 900;
-            box-shadow: 0 8px 16px rgba(234, 88, 12, 0.25);
+            font-size: 22px;
+            font-weight: 800;
         }
 
-        .brand-text h2 {
+        .brand-titles h2 {
             margin: 0;
-            font-size: 24px;
-            font-weight: 900;
-            letter-spacing: 2px;
-            color: #0f172a;
-            text-transform: uppercase;
-        }
-
-        .brand-text p {
-            margin: 3px 0 0 0;
-            font-size: 13px;
-            font-weight: 700;
-            color: #ea580c;
+            font-size: 19px;
+            font-weight: 800;
+            color: #f8fafc;
             letter-spacing: 1.5px;
             text-transform: uppercase;
         }
 
-        .celebration-pill {
-            background: #fff7ed;
-            border: 1.5px solid #fed7aa;
-            color: #c2410c;
-            padding: 8px 22px;
-            border-radius: 9999px;
-            font-size: 13.5px;
-            font-weight: 800;
+        .brand-titles p {
+            margin: 2px 0 0 0;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: #94a3b8;
             letter-spacing: 1px;
             text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
-        /* Single Spotlight Body */
-        .single-body {
+        .header-meta-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .glass-pill {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #cbd5e1;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .glass-pill-amber {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.25);
+            color: #fbbf24;
+            font-weight: 700;
+        }
+
+        /* Central Spotlight Card */
+        .single-spotlight-card {
+            border-radius: 24px;
+            padding: 42px 64px 38px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             text-align: center;
-            margin: auto 0;
-            padding: 10px 40px;
+            margin: 18px 0;
+            position: relative;
         }
 
-        .spotlight-salutation {
-            font-size: 16px;
-            font-weight: 800;
-            color: #ea580c;
-            letter-spacing: 3px;
+        .spotlight-eyebrow {
+            font-size: 13px;
+            font-weight: 700;
+            color: #fbbf24;
+            letter-spacing: 2.5px;
             text-transform: uppercase;
-            margin-bottom: 12px;
-        }
-
-        .spotlight-headline {
-            font-size: 52px;
-            font-weight: 900;
-            color: #0f172a;
-            line-height: 1.15;
-            margin: 0 0 24px 0;
-            letter-spacing: -0.5px;
-        }
-
-        .spotlight-card {
-            background: #ffffff;
-            border: 2px solid #fed7aa;
-            border-radius: 24px;
-            padding: 36px 60px;
-            box-shadow: 0 16px 40px -10px rgba(234, 88, 12, 0.12), 0 4px 12px rgba(0, 0, 0, 0.04);
-            max-width: 1400px;
-            width: 100%;
-        }
-
-        .emp-name-tag {
-            font-size: 44px;
-            font-weight: 900;
-            color: #0f172a;
-            letter-spacing: -0.5px;
-            margin: 0 0 8px 0;
-        }
-
-        .emp-meta-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-            margin-bottom: 28px;
-        }
-
-        .code-pill {
-            background: #f1f5f9;
-            border: 1px solid #cbd5e1;
-            color: #334155;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 15px;
-            font-weight: 800;
-            padding: 4px 14px;
-            border-radius: 8px;
-        }
-
-        .dept-pill {
-            background: #fef3c7;
-            border: 1px solid #fde68a;
-            color: #92400e;
-            font-size: 15px;
-            font-weight: 800;
-            padding: 4px 14px;
-            border-radius: 8px;
-        }
-
-        .date-pill {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            color: #166534;
-            font-size: 15px;
-            font-weight: 800;
-            padding: 4px 14px;
-            border-radius: 8px;
-        }
-
-        /* Role Progression Boxes */
-        .progression-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 32px;
-            margin: 24px 0 32px;
-        }
-
-        .role-box {
-            flex: 1;
-            max-width: 480px;
-            padding: 22px 28px;
-            border-radius: 18px;
-            text-align: center;
-        }
-
-        .role-box-previous {
-            background: #f8fafc;
-            border: 1.5px solid #e2e8f0;
-        }
-
-        .role-box-promoted {
-            background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
-            border: 2px solid #f97316;
-            box-shadow: 0 8px 24px rgba(249, 115, 22, 0.15);
-        }
-
-        .role-caption {
-            font-size: 12.5px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
             margin-bottom: 8px;
         }
 
-        .role-box-previous .role-caption {
-            color: #64748b;
-        }
-
-        .role-box-promoted .role-caption {
-            color: #ea580c;
-        }
-
-        .role-title {
-            font-size: 26px;
-            font-weight: 900;
-            color: #0f172a;
-            line-height: 1.25;
-            margin: 0;
-        }
-
-        .arrow-badge {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: #f97316;
+        .spotlight-title {
+            font-size: 38px;
+            font-weight: 800;
             color: #ffffff;
+            letter-spacing: -0.5px;
+            margin: 0 0 24px 0;
+        }
+
+        .emp-name-headline {
+            font-size: 46px;
+            font-weight: 800;
+            color: #f8fafc;
+            letter-spacing: -0.5px;
+            margin: 0 0 14px 0;
+            line-height: 1.15;
+        }
+
+        .emp-tags-deck {
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        /* Role Progression Tiles */
+        .progression-deck {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            width: 100%;
+            max-width: 1100px;
+            margin-bottom: 32px;
+        }
+
+        .prog-card {
+            flex: 1;
+            padding: 22px 28px;
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .prog-card-from {
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .prog-card-to {
+            background: rgba(245, 158, 11, 0.06);
+            border: 1px solid rgba(245, 158, 11, 0.28);
+            box-shadow: 0 12px 30px -10px rgba(245, 158, 11, 0.15);
+        }
+
+        .prog-label {
+            font-size: 11.5px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .prog-card-from .prog-label {
+            color: #94a3b8;
+        }
+
+        .prog-card-to .prog-label {
+            color: #fbbf24;
+        }
+
+        .prog-val {
             font-size: 24px;
-            box-shadow: 0 6px 16px rgba(249, 115, 22, 0.35);
+            font-weight: 800;
+            margin: 0;
+            line-height: 1.25;
+        }
+
+        .prog-card-from .prog-val {
+            color: #cbd5e1;
+        }
+
+        .prog-card-to .prog-val {
+            color: #ffffff;
+        }
+
+        .prog-separator {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fbbf24;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
             flex-shrink: 0;
         }
 
-        .wish-message-box {
-            background: #fffbeb;
-            border: 1px solid #fef3c7;
-            border-radius: 16px;
-            padding: 20px 36px;
-            margin-top: 10px;
+        /* Management Memo Line */
+        .management-quote-panel {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-left: 3px solid #fbbf24;
+            border-radius: 12px;
+            padding: 16px 28px;
+            max-width: 1040px;
+            text-align: left;
         }
 
-        .wish-message-text {
-            font-size: 17px;
+        .management-quote-text {
+            font-size: 14.5px;
             line-height: 1.6;
-            font-weight: 600;
-            color: #78350f;
+            color: #cbd5e1;
             margin: 0;
+            font-weight: 500;
         }
 
-        .single-footer {
+        .management-quote-text strong {
+            color: #f8fafc;
+            font-weight: 700;
+        }
+
+        .single-footer-panel {
+            padding: 16px 36px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-top: 2px solid #ffedd5;
-            padding-top: 20px;
         }
 
-        .footer-note {
+        .footer-org {
+            font-size: 12.5px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .footer-signoff {
             font-size: 13px;
             font-weight: 700;
-            color: #64748b;
-        }
-
-        .footer-signature {
-            font-size: 14px;
-            font-weight: 800;
-            color: #0f172a;
+            color: #e2e8f0;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
         /* ------------------------------------------------------------- */
-        /* MULTI-ENTRY GRID LAYOUT (MAX 25 PER CARD)                     */
+        /* MULTI-RECORD GRID LAYOUT (MAX 25 PER CARD)                     */
         /* ------------------------------------------------------------- */
-        .multi-layout {
+        .multi-wrapper {
+            height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            height: 100%;
+            padding: 34px 48px 28px;
+            position: relative;
+            z-index: 2;
         }
 
-        .multi-header {
+        .multi-header-panel {
+            padding: 18px 32px;
+            border-radius: 18px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 2px solid #ffedd5;
-            padding-bottom: 18px;
-            margin-bottom: 16px;
+            gap: 20px;
+            margin-bottom: 14px;
         }
 
-        .multi-title-area h1 {
-            margin: 0;
-            font-size: 34px;
-            font-weight: 900;
-            color: #0f172a;
-            letter-spacing: -0.5px;
+        .multi-header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .multi-super-title {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
-        .multi-title-area p {
-            margin: 4px 0 0 0;
-            font-size: 14.5px;
-            font-weight: 600;
-            color: #c2410c;
-        }
-
-        .multi-header-meta {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .card-page-badge {
-            background: #fff7ed;
-            border: 1.5px solid #fed7aa;
-            color: #ea580c;
-            padding: 8px 18px;
-            border-radius: 10px;
-            font-size: 13.5px;
+        .multi-brand-text {
+            font-size: 13px;
             font-weight: 800;
-            letter-spacing: 0.5px;
+            color: #fbbf24;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
         }
 
-        /* Grid of Promotion Records (5 cols x 5 rows max = 25 items) */
-        .promotions-grid {
+        .multi-title {
+            margin: 0;
+            font-size: 26px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+        }
+
+        .multi-management-line {
+            margin: 2px 0 0 0;
+            font-size: 13px;
+            color: #94a3b8;
+            line-height: 1.45;
+            max-width: 1200px;
+        }
+
+        .multi-management-line strong {
+            color: #e2e8f0;
+        }
+
+        /* 5-Column Grid for up to 25 records */
+        .records-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 14px;
+            gap: 12px;
             flex: 1;
             align-content: start;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
 
-        /* Balanced layout when chunk has <= 10 items */
-        .promotions-grid.few-records-5 {
+        /* Responsive centered variations for chunks with <= 10 records */
+        .records-grid.grid-count-5 {
             grid-template-columns: repeat(5, 1fr);
         }
 
-        .promotions-grid.few-records-4 {
+        .records-grid.grid-count-4 {
             grid-template-columns: repeat(4, 1fr);
         }
 
-        .promotions-grid.few-records-3 {
+        .records-grid.grid-count-3 {
             grid-template-columns: repeat(3, 1fr);
         }
 
-        .promotions-grid.few-records-2 {
+        .records-grid.grid-count-2 {
             grid-template-columns: repeat(2, 1fr);
         }
 
-        .promotions-grid.few-records-1 {
+        .records-grid.grid-count-1 {
             grid-template-columns: 1fr;
             max-width: 600px;
             margin-left: auto;
             margin-right: auto;
         }
 
-        .employee-promo-item {
-            background: #ffffff;
-            border: 1.5px solid #fed7aa;
-            border-radius: 14px;
-            padding: 14px 16px;
+        /* Employee Record Glass Card */
+        .record-card {
+            border-radius: 12px;
+            padding: 12px 14px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-            position: relative;
-            min-height: 136px;
+            min-height: 126px;
+            transition: all 0.2s ease;
         }
 
-        .item-top {
+        .record-card:hover {
+            border-color: rgba(255, 255, 255, 0.16);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .card-top {
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
             gap: 8px;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
 
-        .item-name {
-            font-size: 15.5px;
-            font-weight: 800;
-            color: #0f172a;
+        .rec-name {
+            font-size: 14.5px;
+            font-weight: 700;
+            color: #f8fafc;
             line-height: 1.25;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 250px;
+            max-width: 230px;
         }
 
-        .item-code {
+        .rec-code {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            font-weight: 800;
-            color: #ea580c;
-            background: #fff7ed;
-            border: 1px solid #fed7aa;
-            padding: 2px 7px;
-            border-radius: 6px;
+            font-size: 10.5px;
+            font-weight: 700;
+            color: #fbbf24;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.22);
+            padding: 2px 6px;
+            border-radius: 5px;
             white-space: nowrap;
             flex-shrink: 0;
         }
 
-        .item-dept {
-            font-size: 11px;
-            font-weight: 700;
-            color: #64748b;
+        .rec-dept {
+            font-size: 10.5px;
+            font-weight: 600;
+            color: #94a3b8;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
+            letter-spacing: 0.4px;
+            margin-bottom: 6px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .item-progression {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
+        .rec-transition {
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 8px;
-            padding: 6px 10px;
+            padding: 5px 8px;
             display: flex;
             flex-direction: column;
             gap: 2px;
         }
 
-        .prog-row {
+        .rec-flow-row {
             display: flex;
             align-items: center;
             gap: 6px;
-            font-size: 11.5px;
+            font-size: 11px;
         }
 
-        .prog-from {
-            color: #64748b;
-            font-weight: 600;
+        .flow-from {
+            color: #94a3b8;
+            font-weight: 500;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 130px;
+            max-width: 120px;
         }
 
-        .prog-arrow {
-            color: #f97316;
-            font-weight: 900;
-            font-size: 12px;
+        .flow-arrow {
+            color: #fbbf24;
+            font-weight: 700;
+            font-size: 11px;
             flex-shrink: 0;
         }
 
-        .prog-to {
-            color: #0f172a;
-            font-weight: 800;
+        .flow-to {
+            color: #ffffff;
+            font-weight: 700;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .item-badge-highlight {
-            color: #ea580c;
-            font-weight: 900;
+        .flow-to-accent {
+            color: #fef08a;
+            font-weight: 700;
         }
 
-        .multi-footer {
+        .multi-footer-panel {
+            padding: 14px 30px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-top: 2px solid #ffedd5;
-            padding-top: 14px;
         }
 
-        .multi-wish-banner {
-            font-size: 13.5px;
-            font-weight: 700;
-            color: #78350f;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .multi-footer-note {
+            font-size: 12.5px;
+            color: #cbd5e1;
+            font-weight: 500;
         }
 
-        .multi-footer-right {
+        .multi-footer-note strong {
+            color: #fbbf24;
+        }
+
+        .multi-footer-meta {
             display: flex;
             align-items: center;
-            gap: 16px;
-            font-size: 13px;
-            font-weight: 700;
-            color: #64748b;
+            gap: 14px;
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 500;
         }
     </style>
 </head>
@@ -758,13 +738,13 @@
     <div class="toolbar no-print">
         <div class="toolbar-left">
             <div class="toolbar-title">
-                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#f97316" stroke-width="2.5">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#fbbf24" stroke-width="2.2">
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                 </svg>
-                <span>Promotion Congratulation Wish Card (16:9 • 1920×1080)</span>
+                <span>Promotion Congratulation Wish Card</span>
             </div>
-            <span class="toolbar-badge">{{ $totalCount }} {{ Str::plural('Record', $totalCount) }}</span>
+            <span class="toolbar-badge">{{ $totalCount }} {{ Str::plural('Record', $totalCount) }} • 16:9 1080p</span>
 
             @if($totalCards > 1)
                 <div class="card-switcher-tabs" id="cardSwitcherTabs">
@@ -784,36 +764,37 @@
                 <button type="button" class="zoom-btn" onclick="setZoomMode('100')" id="zoom100Btn">100%</button>
             </div>
 
-            <button type="button" class="btn-brand" id="downloadJpgBtn" onclick="downloadCurrentCard('jpg')">
-                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <button type="button" class="btn-glass-primary" id="downloadJpgBtn" onclick="downloadCurrentCard('jpg')">
+                <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
                 <span id="downloadBtnText">Download Card (JPG)</span>
             </button>
 
-            <button type="button" class="btn-secondary" onclick="downloadCurrentCard('png')">
+            <button type="button" class="btn-glass-secondary" onclick="downloadCurrentCard('png')">
                 PNG
             </button>
 
             @if($totalCards > 1)
-                <button type="button" class="btn-secondary" onclick="downloadAllCards()">
+                <button type="button" class="btn-glass-secondary" onclick="downloadAllCards()">
                     Download All ({{ $totalCards }})
                 </button>
             @endif
 
-            <button type="button" class="btn-secondary" onclick="window.close()">
+            <button type="button" class="btn-glass-secondary" onclick="window.close()">
                 Close
             </button>
         </div>
     </div>
 
     @if($promotions->isEmpty())
+        {{-- Empty State Fallback --}}
         <div style="display: flex; justify-content: center; align-items: center; min-height: 80vh;">
-            <div style="background: #ffffff; border: 1.5px solid #fed7aa; border-radius: 20px; padding: 48px; max-width: 520px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
-                <div style="font-size: 40px; margin-bottom: 12px;">🌟</div>
-                <h2 style="font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 10px 0;">No Promotions Selected</h2>
-                <p style="font-size: 14px; color: #64748b; line-height: 1.5; margin: 0 0 24px 0;">Please select one or more promotion records from the promotions table to generate congratulation wish cards.</p>
-                <button type="button" class="btn-brand" onclick="window.close()" style="margin: 0 auto;">Close</button>
+            <div class="glass-panel" style="border-radius: 20px; padding: 48px; max-width: 520px; text-align: center;">
+                <div style="font-size: 36px; margin-bottom: 12px; color: #fbbf24;">✦</div>
+                <h2 style="font-size: 20px; font-weight: 800; color: #ffffff; margin: 0 0 10px 0;">No Promotions Selected</h2>
+                <p style="font-size: 13.5px; color: #94a3b8; line-height: 1.5; margin: 0 0 24px 0;">Please select one or more promotion records from the promotions table to generate congratulation wish cards.</p>
+                <button type="button" class="btn-glass-primary" onclick="window.close()" style="margin: 0 auto;">Close</button>
             </div>
         </div>
     @else
@@ -821,149 +802,146 @@
         <div class="preview-container">
             <div class="preview-scale-wrapper" id="previewScaleWrapper">
                 @foreach($cardChunks as $cardIndex => $chunk)
-                <div class="wish-card-canvas" id="wish-card-canvas-{{ $cardIndex }}" style="{{ $cardIndex !== 0 ? 'display: none;' : '' }}">
-                    <div class="card-inner-frame"></div>
-                    <div class="canvas-content">
+                    <div class="wish-card-canvas" id="wish-card-canvas-{{ $cardIndex }}" style="{{ $cardIndex !== 0 ? 'display: none;' : '' }}">
                         @if($isSingle)
                             {{-- ============================================================== --}}
-                            {{-- SINGLE PROMOTION SPOTLIGHT DESIGN                             --}}
+                            {{-- SINGLE PROMOTION SPOTLIGHT (CLEAN GLASSMORPHISM)               --}}
                             {{-- ============================================================== --}}
                             @php
                                 $promo = $chunk->first();
                                 $emp = $promo->employee;
                             @endphp
-                            <div class="single-layout">
+                            <div class="single-wrapper">
                                 {{-- Header --}}
-                                <div class="single-header">
-                                    <div class="brand-block">
-                                        <div class="brand-badge">W</div>
-                                        <div class="brand-text">
+                                <div class="single-header-panel glass-panel">
+                                    <div class="brand-cluster">
+                                        <div class="brand-monogram">W</div>
+                                        <div class="brand-titles">
                                             <h2>Waldo Dynasty</h2>
-                                            <p>Celebrating Excellence & Leadership</p>
+                                            <p>Career Advancement & Leadership</p>
                                         </div>
                                     </div>
-                                    <div class="celebration-pill">
-                                        <span>🎉</span>
-                                        <span>Promotion Milestone</span>
+                                    <div class="header-meta-group">
+                                        <div class="glass-pill glass-pill-amber">
+                                            <span>Promotion Recognition</span>
+                                        </div>
+                                        <div class="glass-pill">
+                                            <span>{{ $generatedDate->format('F d, Y') }}</span>
+                                        </div>
                                     </div>
                                 </div>
 
-                                {{-- Body Spotlight --}}
-                                <div class="single-body">
-                                    <div class="spotlight-salutation">Heartiest Congratulations</div>
-                                    <h1 class="spotlight-headline">Celebrating Your Well-Deserved Promotion!</h1>
+                                {{-- Main Spotlight Card --}}
+                                <div class="single-spotlight-card glass-panel">
+                                    <div class="spotlight-eyebrow">A Celebration of Professional Growth</div>
+                                    <h1 class="spotlight-title">Congratulations on Your Promotion</h1>
 
-                                    <div class="spotlight-card">
-                                        <div class="emp-name-tag">{{ $emp?->name ?? 'Team Member' }}</div>
-                                        <div class="emp-meta-row">
-                                            <span class="code-pill">ID: {{ $promo->employee_id }}</span>
-                                            <span class="dept-pill">{{ $promo->toDepartment?->name ?? $promo->fromDepartment?->name ?? 'Department' }}</span>
-                                            @if($promo->promotion_date)
-                                                <span class="date-pill">Effective: {{ $promo->promotion_date->format('F d, Y') }}</span>
-                                            @endif
+                                    <div class="emp-name-headline">{{ $emp?->name ?? 'Team Member' }}</div>
+                                    <div class="emp-tags-deck">
+                                        <span class="glass-pill font-mono-code">ID: {{ $promo->employee_id }}</span>
+                                        <span class="glass-pill">{{ $promo->toDepartment?->name ?? $promo->fromDepartment?->name ?? 'Department' }}</span>
+                                        @if($promo->promotion_date)
+                                            <span class="glass-pill glass-pill-amber">Effective: {{ $promo->promotion_date->format('F d, Y') }}</span>
+                                        @endif
+                                    </div>
+
+                                    {{-- Role Progression Deck --}}
+                                    <div class="progression-deck">
+                                        <div class="prog-card prog-card-from">
+                                            <div class="prog-label">Previous Designation</div>
+                                            <h3 class="prog-val">{{ $promo->fromDesignation?->name ?? 'Previous Role' }}</h3>
                                         </div>
 
-                                        {{-- Advancement Transition --}}
-                                        <div class="progression-container">
-                                            <div class="role-box role-box-previous">
-                                                <div class="role-caption">Previous Designation</div>
-                                                <h3 class="role-title">{{ $promo->fromDesignation?->name ?? 'Previous Role' }}</h3>
-                                            </div>
+                                        <div class="prog-separator">&rarr;</div>
 
-                                            <div class="arrow-badge">&rarr;</div>
-
-                                            <div class="role-box role-box-promoted">
-                                                <div class="role-caption">Promoted Designation</div>
-                                                <h3 class="role-title">{{ $promo->toDesignation?->name ?? 'New Designation' }}</h3>
-                                            </div>
+                                        <div class="prog-card prog-card-to">
+                                            <div class="prog-label">Promoted Designation</div>
+                                            <h3 class="prog-val">{{ $promo->toDesignation?->name ?? 'New Designation' }}</h3>
                                         </div>
+                                    </div>
 
-                                        {{-- Cheerful Personal Wish --}}
-                                        <div class="wish-message-box">
-                                            <p class="wish-message-text">
-                                                "Warmest congratulations on reaching this remarkable professional milestone! Your hard work, passion, and steadfast commitment continue to inspire everyone around you. We celebrate your dedication and wish you boundless success, joy, and fulfilling achievements in your new elevated role!"
-                                            </p>
-                                        </div>
+                                    {{-- Exact Management Note from Print Memo --}}
+                                    <div class="management-quote-panel">
+                                        <p class="management-quote-text">
+                                            "<strong>The Management is pleased to congratulate you on your well-deserved promotion.</strong> We appreciate your dedication and valuable contributions to the organization, and wish you continued success in your new role."
+                                        </p>
                                     </div>
                                 </div>
 
                                 {{-- Footer --}}
-                                <div class="single-footer">
-                                    <div class="footer-note">
-                                        Official Organization Recognition • Issued on {{ $generatedDate->format('F d, Y') }}
+                                <div class="single-footer-panel glass-panel">
+                                    <div class="footer-org">
+                                        Waldo Dynasty Entertainment Pvt. Ltd. • Official Career Recognition
                                     </div>
-                                    <div class="footer-signature">
-                                        <span>With Pride & Best Wishes,</span>
-                                        <strong>Waldo Dynasty Family</strong>
+                                    <div class="footer-signoff">
+                                        <span>Authorized by</span>
+                                        <span style="color: #fbbf24;">The Management</span>
                                     </div>
                                 </div>
                             </div>
 
                         @else
                             {{-- ============================================================== --}}
-                            {{-- MULTI-PROMOTION GROUP CARD DESIGN (MAX 25 PER CARD)            --}}
+                            {{-- MULTI-RECORD GRID DESIGN (CLEAN GLASSMORPHISM • MAX 25)        --}}
                             {{-- ============================================================== --}}
                             @php
                                 $chunkCount = $chunk->count();
-                                $gridModifier = '';
+                                $gridClass = '';
                                 if ($chunkCount <= 5) {
-                                    $gridModifier = 'few-records-' . $chunkCount;
+                                    $gridClass = 'grid-count-' . $chunkCount;
                                 }
                             @endphp
-                            <div class="multi-layout">
+                            <div class="multi-wrapper">
                                 {{-- Header --}}
-                                <div class="multi-header">
-                                    <div class="brand-block">
-                                        <div class="brand-badge">W</div>
-                                        <div class="multi-title-area">
-                                            <h1>
-                                                <span>Heartiest Congratulations on Your Promotions!</span>
-                                                <span style="font-size: 26px;">🎉</span>
-                                            </h1>
-                                            <p>Celebrating growth, dedication, and leadership across our teams</p>
+                                <div class="multi-header-panel glass-panel">
+                                    <div class="multi-header-left">
+                                        <div class="multi-super-title">
+                                            <span class="multi-brand-text">Waldo Dynasty</span>
+                                            <span style="color: rgba(255, 255, 255, 0.25);">•</span>
+                                            <span style="font-size: 11.5px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Official Promotion Announcement</span>
                                         </div>
+                                        <h1 class="multi-title">Congratulations on Your Promotion</h1>
+                                        <p class="multi-management-line">
+                                            <strong>The Management is pleased to congratulate the following employees on their well-deserved promotions.</strong> We appreciate your dedication and valuable contributions to the organization.
+                                        </p>
                                     </div>
 
-                                    <div class="multi-header-meta">
+                                    <div>
                                         @if($totalCards > 1)
-                                            <div class="card-page-badge">
-                                                Card {{ $cardIndex + 1 }} of {{ $totalCards }} • {{ $chunkCount }} Honored Team Members
+                                            <div class="glass-pill glass-pill-amber">
+                                                Card {{ $cardIndex + 1 }} of {{ $totalCards }} • {{ $chunkCount }} Members
                                             </div>
                                         @else
-                                            <div class="card-page-badge">
-                                                {{ $chunkCount }} Honored Team Members
+                                            <div class="glass-pill glass-pill-amber">
+                                                {{ $chunkCount }} Promoted Team Members
                                             </div>
                                         @endif
                                     </div>
                                 </div>
 
-                                {{-- Multi-Grid (Max 25 items: 5 cols x 5 rows) --}}
-                                <div class="promotions-grid {{ $gridModifier }}">
+                                {{-- 5-Column Grid (Max 25 Items) --}}
+                                <div class="records-grid {{ $gridClass }}">
                                     @foreach($chunk as $promo)
-                                        @php
-                                            $isDesignationChanged = $promo->from_designation_id !== $promo->to_designation_id;
-                                            $isDeptChanged = $promo->from_department_id !== $promo->to_department_id;
-                                        @endphp
-                                        <div class="employee-promo-item">
+                                        <div class="record-card glass-panel">
                                             <div>
-                                                <div class="item-top">
-                                                    <span class="item-name" title="{{ $promo->employee?->name ?? 'N/A' }}">
+                                                <div class="card-top">
+                                                    <span class="rec-name" title="{{ $promo->employee?->name ?? 'N/A' }}">
                                                         {{ $promo->employee?->name ?? 'N/A' }}
                                                     </span>
-                                                    <span class="item-code">{{ $promo->employee_id }}</span>
+                                                    <span class="rec-code">{{ $promo->employee_id }}</span>
                                                 </div>
-                                                <div class="item-dept" title="{{ $promo->toDepartment?->name ?? $promo->fromDepartment?->name ?? '-' }}">
+                                                <div class="rec-dept" title="{{ $promo->toDepartment?->name ?? $promo->fromDepartment?->name ?? '-' }}">
                                                     {{ $promo->toDepartment?->name ?? $promo->fromDepartment?->name ?? '-' }}
                                                 </div>
                                             </div>
 
-                                            <div class="item-progression">
-                                                <div class="prog-row">
-                                                    <span class="prog-from" title="{{ $promo->fromDesignation?->name ?? '-' }}">
+                                            <div class="rec-transition">
+                                                <div class="rec-flow-row">
+                                                    <span class="flow-from" title="{{ $promo->fromDesignation?->name ?? '-' }}">
                                                         {{ $promo->fromDesignation?->name ?? '-' }}
                                                     </span>
-                                                    <span class="prog-arrow">&rarr;</span>
-                                                    <span class="prog-to item-badge-highlight" title="{{ $promo->toDesignation?->name ?? '-' }}">
+                                                    <span class="flow-arrow">&rarr;</span>
+                                                    <span class="flow-to flow-to-accent" title="{{ $promo->toDesignation?->name ?? '-' }}">
                                                         {{ $promo->toDesignation?->name ?? '-' }}
                                                     </span>
                                                 </div>
@@ -972,14 +950,13 @@
                                     @endforeach
                                 </div>
 
-                                {{-- Multi-Footer with warm cheerful message --}}
-                                <div class="multi-footer">
-                                    <div class="multi-wish-banner">
-                                        <span>🌟</span>
-                                        <span>"Wishing all our promoted team members continued inspiration, excellence, and grand achievements in their new roles!"</span>
+                                {{-- Footer --}}
+                                <div class="multi-footer-panel glass-panel">
+                                    <div class="multi-footer-note">
+                                        "We wish you continued success in your new {{ Str::plural('role', $chunkCount) }}."
                                     </div>
-                                    <div class="multi-footer-right">
-                                        <span>Waldo Dynasty</span>
+                                    <div class="multi-footer-meta">
+                                        <span>Waldo Dynasty Entertainment Pvt. Ltd.</span>
                                         <span>•</span>
                                         <span>{{ $generatedDate->format('F d, Y') }}</span>
                                     </div>
@@ -987,10 +964,9 @@
                             </div>
                         @endif
                     </div>
-                </div>
-            @endforeach
+                @endforeach
+            </div>
         </div>
-    </div>
     @endif
 
     {{-- Script for Zoom Scaling & High-Resolution Export --}}
@@ -1002,7 +978,6 @@
         function switchCard(index) {
             activeCardIndex = index;
 
-            // Hide all cards, show active card
             for (let i = 0; i < totalCards; i++) {
                 const el = document.getElementById(`wish-card-canvas-${i}`);
                 if (el) {
@@ -1010,7 +985,6 @@
                 }
             }
 
-            // Update tab button styles
             const tabBtns = document.querySelectorAll('.card-switcher-tabs .tab-btn');
             tabBtns.forEach((btn, idx) => {
                 if (idx === index) {
@@ -1028,7 +1002,6 @@
             let scale = 0.5;
             if (currentZoomMode === 'fit') {
                 const availableWidth = window.innerWidth - 64;
-                // Target width is 1920px
                 scale = Math.min(Math.max(availableWidth / 1920, 0.25), 0.90);
             } else if (currentZoomMode === '50') {
                 scale = 0.50;
@@ -1059,7 +1032,6 @@
                 throw new Error('Canvas element not found');
             }
 
-            // Ensure card is visible for rendering
             const prevDisplay = targetEl.style.display;
             targetEl.style.display = 'flex';
 
@@ -1094,12 +1066,12 @@
                     scrollY: 0,
                     useCORS: true,
                     allowTaint: true,
-                    backgroundColor: '#ffffff',
+                    backgroundColor: '#090d16',
                     logging: false,
                 });
 
                 const mimeType = format === 'png' ? 'image/png' : 'image/jpeg';
-                const quality = format === 'png' ? 1.0 : 0.95;
+                const quality = format === 'png' ? 1.0 : 0.96;
                 const dataUrl = canvas.toDataURL(mimeType, quality);
 
                 if (!dataUrl || dataUrl === 'data:,') {
@@ -1156,7 +1128,7 @@
                 for (let i = 0; i < totalCards; i++) {
                     btnText.textContent = `Rendering Card ${i + 1} of ${totalCards}...`;
                     await captureCard(i, 'jpg');
-                    await new Promise(r => setTimeout(r, 600)); // Stagger downloads
+                    await new Promise(r => setTimeout(r, 600));
                 }
             } catch (err) {
                 console.error('Error in batch card download:', err);

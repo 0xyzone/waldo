@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.0.3';
+    public const CURRENT_VERSION = '2.0.4';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,23 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.0.4',
+                'date' => '2026-10-16',
+                'title' => 'Glassmorphism Promotion Wish Card Redesign',
+                'type' => 'patch',
+                'badge' => 'UI Redesign',
+                'badge_color' => 'primary',
+                'highlights' => 'Redesigned the 16:9 1080p promotion wish card from the ground up utilizing authentic glassmorphism techniques. Features a calm obsidian-slate canvas with ambient mesh glows, translucent frosted glass cards, and full integration of the official Management congratulatory memo copy from the print letterhead.',
+                'changes' => [
+                    'changed' => [
+                        'Glassmorphic Aesthetic: Replaced the high-contrast bright canvas with a calm, executive obsidian slate canvas with translucent frosted glass panels and refined golden/amber accents.',
+                        'Official Management Copy: Integrated the verbatim Management congratulatory text and closing dedication from the promotion print letterhead across both single spotlight and multi-grid cards.',
+                        'Spotlight Redesign: Formatted the single-recipient view into a sleek executive recognition hero card with prominent typography, progression tiles, and management dedication.',
+                        'Clean Non-Flashy Cards: Streamlined multi-record cards with subtle borders, muted metadata, and balanced 5-column layout for up to 25 names.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.0.3',
                 'date' => '2026-10-16',

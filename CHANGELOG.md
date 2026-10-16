@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [2.0.4] - 2026-10-16
+
+### Changed
+- **Glassmorphic Wish Card Redesign**: Fully redesigned the 16:9 1080p promotion wish card from the ground up using authentic glassmorphism techniques. Features a calm obsidian-slate canvas with ambient mesh glows, translucent frosted glass cards, and zero harsh brightness or flashy elements.
+- **Official Management Copy Integration**: Integrated the verbatim Management congratulatory text and closing dedication from the promotion print letterhead across both single spotlight and multi-grid cards.
+- **Spotlight & Multi Card Refinement**: Formatted single-recipient view into an executive recognition card with career progression tiles and streamlined multi-record cards (max 25 names) with balanced 5-column glass layout.
+
+---
+
 ## [2.0.3] - 2026-10-16
 
 ### Added
