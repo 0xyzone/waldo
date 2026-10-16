@@ -33,9 +33,31 @@ class EmployeePromotionPrintController extends Controller
                 'toDesignation',
             ])
                 ->whereIn('id', $ids)
-                ->orderBy('promotion_date', 'desc')
-                ->orderBy('employee_id', 'asc')
-                ->get();
+                ->get()
+                ->sort(function (EmployeePromotion $a, EmployeePromotion $b): int {
+                    $rankA = $a->toDesignation?->rank;
+                    $rankB = $b->toDesignation?->rank;
+
+                    if ($rankA === null && $rankB !== null) {
+                        return 1;
+                    }
+                    if ($rankA !== null && $rankB === null) {
+                        return -1;
+                    }
+                    if ($rankA !== $rankB) {
+                        return $rankA <=> $rankB;
+                    }
+
+                    $nameA = $a->toDesignation?->name ?? '';
+                    $nameB = $b->toDesignation?->name ?? '';
+                    $nameCmp = strcasecmp($nameA, $nameB);
+                    if ($nameCmp !== 0) {
+                        return $nameCmp;
+                    }
+
+                    return strcmp((string) $a->employee_id, (string) $b->employee_id);
+                })
+                ->values();
         }
 
         return view('employee-promotions.print-congratulations', [

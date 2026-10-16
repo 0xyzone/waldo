@@ -160,17 +160,13 @@
         /* ---------- Header ---------- */
         .memo-meta {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             font-size: 11px;
             font-weight: 600;
             color: #334155;
             padding-bottom: 6px;
             border-bottom: 1px solid #e2e8f0;
             margin-bottom: 14px;
-        }
-
-        .memo-ref {
-            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         }
 
         .memo-heading {
@@ -415,7 +411,6 @@
 
             <div class="document-inner">
                 <div class="memo-meta">
-                    <span class="memo-ref">REF: WLD/HR/PROMO/{{ $generatedDate->format('Y/m') }}/{{ str_pad($promotions->first()->id, 4, '0', STR_PAD_LEFT) }}</span>
                     <span>Date: {{ $generatedDate->format('F d, Y') }}</span>
                 </div>
 
