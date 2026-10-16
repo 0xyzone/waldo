@@ -623,13 +623,15 @@
 
         /* Individual Employee Card */
         .emp-glass-card {
-            border-radius: 12px;
-            padding: 11px 14px;
+            border-radius: 14px;
+            padding: 12px 14px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            gap: 8px;
             transition: all 0.15s ease;
             box-shadow: 0 2px 10px -2px rgba(15, 23, 42, 0.04);
+            background: rgba(255, 255, 255, 0.95);
         }
 
         .emp-glass-card:hover {
@@ -637,103 +639,173 @@
             box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.08);
         }
 
-        .card-header-line {
+        .card-profile-header {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            margin-bottom: 3px;
+            gap: 10px;
+        }
+
+        .card-avatar-monogram {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            border: 1px solid #cbd5e1;
+            color: #0f172a;
+            font-size: 13px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .card-name-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            flex: 1;
         }
 
         .card-emp-name {
-            font-size: 14.5px;
+            font-size: 14px;
             font-weight: 800;
             color: #0f172a;
             line-height: 1.25;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 220px;
+        }
+
+        .card-meta-line {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 1px;
+            font-size: 10.5px;
         }
 
         .card-emp-code {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 10px;
+            font-size: 9.5px;
             font-weight: 700;
             color: #475569;
             background: #f1f5f9;
             border: 1px solid #e2e8f0;
-            padding: 2px 6px;
-            border-radius: 5px;
+            padding: 1px 5px;
+            border-radius: 4px;
             white-space: nowrap;
-            flex-shrink: 0;
-        }
-
-        .card-sub-line {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 6px;
-            margin-bottom: 6px;
-            font-size: 10.5px;
-            font-weight: 600;
         }
 
         .card-dept-name {
             color: #64748b;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.4px;
+            letter-spacing: 0.3px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .card-promo-date {
-            color: #d97706;
-            font-weight: 700;
-            white-space: nowrap;
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-            flex-shrink: 0;
-        }
-
-        .card-progression-box {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 7px;
-            padding: 5px 8px;
+        /* Center Elevation Deck */
+        .card-elevation-deck {
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 6px;
-            font-size: 11px;
+            gap: 8px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 8px 10px;
         }
 
-        .role-from {
-            color: #64748b;
-            font-weight: 500;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        .elevation-col {
             flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
         }
 
-        .role-arrow {
-            color: #d97706;
+        .elevation-caption {
+            font-size: 9px;
             font-weight: 800;
-            font-size: 11px;
-            flex-shrink: 0;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
         }
 
-        .role-to {
-            color: #0f172a;
-            font-weight: 700;
+        .elevation-col-from .elevation-caption {
+            color: #64748b;
+        }
+
+        .elevation-col-from .elevation-text {
+            font-size: 11px;
+            font-weight: 600;
+            color: #475569;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            flex: 1;
-            text-align: right;
+        }
+
+        .elevation-arrow-disc {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: #d97706;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .elevation-col-to .elevation-caption {
+            color: #b45309;
+        }
+
+        .elevation-col-to .elevation-text {
+            font-size: 12px;
+            font-weight: 800;
+            color: #0f172a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Bottom Row */
+        .card-bottom-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 10.5px;
+            padding: 0 2px;
+        }
+
+        .card-promo-date {
+            color: #b45309;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+        .card-tag-pill {
+            font-size: 9.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
         }
 
         /* Subtle Bottom Watermark Line */
@@ -930,35 +1002,56 @@
                                 {{-- Full-Height 5-Column Grid (Max 25 Items) --}}
                                 <div class="multi-records-grid {{ $gridModifier }}">
                                     @foreach($chunk as $promo)
+                                        @php
+                                            $empName = trim($promo->employee?->name ?? 'Team Member');
+                                            $nameParts = preg_split('/\s+/', $empName);
+                                            $initials = count($nameParts) >= 2 
+                                                ? mb_substr($nameParts[0], 0, 1) . mb_substr(end($nameParts), 0, 1)
+                                                : mb_substr($empName, 0, 2);
+                                            $initials = strtoupper($initials);
+                                        @endphp
                                         <div class="emp-glass-card light-glass-panel">
-                                            <div>
-                                                <div class="card-header-line">
-                                                    <span class="card-emp-name" title="{{ $promo->employee?->name ?? 'N/A' }}">
-                                                        {{ $promo->employee?->name ?? 'N/A' }}
+                                            {{-- Profile Header with Avatar & Details --}}
+                                            <div class="card-profile-header">
+                                                <div class="card-avatar-monogram">{{ $initials }}</div>
+                                                <div class="card-name-group">
+                                                    <span class="card-emp-name" title="{{ $empName }}">
+                                                        {{ $empName }}
                                                     </span>
-                                                    <span class="card-emp-code">{{ $promo->employee_id }}</span>
-                                                </div>
-
-                                                <div class="card-sub-line">
-                                                    <span class="card-dept-name" title="{{ $promo->toDepartment?->name ?? $promo->fromDepartment?->name ?? '-' }}">
-                                                        {{ $promo->toDepartment?->name ?? $promo->fromDepartment?->name ?? '-' }}
-                                                    </span>
-                                                    @if($promo->promotion_date)
-                                                        <span class="card-promo-date" title="Promotion Date">
-                                                            {{ $promo->promotion_date->format('d M, Y') }}
+                                                    <div class="card-meta-line">
+                                                        <span class="card-emp-code">{{ $promo->employee_id }}</span>
+                                                        <span style="color: #cbd5e1;">•</span>
+                                                        <span class="card-dept-name" title="{{ $promo->toDepartment?->name ?? $promo->fromDepartment?->name ?? '-' }}">
+                                                            {{ $promo->toDepartment?->name ?? $promo->fromDepartment?->name ?? '-' }}
                                                         </span>
-                                                    @endif
+                                                    </div>
                                                 </div>
                                             </div>
 
-                                            <div class="card-progression-box">
-                                                <span class="role-from" title="{{ $promo->fromDesignation?->name ?? '-' }}">
-                                                    {{ $promo->fromDesignation?->name ?? '-' }}
-                                                </span>
-                                                <span class="role-arrow">&rarr;</span>
-                                                <span class="role-to" title="{{ $promo->toDesignation?->name ?? '-' }}">
-                                                    {{ $promo->toDesignation?->name ?? '-' }}
-                                                </span>
+                                            {{-- Center Elevation Deck (Fills Card Center) --}}
+                                            <div class="card-elevation-deck">
+                                                <div class="elevation-col elevation-col-from">
+                                                    <span class="elevation-caption">Previous</span>
+                                                    <span class="elevation-text" title="{{ $promo->fromDesignation?->name ?? '-' }}">{{ $promo->fromDesignation?->name ?? '-' }}</span>
+                                                </div>
+                                                <div class="elevation-arrow-disc">&rarr;</div>
+                                                <div class="elevation-col elevation-col-to">
+                                                    <span class="elevation-caption">Promoted To</span>
+                                                    <span class="elevation-text" title="{{ $promo->toDesignation?->name ?? '-' }}">{{ $promo->toDesignation?->name ?? '-' }}</span>
+                                                </div>
+                                            </div>
+
+                                            {{-- Bottom Status & Date Row --}}
+                                            <div class="card-bottom-row">
+                                                @if($promo->promotion_date)
+                                                    <span class="card-promo-date" title="Effective Promotion Date">
+                                                        <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                                        {{ $promo->promotion_date->format('d M, Y') }}
+                                                    </span>
+                                                @else
+                                                    <span class="card-promo-date">Promotion Verified</span>
+                                                @endif
+                                                <span class="card-tag-pill">Advancement</span>
                                             </div>
                                         </div>
                                     @endforeach

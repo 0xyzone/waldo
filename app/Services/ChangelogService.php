@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.0.5';
+    public const CURRENT_VERSION = '2.0.6';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,23 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.0.6',
+                'date' => '2026-10-16',
+                'title' => 'Rich Structured Record Card Layout for Promotion Wish Cards',
+                'type' => 'patch',
+                'badge' => 'Card Refinement',
+                'badge_color' => 'primary',
+                'highlights' => 'Redesigned the interior layout of each employee card in the promotion wish card to eliminate hollow empty spaces. Introduced circular monogram avatars, integrated metadata lines, an executive two-column career elevation deck in the center, and a bottom metadata bar with the promotion date and advancement tag.',
+                'changes' => [
+                    'changed' => [
+                        'Structured Card Anatomy: Replaced sparse top-bottom alignment with a balanced 3-tier card layout (Avatar + Header, Centered Elevation Deck, and Footer Status Bar) eliminating barren gaps.',
+                        'Monogram Avatar Badges: Each employee card features a styled initial monogram icon matching the organization’s executive palette.',
+                        'Centered Elevation Deck: Career progression is highlighted as the centerpiece of each card with distinct previous and promoted designation columns and a directional arrow badge.',
+                        'Bottom Date & Status Bar: Clean footer line displaying the effective promotion date with a calendar icon and milestone badge.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.0.5',
                 'date' => '2026-10-16',

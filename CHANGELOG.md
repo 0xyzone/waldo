@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [2.0.6] - 2026-10-16
+
+### Changed
+- **Rich Structured Record Card Layout**: Redesigned the interior of each employee promotion card to eliminate barren gaps and empty vertical whitespace.
+- **Monogram Avatar Badges**: Added styled circular monogram initial avatars to employee cards for an executive, personalized presentation.
+- **Centered Career Elevation Deck**: Replaced thin bottom bars with a dedicated, centered 2-column career elevation container showing previous role, directional arrow badge, and promoted designation.
+- **Metadata Status Footer**: Added a dedicated bottom line on each card with a calendar date badge and career advancement tag.
+
+---
+
 ## [2.0.5] - 2026-10-16
 
 ### Changed
