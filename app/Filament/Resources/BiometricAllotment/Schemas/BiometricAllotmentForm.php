@@ -39,6 +39,9 @@ class BiometricAllotmentForm
                             ->label('Mark as Done')
                             ->icon('heroicon-o-check-circle')
                             ->color('success')
+                            ->size('sm')
+                            ->labeledFrom('md')
+                            ->tooltip('Mark as Done')
                             ->form([
                                 Toggle::make('old_checkout_device')
                                     ->label('Old Checkout Device')
@@ -57,7 +60,7 @@ class BiometricAllotmentForm
                                 $record->update([
                                     'status' => 'Done',
                                     'enrolled_date' => now(),
-                                    'set_by' => $mapuser->setby_name,
+                                    'set_by' => $mapuser?->setby_name,
                                     'old_checkout_device' => $data['old_checkout_device'],
                                     'new_checkin' => $data['new_checkin'],
                                     'new_checkout' => $data['new_checkout'],
@@ -72,13 +75,88 @@ class BiometricAllotmentForm
                                 $livewire->redirect(BiometricAllotmentResource::getUrl('index'));
                             })
                             ->hidden(fn (string $operation): bool => $operation === 'create')
-                            ->visible(function ($record, $operations) {
+                            ->visible(function ($record) {
                                 return MapUser::where('user_id', Auth::id())->exists() && $record?->status != 'Done';
+                            }),
+                        Action::make('mark_as_left')
+                            ->label('Mark as Left')
+                            ->icon('heroicon-o-arrow-left-on-rectangle')
+                            ->color('danger')
+                            ->size('sm')
+                            ->labeledFrom('md')
+                            ->tooltip('Mark as Left Job')
+                            ->requiresConfirmation()
+                            ->modalHeading('Mark as Left Job')
+                            ->modalDescription(fn (BiometricAllotment $record) => "Are you sure you want to mark {$record->name} as Left Job?")
+                            ->modalSubmitActionLabel('Confirm Left Job')
+                            ->form([
+                                Textarea::make('remarks')
+                                    ->label('Remarks')
+                                    ->placeholder('Optional reason or remarks...')
+                                    ->default(fn (BiometricAllotment $record) => $record->remarks),
+                            ])
+                            ->action(function (BiometricAllotment $record, array $data, Component $livewire) {
+                                $mapuser = MapUser::where('user_id', Auth::id())->first();
+                                $record->update([
+                                    'status' => 'Left Job',
+                                    'set_by' => $mapuser?->setby_name,
+                                    'remarks' => $data['remarks'] ?? $record->remarks,
+                                ]);
+                                Notification::make()
+                                    ->title('Marked as Left Job')
+                                    ->body('Successfully Marked as Left Job')
+                                    ->danger()
+                                    ->send();
+
+                                $livewire->redirect(BiometricAllotmentResource::getUrl('index'));
+                            })
+                            ->hidden(fn (string $operation): bool => $operation === 'create')
+                            ->visible(function ($record) {
+                                return MapUser::where('user_id', Auth::id())->exists() && $record?->status !== 'Left Job';
+                            }),
+                        Action::make('mark_as_not_required')
+                            ->label('Mark as Not Required')
+                            ->icon('heroicon-o-no-symbol')
+                            ->color('warning')
+                            ->size('sm')
+                            ->labeledFrom('md')
+                            ->tooltip('Mark as Bio Not Required')
+                            ->requiresConfirmation()
+                            ->modalHeading('Mark as Bio Not Required')
+                            ->modalDescription(fn (BiometricAllotment $record) => "Are you sure you want to mark biometrics as not required for {$record->name}?")
+                            ->modalSubmitActionLabel('Confirm Not Required')
+                            ->form([
+                                Textarea::make('remarks')
+                                    ->label('Remarks')
+                                    ->placeholder('Optional reason (e.g. outsourced, management)...')
+                                    ->default(fn (BiometricAllotment $record) => $record->remarks),
+                            ])
+                            ->action(function (BiometricAllotment $record, array $data, Component $livewire) {
+                                $mapuser = MapUser::where('user_id', Auth::id())->first();
+                                $record->update([
+                                    'status' => 'Bio Not Required',
+                                    'set_by' => $mapuser?->setby_name,
+                                    'remarks' => $data['remarks'] ?? $record->remarks,
+                                ]);
+                                Notification::make()
+                                    ->title('Marked as Bio Not Required')
+                                    ->body('Successfully Marked as Bio Not Required')
+                                    ->warning()
+                                    ->send();
+
+                                $livewire->redirect(BiometricAllotmentResource::getUrl('index'));
+                            })
+                            ->hidden(fn (string $operation): bool => $operation === 'create')
+                            ->visible(function ($record) {
+                                return MapUser::where('user_id', Auth::id())->exists() && $record?->status !== 'Bio Not Required';
                             }),
                         Action::make('call')
                             ->label('Call')
                             ->icon('heroicon-o-phone')
                             ->color('info')
+                            ->size('sm')
+                            ->labeledFrom('md')
+                            ->tooltip('Call Employee')
                             ->url(fn ($record) => $record?->phone ? 'tel:'.$record->phone : null)
                             ->openUrlInNewTab(false)
                             ->visible(fn ($record) => filled($record?->phone)),

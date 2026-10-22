@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.1.1';
+    public const CURRENT_VERSION = '2.1.2';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,24 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.1.2',
+                'date' => '2026-10-23',
+                'title' => 'Biometric Allotment Header Actions & Responsive Mobile Layout',
+                'type' => 'patch',
+                'badge' => 'Enhancement',
+                'badge_color' => 'success',
+                'highlights' => 'Added "Mark as Left" and "Mark as Not Required" header actions to the Biometric Allotment form section for mapped users, with confirmation modals, set_by attribution, and responsive icon-collapsing on mobile screens to prevent layout clustering.',
+                'changes' => [
+                    'added' => [
+                        'Mark as Left Action: Allows mapped users to mark allotments as "Left Job" with optional remarks and set_by tracking.',
+                        'Mark as Not Required Action: Allows mapped users to mark allotments as "Bio Not Required" with optional remarks and set_by tracking.',
+                    ],
+                    'changed' => [
+                        'Mobile Layout Optimization: Applied compact sizing and responsive labeledFrom("md") breakpoints across all section header actions (Mark as Done, Mark as Left, Mark as Not Required, Call) with tooltips to prevent clustering on mobile displays.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.1.1',
                 'date' => '2026-10-22',

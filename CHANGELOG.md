@@ -4,6 +4,17 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.2] - 2026-10-23
+
+### Added
+- **Mark as Left Action**: Added section header action to the Biometric Allotment form allowing mapped users to transition status to "Left Job" with optional remarks and automatic `set_by` tracking.
+- **Mark as Not Required Action**: Added section header action allowing mapped users to transition status to "Bio Not Required" with optional remarks and automatic `set_by` tracking.
+
+### Changed
+- **Mobile Header Action Optimization**: Applied `labeledFrom('md')` and compact `size('sm')` with tooltips across all Biometric Allotment section header actions (`Mark as Done`, `Mark as Left`, `Mark as Not Required`, `Call`), ensuring buttons gracefully collapse into sleek icon buttons on mobile viewports to prevent wrapping or clustering.
+
+---
+
 ## [2.1.1] - 2026-10-22
 
 ### Fixed
