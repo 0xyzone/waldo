@@ -4,6 +4,15 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1] - 2026-10-22
+
+### Fixed
+- **Reverb WebSocket Hostname Config**: Restored missing `hostname` configuration key in `config/reverb.php`, resolving `ErrorException: Undefined array key "hostname"` when starting the Reverb WebSocket daemon.
+- **cPanel Watchdog Resilience**: Added CloudLinux alt-php (`/opt/alt/php84/usr/bin/php`, `/opt/alt/php83/usr/bin/php`) and system PHP (`/usr/local/bin/php`) candidate paths to `scripts/run_reverb.sh`.
+- **Health Check Robustness**: Added `stream_socket_client` fallback and increased probe timeout in `WebsocketStatusIndicator` for servers with restrictive socket configs.
+
+---
+
 ## [2.1.0] - 2026-10-16
 
 ### Added

@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.1.0';
+    public const CURRENT_VERSION = '2.1.1';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,22 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.1.1',
+                'date' => '2026-10-22',
+                'title' => 'Fix Reverb WebSocket Startup and Watchdog Resilience',
+                'type' => 'patch',
+                'badge' => 'Bug Fix',
+                'badge_color' => 'success',
+                'highlights' => 'Restored required hostname key in reverb server configuration resolving Undefined array key "hostname" runtime crash. Expanded watchdog candidate PHP paths to include CloudLinux alt-php and system binaries, and reinforced websocket health check socket probing with stream socket fallbacks.',
+                'changes' => [
+                    'fixed' => [
+                        'Reverb Server Config: Restored missing "hostname" configuration array key required by Laravel Reverb start command.',
+                        'Watchdog Script: Added /opt/alt/php84/usr/bin/php, /opt/alt/php83/usr/bin/php, and /usr/local/bin/php candidate binaries to run_reverb.sh.',
+                        'Socket Probing: Added stream_socket_client fallback and extended probe timeout in WebsocketStatusIndicator component.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.1.0',
                 'date' => '2026-10-16',

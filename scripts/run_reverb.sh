@@ -15,6 +15,9 @@ for candidate in \
     "/opt/cpanel/ea-php84/root/usr/bin/php" \
     "/usr/local/bin/ea-php83" \
     "/opt/cpanel/ea-php83/root/usr/bin/php" \
+    "/opt/alt/php84/usr/bin/php" \
+    "/opt/alt/php83/usr/bin/php" \
+    "/usr/local/bin/php" \
     "$(command -v ea-php84 2>/dev/null)" \
     "$(command -v ea-php83 2>/dev/null)" \
     "$(command -v php 2>/dev/null)" \

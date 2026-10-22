@@ -29,13 +29,19 @@ class WebsocketStatusIndicator extends Component
 
     public function checkStatus(): void
     {
-        $fp = @fsockopen($this->host, $this->port, $errno, $errstr, 0.4);
+        $fp = @fsockopen($this->host, $this->port, $errno, $errstr, 0.8);
 
         if ($fp) {
             $this->isRunning = true;
             fclose($fp);
         } else {
-            $this->isRunning = false;
+            $stream = @stream_socket_client("tcp://{$this->host}:{$this->port}", $errno, $errstr, 0.8);
+            if ($stream) {
+                $this->isRunning = true;
+                fclose($stream);
+            } else {
+                $this->isRunning = false;
+            }
         }
 
         $this->lastCheckedAt = now()->format('H:i:s');
