@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\EmployeeTransfers;
 
+use Agroezinger\FilamentShieldEnhanced\Traits\HasResourceShield;
 use App\Filament\Resources\EmployeeTransfers\Pages\ManageEmployeeTransfers;
 use App\Filament\Resources\EmployeeTransfers\Schemas\EmployeeTransferForm;
 use App\Filament\Resources\EmployeeTransfers\Tables\EmployeeTransfersTable;
@@ -15,6 +16,16 @@ use UnitEnum;
 
 class EmployeeTransferResource extends Resource
 {
+    use HasResourceShield;
+
+    public static function getShieldResourcePermissions(): array
+    {
+        return [
+            'SyncHrms' => 'Sync HRMS Status',
+            'ImportTransfers' => 'Import Transfers',
+        ];
+    }
+
     protected static ?string $model = EmployeeTransfer::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowsRightLeft;

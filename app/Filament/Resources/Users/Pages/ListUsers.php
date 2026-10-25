@@ -28,7 +28,7 @@ class ListUsers extends ListRecords
                 ->label('Reactivation OTP Email')
                 ->icon('heroicon-o-envelope')
                 ->color('gray')
-                ->visible(fn (): bool => auth()->user()?->hasRole('super_admin') ?? false)
+                ->visible(fn (): bool => UserResource::canShield('ConfigureOtpEmail') || (auth()->user()?->hasRole('super_admin') ?? false))
                 ->modalHeading('Configure Reactivation OTP Email')
                 ->modalDescription(function (UserReactivationOtpService $otpService): string {
                     $current = $otpService->getConfiguredEmail();

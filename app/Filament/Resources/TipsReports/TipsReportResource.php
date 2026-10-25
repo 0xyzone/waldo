@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TipsReports;
 
+use Agroezinger\FilamentShieldEnhanced\Traits\HasResourceShield;
 use App\Filament\Resources\TipsReports\Pages\CreateTipsReport;
 use App\Filament\Resources\TipsReports\Pages\EditTipsReport;
 use App\Filament\Resources\TipsReports\Pages\ListTipsReports;
@@ -19,6 +20,16 @@ use UnitEnum;
 
 class TipsReportResource extends Resource
 {
+    use HasResourceShield;
+
+    public static function getShieldResourcePermissions(): array
+    {
+        return [
+            'ValidateReport' => 'Validate & Lock Report',
+            'UnlockReport' => 'Unlock Report',
+        ];
+    }
+
     protected static ?string $model = TipsReport::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentCurrencyBangladeshi;

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use Agroezinger\FilamentShieldEnhanced\Traits\HasPageShield;
 use App\Models\Employee;
 use App\Services\SsfUploadExportService;
 use BackedEnum;
@@ -14,6 +15,8 @@ use UnitEnum;
 
 class SsfUploadGenerator extends Page
 {
+    use HasPageShield;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentArrowDown;
 
     protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::DocumentArrowDown;
@@ -29,6 +32,15 @@ class SsfUploadGenerator extends Page
     protected static ?int $navigationSort = 11;
 
     protected string $view = 'filament.pages.ssf-upload-generator';
+
+    public static function getShieldPagePermissions(): array
+    {
+        return [
+            'view' => 'View SSF Generator',
+            'download' => 'Download SSF Excel',
+            'generate' => 'Generate / Refresh Records',
+        ];
+    }
 
     /**
      * Search query string.
@@ -61,7 +73,22 @@ class SsfUploadGenerator extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasRole(['super_admin', 'HR', 'HR Assist']) ?? true;
+        $user = auth()->user();
+        if (! $user) {
+            return false;
+        }
+
+        if ($user->hasRole(['super_admin', 'HR', 'HR Assist'])) {
+            return true;
+        }
+
+        foreach (static::resolveAllPermissionKeys() as $key) {
+            if ($user->can($key)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function mount(): void
@@ -276,6 +303,16 @@ class SsfUploadGenerator extends Page
      */
     public function downloadExcel(SsfUploadExportService $exportService): ?StreamedResponse
     {
+        if (! $this->canShield('download') && ! (auth()->user()?->hasRole(['super_admin', 'HR']) ?? false)) {
+            Notification::make()
+                ->title('Download Unauthorized')
+                ->body('You do not have permission to download SSF Excel files.')
+                ->danger()
+                ->send();
+
+            return null;
+        }
+
         $activeRecords = $this->getActiveRecords();
 
         if (empty($activeRecords)) {

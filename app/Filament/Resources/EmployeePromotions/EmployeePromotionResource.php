@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\EmployeePromotions;
 
+use Agroezinger\FilamentShieldEnhanced\Traits\HasResourceShield;
 use App\Filament\Resources\EmployeePromotions\Pages\ManageEmployeePromotions;
 use App\Filament\Resources\EmployeePromotions\Schemas\EmployeePromotionForm;
 use App\Filament\Resources\EmployeePromotions\Tables\EmployeePromotionsTable;
@@ -15,6 +16,16 @@ use UnitEnum;
 
 class EmployeePromotionResource extends Resource
 {
+    use HasResourceShield;
+
+    public static function getShieldResourcePermissions(): array
+    {
+        return [
+            'SyncHrms' => 'Sync HRMS Status',
+            'ImportPromotions' => 'Import Promotions',
+        ];
+    }
+
     protected static ?string $model = EmployeePromotion::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowTrendingUp;

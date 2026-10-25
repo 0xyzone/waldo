@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\EmployeeTransfers\Tables;
 
+use App\Filament\Resources\EmployeeTransfers\EmployeeTransferResource;
 use App\Models\Department;
 use App\Models\Designation;
 use App\Models\Employee;
@@ -198,7 +199,7 @@ class EmployeeTransfersTable
                     ->icon(fn (EmployeeTransfer $record) => $record->hrms_synced ? 'heroicon-o-arrow-uturn-left' : 'heroicon-o-computer-desktop')
                     ->color(fn (EmployeeTransfer $record) => $record->hrms_synced ? 'gray' : 'info')
                     ->button()
-                    ->visible(fn () => Auth::user()->hasRole(['super_admin', 'HR']))
+                    ->visible(fn () => EmployeeTransferResource::canShield('SyncHrms') || Auth::user()->hasRole(['super_admin', 'HR']))
                     ->requiresConfirmation()
                     ->modalHeading(fn (EmployeeTransfer $record) => $record->hrms_synced ? 'Unmark HRMS Sync' : 'Mark as HRMS Synced')
                     ->modalDescription(fn (EmployeeTransfer $record) => $record->hrms_synced

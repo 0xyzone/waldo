@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SalaryIncrementRequests;
 
+use Agroezinger\FilamentShieldEnhanced\Traits\HasResourceShield;
 use App\Filament\Resources\SalaryIncrementRequests\Pages\ListSalaryIncrementRequests;
 use App\Filament\Resources\SalaryIncrementRequests\Schemas\SalaryIncrementRequestForm;
 use App\Filament\Resources\SalaryIncrementRequests\Tables\SalaryIncrementRequestsTable;
@@ -15,6 +16,16 @@ use UnitEnum;
 
 class SalaryIncrementRequestResource extends Resource
 {
+    use HasResourceShield;
+
+    public static function getShieldResourcePermissions(): array
+    {
+        return [
+            'HrAcknowledge' => 'HR Acknowledge',
+            'FinanceAcknowledge' => 'Finance Acknowledge',
+        ];
+    }
+
     protected static ?string $model = SalaryIncrementRequest::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use Agroezinger\FilamentShieldEnhanced\Traits\HasPageShield;
 use App\Events\MessageDeleted;
 use App\Events\MessagePinned;
 use App\Events\MessageReacted;
@@ -26,6 +27,7 @@ use Livewire\WithFileUploads;
 
 class Chat extends Page
 {
+    use HasPageShield;
     use WithFileUploads;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChatBubbleLeftRight;
@@ -39,6 +41,34 @@ class Chat extends Page
     protected static ?int $navigationSort = 2;
 
     protected string $view = 'filament.pages.chat';
+
+    public static function getShieldPagePermissions(): array
+    {
+        return [
+            'view' => 'Access Chat & Messages',
+            'createGroupChat' => 'Create Group Chats',
+        ];
+    }
+
+    public static function canAccess(): bool
+    {
+        $user = auth()->user();
+        if (! $user) {
+            return false;
+        }
+
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        foreach (static::resolveAllPermissionKeys() as $key) {
+            if ($user->can($key)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     public function getHeading(): string
     {
@@ -211,6 +241,16 @@ class Chat extends Page
 
     public function createGroupChat(): void
     {
+        if (! $this->canShield('createGroupChat') && ! (auth()->user()?->hasRole('super_admin') ?? false)) {
+            Notification::make()
+                ->warning()
+                ->title('Unauthorized')
+                ->body('You do not have permission to create group chats.')
+                ->send();
+
+            return;
+        }
+
         $title = trim($this->groupTitle);
 
         if (blank($title)) {

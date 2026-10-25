@@ -2,13 +2,19 @@
 
 namespace App\Filament\Pages;
 
+use Agroezinger\FilamentShieldEnhanced\Traits\HasPageShield;
 use App\Services\ChangelogService;
 use BackedEnum;
 use Filament\Pages\Page;
+use UnitEnum;
 
 class Changelog extends Page
 {
+    use HasPageShield;
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-sparkles';
+
+    protected static string|UnitEnum|null $navigationGroup = 'System Settings';
 
     protected static ?string $navigationLabel = 'Changelog';
 
@@ -19,6 +25,13 @@ class Changelog extends Page
     protected static ?int $navigationSort = 99;
 
     protected string $view = 'filament.pages.changelog';
+
+    public static function getShieldPagePermissions(): array
+    {
+        return [
+            'view' => 'View Changelog',
+        ];
+    }
 
     public function getHeading(): string
     {

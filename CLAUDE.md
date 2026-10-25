@@ -21,6 +21,7 @@ This application is a Laravel application and its main Laravel ecosystems packag
 - laravel/pail (PAIL) - v1
 - laravel/pint (PINT) - v1
 - phpunit/phpunit (PHPUNIT) - v12
+- laravel-echo (ECHO) - v2
 - react (REACT) - v19
 - tailwindcss (TAILWINDCSS) - v4
 

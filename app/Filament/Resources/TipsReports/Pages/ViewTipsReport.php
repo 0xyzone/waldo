@@ -1277,7 +1277,7 @@ class ViewTipsReport extends ViewRecord implements HasTable
                 ->modalHeading('Validate & Lock Tips Report')
                 ->modalDescription('Once validated, this tips report is permanently locked for auditing. Any applied tips adjustments will be updated to "Updated", and active employees whose tips were held for this month will be reverted to "Release". Editing and recalculating will be disabled. Proceed?')
                 ->modalSubmitActionLabel('Yes, Validate & Lock')
-                ->visible(fn () => ! $this->record->isValidated())
+                ->visible(fn () => ! $this->record->isValidated() && (TipsReportResource::canShield('ValidateReport') || (auth()->user()?->hasRole('super_admin') ?? true)))
                 ->action(function () {
                     $result = $this->record->validateAndLock(auth()->id());
                     $this->record->refresh();
@@ -1303,7 +1303,7 @@ class ViewTipsReport extends ViewRecord implements HasTable
                 ->modalHeading('Unlock Tips Report')
                 ->modalDescription('Unlocking will permit modifications and recalculations again. Applied tips adjustments will be reverted to "Pending". Are you sure?')
                 ->modalSubmitActionLabel('Yes, Unlock')
-                ->visible(fn () => $this->record->isValidated() && (auth()->user()?->hasRole('super_admin') ?? true))
+                ->visible(fn () => $this->record->isValidated() && (TipsReportResource::canShield('UnlockReport') || (auth()->user()?->hasRole('super_admin') ?? true)))
                 ->action(function () {
                     $revertedCount = $this->record->unlock();
                     $this->record->refresh();

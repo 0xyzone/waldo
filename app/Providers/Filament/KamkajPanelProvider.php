@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use Agroezinger\FilamentShieldEnhanced\FilamentShieldEnhancedPlugin;
 use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\Auth\Login;
 use App\Helpers\FaviconHelper;
@@ -86,7 +87,7 @@ class KamkajPanelProvider extends PanelProvider
                     ->activeIcon('heroicon-s-document-text')
                     ->sort(9)
                     ->group('HR & Admin')
-                    ->visible(fn () => auth()->user()->hasRole(['super_admin', 'HR', 'HR Assist'])),
+                    ->visible(fn () => auth()->user()?->can('access_letters_and_templates') || (auth()->user()?->hasRole(['super_admin', 'HR', 'HR Assist']) ?? false)),
                 NavigationItem::make('Employee SSF IDs')
                     ->url('/employee-ssids')
                     ->openUrlInNewTab()
@@ -94,14 +95,15 @@ class KamkajPanelProvider extends PanelProvider
                     ->activeIcon('heroicon-s-document-text')
                     ->sort(10)
                     ->group('HR & Admin')
-                    ->visible(fn () => auth()->user()->hasRole(['super_admin', 'HR'])),
+                    ->visible(fn () => auth()->user()?->can('access_employee_ssf_ids') || (auth()->user()?->hasRole(['super_admin', 'HR']) ?? false)),
                 NavigationItem::make('Salary Calculator')
                     ->url('/salary-calculator')
                     ->openUrlInNewTab()
                     ->icon('heroicon-o-calculator')
                     ->activeIcon('heroicon-s-calculator')
                     ->sort(1)
-                    ->group('Finance'),
+                    ->group('Finance')
+                    ->visible(fn () => auth()->user()?->can('access_salary_calculator') || (auth()->user()?->hasRole(['super_admin', 'Finance']) ?? false)),
             ])
             ->navigationGroups([
                 'HR & Admin',
@@ -154,6 +156,7 @@ class KamkajPanelProvider extends PanelProvider
                         'default' => 1,
                         'sm' => 2,
                     ]),
+                FilamentShieldEnhancedPlugin::make(),
                 FilamentUnsavedChangesModalPlugin::make(),
             ])
             ->renderHook(

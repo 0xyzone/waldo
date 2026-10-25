@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SalaryIncrementRequests\Tables;
 
+use App\Filament\Resources\SalaryIncrementRequests\SalaryIncrementRequestResource;
 use App\Models\SalaryIncrementRequest;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
@@ -169,7 +170,7 @@ class SalaryIncrementRequestsTable
                     ->visible(function (SalaryIncrementRequest $record): bool {
                         $user = Auth::user();
 
-                        return ! $record->hr_acknowledged && ($user?->hasRole(['super_admin', 'HR', 'HR Assist']) ?? true);
+                        return ! $record->hr_acknowledged && (SalaryIncrementRequestResource::canShield('HrAcknowledge') || ($user?->hasRole(['super_admin', 'HR', 'HR Assist']) ?? true));
                     })
                     ->action(function (SalaryIncrementRequest $record): void {
                         $record->update([
@@ -198,7 +199,7 @@ class SalaryIncrementRequestsTable
                     ->visible(function (SalaryIncrementRequest $record): bool {
                         $user = Auth::user();
 
-                        return ! $record->finance_acknowledged && ($user?->hasRole(['Finance', 'super_admin']) ?? true);
+                        return ! $record->finance_acknowledged && (SalaryIncrementRequestResource::canShield('FinanceAcknowledge') || ($user?->hasRole(['Finance', 'super_admin']) ?? true));
                     })
                     ->action(function (SalaryIncrementRequest $record): void {
                         $record->update([

@@ -110,7 +110,7 @@
   - Preserves backward compatibility for earlier exports summing LOP / individual leave categories.
 
 ### 11. In-App Changelog & Semantic Versioning
-- **Service**: `App\Services\ChangelogService` (`CURRENT_VERSION = '2.2.0'`). Provides `getCurrentVersion()`, `getCompactVersion()` (for collapsed sidebar), `parseVersion()`, and `getNextVersion()`.
+- **Service**: `App\Services\ChangelogService` (`CURRENT_VERSION = '2.3.0'`). Provides `getCurrentVersion()`, `getCompactVersion()` (for collapsed sidebar), `parseVersion()`, and `getNextVersion()`.
 - **Page**: `App\Filament\Pages\Changelog` (`/kamkaj/changelog`).
 - **Sidebar Footer**: Dynamic version pill in `KamkajPanelProvider` linking directly to `/kamkaj/changelog`, supporting dynamic major, minor, and micro/patch displays.
 - **Artisan Command**: `php artisan version:bump [micro|minor|major]` (`BumpVersionCommand`).
@@ -125,6 +125,16 @@
   - **Models**: `App\Models\MonthlyManualAttendance` (`monthly_manual_attendances`) & `App\Models\MonthlyManualAttendanceItem` (`monthly_manual_attendance_items`).
   - **Resource**: `App\Filament\Resources\MonthlyManualAttendances\MonthlyManualAttendanceResource` (Slug: `monthly-manual-attendances`, Navigation Group: `Roster Management`).
   - **Features**: Period-based (Month & Year) checklist automatically populated from active `ManualAttendanceStaff`. Custom interactive view page (`view-monthly-manual-attendance`) with live KPI metric cards (Total Staff, Updated in HRMS, Pending, Progress Rate), department filter pills, status switches (All, Pending, Updated), CheckboxColumn `Attendance Done` updating `updated_at_hrms` & `updated_by`, "Sync Active Staff", "Add Staff", and bulk mark actions.
+
+### 13. Filament Shield Enhanced & Granular Authorization
+- **Package**: `agroezinger/filament-shield-enhanced`
+- **Role Management**: Published `App\Filament\Resources\Roles\RoleResource` using `EnhancedResourcePermissionsForm::make()` and `EnhancedPagePermissionsForm::make()`.
+- **Navigation Group Clustering**: Configured `group_by_navigation => true` so that all resources and pages are grouped into sub-tabs matching the panel's navigation structure (`HR & Admin`, `Roster Management`, `IT`, `Finance`, `Tips`, `Purchase & Store`, `Filament Shield`, `System Settings`).
+- **Fine-Grained Custom Permissions**:
+  - `HasResourceShield` on resources declaring custom actions (`EmployeeResource`, `EmployeePromotionResource`, `EmployeeTransferResource`, `SalaryIncrementRequestResource`, `NametagFineResource`, `TipsReportResource`, `UserResource`, `IdCardRequestResource`).
+  - `HasPageShield` on function pages (`SsfUploadGenerator`, `Chat`, `Changelog`).
+  - Custom permissions tab: `access_letters_and_templates`, `access_employee_ssf_ids`, `access_salary_calculator`, `export_department_reports`.
+
 
 
 

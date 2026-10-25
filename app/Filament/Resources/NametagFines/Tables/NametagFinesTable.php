@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\NametagFines\Tables;
 
+use App\Filament\Resources\NametagFines\NametagFineResource;
 use App\Models\Department;
 use App\Models\Designation;
 use App\Models\NametagFine;
@@ -228,7 +229,7 @@ class NametagFinesTable
                         /** @var User|null $user */
                         $user = Auth::user();
 
-                        return ! $record->acknowledged && ($user?->hasRole(['super_admin', 'HR', 'HR Assist']) ?? false);
+                        return ! $record->acknowledged && (NametagFineResource::canShield('HrAcknowledge') || ($user?->hasRole(['super_admin', 'HR', 'HR Assist']) ?? false));
                     })
                     ->action(function (NametagFine $record): void {
                         $record->update([
@@ -256,7 +257,7 @@ class NametagFinesTable
                         /** @var User|null $user */
                         $user = Auth::user();
 
-                        return ! $record->finance_acknowledged && ($user?->hasRole(['Finance', 'super_admin']) ?? false);
+                        return ! $record->finance_acknowledged && (NametagFineResource::canShield('FinanceAcknowledge') || ($user?->hasRole(['Finance', 'super_admin']) ?? false));
                     })
                     ->action(function (NametagFine $record): void {
                         $record->update([
@@ -332,7 +333,7 @@ class NametagFinesTable
                             /** @var User|null $user */
                             $user = Auth::user();
 
-                            return $user?->hasRole(['Finance', 'super_admin']) ?? false;
+                            return NametagFineResource::canShield('FinanceAcknowledge') || ($user?->hasRole(['Finance', 'super_admin']) ?? false);
                         })
                         ->action(function (Collection $records): void {
                             $pendingRecords = $records->filter(fn (NametagFine $record): bool => ! $record->finance_acknowledged);
@@ -373,7 +374,7 @@ class NametagFinesTable
                             /** @var User|null $user */
                             $user = Auth::user();
 
-                            return $user?->hasRole(['super_admin', 'HR', 'HR Assist']) ?? false;
+                            return NametagFineResource::canShield('HrAcknowledge') || ($user?->hasRole(['super_admin', 'HR', 'HR Assist']) ?? false);
                         })
                         ->action(function (Collection $records): void {
                             $pendingRecords = $records->filter(fn (NametagFine $record): bool => ! $record->acknowledged);

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\NametagFines;
 
+use Agroezinger\FilamentShieldEnhanced\Traits\HasResourceShield;
 use App\Filament\Resources\NametagFines\Pages\CreateNametagFine;
 use App\Filament\Resources\NametagFines\Pages\EditNametagFine;
 use App\Filament\Resources\NametagFines\Pages\ListNametagFines;
@@ -17,6 +18,16 @@ use UnitEnum;
 
 class NametagFineResource extends Resource
 {
+    use HasResourceShield;
+
+    public static function getShieldResourcePermissions(): array
+    {
+        return [
+            'HrAcknowledge' => 'HR Acknowledge',
+            'FinanceAcknowledge' => 'Finance Acknowledge',
+        ];
+    }
+
     protected static ?string $model = NametagFine::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedExclamationTriangle;

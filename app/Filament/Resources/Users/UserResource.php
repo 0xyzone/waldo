@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users;
 
+use Agroezinger\FilamentShieldEnhanced\Traits\HasResourceShield;
 use App\Filament\Resources\Users\Pages\CreateUser;
 use App\Filament\Resources\Users\Pages\EditUser;
 use App\Filament\Resources\Users\Pages\ListUsers;
@@ -17,6 +18,17 @@ use UnitEnum;
 
 class UserResource extends Resource
 {
+    use HasResourceShield;
+
+    public static function getShieldResourcePermissions(): array
+    {
+        return [
+            'ToggleActive' => 'Reactivate / Deactivate User',
+            'ConfigureOtpEmail' => 'Configure Reactivation OTP Email',
+            'Impersonate' => 'Impersonate User',
+        ];
+    }
+
     protected static ?string $model = User::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserCircle;

@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.2.0';
+    public const CURRENT_VERSION = '2.3.0';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,23 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.3.0',
+                'date' => '2026-10-25',
+                'title' => 'Filament Shield Enhanced & Granular Role Permissions Categorization',
+                'type' => 'minor',
+                'badge' => 'Access Control',
+                'badge_color' => 'primary',
+                'highlights' => 'Integrated agroezinger/filament-shield-enhanced to categorize role permissions into intuitive sub-tabs matching panel navigation groups. Introduced fine-grained permission control for pages, custom resource actions, and standalone custom application capabilities.',
+                'changes' => [
+                    'added' => [
+                        'Shield Enhanced Architecture: Permission management clustered by panel navigation groups (HR & Admin, Roster Management, IT, Finance, Tips, Purchase & Store, Filament Shield, System Settings).',
+                        'Granular Resource Permissions: Converted hardcoded role checks into fine-grained permissions for Employee onboarding/suspension/termination/manager toggles, promotion and transfer HRMS syncing, salary increment acknowledgements, nametag fine acknowledgements, tips report validation/unlocking, user activation/impersonation, and Discord notifications.',
+                        'Enhanced Function Pages: Declared fine-grained permissions for SSF Upload Generator (view, download, generate), Chat (view, group chats), and System Changelog.',
+                        'Custom Permissions: Added explicit permissions for external tools including Letters & Templates, Employee SSF IDs, Salary Calculator, and Department Reports.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.2.0',
                 'date' => '2026-10-25',

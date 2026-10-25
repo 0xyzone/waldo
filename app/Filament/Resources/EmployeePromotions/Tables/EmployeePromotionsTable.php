@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\EmployeePromotions\Tables;
 
+use App\Filament\Resources\EmployeePromotions\EmployeePromotionResource;
 use App\Jobs\SyncBulkPromotionsToSheetJob;
 use App\Jobs\SyncPromotionToSheetJob;
 use App\Models\Department;
@@ -234,7 +235,7 @@ class EmployeePromotionsTable
                     ->icon(fn (EmployeePromotion $record) => $record->hrms_synced ? 'heroicon-o-arrow-uturn-left' : 'heroicon-o-computer-desktop')
                     ->color(fn (EmployeePromotion $record) => $record->hrms_synced ? 'gray' : 'info')
                     ->button()
-                    ->visible(fn () => Auth::user()->hasRole(['super_admin', 'HR']))
+                    ->visible(fn () => EmployeePromotionResource::canShield('SyncHrms') || Auth::user()->hasRole(['super_admin', 'HR']))
                     ->requiresConfirmation()
                     ->modalHeading(fn (EmployeePromotion $record) => $record->hrms_synced ? 'Unmark HRMS Sync' : 'Mark as HRMS Synced')
                     ->modalDescription(fn (EmployeePromotion $record) => $record->hrms_synced
@@ -434,7 +435,7 @@ class EmployeePromotionsTable
                         ->label('Mark HRMS Synced')
                         ->icon('heroicon-o-computer-desktop')
                         ->color('info')
-                        ->visible(fn () => Auth::user()->hasRole(['super_admin', 'HR']))
+                        ->visible(fn () => EmployeePromotionResource::canShield('SyncHrms') || Auth::user()->hasRole(['super_admin', 'HR']))
                         ->accessSelectedRecords()
                         ->requiresConfirmation()
                         ->modalHeading('Mark Selected Promotions as HRMS Synced')
@@ -486,7 +487,7 @@ class EmployeePromotionsTable
                         ->label('Unmark HRMS Synced')
                         ->icon('heroicon-o-arrow-uturn-left')
                         ->color('gray')
-                        ->visible(fn () => Auth::user()->hasRole(['super_admin', 'HR']))
+                        ->visible(fn () => EmployeePromotionResource::canShield('SyncHrms') || Auth::user()->hasRole(['super_admin', 'HR']))
                         ->accessSelectedRecords()
                         ->requiresConfirmation()
                         ->modalHeading('Unmark HRMS Sync for Selected Promotions')

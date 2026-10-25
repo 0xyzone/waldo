@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Employees\Tables;
 
+use App\Filament\Resources\Employees\EmployeeResource;
 use App\Models\Department;
 use App\Models\Designation;
 use App\Models\Employee;
@@ -392,7 +393,7 @@ class EmployeesTable
                             ->modalHeading('Onboard Employee')
                             ->modalDescription(fn (Employee $record) => "Are you sure you want to mark {$record->name} ({$record->employee_code}) as Onboarded?")
                             ->modalSubmitActionLabel('Confirm Onboard')
-                            ->visible(fn (Employee $record): bool => Auth::user()->hasRole(['super_admin', 'HR']) && strtolower($record->onboarded ?? '') !== 'yes')
+                            ->visible(fn (Employee $record): bool => (EmployeeResource::canShield('Onboard') || Auth::user()->hasRole(['super_admin', 'HR'])) && strtolower($record->onboarded ?? '') !== 'yes')
                             ->action(function (Employee $record): void {
                                 $record->update(['onboarded' => 'yes']);
 
@@ -413,7 +414,7 @@ class EmployeesTable
                         ->modalHeading('Onboard Employee')
                         ->modalDescription(fn (Employee $record) => "Are you sure you want to mark {$record->name} ({$record->employee_code}) as Onboarded?")
                         ->modalSubmitActionLabel('Confirm Onboard')
-                        ->visible(fn (Employee $record): bool => Auth::user()->hasRole(['super_admin', 'HR']) && strtolower($record->onboarded ?? '') !== 'yes')
+                        ->visible(fn (Employee $record): bool => (EmployeeResource::canShield('Onboard') || Auth::user()->hasRole(['super_admin', 'HR'])) && strtolower($record->onboarded ?? '') !== 'yes')
                         ->action(function (Employee $record): void {
                             $record->update(['onboarded' => 'yes']);
 
@@ -455,7 +456,7 @@ class EmployeesTable
                                 ->disk('public')
                                 ->maxSize(10240),
                         ])
-                        ->visible(fn (Employee $record): bool => Auth::user()->hasRole(['super_admin', 'HR']) && $record->employee_status !== 'Suspended')
+                        ->visible(fn (Employee $record): bool => (EmployeeResource::canShield('Suspend') || Auth::user()->hasRole(['super_admin', 'HR'])) && $record->employee_status !== 'Suspended')
                         ->action(function (Employee $record, array $data): void {
                             EmployeeSuspension::create([
                                 'employee_id' => $record->employee_code,
@@ -495,7 +496,7 @@ class EmployeesTable
                                 ->label('Reason for Termination')
                                 ->rows(3),
                         ])
-                        ->visible(fn (): bool => Auth::user()->hasRole(['super_admin', 'HR']))
+                        ->visible(fn (): bool => EmployeeResource::canShield('Terminate') || Auth::user()->hasRole(['super_admin', 'HR']))
                         ->action(function (Employee $record, array $data): void {
                             TerminatedEmployee::create([
                                 'employee_id' => $record->employee_code,
@@ -518,7 +519,7 @@ class EmployeesTable
                         ->modalHeading('Onboard Employee')
                         ->modalDescription(fn (Employee $record) => "Are you sure you want to onboard {$record->name} ({$record->employee_code})?")
                         ->modalSubmitActionLabel('Confirm Onboarding')
-                        ->visible(fn (Employee $record): bool => Auth::user()->hasRole(['super_admin', 'HR']) && $record->onboarded === 'no')
+                        ->visible(fn (Employee $record): bool => (EmployeeResource::canShield('Onboard') || Auth::user()->hasRole(['super_admin', 'HR'])) && $record->onboarded === 'no')
                         ->action(function (Employee $record): void {
                             $record->update(['onboarded' => 'yes']);
 
@@ -536,7 +537,7 @@ class EmployeesTable
                         ->modalHeading('Mark as Manager')
                         ->modalDescription(fn (Employee $record) => "Are you sure you want to mark {$record->name} ({$record->employee_code}) as Manager? This will replace any currently assigned manager for this department.")
                         ->modalSubmitActionLabel('Confirm Manager')
-                        ->visible(fn (Employee $record): bool => Auth::user()->hasRole(['super_admin', 'HR']) && ! $record->is_manager)
+                        ->visible(fn (Employee $record): bool => (EmployeeResource::canShield('ToggleManager') || Auth::user()->hasRole(['super_admin', 'HR'])) && ! $record->is_manager)
                         ->action(function (Employee $record): void {
                             if ($record->department_id) {
                                 Employee::where('department_id', $record->department_id)
@@ -561,7 +562,7 @@ class EmployeesTable
                         ->modalHeading('Remove Manager')
                         ->modalDescription(fn (Employee $record) => "Are you sure you want to remove {$record->name} ({$record->employee_code}) as Manager?")
                         ->modalSubmitActionLabel('Confirm Removal')
-                        ->visible(fn (Employee $record): bool => Auth::user()->hasRole(['super_admin', 'HR']) && (bool) $record->is_manager)
+                        ->visible(fn (Employee $record): bool => (EmployeeResource::canShield('ToggleManager') || Auth::user()->hasRole(['super_admin', 'HR'])) && (bool) $record->is_manager)
                         ->action(function (Employee $record): void {
                             $record->update(['is_manager' => false]);
 

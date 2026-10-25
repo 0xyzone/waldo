@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\IdCardRequests\Tables;
 
+use App\Filament\Resources\IdCardRequests\IdCardRequestResource;
 use App\Models\DiscordSetting;
 use App\Models\IdCardRequest;
 use App\Services\DiscordService;
@@ -125,7 +126,7 @@ class IdCardRequestsTable
                     ->label('Send to Discord')
                     ->icon('heroicon-o-paper-airplane')
                     ->color('primary')
-                    ->visible(fn () => auth()->user()->hasRole('HR'))
+                    ->visible(fn () => IdCardRequestResource::canShield('SendDiscordNotification') || (auth()->user()?->hasRole(['super_admin', 'HR']) ?? false))
                     ->form([
                         Select::make('setting_id')
                             ->label('Bot Configuration')

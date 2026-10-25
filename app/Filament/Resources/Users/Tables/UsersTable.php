@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\Tables;
 
+use App\Filament\Resources\Users\UserResource;
 use App\Models\User;
 use App\Services\UserReactivationOtpService;
 use Filament\Actions\Action;
@@ -123,7 +124,7 @@ class UsersTable
                     ->label('Reactivate')
                     ->icon('heroicon-o-shield-check')
                     ->color('success')
-                    ->visible(fn (User $record): bool => ! (bool) $record->is_active && (auth()->user()?->hasRole('super_admin') ?? false))
+                    ->visible(fn (User $record): bool => ! (bool) $record->is_active && (UserResource::canShield('ToggleActive') || (auth()->user()?->hasRole('super_admin') ?? false)))
                     ->modalHeading(fn (User $record): string => "Reactivate {$record->name}")
                     ->modalDescription(function (User $record, UserReactivationOtpService $otpService): HtmlString {
                         $masked = $otpService->getMaskedEmail();
@@ -226,7 +227,7 @@ class UsersTable
                     ->modalHeading(fn (User $record): string => "Deactivate {$record->name}")
                     ->modalDescription('Are you sure you want to deactivate this account? They will be immediately blocked from accessing the panel.')
                     ->modalSubmitActionLabel('Deactivate Account')
-                    ->visible(fn (User $record): bool => (bool) $record->is_active && $record->id !== auth()->id() && (auth()->user()?->hasRole('super_admin') ?? false))
+                    ->visible(fn (User $record): bool => (bool) $record->is_active && $record->id !== auth()->id() && (UserResource::canShield('ToggleActive') || (auth()->user()?->hasRole('super_admin') ?? false)))
                     ->action(function (User $record): void {
                         $record->update(['is_active' => false]);
 
@@ -239,7 +240,8 @@ class UsersTable
                 EditAction::make(),
                 DeleteAction::make(),
                 Impersonate::make()
-                    ->redirectTo(Dashboard::getUrl()),
+                    ->redirectTo(Dashboard::getUrl())
+                    ->visible(fn (): bool => UserResource::canShield('Impersonate') || (auth()->user()?->hasRole('super_admin') ?? false)),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

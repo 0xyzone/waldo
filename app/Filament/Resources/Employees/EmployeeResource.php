@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Employees;
 
+use Agroezinger\FilamentShieldEnhanced\Traits\HasResourceShield;
 use App\Filament\Resources\Employees\Pages\CreateEmployee;
 use App\Filament\Resources\Employees\Pages\ListEmployees;
 use App\Filament\Resources\Employees\Pages\ViewEmployee;
@@ -17,6 +18,18 @@ use UnitEnum;
 
 class EmployeeResource extends Resource
 {
+    use HasResourceShield;
+
+    public static function getShieldResourcePermissions(): array
+    {
+        return [
+            'Onboard' => 'Onboard Employee',
+            'Suspend' => 'Suspend Employee',
+            'Terminate' => 'Terminate Employee',
+            'ToggleManager' => 'Toggle Manager Status',
+        ];
+    }
+
     protected static ?string $model = Employee::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUser;

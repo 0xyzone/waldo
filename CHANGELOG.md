@@ -4,6 +4,27 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2026-10-25
+
+### Added
+- **Shield Enhanced Integration**: Installed and configured `agroezinger/filament-shield-enhanced` to intuitively cluster role permissions into sub-tabs by panel navigation groups (`HR & Admin`, `Roster Management`, `IT`, `Finance`, `Tips`, `Purchase & Store`, `Filament Shield`, `System Settings`).
+- **Fine-Grained Resource Permissions**: Refactored hardcoded role checks into granular Shield permissions on Resources:
+  - `EmployeeResource`: `Onboard:Employee`, `Suspend:Employee`, `Terminate:Employee`, `ToggleManager:Employee`.
+  - `EmployeePromotionResource`: `SyncHrms:EmployeePromotion`, `ImportPromotions:EmployeePromotion`.
+  - `EmployeeTransferResource`: `SyncHrms:EmployeeTransfer`, `ImportTransfers:EmployeeTransfer`.
+  - `SalaryIncrementRequestResource`: `HrAcknowledge:SalaryIncrementRequest`, `FinanceAcknowledge:SalaryIncrementRequest`.
+  - `NametagFineResource`: `HrAcknowledge:NametagFine`, `FinanceAcknowledge:NametagFine`.
+  - `TipsReportResource`: `ValidateReport:TipsReport`, `UnlockReport:TipsReport`.
+  - `UserResource`: `ToggleActive:User`, `ConfigureOtpEmail:User`, `Impersonate:User`.
+  - `IdCardRequestResource`: `SendDiscordNotification:IdCardRequest`.
+- **Fine-Grained Function Pages Permissions**: Added `HasPageShield` and multi-action permission declarations for pages:
+  - `SsfUploadGenerator`: `Page:View:SsfUploadGenerator`, `Page:Download:SsfUploadGenerator`, `Page:Generate:SsfUploadGenerator`.
+  - `Chat`: `Page:View:Chat`, `Page:CreateGroupChat:Chat`.
+  - `Changelog`: `Page:View:Changelog` (categorized under System Settings).
+- **Custom Application Capabilities**: Configured custom permission tokens for external tools including `access_letters_and_templates`, `access_employee_ssf_ids`, `access_salary_calculator`, and `export_department_reports`.
+
+---
+
 ## [2.2.0] - 2026-10-25
 
 ### Added

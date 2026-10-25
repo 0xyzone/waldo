@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\IdCardRequests;
 
+use Agroezinger\FilamentShieldEnhanced\Traits\HasResourceShield;
 use App\Filament\Resources\IdCardRequests\Pages\CreateIdCardRequest;
 use App\Filament\Resources\IdCardRequests\Pages\EditIdCardRequest;
 use App\Filament\Resources\IdCardRequests\Pages\ListIdCardRequests;
@@ -17,6 +18,15 @@ use UnitEnum;
 
 class IdCardRequestResource extends Resource
 {
+    use HasResourceShield;
+
+    public static function getShieldResourcePermissions(): array
+    {
+        return [
+            'SendDiscordNotification' => 'Send Discord Notification',
+        ];
+    }
+
     protected static ?string $model = IdCardRequest::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedIdentification;

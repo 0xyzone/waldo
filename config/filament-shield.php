@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+use App\Filament\Pages\ChangeInitialPassword;
 use BezhanSalleh\FilamentShield\Resources\Roles\RoleResource;
 use Filament\Pages\Dashboard;
 use Filament\Widgets\AccountWidget;
@@ -27,7 +28,7 @@ return [
             'pages' => true,
             'widgets' => true,
             'resources' => true,
-            'custom_permissions' => false,
+            'custom_permissions' => true,
         ],
     ],
 
@@ -71,7 +72,7 @@ return [
     'super_admin' => [
         'enabled' => true,
         'name' => 'super_admin',
-        'define_via_gate' => false,
+        'define_via_gate' => true,
         'intercept_gate' => 'before',
     ],
 
@@ -198,6 +199,7 @@ return [
         'prefix' => 'view',
         'exclude' => [
             Dashboard::class,
+            ChangeInitialPassword::class,
         ],
     ],
 
@@ -232,7 +234,12 @@ return [
     |
     */
 
-    'custom_permissions' => [],
+    'custom_permissions' => [
+        'access_letters_and_templates',
+        'access_employee_ssf_ids',
+        'access_salary_calculator',
+        'export_department_reports',
+    ],
 
     /*
     |--------------------------------------------------------------------------
