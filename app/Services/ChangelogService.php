@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.3.0';
+    public const CURRENT_VERSION = '2.4.0';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,26 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.4.0',
+                'date' => '2026-10-25',
+                'title' => 'Unofficial NameTag Requests & Role Navigation Fix',
+                'type' => 'minor',
+                'badge' => 'Purchase & Store',
+                'badge_color' => 'success',
+                'highlights' => 'Introduced the Unofficial NameTag Requests module under Purchase & Store to record and track nametag printing for both existing employees and external/custom persons, featuring real-time list view status transitions, automated action logs, and resolved a role navigation method conflict in RoleResource.',
+                'changes' => [
+                    'added' => [
+                        'Unofficial NameTag Requests Resource: Standalone module under Purchase & Store supporting both database employee search/autofill and manual non-employee entries.',
+                        'Custom Name on Tag & Remarks: Explicit field to specify exact text to be printed on tags, alongside request reasons and instructions.',
+                        'Real-Time List Status Updates: Interactive SelectColumn in the table to update status instantly (Pending, In Progress, Ready, Distributed, Cancelled).',
+                        'Automated Action Logs: Full audit trail tracking user changes and timestamps for every status transition.',
+                    ],
+                    'fixed' => [
+                        'RoleResource Navigation Compatibility: Removed legacy Utils navigation calls in RoleResource and properly delegated to FilamentShieldPlugin, eliminating 500 internal server errors on panel load.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.3.0',
                 'date' => '2026-10-25',

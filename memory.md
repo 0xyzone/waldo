@@ -110,7 +110,7 @@
   - Preserves backward compatibility for earlier exports summing LOP / individual leave categories.
 
 ### 11. In-App Changelog & Semantic Versioning
-- **Service**: `App\Services\ChangelogService` (`CURRENT_VERSION = '2.3.0'`). Provides `getCurrentVersion()`, `getCompactVersion()` (for collapsed sidebar), `parseVersion()`, and `getNextVersion()`.
+- **Service**: `App\Services\ChangelogService` (`CURRENT_VERSION = '2.4.0'`). Provides `getCurrentVersion()`, `getCompactVersion()` (for collapsed sidebar), `parseVersion()`, and `getNextVersion()`.
 - **Page**: `App\Filament\Pages\Changelog` (`/kamkaj/changelog`).
 - **Sidebar Footer**: Dynamic version pill in `KamkajPanelProvider` linking directly to `/kamkaj/changelog`, supporting dynamic major, minor, and micro/patch displays.
 - **Artisan Command**: `php artisan version:bump [micro|minor|major]` (`BumpVersionCommand`).
@@ -134,6 +134,17 @@
   - `HasResourceShield` on resources declaring custom actions (`EmployeeResource`, `EmployeePromotionResource`, `EmployeeTransferResource`, `SalaryIncrementRequestResource`, `NametagFineResource`, `TipsReportResource`, `UserResource`, `IdCardRequestResource`).
   - `HasPageShield` on function pages (`SsfUploadGenerator`, `Chat`, `Changelog`).
   - Custom permissions tab: `access_letters_and_templates`, `access_employee_ssf_ids`, `access_salary_calculator`, `export_department_reports`.
+
+### 14. Unofficial NameTag Requests (Purchase & Store)
+- **Models**: `App\Models\UnofficialNametagRequest` (`unofficial_nametag_requests`) & `App\Models\UnofficialNametagRequestLog` (`unofficial_nametag_request_logs`).
+- **Resource**: `App\Filament\Resources\UnofficialNametagRequests\UnofficialNametagRequestResource` (Navigation Group: `Purchase & Store`, Sort: 3).
+- **Core Functionality**:
+  - Records requests for existing employees (`source = employee`) with database search/autofill, or external non-employee persons (`source = custom`).
+  - `name_on_tag`: Captures specific display name to be physically printed on the tag.
+  - `remarks`: Reason or special printing/distribution instructions.
+  - List View Real-Time Status Updates: `SelectColumn` for instant transitions between `Pending`, `In Progress`, `Ready`, `Distributed`, and `Cancelled`.
+  - Automated Action Log History: Tracks status changes, user stamps, and timestamps.
+
 
 
 

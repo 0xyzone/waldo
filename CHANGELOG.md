@@ -4,6 +4,20 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2026-10-25
+
+### Added
+- **Unofficial NameTag Requests Resource**: Added new standalone resource under `Purchase & Store` to record and track nametag requests for existing employees or non-employee personnel.
+- **Autofill & Custom Source Handling**: Features toggle to search and autofill details from the employee database or enter external personnel manually.
+- **Custom Name on Tag**: Added explicit field to capture exact name/text to be printed on the nametag.
+- **List View Status Editing**: Enabled interactive `SelectColumn` for real-time status transitions directly from the table (`Pending`, `In Progress`, `Ready`, `Distributed`, `Cancelled`).
+- **Automated Action Logging**: Preserves full audit history of status transitions with user, timestamp, and action description.
+
+### Fixed
+- **RoleResource Navigation Fatal Error**: Fixed `Call to undefined method BezhanSalleh\FilamentShield\Support\Utils::isResourceNavigationRegistered()` by delegating navigation calls to `FilamentShieldPlugin::get()`.
+
+---
+
 ## [2.3.0] - 2026-10-25
 
 ### Added

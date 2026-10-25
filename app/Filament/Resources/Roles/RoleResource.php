@@ -10,6 +10,7 @@ use App\Filament\Resources\Roles\Pages\CreateRole;
 use App\Filament\Resources\Roles\Pages\EditRole;
 use App\Filament\Resources\Roles\Pages\ListRoles;
 use App\Filament\Resources\Roles\Pages\ViewRole;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use BezhanSalleh\FilamentShield\Support\Utils;
 use BezhanSalleh\FilamentShield\Traits\HasShieldFormComponents;
 use BezhanSalleh\PluginEssentials\Concerns\Resource as Essentials;
@@ -186,84 +187,23 @@ class RoleResource extends Resource
     }
 
     #[Override]
-    public static function getCluster(): ?string
-    {
-        return Utils::getResourceCluster() ?? static::$cluster;
-    }
-
-    #[Override]
     public static function getModel(): string
     {
         return Utils::getRoleModel();
     }
 
-    #[Override]
-    public static function getModelLabel(): string
-    {
-        return __('filament-shield::filament-shield.resource.label.role');
-    }
-
-    #[Override]
-    public static function getPluralModelLabel(): string
-    {
-        return __('filament-shield::filament-shield.resource.label.roles');
-    }
-
-    #[Override]
-    public static function shouldRegisterNavigation(): bool
-    {
-        return Utils::isResourceNavigationRegistered();
-    }
-
-    #[Override]
-    public static function getNavigationGroup(): ?string
-    {
-        return Utils::isResourceNavigationGroupEnabled()
-            ? __('filament-shield::filament-shield.nav.group')
-            : '';
-    }
-
-    #[Override]
-    public static function getNavigationLabel(): string
-    {
-        return __('filament-shield::filament-shield.nav.role.label');
-    }
-
-    #[Override]
-    public static function getNavigationIcon(): string
-    {
-        return __('filament-shield::filament-shield.nav.role.icon');
-    }
-
-    #[Override]
-    public static function getNavigationSort(): ?int
-    {
-        return Utils::getResourceNavigationSort();
-    }
-
-    #[Override]
     public static function getSlug(?Panel $panel = null): string
     {
         return Utils::getResourceSlug();
     }
 
-    #[Override]
-    public static function getNavigationBadge(): ?string
+    public static function getCluster(): ?string
     {
-        return Utils::isResourceNavigationBadgeEnabled()
-            ? strval(static::getModel()::count())
-            : null;
+        return Utils::getResourceCluster();
     }
 
-    #[Override]
-    public static function isScopedToTenant(): bool
+    public static function getEssentialsPlugin(): ?FilamentShieldPlugin
     {
-        return Utils::isScopedToTenant();
-    }
-
-    #[Override]
-    public static function canGloballySearch(): bool
-    {
-        return Utils::isResourceGloballySearchable() && count(static::getGloballySearchableAttributes()) && static::canViewAny();
+        return FilamentShieldPlugin::get();
     }
 }
