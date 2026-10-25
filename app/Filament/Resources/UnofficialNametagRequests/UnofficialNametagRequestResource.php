@@ -57,8 +57,8 @@ class UnofficialNametagRequestResource extends Resource
     {
         return [
             'index' => ListUnofficialNametagRequests::route('/'),
-            'create' => CreateUnofficialNametagRequest::route('/create'),
-            'edit' => EditUnofficialNametagRequest::route('/{record}/edit'),
+            // 'create' => CreateUnofficialNametagRequest::route('/create'),
+            // 'edit' => EditUnofficialNametagRequest::route('/{record}/edit'),
         ];
     }
 }
