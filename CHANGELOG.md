@@ -4,6 +4,16 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-10-25
+
+### Added
+- **Manual Attendance Staff Resource**: Added standalone resource under Roster Management allowing administrators to designate and manage staff members whose monthly attendance is maintained manually in HRMS. Includes employee preview details (department, designation) and active/inactive status switches.
+- **Monthly Manual Attendance Checklist Resource**: Added month-based checklist resource under Roster Management that automatically populates all designated active manual attendance staff upon monthly record generation.
+- **Live Attendance KPI & Department Filters**: Built dedicated view page with real-time statistics (Total Staff, Updated in HRMS, Pending Entry, Progress %), department filter pills, status switches (All, Pending, Updated), and single-click checkbox status toggling.
+- **Batch & Synchronization Actions**: Added header actions to sync newly designated staff, add individual employees to existing periods, and bulk mark attendances as done or pending.
+
+---
+
 ## [2.1.2] - 2026-10-23
 
 ### Added

@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.1.2';
+    public const CURRENT_VERSION = '2.2.0';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,22 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.2.0',
+                'date' => '2026-10-25',
+                'title' => 'Manual Attendance Staff & Monthly Manual Attendance Management',
+                'type' => 'minor',
+                'badge' => 'New Module',
+                'badge_color' => 'success',
+                'highlights' => 'Introduced dedicated Manual Attendance Staff selector and Monthly Manual Attendance checklist resources under Roster Management. Features month-end attendance tracking, live KPI progress statistics, department filtering, batch HRMS update actions, and single/bulk staff synchronization.',
+                'changes' => [
+                    'added' => [
+                        'Manual Attendance Staff Resource: Select and designate active employees whose monthly attendance is tracked manually instead of biometric scans, with department previews and status toggles.',
+                        'Monthly Manual Attendance Resource: Period-based monthly checklist tracking attendance entry into HRMS with automated active staff initialization, interactive completion checkboxes, and live statistical metrics.',
+                        'Checklist Refinement & Controls: Includes departmental filter tabs, status views (All, Pending, Updated), bulk and individual "Mark as Done" actions, and missing staff synchronization.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.1.2',
                 'date' => '2026-10-23',

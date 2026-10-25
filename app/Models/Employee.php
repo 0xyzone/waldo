@@ -195,6 +195,14 @@ class Employee extends Model
     }
 
     /**
+     * Get the manual attendance staff designation record for the Employee.
+     */
+    public function manualAttendanceStaff(): HasOne
+    {
+        return $this->hasOne(ManualAttendanceStaff::class, 'employee_code', 'employee_code');
+    }
+
+    /**
      * Check if the employee is incomplete.
      */
     public function isIncomplete()

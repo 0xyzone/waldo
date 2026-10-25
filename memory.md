@@ -110,10 +110,21 @@
   - Preserves backward compatibility for earlier exports summing LOP / individual leave categories.
 
 ### 11. In-App Changelog & Semantic Versioning
-- **Service**: `App\Services\ChangelogService` (`CURRENT_VERSION = '2.1.2'`). Provides `getCurrentVersion()`, `getCompactVersion()` (for collapsed sidebar), `parseVersion()`, and `getNextVersion()`.
+- **Service**: `App\Services\ChangelogService` (`CURRENT_VERSION = '2.2.0'`). Provides `getCurrentVersion()`, `getCompactVersion()` (for collapsed sidebar), `parseVersion()`, and `getNextVersion()`.
 - **Page**: `App\Filament\Pages\Changelog` (`/kamkaj/changelog`).
 - **Sidebar Footer**: Dynamic version pill in `KamkajPanelProvider` linking directly to `/kamkaj/changelog`, supporting dynamic major, minor, and micro/patch displays.
 - **Artisan Command**: `php artisan version:bump [micro|minor|major]` (`BumpVersionCommand`).
 - **Changelog File**: `CHANGELOG.md` in root adhering to Keep a Changelog specifications.
+
+### 12. Manual Attendance Management (Roster Management)
+- **Manual Attendance Staff**:
+  - **Model**: `App\Models\ManualAttendanceStaff` (`manual_attendance_staff` table)
+  - **Resource**: `App\Filament\Resources\ManualAttendanceStaffs\ManualAttendanceStaffResource` (Slug: `manual-attendance-staff`, Navigation Group: `Roster Management`).
+  - **Purpose**: Designate employees whose monthly attendance is maintained manually in HRMS instead of biometric clocks, with active status switches, notes, and department/designation previews.
+- **Monthly Manual Attendance Checklist**:
+  - **Models**: `App\Models\MonthlyManualAttendance` (`monthly_manual_attendances`) & `App\Models\MonthlyManualAttendanceItem` (`monthly_manual_attendance_items`).
+  - **Resource**: `App\Filament\Resources\MonthlyManualAttendances\MonthlyManualAttendanceResource` (Slug: `monthly-manual-attendances`, Navigation Group: `Roster Management`).
+  - **Features**: Period-based (Month & Year) checklist automatically populated from active `ManualAttendanceStaff`. Custom interactive view page (`view-monthly-manual-attendance`) with live KPI metric cards (Total Staff, Updated in HRMS, Pending, Progress Rate), department filter pills, status switches (All, Pending, Updated), CheckboxColumn `Attendance Done` updating `updated_at_hrms` & `updated_by`, "Sync Active Staff", "Add Staff", and bulk mark actions.
+
 
 
