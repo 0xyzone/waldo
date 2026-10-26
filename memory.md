@@ -125,8 +125,10 @@
   - **Models**: `App\Models\MonthlyManualAttendance` (`monthly_manual_attendances`) & `App\Models\MonthlyManualAttendanceItem` (`monthly_manual_attendance_items`).
   - **Resource**: `App\Filament\Resources\MonthlyManualAttendances\MonthlyManualAttendanceResource` (Slug: `monthly-manual-attendances`, Navigation Group: `Roster Management`).
   - **Features**: Period-based (Month & Year) checklist automatically populated from active `ManualAttendanceStaff`. Custom interactive view page (`view-monthly-manual-attendance`) with live KPI metric cards (Total Staff, Updated in HRMS, Pending, Progress Rate), department filter pills, status switches (All, Pending, Updated), CheckboxColumn `Attendance Done` updating `updated_at_hrms` & `updated_by`, "Sync Active Staff", "Add Staff", and bulk mark actions. Row clicks on the listing table directly navigate to this checklist view (`recordUrl` & `recordAction('view_checklist')`).
-- **Global Slide-Over Modals**:
+- **Global Slide-Over Modals & Mobile Card Action Triggering**:
   - `CreateAction` and `EditAction` globally configured in `AppServiceProvider` with `modal(true)`, `slideOver()`, and `modalWidth(Width::SevenExtraLarge)` so that creating and editing records across all resources opens a wide 7XL slide-over drawer instead of navigating to separate pages.
+  - Mobile card views on stacked tables (`.fi-ta-table-stacked-on-mobile > tbody > tr`) automatically delegate taps to trigger the record's primary action (`view_checklist`, `view`, or `edit`) or column action.
+  - Bulk action checkboxes on mobile card view styled with unsqueezed dimensions (`1.125rem`, `flex-shrink: 0`) and stripped of redundant `"Select Record"` text labels. Pointer events on `.fi-ta-cell-label` are ignored so card taps pass cleanly through.
 
 ### 13. Filament Shield Enhanced & Granular Authorization
 - **Package**: `agroezinger/filament-shield-enhanced`

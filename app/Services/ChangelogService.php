@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.5.0';
+    public const CURRENT_VERSION = '2.5.1';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,21 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.5.1',
+                'date' => '2026-10-26',
+                'title' => 'Mobile Record Card Action Trigger & Selection Checkbox Fix',
+                'type' => 'patch',
+                'badge' => 'Mobile UX',
+                'badge_color' => 'info',
+                'highlights' => 'Enabled card tapping on mobile stacked table views to automatically trigger primary actions (view, edit, or custom record URL) and resolved the squeezed bulk selection checkbox by removing unnecessary labels.',
+                'changes' => [
+                    'fixed' => [
+                        'Mobile Selection Checkbox: Removed the "Select Record" pseudo-element label and desktop width constraints in mobile stacked view, preserving fixed checkbox dimensions so bulk selection checkboxes are never squeezed.',
+                        'Card Tap Action Trigger: Configured dynamic recordAction defaults (prioritizing view_checklist, view, edit) and added a touch-friendly mobile click delegator to activate record actions directly when tapping table cards.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.5.0',
                 'date' => '2026-10-26',

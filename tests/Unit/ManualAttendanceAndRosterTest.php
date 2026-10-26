@@ -13,6 +13,7 @@ use App\Models\MonthlyManualRoster;
 use App\Models\MonthlyManualRosterItem;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Support\Enums\Alignment;
 use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\CheckboxColumn;
@@ -121,5 +122,23 @@ class ManualAttendanceAndRosterTest extends TestCase
         $rosterRecord = new MonthlyManualRoster(['id' => 456]);
         $this->assertEquals('view_checklist', $rostersTable->getRecordAction($rosterRecord));
         $this->assertStringContainsString('/kamkaj/monthly-manual-rosters/456', $rostersTable->getRecordUrl($rosterRecord));
+    }
+
+    public function test_table_record_action_defaults_to_view_or_edit_action(): void
+    {
+        $record = new MonthlyManualAttendance(['id' => 1]);
+
+        $tableWithView = Table::make((new ListMonthlyManualAttendances));
+        $tableWithView->actions([
+            ViewAction::make(),
+            EditAction::make(),
+        ]);
+        $this->assertEquals('view', $tableWithView->getRecordAction($record));
+
+        $tableWithEdit = Table::make((new ListMonthlyManualAttendances));
+        $tableWithEdit->actions([
+            EditAction::make(),
+        ]);
+        $this->assertEquals('edit', $tableWithEdit->getRecordAction($record));
     }
 }

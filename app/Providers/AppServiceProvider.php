@@ -65,9 +65,31 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(NotificationSent::class, SendWebPushOnDatabaseNotification::class);
         Event::listen(MessageSent::class, SendWebPushOnChatMessage::class);
 
-        // Transform all tables into clean, responsive mobile cards
+        // Transform all tables into clean, responsive mobile cards and set default record action (view or edit)
         Table::configureUsing(function (Table $table): void {
             $table->stackedOnMobile();
+
+            $table->recordAction(function (Model $record, Table $table): ?string {
+                if ($table->hasCustomRecordUrl()) {
+                    return null;
+                }
+
+                $flatActions = array_keys($table->getFlatRecordActions());
+
+                if (in_array('view_checklist', $flatActions, true)) {
+                    return 'view_checklist';
+                }
+
+                if (in_array('view', $flatActions, true)) {
+                    return 'view';
+                }
+
+                if (in_array('edit', $flatActions, true)) {
+                    return 'edit';
+                }
+
+                return null;
+            });
         });
 
         // Globally configure CreateAction and EditAction to slideover with 7xl modal width
@@ -221,6 +243,58 @@ class AppServiceProvider extends ServiceProvider
                             }
                         }
                     }, true);
+
+                    // Mobile Table Card Click: Trigger main action (view or edit) when clicking anywhere on record card
+                    document.addEventListener("click", function (event) {
+                        var card = event.target.closest("table.fi-ta-table-stacked-on-mobile > tbody > tr");
+                        if (!card) {
+                            return;
+                        }
+
+                        // Ignore text selection
+                        if (window.getSelection && window.getSelection().toString().length > 0) {
+                            return;
+                        }
+
+                        // Ignore interactive controls so their actions, checkboxes, and buttons operate independently
+                        if (event.target.closest("button, a, input, select, textarea, label, [role=\"button\"], [onclick], .fi-ta-actions, .fi-ta-selection-cell, .fi-ta-record-checkbox")) {
+                            return;
+                        }
+
+                        // 1. Column link with URL (e.g. recordUrl / view_checklist)
+                        var link = card.querySelector("a.fi-ta-col[href]:not([href=\"#\"]):not([href=\"\"])");
+                        if (link) {
+                            link.click();
+                            return;
+                        }
+
+                        // 2. Column button with Livewire click action (e.g. recordAction like edit or view)
+                        var colBtn = card.querySelector("button.fi-ta-col");
+                        if (colBtn) {
+                            colBtn.click();
+                            return;
+                        }
+
+                        // 3. View action in .fi-ta-actions
+                        var viewBtn = card.querySelector(".fi-ta-actions [wire\\:click*=\"view\"], .fi-ta-actions a[href*=\"/view\"], .fi-ta-actions [wire\\:click*=\"view_checklist\"], .fi-ta-actions a[href*=\"monthly-manual\"]");
+                        if (viewBtn) {
+                            viewBtn.click();
+                            return;
+                        }
+
+                        // 4. Edit action in .fi-ta-actions
+                        var editBtn = card.querySelector(".fi-ta-actions [wire\\:click*=\"edit\"], .fi-ta-actions a[href*=\"/edit\"]");
+                        if (editBtn) {
+                            editBtn.click();
+                            return;
+                        }
+
+                        // 5. First safe action button in .fi-ta-actions
+                        var firstAction = card.querySelector(".fi-ta-actions button:not([class*=\"danger\"]):not([class*=\"delete\"]), .fi-ta-actions a");
+                        if (firstAction) {
+                            firstAction.click();
+                        }
+                    });
                 </script>
             ')
         );

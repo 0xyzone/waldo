@@ -4,6 +4,15 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.1] - 2026-10-26
+
+### Fixed
+- **Mobile Selection Checkbox**: Removed the artificial `"Select Record"` text label and desktop width constraints from `.fi-ta-selection-cell` in mobile card view, giving bulk checkboxes dedicated, unsqueezed dimensions (`1.125rem` / `flex-shrink: 0`).
+- **Mobile Record Card Action Triggering**: Configured global dynamic record actions resolving to `view_checklist`, `view`, or `edit`, and added a mobile tap delegator so tapping stacked record cards smoothly activates their primary view/edit action or navigation target.
+- **Card Label Tap Passthrough**: Set `.fi-ta-cell-label` to `pointer-events: none` on mobile so touching column labels forwards clicks cleanly to the record card.
+
+---
+
 ## [2.5.0] - 2026-10-26
 
 ### Added

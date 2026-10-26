@@ -827,28 +827,46 @@ table.fi-ta-table > tbody > tr > td:has(.fi-ta-actions) .fi-ta-actions {
         transform: scale(0.99) !important;
     }
 
-    /* Dedicated top row for mobile selection checkbox with clean label */
+    /* Dedicated top row for mobile selection checkbox - clean without label and unsqueezed */
     table.fi-ta-table.fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-selection-cell {
         display: flex !important;
         flex-direction: row !important;
-        justify-content: space-between !important;
+        justify-content: flex-start !important;
         align-items: center !important;
         width: 100% !important;
+        min-width: unset !important;
+        max-width: unset !important;
         order: -1 !important;
-        padding: 0.2rem 0 0.5rem 0 !important;
-        margin-bottom: 0.4rem !important;
+        padding: 0 0 0.45rem 0 !important;
+        margin-bottom: 0.35rem !important;
         border-bottom: 1px dashed var(--surface-border) !important;
         position: static !important;
-        z-index: auto !important;
+        z-index: 2 !important;
     }
 
     table.fi-ta-table.fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-selection-cell::before {
-        content: 'Select Record' !important;
-        font-size: 0.6875rem !important;
-        font-weight: 700 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.06em !important;
-        color: var(--text-muted) !important;
+        content: none !important;
+        display: none !important;
+    }
+
+    table.fi-ta-table.fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-selection-cell input[type="checkbox"],
+    table.fi-ta-table.fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-selection-cell .fi-checkbox-input {
+        width: 1.125rem !important;
+        height: 1.125rem !important;
+        min-width: 1.125rem !important;
+        min-height: 1.125rem !important;
+        max-width: 1.125rem !important;
+        max-height: 1.125rem !important;
+        margin: 0 !important;
+        cursor: pointer !important;
+        display: inline-block !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* Cell labels inside mobile cards pass clicks through to card */
+    table.fi-ta-table.fi-ta-table-stacked-on-mobile .fi-ta-cell-label {
+        pointer-events: none !important;
+        user-select: none !important;
     }
 
     /* Stacked select-all page header cell */
