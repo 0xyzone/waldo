@@ -107,6 +107,8 @@ class MonthlyManualRostersTable
                     DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('id', 'desc');
+            ->defaultSort('id', 'desc')
+            ->recordUrl(fn (MonthlyManualRoster $record): string => MonthlyManualRosterResource::getUrl('view', ['record' => $record]))
+            ->recordAction('view_checklist');
     }
 }

@@ -10,8 +10,11 @@ use App\Models\BiometricAllotment;
 use App\Models\Employee;
 use App\Observers\BiometricAllotmentObserver;
 use App\Observers\EmployeeObserver;
+use Filament\Actions\CreateAction;
+use Filament\Actions\EditAction;
 use Filament\Auth\Notifications\VerifyEmail;
 use Filament\Facades\Filament;
+use Filament\Support\Enums\Width;
 use Filament\Support\Facades\FilamentView;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
@@ -65,6 +68,19 @@ class AppServiceProvider extends ServiceProvider
         // Transform all tables into clean, responsive mobile cards
         Table::configureUsing(function (Table $table): void {
             $table->stackedOnMobile();
+        });
+
+        // Globally configure CreateAction and EditAction to slideover with 7xl modal width
+        CreateAction::configureUsing(function (CreateAction $action): void {
+            $action->modal(true)
+                ->slideOver()
+                ->modalWidth(Width::SevenExtraLarge);
+        });
+
+        EditAction::configureUsing(function (EditAction $action): void {
+            $action->modal(true)
+                ->slideOver()
+                ->modalWidth(Width::SevenExtraLarge);
         });
 
         // Inject custom CSS to style employees table rows based on status

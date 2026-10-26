@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.4.1';
+    public const CURRENT_VERSION = '2.5.0';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,23 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.5.0',
+                'date' => '2026-10-26',
+                'title' => 'Global 7XL Slide-Over Modals & Checklist Row Click Routing',
+                'type' => 'minor',
+                'badge' => 'Global UI/UX',
+                'badge_color' => 'primary',
+                'highlights' => 'Configured CreateAction and EditAction globally across all resources to slide over with a 7xl modal width instead of redirecting to separate pages, and updated row clicks on Monthly Manual Attendance and Roster list views to open the interactive checklist directly.',
+                'changes' => [
+                    'added' => [
+                        'Global Slide-Over Modals: Configured CreateAction and EditAction globally in AppServiceProvider to modal(true), slideOver(), and modalWidth(Width::SevenExtraLarge), ensuring future actions seamlessly open wide slide-over drawers by default.',
+                    ],
+                    'changed' => [
+                        'Checklist Row Navigation: Clicking table rows in Monthly Manual Attendance and Monthly Manual Roster lists now navigates directly to the interactive checklist view (recordUrl & recordAction) instead of opening the edit form.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.4.1',
                 'date' => '2026-10-26',

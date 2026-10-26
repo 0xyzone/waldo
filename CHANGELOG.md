@@ -4,6 +4,16 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 2026-10-26
+
+### Added
+- **Global 7XL Slide-Over Modals**: Configured `CreateAction` and `EditAction` globally in `AppServiceProvider` with `modal(true)`, `slideOver()`, and `modalWidth(Width::SevenExtraLarge)` so that creating and editing records across all resources opens a wide slide-over modal drawer instead of navigating to separate pages.
+
+### Changed
+- **Checklist Row Click Routing**: Clicking rows on `MonthlyManualAttendancesTable` and `MonthlyManualRostersTable` now opens the interactive checklist view directly via `recordUrl` and `recordAction` instead of opening the edit form.
+
+---
+
 ## [2.4.1] - 2026-10-26
 
 ### Fixed

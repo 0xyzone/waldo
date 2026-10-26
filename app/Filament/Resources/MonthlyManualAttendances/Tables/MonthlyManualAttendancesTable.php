@@ -107,6 +107,8 @@ class MonthlyManualAttendancesTable
                     DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('id', 'desc');
+            ->defaultSort('id', 'desc')
+            ->recordUrl(fn (MonthlyManualAttendance $record): string => MonthlyManualAttendanceResource::getUrl('view', ['record' => $record]))
+            ->recordAction('view_checklist');
     }
 }

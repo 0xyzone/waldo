@@ -2,13 +2,22 @@
 
 namespace Tests\Unit;
 
+use App\Filament\Resources\MonthlyManualAttendances\Pages\ListMonthlyManualAttendances;
+use App\Filament\Resources\MonthlyManualAttendances\Tables\MonthlyManualAttendancesTable;
+use App\Filament\Resources\MonthlyManualRosters\Pages\ListMonthlyManualRosters;
+use App\Filament\Resources\MonthlyManualRosters\Tables\MonthlyManualRostersTable;
 use App\Models\Employee;
 use App\Models\ManualAttendanceEmployee;
+use App\Models\MonthlyManualAttendance;
 use App\Models\MonthlyManualRoster;
 use App\Models\MonthlyManualRosterItem;
+use Filament\Actions\CreateAction;
+use Filament\Actions\EditAction;
 use Filament\Support\Enums\Alignment;
+use Filament\Support\Enums\Width;
 use Filament\Tables\Columns\CheckboxColumn;
-use PHPUnit\Framework\TestCase;
+use Filament\Tables\Table;
+use Tests\TestCase;
 
 class ManualAttendanceAndRosterTest extends TestCase
 {
@@ -84,5 +93,33 @@ class ManualAttendanceAndRosterTest extends TestCase
 
         $rosterCol = CheckboxColumn::make('is_roster_updated')->alignCenter();
         $this->assertEquals(Alignment::Center, $rosterCol->getAlignment());
+    }
+
+    public function test_global_create_and_edit_actions_configured_as_slideover_7xl(): void
+    {
+        $create = CreateAction::make();
+        $this->assertTrue($create->isModalSlideOver());
+        $this->assertEquals(Width::SevenExtraLarge, $create->getModalWidth());
+        $this->assertTrue($create->hasModal());
+
+        $edit = EditAction::make();
+        $this->assertTrue($edit->isModalSlideOver());
+        $this->assertEquals(Width::SevenExtraLarge, $edit->getModalWidth());
+        $this->assertTrue($edit->hasModal());
+    }
+
+    public function test_manual_attendance_and_roster_table_row_click_opens_checklist(): void
+    {
+        $attendancesTable = Table::make((new ListMonthlyManualAttendances));
+        MonthlyManualAttendancesTable::configure($attendancesTable);
+        $attendanceRecord = new MonthlyManualAttendance(['id' => 123]);
+        $this->assertEquals('view_checklist', $attendancesTable->getRecordAction($attendanceRecord));
+        $this->assertStringContainsString('/kamkaj/monthly-manual-attendances/123', $attendancesTable->getRecordUrl($attendanceRecord));
+
+        $rostersTable = Table::make((new ListMonthlyManualRosters));
+        MonthlyManualRostersTable::configure($rostersTable);
+        $rosterRecord = new MonthlyManualRoster(['id' => 456]);
+        $this->assertEquals('view_checklist', $rostersTable->getRecordAction($rosterRecord));
+        $this->assertStringContainsString('/kamkaj/monthly-manual-rosters/456', $rostersTable->getRecordUrl($rosterRecord));
     }
 }
