@@ -110,7 +110,7 @@
   - Preserves backward compatibility for earlier exports summing LOP / individual leave categories.
 
 ### 11. In-App Changelog & Semantic Versioning
-- **Service**: `App\Services\ChangelogService` (`CURRENT_VERSION = '2.4.0'`). Provides `getCurrentVersion()`, `getCompactVersion()` (for collapsed sidebar), `parseVersion()`, and `getNextVersion()`.
+- **Service**: `App\Services\ChangelogService` (`CURRENT_VERSION = '2.4.1'`). Provides `getCurrentVersion()`, `getCompactVersion()` (for collapsed sidebar), `parseVersion()`, and `getNextVersion()`.
 - **Page**: `App\Filament\Pages\Changelog` (`/kamkaj/changelog`).
 - **Sidebar Footer**: Dynamic version pill in `KamkajPanelProvider` linking directly to `/kamkaj/changelog`, supporting dynamic major, minor, and micro/patch displays.
 - **Artisan Command**: `php artisan version:bump [micro|minor|major]` (`BumpVersionCommand`).

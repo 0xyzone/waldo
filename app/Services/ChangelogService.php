@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.4.0';
+    public const CURRENT_VERSION = '2.4.1';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,21 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.4.1',
+                'date' => '2026-10-26',
+                'title' => 'Center Alignment for Manual Attendance & Roster Checkboxes',
+                'type' => 'patch',
+                'badge' => 'UI Adjustment',
+                'badge_color' => 'info',
+                'highlights' => 'Center aligned the checkbox columns for both Monthly Manual Attendance and Monthly Manual Roster checklist views, enhancing readability, consistency, and table layout aesthetics.',
+                'changes' => [
+                    'fixed' => [
+                        'CheckboxColumn Alignment: Corrected alignment declaration to alignCenter() on is_attendance_updated and is_roster_updated in ViewMonthlyManualAttendance and ViewMonthlyManualRoster.',
+                        'Table Cell & Checkbox Flex Alignment: Enhanced theme.css to properly center table body cells, .fi-ta-col containers, and .fi-ta-checkbox elements across both light and dark modes.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.4.0',
                 'date' => '2026-10-25',

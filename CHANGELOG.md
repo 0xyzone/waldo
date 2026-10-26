@@ -4,6 +4,14 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.1] - 2026-10-26
+
+### Fixed
+- **Manual Attendance Checkbox Column Alignment**: Added `alignCenter()` to `is_attendance_updated` on `ViewMonthlyManualAttendance` and to `is_roster_updated` on `ViewMonthlyManualRoster`.
+- **Table Cell & Checkbox Flex Centering**: Added `.fi-ta-cell.fi-align-center` and `.fi-ta-checkbox.fi-align-center` styling to `theme.css` to properly align checkbox containers and row checkboxes across both light and dark modes.
+
+---
+
 ## [2.4.0] - 2026-10-25
 
 ### Added

@@ -135,6 +135,7 @@ class ViewMonthlyManualAttendance extends ViewRecord implements HasTable
             ->columns([
                 CheckboxColumn::make('is_attendance_updated')
                     ->label('Attendance Done')
+                    ->alignCenter()
                     ->afterStateUpdated(function (MonthlyManualAttendanceItem $record, bool $state): void {
                         $record->update([
                             'is_attendance_updated' => $state,

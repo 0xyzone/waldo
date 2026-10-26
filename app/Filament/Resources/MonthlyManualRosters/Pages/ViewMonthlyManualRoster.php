@@ -135,6 +135,7 @@ class ViewMonthlyManualRoster extends ViewRecord implements HasTable
             ->columns([
                 CheckboxColumn::make('is_roster_updated')
                     ->label('Roster Done')
+                    ->alignCenter()
                     ->afterStateUpdated(function (MonthlyManualRosterItem $record, bool $state): void {
                         $record->update([
                             'is_roster_updated' => $state,

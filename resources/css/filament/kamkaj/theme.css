@@ -673,6 +673,35 @@ table.fi-ta-table:not(.fi-ta-table-stacked-on-mobile) > thead > tr > th.fi-ta-he
     justify-content: flex-start !important;
 }
 
+/* Alignment support for table body cells & checkbox columns */
+.fi-ta-cell.fi-align-center {
+    text-align: center !important;
+}
+
+.fi-ta-cell.fi-align-center > .fi-ta-col {
+    justify-content: center !important;
+    text-align: center !important;
+}
+
+.fi-ta-cell.fi-align-center > .fi-ta-col > .fi-ta-checkbox,
+.fi-ta-checkbox.fi-align-center {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+    width: 100% !important;
+}
+
+table.fi-ta-table:not(.fi-ta-table-stacked-on-mobile) > thead > tr > th.fi-ta-header-cell.fi-align-center:first-child {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+}
+
+table.fi-ta-table:not(.fi-ta-table-stacked-on-mobile) > tbody > tr > td.fi-ta-cell.fi-align-center:first-child > .fi-ta-col > * {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+}
+
 /* Sort Icon Styling */
 .fi-ta-header-cell-sort-btn .fi-icon {
     width: 0.8125rem !important;

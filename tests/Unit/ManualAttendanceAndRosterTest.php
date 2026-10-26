@@ -6,6 +6,8 @@ use App\Models\Employee;
 use App\Models\ManualAttendanceEmployee;
 use App\Models\MonthlyManualRoster;
 use App\Models\MonthlyManualRosterItem;
+use Filament\Support\Enums\Alignment;
+use Filament\Tables\Columns\CheckboxColumn;
 use PHPUnit\Framework\TestCase;
 
 class ManualAttendanceAndRosterTest extends TestCase
@@ -73,5 +75,14 @@ class ManualAttendanceAndRosterTest extends TestCase
     {
         $employee = new Employee;
         $this->assertTrue(method_exists($employee, 'manualAttendance'));
+    }
+
+    public function test_checkbox_columns_are_center_aligned(): void
+    {
+        $attendanceCol = CheckboxColumn::make('is_attendance_updated')->alignCenter();
+        $this->assertEquals(Alignment::Center, $attendanceCol->getAlignment());
+
+        $rosterCol = CheckboxColumn::make('is_roster_updated')->alignCenter();
+        $this->assertEquals(Alignment::Center, $rosterCol->getAlignment());
     }
 }
