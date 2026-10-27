@@ -52,7 +52,7 @@
                     <div class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-1.5">
                         {{ $m['adjustments_pending'] }}
                     </div>
-                    <span class="text-[10px] font-mono text-slate-400 mt-0.5">Rs. {{ number_format($m['adjustments_pending_sum'], 2) }}</span>
+                    <span class="text-[10px] font-medium text-slate-400 mt-0.5">{{ $m['adjustments_approved'] }} Approved</span>
                 </div>
 
                 <!-- Salary Holds -->

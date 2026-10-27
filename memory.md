@@ -209,7 +209,7 @@
 
 ### 22. Category Resource Operations Suite (Finance, IT, Purchase & Store)
 - **Widgets**:
-  - `App\Filament\Widgets\FinanceOverviewWidget` (Sort: 3, `lg: 1`): Real-time financial operations tracking pending adjustments (count & total amount in NPR), active salary/tips holds, monthly leavers, terminations, and pending HRMS sync.
+  - `App\Filament\Widgets\FinanceOverviewWidget` (Sort: 3, `lg: 1`): Real-time financial operations tracking pending and approved adjustments counts, active salary/tips holds, monthly leavers, terminations, and pending HRMS sync.
   - `App\Filament\Widgets\ItOverviewWidget` (Sort: 4, `lg: 1`): IT & hardware systems queue tracking ID card requests across statuses (pending, designed, sent for print, done), biometric allotments/enrollments, and print reports.
   - `App\Filament\Widgets\PurchaseStoreOverviewWidget` (Sort: 5, `lg: 1`): Supply & store tracker monitoring nametag distributions this month, pending unofficial nametag requests, nametag fines amount/count, and unacknowledged fines.
 - **Filament Shield Permissions**:

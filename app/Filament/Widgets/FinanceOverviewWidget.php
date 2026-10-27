@@ -33,7 +33,7 @@ class FinanceOverviewWidget extends Widget
     {
         $pendingAdjustmentsCount = Adjustment::where('status', 'pending')->count();
         $approvedAdjustmentsCount = Adjustment::where('status', 'approved')->count();
-        $pendingAdjustmentsSum = Adjustment::where('status', 'pending')->sum('amount');
+        $totalAdjustments = Adjustment::count();
 
         $salaryHolds = Leaver::where('hold_salary', true)->count();
         $tipsHolds = Leaver::where('hold_tips', true)->count();
@@ -48,7 +48,7 @@ class FinanceOverviewWidget extends Widget
         return [
             'adjustments_pending' => $pendingAdjustmentsCount,
             'adjustments_approved' => $approvedAdjustmentsCount,
-            'adjustments_pending_sum' => $pendingAdjustmentsSum,
+            'adjustments_total' => $totalAdjustments,
             'salary_holds' => $salaryHolds,
             'tips_holds' => $tipsHolds,
             'leavers_this_month' => $thisMonthLeavers,

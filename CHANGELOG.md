@@ -4,6 +4,13 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.7.1] - 2026-10-27
+
+### Fixed
+- **Resolved QueryException in Finance Overview Widget**: Removed query on non-existent `amount` column in `adjustments` table (`select sum(amount)`), replacing it with approved adjustments count (`adjustments_approved`) and total adjustments count to align with database schema.
+
+---
+
 ## [2.7.0] - 2026-10-27
 
 ### Added

@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.7.0';
+    public const CURRENT_VERSION = '2.7.1';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,20 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.7.1',
+                'date' => '2026-10-27',
+                'title' => 'Fix Adjustments Amount Column QueryException on Finance Widget',
+                'type' => 'patch',
+                'badge' => 'Dashboard',
+                'badge_color' => 'primary',
+                'highlights' => 'Resolved SQLSTATE[42S22] unknown column amount error in FinanceOverviewWidget by adapting adjustments metric calculations to the actual database schema.',
+                'changes' => [
+                    'fixed' => [
+                        'Schema Harmonization: Replaced sum(amount) calculation with accurate total and approved adjustment status counts matching the adjustments table schema.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.7.0',
                 'date' => '2026-10-27',
