@@ -4,6 +4,15 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.3] - 2026-10-27
+
+### Changed
+- **Global Action Slide-Over Modals**: Configured base `Action` and `ViewAction` (alongside `CreateAction` and `EditAction`) with `slideOver()` globally in `AppServiceProvider` so that every modal action opens as a slide-over drawer across all screens.
+- **Edge-Anchored Slide-Over CSS**: Upgraded slide-over modal styling in `theme.css` with a fixed flex container, full `100dvh` viewport height, sticky headers and footers, and smooth horizontal slide animations.
+- **Mobile Full-Width Drawer Support**: Ensured that on mobile viewports (< 640px), all modals display as full-width (100vw) full-height edge-to-edge sliding drawers, completely replacing centered popup dialogs.
+
+---
+
 ## [2.5.2] - 2026-10-27
 
 ### Changed

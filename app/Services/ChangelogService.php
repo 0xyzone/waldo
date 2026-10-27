@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.5.2';
+    public const CURRENT_VERSION = '2.5.3';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,22 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.5.3',
+                'date' => '2026-10-27',
+                'title' => 'Global Slide-Over Modals for All Screen Sizes & Mobile Drawer Support',
+                'type' => 'patch',
+                'badge' => 'Mobile & Modal UX',
+                'badge_color' => 'success',
+                'highlights' => 'Configured all actions and modals to slide over from the screen edge globally across all device sizes, replacing center popup dialogs with full-height edge drawers on mobile.',
+                'changes' => [
+                    'changed' => [
+                        'Global Action Slide-Over: Globally configured base Action and ViewAction (alongside CreateAction and EditAction) with ->slideOver() in AppServiceProvider so every action modal opens as a slide-over drawer.',
+                        'Edge-Anchored Slide-Over CSS: Restructured slide-over modal CSS in theme.css with full 100dvh flex positioning, sticky header and footer, and fluid horizontal slide transitions.',
+                        'Mobile Full-Width Drawer: On screens below 640px, all modals render as full-width (100vw) edge-to-edge sliding sheets, eliminating center popup modals in mobile view.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.5.2',
                 'date' => '2026-10-27',

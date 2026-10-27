@@ -10,8 +10,10 @@ use App\Models\BiometricAllotment;
 use App\Models\Employee;
 use App\Observers\BiometricAllotmentObserver;
 use App\Observers\EmployeeObserver;
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Auth\Notifications\VerifyEmail;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
@@ -94,7 +96,11 @@ class AppServiceProvider extends ServiceProvider
             });
         });
 
-        // Globally configure CreateAction and EditAction to slideover with 7xl modal width
+        // Globally configure all Actions (Create, Edit, View, Table/Page Actions) to slide over with 7xl modal width
+        Action::configureUsing(function (Action $action): void {
+            $action->slideOver();
+        });
+
         CreateAction::configureUsing(function (CreateAction $action): void {
             $action->modal(true)
                 ->slideOver()
@@ -102,6 +108,12 @@ class AppServiceProvider extends ServiceProvider
         });
 
         EditAction::configureUsing(function (EditAction $action): void {
+            $action->modal(true)
+                ->slideOver()
+                ->modalWidth(Width::SevenExtraLarge);
+        });
+
+        ViewAction::configureUsing(function (ViewAction $action): void {
             $action->modal(true)
                 ->slideOver()
                 ->modalWidth(Width::SevenExtraLarge);
