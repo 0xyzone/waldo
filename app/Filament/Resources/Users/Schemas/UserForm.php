@@ -24,7 +24,8 @@ class UserForm
                     ->maxSize(2048)
                     ->imageEditor()
                     ->circleCropper()
-                    ->alignCenter(),
+                    ->alignCenter()
+                    ->hiddenOn('create'),
                 Toggle::make('is_active')
                     ->label('Active Account')
                     ->default(true)
@@ -32,13 +33,16 @@ class UserForm
                     ->helperText(fn (?User $record): string => ($record !== null && ! (bool) $record->is_active)
                         ? 'Inactive accounts cannot be reactivated from this form. Use the Reactivate button with OTP verification on the Users list page.'
                         : 'Deactivating will revoke access to the Kamkaj panel.'
-                    ),
+                    )
+                    ->hiddenOn('create'),
                 Toggle::make('read_receipts_enabled')
                     ->label('Read Receipts (Blue Ticks)')
-                    ->default(true),
+                    ->default(true)
+                    ->hiddenOn(['create', 'edit']),
                 Toggle::make('online_status_enabled')
                     ->label('Show Online Status & Last Active')
-                    ->default(true),
+                    ->default(true)
+                    ->hiddenOn(['create', 'edit']),
                 TextInput::make('name')
                     ->required(),
                 TextInput::make('username')
