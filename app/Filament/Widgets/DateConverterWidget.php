@@ -31,6 +31,10 @@ class DateConverterWidget extends Widget
 
     public ?string $convertedBsWeekday = null;
 
+    public ?string $convertedBsWeekdayEn = null;
+
+    public ?string $adDateFormatted = null;
+
     // BS to AD properties
     public ?string $bsYear = null;
 
@@ -41,6 +45,8 @@ class DateConverterWidget extends Widget
     public ?string $convertedAdDate = null;
 
     public ?string $convertedAdWeekday = null;
+
+    public ?string $convertedAdWeekdayNp = null;
 
     // Available BS years and days options
     public array $bsYears = [];
@@ -102,18 +108,61 @@ class DateConverterWidget extends Widget
         $this->activeTab = $tab;
     }
 
+    public function swapTab(): void
+    {
+        if ($this->activeTab === 'ad_to_bs') {
+            if ($this->convertedBsDate && ! str_contains($this->convertedBsDate, ' ') && ! str_contains($this->convertedBsDate, 'failed')) {
+                $parts = explode('.', $this->convertedBsDate);
+                if (count($parts) === 3) {
+                    $this->bsYear = (string) (int) $parts[0];
+                    $this->bsMonth = (string) (int) $parts[1];
+                    $this->bsDay = (string) (int) $parts[2];
+                    $this->convertBsToAd();
+                }
+            }
+            $this->activeTab = 'bs_to_ad';
+        } else {
+            if ($this->convertedAdDate && ! str_contains($this->convertedAdDate, ' ') && ! str_contains($this->convertedAdDate, 'failed')) {
+                $this->adDate = $this->convertedAdDate;
+                $this->convertAdToBs();
+            }
+            $this->activeTab = 'ad_to_bs';
+        }
+    }
+
+    public function setToday(): void
+    {
+        $today = Carbon::today();
+        $this->adDate = $today->format('Y-m-d');
+        $this->convertAdToBs();
+
+        $converter = new NepaliDate;
+        $convertedToday = $converter->convertAdToBs($today->year, $today->month, $today->day);
+        if (! empty($convertedToday)) {
+            $this->bsYear = (string) $convertedToday['year'];
+            $this->bsMonth = (string) $convertedToday['month'];
+            $this->bsDay = (string) $convertedToday['day'];
+        }
+        $this->convertBsToAd();
+    }
+
     public function convertAdToBs(): void
     {
         if (empty($this->adDate)) {
             $this->convertedBsDate = null;
             $this->convertedBsDateNp = null;
             $this->convertedBsWeekday = null;
+            $this->convertedBsWeekdayEn = null;
+            $this->adDateFormatted = null;
 
             return;
         }
 
         try {
             $date = Carbon::parse($this->adDate);
+            $this->adDateFormatted = $date->format('l, F j, Y');
+            $this->convertedBsWeekdayEn = $date->format('l');
+
             $converter = new NepaliDate;
 
             // Check if year is within range 1944 to 2033
@@ -156,6 +205,7 @@ class DateConverterWidget extends Widget
         if (empty($this->bsYear) || empty($this->bsMonth) || empty($this->bsDay)) {
             $this->convertedAdDate = null;
             $this->convertedAdWeekday = null;
+            $this->convertedAdWeekdayNp = null;
 
             return;
         }
@@ -171,6 +221,7 @@ class DateConverterWidget extends Widget
             if (empty($validation)) {
                 $this->convertedAdDate = 'Invalid BS Date';
                 $this->convertedAdWeekday = null;
+                $this->convertedAdWeekdayNp = null;
 
                 return;
             }
@@ -180,13 +231,18 @@ class DateConverterWidget extends Widget
                 $carbonDate = Carbon::createFromDate($converted['year'], $converted['month'], $converted['day']);
                 $this->convertedAdDate = $carbonDate->format('Y-m-d');
                 $this->convertedAdWeekday = $carbonDate->format('l'); // Day of week e.g. Tuesday
+
+                $detailsNp = $converter->getDetails($converted['year'], $converted['month'], $converted['day'], 'ad', 'np');
+                $this->convertedAdWeekdayNp = ! empty($detailsNp) ? $detailsNp['l'] : null;
             } else {
                 $this->convertedAdDate = 'Conversion failed';
                 $this->convertedAdWeekday = null;
+                $this->convertedAdWeekdayNp = null;
             }
         } catch (\Exception $e) {
             $this->convertedAdDate = 'Invalid Date';
             $this->convertedAdWeekday = null;
+            $this->convertedAdWeekdayNp = null;
         }
     }
 }

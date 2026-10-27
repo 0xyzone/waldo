@@ -14,176 +14,294 @@
                     document.body.removeChild(el);
                 }
                 this.copied = true;
-                setTimeout(() => this.copied = false, 2000);
+                setTimeout(() => this.copied = false, 2200);
             }
          }"
-         class="relative w-full rounded-3xl bg-white dark:bg-[#121826] border border-slate-200/80 dark:border-white/[0.07] p-6 sm:p-8 shadow-[0_2px_12px_rgba(15,23,42,0.03)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition-all duration-300 flex flex-col justify-between">
+         class="relative w-full rounded-3xl bg-white dark:bg-[#121826] border border-slate-200/80 dark:border-white/[0.08] p-5 sm:p-7 shadow-[0_4px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_12px_36px_rgba(0,0,0,0.38)] transition-all duration-300 overflow-hidden flex flex-col justify-between">
 
-        <div class="space-y-6">
+        <!-- Ambient Background Glow -->
+        <div class="pointer-events-none absolute -right-12 -top-12 h-44 w-44 rounded-full bg-gradient-to-br from-orange-500/10 via-amber-500/5 to-transparent blur-3xl"></div>
+
+        <div class="space-y-5 relative">
             <!-- Header Section -->
-            <div class="flex items-center gap-4 pb-5 border-b border-slate-100 dark:border-white/[0.06]">
-                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-orange-500 to-red-600 text-white shadow-md shadow-orange-500/20">
-                    <x-filament::icon icon="heroicon-s-arrow-path" class="h-6 w-6 text-white" />
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-white/[0.06]">
+                <div class="flex items-center gap-3.5">
+                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-orange-500/20 via-amber-500/15 to-orange-500/10 dark:from-orange-500/25 dark:via-amber-500/20 dark:to-orange-500/15 border border-orange-500/25 text-orange-600 dark:text-orange-400 shadow-sm shadow-orange-500/10">
+                        <x-filament::icon icon="heroicon-s-arrow-path-rounded-square" class="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-base sm:text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">
+                                Date Converter
+                            </h2>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">
+                                AD ⇄ BS
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                            Bidirectional English (Gregorian) & Nepali (Bikram Sambat) calendar conversion
+                        </p>
+                    </div>
                 </div>
-                <div>
-                    <h2 class="text-xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
-                        Date Converter
-                    </h2>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-                        Seamless bidirectional English (AD) and Nepali (BS) calendar conversion.
-                    </p>
-                </div>
+
+                <!-- Quick Today Action Button -->
+                <button 
+                    type="button" 
+                    wire:click="setToday" 
+                    title="Reset to today's date"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100/90 dark:bg-slate-800/80 hover:bg-orange-50 dark:hover:bg-orange-950/30 hover:text-orange-600 dark:hover:text-orange-400 border border-slate-200/80 dark:border-white/[0.08] transition-all cursor-pointer shadow-sm active:scale-95"
+                >
+                    <x-filament::icon icon="heroicon-m-sparkles" class="h-3.5 w-3.5 text-orange-500" />
+                    <span>Today</span>
+                </button>
             </div>
 
-            <!-- Segmented Tab Switcher -->
-            <div class="flex p-1 rounded-2xl bg-slate-100/80 dark:bg-slate-900/60 border border-slate-200/60 dark:border-white/[0.04]">
+            <!-- Segmented Mode Control with Swap Button -->
+            <div class="flex items-center gap-2">
+                <div class="flex-1 flex p-1 rounded-2xl bg-slate-100/90 dark:bg-slate-900/80 border border-slate-200/70 dark:border-white/[0.06] shadow-inner">
+                    <button 
+                        type="button"
+                        wire:click="setTab('ad_to_bs')"
+                        class="flex-1 py-2 px-3 text-xs font-bold text-center rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 {{ $activeTab === 'ad_to_bs' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200' }}"
+                    >
+                        @if ($activeTab === 'ad_to_bs')
+                            <span class="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                        @endif
+                        <span>English (AD) → Nepali (BS)</span>
+                    </button>
+                    <button 
+                        type="button"
+                        wire:click="setTab('bs_to_ad')"
+                        class="flex-1 py-2 px-3 text-xs font-bold text-center rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 {{ $activeTab === 'bs_to_ad' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200' }}"
+                    >
+                        @if ($activeTab === 'bs_to_ad')
+                            <span class="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                        @endif
+                        <span>Nepali (BS) → English (AD)</span>
+                    </button>
+                </div>
+
+                <!-- Swap Button -->
                 <button 
                     type="button"
-                    wire:click="setTab('ad_to_bs')"
-                    class="flex-1 py-2 text-xs font-bold text-center rounded-xl transition-all duration-200 cursor-pointer {{ $activeTab === 'ad_to_bs' ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-sm shadow-orange-500/20' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }}"
+                    wire:click="swapTab"
+                    title="Swap conversion mode"
+                    class="p-2.5 rounded-2xl bg-slate-100/90 dark:bg-slate-900/80 hover:bg-orange-50 dark:hover:bg-orange-950/40 text-slate-600 dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 border border-slate-200/70 dark:border-white/[0.06] transition-all cursor-pointer active:rotate-180 duration-300 shadow-sm"
                 >
-                    AD to BS
-                </button>
-                <button 
-                    type="button"
-                    wire:click="setTab('bs_to_ad')"
-                    class="flex-1 py-2 text-xs font-bold text-center rounded-xl transition-all duration-200 cursor-pointer {{ $activeTab === 'bs_to_ad' ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-sm shadow-orange-500/20' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100' }}"
-                >
-                    BS to AD
+                    <x-filament::icon icon="heroicon-m-arrows-right-left" class="h-4 w-4" />
                 </button>
             </div>
 
-            <!-- Form Inputs -->
+            <!-- Date Inputs -->
             <div class="space-y-4">
                 @if ($activeTab === 'ad_to_bs')
                     <div class="space-y-1.5">
-                        <label for="adDate" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                            English Date (AD)
-                        </label>
+                        <div class="flex items-center justify-between">
+                            <label for="adDate" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                Select English Date (AD)
+                            </label>
+                            @if ($adDateFormatted)
+                                <span class="text-[11px] font-semibold text-orange-600 dark:text-orange-400">
+                                    {{ $adDateFormatted }}
+                                </span>
+                            @endif
+                        </div>
                         <div class="relative w-full">
-                            <x-filament::icon icon="heroicon-m-calendar" class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-orange-500" />
+                            <div class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 flex items-center text-orange-500">
+                                <x-filament::icon icon="heroicon-m-calendar-days" class="h-5 w-5" />
+                            </div>
                             <input 
                                 type="date" 
                                 id="adDate" 
                                 wire:model.live="adDate" 
                                 min="1944-01-01" 
                                 max="2033-12-31"
-                                class="w-full rounded-xl border border-slate-200 dark:border-white/[0.08] bg-slate-50/70 dark:bg-slate-900/60 pl-10 pr-3 py-2.5 text-sm font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all" 
+                                class="w-full rounded-2xl border border-slate-200/90 dark:border-white/[0.08] bg-slate-50/80 dark:bg-slate-900/60 pl-11 pr-4 py-2.5 text-sm font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all [color-scheme:light] dark:[color-scheme:dark]" 
                             />
                         </div>
                     </div>
                 @else
-                    <div class="grid grid-cols-3 gap-2.5">
-                        <!-- BS Year -->
-                        <div class="space-y-1.5">
-                            <label for="bsYear" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                                Year (BS)
-                            </label>
-                            <select 
-                                id="bsYear" 
-                                wire:model.live="bsYear" 
-                                class="w-full rounded-xl border border-slate-200 dark:border-white/[0.08] bg-slate-50/70 dark:bg-slate-900/60 px-3 py-2.5 text-xs font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all cursor-pointer"
-                            >
-                                @foreach ($bsYears as $year)
-                                    <option value="{{ $year }}" class="dark:bg-slate-900">{{ $year }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                    <div class="space-y-1.5">
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            Select Nepali Date (BS)
+                        </label>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                            <!-- BS Year -->
+                            <div class="relative">
+                                <select 
+                                    id="bsYear" 
+                                    wire:model.live="bsYear" 
+                                    class="w-full rounded-2xl border border-slate-200/90 dark:border-white/[0.08] bg-slate-50/80 dark:bg-slate-900/60 px-3.5 py-2.5 text-xs font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all cursor-pointer appearance-none"
+                                >
+                                    @foreach ($bsYears as $year)
+                                        <option value="{{ $year }}" class="dark:bg-slate-900">{{ $year }} BS</option>
+                                    @endforeach
+                                </select>
+                                <div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                                    <x-filament::icon icon="heroicon-m-chevron-down" class="h-3.5 w-3.5" />
+                                </div>
+                            </div>
 
-                        <!-- BS Month -->
-                        <div class="space-y-1.5">
-                            <label for="bsMonth" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                                Month
-                            </label>
-                            <select 
-                                id="bsMonth" 
-                                wire:model.live="bsMonth" 
-                                class="w-full rounded-xl border border-slate-200 dark:border-white/[0.08] bg-slate-50/70 dark:bg-slate-900/60 px-3 py-2.5 text-xs font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all cursor-pointer"
-                            >
-                                <option value="1" class="dark:bg-slate-900">Baishakh</option>
-                                <option value="2" class="dark:bg-slate-900">Jestha</option>
-                                <option value="3" class="dark:bg-slate-900">Ashadh</option>
-                                <option value="4" class="dark:bg-slate-900">Shrawan</option>
-                                <option value="5" class="dark:bg-slate-900">Bhadra</option>
-                                <option value="6" class="dark:bg-slate-900">Ashwin</option>
-                                <option value="7" class="dark:bg-slate-900">Kartik</option>
-                                <option value="8" class="dark:bg-slate-900">Mangsir</option>
-                                <option value="9" class="dark:bg-slate-900">Paush</option>
-                                <option value="10" class="dark:bg-slate-900">Magh</option>
-                                <option value="11" class="dark:bg-slate-900">Falgun</option>
-                                <option value="12" class="dark:bg-slate-900">Chaitra</option>
-                            </select>
-                        </div>
+                            <!-- BS Month -->
+                            <div class="relative">
+                                <select 
+                                    id="bsMonth" 
+                                    wire:model.live="bsMonth" 
+                                    class="w-full rounded-2xl border border-slate-200/90 dark:border-white/[0.08] bg-slate-50/80 dark:bg-slate-900/60 px-3.5 py-2.5 text-xs font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all cursor-pointer appearance-none"
+                                >
+                                    <option value="1" class="dark:bg-slate-900">01 - Baishakh (बैशाख)</option>
+                                    <option value="2" class="dark:bg-slate-900">02 - Jestha (जेठ)</option>
+                                    <option value="3" class="dark:bg-slate-900">03 - Ashadh (असार)</option>
+                                    <option value="4" class="dark:bg-slate-900">04 - Shrawan (साउन)</option>
+                                    <option value="5" class="dark:bg-slate-900">05 - Bhadra (भदौ)</option>
+                                    <option value="6" class="dark:bg-slate-900">06 - Ashwin (असोज)</option>
+                                    <option value="7" class="dark:bg-slate-900">07 - Kartik (कात्तिक)</option>
+                                    <option value="8" class="dark:bg-slate-900">08 - Mangsir (मंसिर)</option>
+                                    <option value="9" class="dark:bg-slate-900">09 - Paush (पुष)</option>
+                                    <option value="10" class="dark:bg-slate-900">10 - Magh (माघ)</option>
+                                    <option value="11" class="dark:bg-slate-900">11 - Falgun (फागुन)</option>
+                                    <option value="12" class="dark:bg-slate-900">12 - Chaitra (चैत)</option>
+                                </select>
+                                <div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                                    <x-filament::icon icon="heroicon-m-chevron-down" class="h-3.5 w-3.5" />
+                                </div>
+                            </div>
 
-                        <!-- BS Day -->
-                        <div class="space-y-1.5">
-                            <label for="bsDay" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                                Day
-                            </label>
-                            <select 
-                                id="bsDay" 
-                                wire:model.live="bsDay" 
-                                class="w-full rounded-xl border border-slate-200 dark:border-white/[0.08] bg-slate-50/70 dark:bg-slate-900/60 px-3 py-2.5 text-xs font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all cursor-pointer"
-                            >
-                                @foreach ($bsDays as $day)
-                                    <option value="{{ $day }}" class="dark:bg-slate-900">{{ $day }}</option>
-                                @endforeach
-                            </select>
+                            <!-- BS Day -->
+                            <div class="relative">
+                                <select 
+                                    id="bsDay" 
+                                    wire:model.live="bsDay" 
+                                    class="w-full rounded-2xl border border-slate-200/90 dark:border-white/[0.08] bg-slate-50/80 dark:bg-slate-900/60 px-3.5 py-2.5 text-xs font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all cursor-pointer appearance-none"
+                                >
+                                    @foreach ($bsDays as $day)
+                                        <option value="{{ $day }}" class="dark:bg-slate-900">Day {{ sprintf('%02d', $day) }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                                    <x-filament::icon icon="heroicon-m-chevron-down" class="h-3.5 w-3.5" />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 @endif
             </div>
 
-            <!-- Result Display Card -->
-            <div class="p-5 rounded-2xl bg-slate-50/80 dark:bg-slate-900/50 border border-slate-200/70 dark:border-white/[0.06] space-y-2">
+            <!-- Conversion Result Display Card -->
+            <div class="relative p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-slate-50/90 via-white to-orange-50/20 dark:from-slate-900/90 dark:via-slate-900/70 dark:to-orange-950/20 border border-slate-200/80 dark:border-orange-500/20 shadow-sm overflow-hidden">
+                <!-- Inner subtle glow -->
+                <div class="pointer-events-none absolute -bottom-10 -right-10 h-32 w-32 rounded-full bg-orange-500/10 blur-xl"></div>
+
                 @if ($activeTab === 'ad_to_bs')
-                    <div class="flex items-center justify-between">
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Nepali Date (BS)</span>
-                        <button type="button" @click="copyText('{{ $convertedBsDateNp ?: $convertedBsDate }}')"
-                                class="inline-flex items-center gap-1 text-[11px] font-bold text-orange-600 dark:text-orange-400 hover:underline cursor-pointer">
-                            <x-filament::icon icon="heroicon-m-clipboard-document" class="h-3.5 w-3.5" />
-                            <span x-text="copied ? 'Copied!' : 'Copy'"></span>
-                        </button>
-                    </div>
+                    <div class="space-y-3 relative">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                    Nepali Date (Bikram Sambat)
+                                </span>
+                            </div>
+                            <button 
+                                type="button" 
+                                @click="copyText('{{ $convertedBsDateNp ?: $convertedBsDate }}')"
+                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer active:scale-95"
+                                :class="copied 
+                                    ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30' 
+                                    : 'bg-orange-500/10 text-orange-600 dark:text-orange-400 hover:bg-orange-500/20 border border-orange-500/20'"
+                            >
+                                <x-filament::icon x-show="!copied" icon="heroicon-m-clipboard-document" class="h-3.5 w-3.5" />
+                                <x-filament::icon x-show="copied" icon="heroicon-m-check" class="h-3.5 w-3.5" />
+                                <span x-text="copied ? 'Copied!' : 'Copy'"></span>
+                            </button>
+                        </div>
 
-                    @if ($convertedBsDateNp)
-                        <div class="text-2xl font-black text-orange-600 dark:text-orange-400 tracking-tight leading-tight">
-                            {{ $convertedBsDateNp }}
-                        </div>
-                        <div class="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-2">
-                            <span class="font-mono">{{ $convertedBsDate }}</span>
-                            <span class="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-700"></span>
-                            <span>{{ $convertedBsWeekday }}</span>
-                        </div>
-                    @else
-                        <div class="text-sm font-semibold text-rose-500">
-                            {{ $convertedBsDate ?? 'Enter a valid date' }}
-                        </div>
-                    @endif
+                        @if ($convertedBsDateNp)
+                            <div class="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+                                {{ $convertedBsDateNp }}
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-2 pt-1">
+                                <!-- Numeric Date Badge -->
+                                <button 
+                                    type="button" 
+                                    @click="copyText('{{ $convertedBsDate }}')" 
+                                    title="Click to copy numeric format"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl font-mono text-xs font-bold bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/25 hover:bg-orange-500/20 transition-all cursor-pointer"
+                                >
+                                    <x-filament::icon icon="heroicon-m-calendar" class="h-3.5 w-3.5" />
+                                    <span>{{ $convertedBsDate }}</span>
+                                </button>
+
+                                <!-- Weekday Badge -->
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold bg-slate-100/90 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/70 dark:border-white/[0.08]">
+                                    <x-filament::icon icon="heroicon-m-clock" class="h-3.5 w-3.5 text-slate-400" />
+                                    <span>{{ $convertedBsWeekday }}</span>
+                                    @if ($convertedBsWeekdayEn)
+                                        <span class="text-slate-400">• {{ $convertedBsWeekdayEn }}</span>
+                                    @endif
+                                </span>
+                            </div>
+                        @else
+                            <div class="text-sm font-semibold text-rose-500 py-1">
+                                {{ $convertedBsDate ?? 'Enter a valid date' }}
+                            </div>
+                        @endif
+                    </div>
                 @else
-                    <div class="flex items-center justify-between">
-                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">English Date (AD)</span>
-                        <button type="button" @click="copyText('{{ $convertedAdDate }}')"
-                                class="inline-flex items-center gap-1 text-[11px] font-bold text-orange-600 dark:text-orange-400 hover:underline cursor-pointer">
-                            <x-filament::icon icon="heroicon-m-clipboard-document" class="h-3.5 w-3.5" />
-                            <span x-text="copied ? 'Copied!' : 'Copy'"></span>
-                        </button>
-                    </div>
+                    <div class="space-y-3 relative">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                    English Date (Gregorian)
+                                </span>
+                            </div>
+                            <button 
+                                type="button" 
+                                @click="copyText('{{ $convertedAdDate }}')"
+                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer active:scale-95"
+                                :class="copied 
+                                    ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30' 
+                                    : 'bg-orange-500/10 text-orange-600 dark:text-orange-400 hover:bg-orange-500/20 border border-orange-500/20'"
+                            >
+                                <x-filament::icon x-show="!copied" icon="heroicon-m-clipboard-document" class="h-3.5 w-3.5" />
+                                <x-filament::icon x-show="copied" icon="heroicon-m-check" class="h-3.5 w-3.5" />
+                                <span x-text="copied ? 'Copied!' : 'Copy'"></span>
+                            </button>
+                        </div>
 
-                    @if ($convertedAdDate && $convertedAdDate !== 'Invalid BS Date' && $convertedAdDate !== 'Conversion failed')
-                        <div class="text-2xl font-black text-orange-600 dark:text-orange-400 tracking-tight leading-tight">
-                            {{ Carbon\Carbon::parse($convertedAdDate)->format('F d, Y') }}
-                        </div>
-                        <div class="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-2">
-                            <span class="font-mono">{{ $convertedAdDate }}</span>
-                            <span class="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-700"></span>
-                            <span>{{ $convertedAdWeekday }}</span>
-                        </div>
-                    @else
-                        <div class="text-sm font-semibold text-rose-500">
-                            {{ $convertedAdDate ?? 'Enter a valid date' }}
-                        </div>
-                    @endif
+                        @if ($convertedAdDate && $convertedAdDate !== 'Invalid BS Date' && $convertedAdDate !== 'Conversion failed')
+                            <div class="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+                                {{ Carbon\Carbon::parse($convertedAdDate)->format('F j, Y') }}
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-2 pt-1">
+                                <!-- Numeric Date Badge -->
+                                <button 
+                                    type="button" 
+                                    @click="copyText('{{ $convertedAdDate }}')" 
+                                    title="Click to copy ISO format"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl font-mono text-xs font-bold bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/25 hover:bg-orange-500/20 transition-all cursor-pointer"
+                                >
+                                    <x-filament::icon icon="heroicon-m-calendar" class="h-3.5 w-3.5" />
+                                    <span>{{ $convertedAdDate }}</span>
+                                </button>
+
+                                <!-- Weekday Badge -->
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold bg-slate-100/90 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/70 dark:border-white/[0.08]">
+                                    <x-filament::icon icon="heroicon-m-clock" class="h-3.5 w-3.5 text-slate-400" />
+                                    <span>{{ $convertedAdWeekday }}</span>
+                                    @if ($convertedAdWeekdayNp)
+                                        <span class="text-slate-400">• {{ $convertedAdWeekdayNp }}</span>
+                                    @endif
+                                </span>
+                            </div>
+                        @else
+                            <div class="text-sm font-semibold text-rose-500 py-1">
+                                {{ $convertedAdDate ?? 'Enter a valid date' }}
+                            </div>
+                        @endif
+                    </div>
                 @endif
             </div>
         </div>

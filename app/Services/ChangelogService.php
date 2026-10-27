@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.5.10';
+    public const CURRENT_VERSION = '2.5.11';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,24 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.5.11',
+                'date' => '2026-10-27',
+                'title' => 'Date Converter Widget Premium UI Redesign & Quick Actions',
+                'type' => 'patch',
+                'badge' => 'Dashboard',
+                'badge_color' => 'primary',
+                'highlights' => 'Redesigned the Date Converter dashboard widget with sleek segmented tabs, modern input styling, quick action tools (Today & Swap), and a glowing bilingual result card.',
+                'changes' => [
+                    'improved' => [
+                        'Segmented Mode Switcher: Replaced the harsh red gradient pill with a refined segmented control featuring active dot indicators and smooth light/dark surface transitions.',
+                        'Quick Action Controls: Added a "Today" instant reset button with sparkle icon and a bidirectional "Swap" button (⇄) that transfers converted dates between AD and BS modes.',
+                        'Native Dark Picker Support: Fixed Chromium input rendering via [color-scheme:light] dark:[color-scheme:dark] styling and added a calendar prefix icon.',
+                        'Bilingual Nepali Month Selector: Enhanced BS to AD dropdowns with Nepali month script labels (e.g. Baishakh / बैशाख) and custom chevrons.',
+                        'Ambient Glowing Result Card: Overhauled conversion results with pulsing live indicator, dual-format click-to-copy badges, and bilingual weekday details.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.5.10',
                 'date' => '2026-10-27',

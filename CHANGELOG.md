@@ -4,6 +4,18 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.11] - 2026-10-27
+
+### Improved
+- **Date Converter Widget Overhaul**: Redesigned the Date Converter dashboard widget (`DateConverterWidget`) with Waldo's premium "Zen Soft Tech" dark/light design system:
+  - **Sleek Segmented Switcher**: Replaced the harsh red-orange pill buttons with modern segmented tab controls featuring active pulse dot indicators.
+  - **Quick Action Controls**: Added an instant "Today" reset button with sparkle icon and a bidirectional "Swap" button (`⇄`) to seamlessly toggle direction while carrying over converted dates.
+  - **Native Dark Theme Picker**: Fixed Chromium Windows styling with `[color-scheme:light] dark:[color-scheme:dark]` and calendar icon adornment.
+  - **Bilingual Nepali Month Selector**: Added full Nepali script month titles (e.g., `01 - Baishakh (बैशाख)`) and custom chevrons.
+  - **Ambient Glowing Result Card**: Upgraded output into an ambient glowing card displaying large bold localized typography, an interactive copy button with green checkmark confirmation, monospaced numeric date badge, and bilingual weekday badge.
+
+---
+
 ## [2.5.10] - 2026-10-27
 
 ### Added
