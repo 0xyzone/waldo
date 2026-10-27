@@ -68,7 +68,8 @@ class UserForm
                     ->multiple()
                     ->preload()
                     ->required()
-                    ->searchable(),
+                    ->searchable()
+                    ->hiddenOn('create'),
             ]);
     }
 }
