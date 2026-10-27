@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.5.9';
+    public const CURRENT_VERSION = '2.5.10';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,22 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.5.10',
+                'date' => '2026-10-27',
+                'title' => 'Bulk Role Assignment & Amendment for Users',
+                'type' => 'patch',
+                'badge' => 'User Management',
+                'badge_color' => 'primary',
+                'highlights' => 'Added a bulk action to the Users resource enabling administrators to assign roles to multiple selected users with flexible Append or Replace amendment modes.',
+                'changes' => [
+                    'added' => [
+                        'Bulk Role Assignment Action: Introduced an "Assign Roles" toolbar bulk action in UsersTable with searchable multi-role selection and automatic selection deselection upon completion.',
+                        'Append vs Replace Mode: Built an assignment mode toggle allowing admins to either append selected roles (preserving current user roles) or replace existing roles entirely.',
+                        'Granular Permission & Security Safeguard: Registered AssignRoles custom shield permission and safeguarded super_admin role assignment against non-super-admin escalation.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.5.9',
                 'date' => '2026-10-27',

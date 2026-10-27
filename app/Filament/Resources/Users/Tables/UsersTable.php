@@ -6,11 +6,14 @@ use App\Filament\Resources\Users\UserResource;
 use App\Models\User;
 use App\Services\UserReactivationOtpService;
 use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Dashboard;
@@ -22,8 +25,11 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\HtmlString;
 use Illuminate\Validation\ValidationException;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 use STS\FilamentImpersonate\Actions\Impersonate;
 
 class UsersTable
@@ -245,6 +251,67 @@ class UsersTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    BulkAction::make('assignRoles')
+                        ->label('Assign Roles')
+                        ->icon('heroicon-o-shield-check')
+                        ->color('primary')
+                        ->modalHeading('Assign Roles to Selected Users')
+                        ->modalDescription('Select the roles to assign and specify whether to append them to existing roles or replace current roles for the selected users.')
+                        ->modalSubmitActionLabel('Update Roles')
+                        ->visible(fn (): bool => UserResource::canShield('AssignRoles') || (auth()->user()?->can('Update:User') ?? false) || (auth()->user()?->hasRole('super_admin') ?? false))
+                        ->form([
+                            Select::make('roles')
+                                ->label('Roles to Assign')
+                                ->options(function (): array {
+                                    $query = Role::query()->orderBy('name');
+                                    if (! (auth()->user()?->hasRole('super_admin') ?? false)) {
+                                        $query->where('name', '!=', 'super_admin');
+                                    }
+
+                                    return $query->pluck('name', 'name')->toArray();
+                                })
+                                ->multiple()
+                                ->preload()
+                                ->searchable()
+                                ->required()
+                                ->helperText('Select one or more roles to assign.'),
+                            Radio::make('assignment_mode')
+                                ->label('Assignment Mode')
+                                ->options([
+                                    'append' => 'Append to existing roles (preserve current roles and add newly selected ones)',
+                                    'replace' => 'Replace existing roles (overwrite and keep only the newly selected roles)',
+                                ])
+                                ->default('append')
+                                ->required(),
+                        ])
+                        ->action(function (Collection $records, array $data): void {
+                            $roles = $data['roles'] ?? [];
+                            $mode = $data['assignment_mode'] ?? 'append';
+
+                            if (empty($roles)) {
+                                return;
+                            }
+
+                            $records->each(function (User $user) use ($roles, $mode): void {
+                                if ($mode === 'replace') {
+                                    $user->syncRoles($roles);
+                                } else {
+                                    $user->assignRole($roles);
+                                }
+                            });
+
+                            app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+                            $actionText = $mode === 'replace' ? 'replaced' : 'appended';
+                            $userCount = $records->count();
+
+                            Notification::make()
+                                ->title('Roles Successfully Updated')
+                                ->body("Roles were {$actionText} for {$userCount} user(s).")
+                                ->success()
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
                     DeleteBulkAction::make(),
                 ]),
             ]);

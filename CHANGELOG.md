@@ -4,6 +4,17 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.10] - 2026-10-27
+
+### Added
+- **Bulk Role Assignment for Users**: Added an `Assign Roles` bulk action to the Users table (`UsersTable`), enabling administrators to assign multiple roles to any selected group of users at once.
+- **Append vs Replace Role Amendment**: Built an assignment mode selector in the bulk action modal:
+  - **Append**: Keeps the users' current roles and merges the newly selected roles.
+  - **Replace**: Overwrites and syncs only the newly selected roles.
+- **Security & Shield Integration**: Registered `AssignRoles` custom permission in `UserResource::getShieldResourcePermissions()` and restricted assigning the `super_admin` role to super administrators only.
+
+---
+
 ## [2.5.9] - 2026-10-27
 
 ### Fixed

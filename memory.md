@@ -177,5 +177,13 @@
 - **Cleaned Source Scanning**: Excluded compiled storage view paths (`storage/framework/views`) from Tailwind `@source` directives in `app.css` to prevent duplicate scanning of compiled PHP view templates.
 - **Performance**: Production build time reduced from ~32.16s down to ~5.89s (>5.4x faster).
 
+### 19. User Management & Bulk Role Assignment
+- **Bulk Action**: `assignRoles` in `UsersTable` allows updating roles for multiple selected users simultaneously with automatic deselection on completion.
+- **Amendment Modes**:
+  - `append`: Preserves existing user roles and adds the newly selected roles using Spatie's `assignRole()`.
+  - `replace`: Overwrites all existing roles and assigns only the newly selected roles using `syncRoles()`.
+- **Security & Authorization**: Custom permission `AssignRoles` added to `UserResource::getShieldResourcePermissions()`. The action modal prevents non-super-admin users from assigning the `super_admin` role.
+
+
 
 

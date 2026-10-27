@@ -26,6 +26,7 @@ class UserResource extends Resource
             'ToggleActive' => 'Reactivate / Deactivate User',
             'ConfigureOtpEmail' => 'Configure Reactivation OTP Email',
             'Impersonate' => 'Impersonate User',
+            'AssignRoles' => 'Assign Roles to Users (Bulk)',
         ];
     }
 
