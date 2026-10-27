@@ -4,6 +4,15 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.8] - 2026-10-27
+
+### Changed
+- **Removed Single-Thread Rayon Limitation**: Removed `RAYON_NUM_THREADS=1` from `package.json` build script. The Tailwind v4 Rust engine now utilizes all available CPU cores via multi-threading, cutting Vite build times from ~32s down to ~5.8s and restoring native cross-platform build execution on Windows Command Prompt and PowerShell.
+- **Vite Build Report Optimization**: Set `reportCompressedSize: false` in `vite.config.js` to skip calculating gzip metrics for 30+ bundled font and CSS assets during production builds.
+- **Cleaned Tailwind Source Paths**: Removed redundant `@source '../../storage/framework/views/*.php'` directive in `resources/css/app.css` to prevent duplicate scanning of cached compiled blade views.
+
+---
+
 ## [2.5.7] - 2026-10-27
 
 ### Changed

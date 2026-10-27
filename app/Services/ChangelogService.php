@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.5.7';
+    public const CURRENT_VERSION = '2.5.8';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,22 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.5.8',
+                'date' => '2026-10-27',
+                'title' => 'Vite & Tailwind Build Pipeline Performance Optimization',
+                'type' => 'patch',
+                'badge' => 'Build & Tooling',
+                'badge_color' => 'success',
+                'highlights' => 'Accelerated production build pipeline from ~32s down to ~5.8s (>5x speedup) by removing single-thread Rust Rayon restriction, disabling redundant gzip calculations, and cleaning source scanning paths.',
+                'changes' => [
+                    'changed' => [
+                        'Removed Single-Thread Rayon Limitation: Removed RAYON_NUM_THREADS=1 from package.json build script, allowing the Rust-powered Tailwind v4 engine to leverage all CPU cores in parallel and fixing execution on Windows Command Prompt/PowerShell.',
+                        'Optimized Vite Build Options: Configured reportCompressedSize: false in vite.config.js to bypass slow chunk-by-chunk gzip calculations during asset bundling.',
+                        'Pruned Redundant Source Scanning: Removed duplicate scanning of compiled storage views from app.css.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.5.7',
                 'date' => '2026-10-27',

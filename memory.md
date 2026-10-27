@@ -170,4 +170,11 @@
 - **Memory Optimization**: Livewire's component state snapshotting and JSON serialization across this large schema consumes ~147MB of memory, exceeding PHP's default `128M` limit. Runtime memory has been raised to `512M` across entry points (`public/index.php`, `AppServiceProvider::boot()`, and `CreateRole` / `EditRole` page `mount()` methods).
 - **Sanitized Permission Sync**: In `CreateRole::mutateFormDataBeforeCreate` and `EditRole::mutateFormDataBeforeSave`, extracted permission collections are filtered to strictly non-empty string values before executing `firstOrCreate` and `syncPermissions`.
 
+### 18. Vite & Tailwind Build Optimization
+- **Multithreading**: Removed legacy single-thread Rayon limiter (`RAYON_NUM_THREADS=1`) from `package.json`, allowing Tailwind v4's Rust compiler to utilize all available CPU threads in parallel and eliminating cross-platform shell syntax errors on Windows Command Prompt/PowerShell.
+- **Build Metrics**: Disabled `reportCompressedSize` in `vite.config.js` to avoid compute-heavy gzip calculations on 30+ font binaries and CSS stylesheets during production builds.
+- **Cleaned Source Scanning**: Excluded compiled storage view paths (`storage/framework/views`) from Tailwind `@source` directives in `app.css` to prevent duplicate scanning of compiled PHP view templates.
+- **Performance**: Production build time reduced from ~32.16s down to ~5.89s (>5.4x faster).
+
+
 

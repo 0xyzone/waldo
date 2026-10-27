@@ -50,6 +50,7 @@ export default defineConfig({
         },
     },
     build: {
+        reportCompressedSize: false,
         rolldownOptions: {
             checks: {
                 pluginTimings: false,
