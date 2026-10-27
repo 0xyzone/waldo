@@ -14,7 +14,7 @@ class DepartmentEmployeeStatsWidget extends Widget
 
     protected string $view = 'filament.widgets.department-employee-stats-widget';
 
-    protected static ?int $sort = 3;
+    protected static ?int $sort = 99;
 
     // Full column span to let us constraint layout max-width in blade
     protected int|string|array $columnSpan = 'full';
