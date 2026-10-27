@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.6.0';
+    public const CURRENT_VERSION = '2.7.0';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,23 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.7.0',
+                'date' => '2026-10-27',
+                'title' => 'Category Resource Operations Suite (Finance, IT, Purchase & Store) & Shield Permissions',
+                'type' => 'minor',
+                'badge' => 'Dashboard',
+                'badge_color' => 'primary',
+                'highlights' => 'Built and deployed 3 dedicated category resource widgets covering Finance, IT & Systems, and Purchase & Store with real-time operational queues and registered Filament Shield permissions.',
+                'changes' => [
+                    'added' => [
+                        'Finance Operations Widget: Central hub tracking pending adjustments (count & total NPR amount), active salary/tips holds, monthly leavers, terminations, and pending HRMS sync.',
+                        'IT & Systems Hub Widget: Dedicated operations widget monitoring ID card requests across lifecycles (pending, designed, sent for print, done), biometric allotments/enrollments, print batches, and user mappings.',
+                        'Purchase & Store Hub Widget: Real-time inventory and supply operations tracking nametag distributions this month, pending unofficial nametag requests, nametag fines amount/count, and unacknowledged fines.',
+                        'Filament Shield Permissions: Registered View:FinanceOverviewWidget, View:ItOverviewWidget, and View:PurchaseStoreOverviewWidget permissions with HasWidgetShield integration for role-based category visibility.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.6.0',
                 'date' => '2026-10-27',

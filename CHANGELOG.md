@@ -4,6 +4,17 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.7.0] - 2026-10-27
+
+### Added
+- **Category Resource Operations Suite (3 New Widgets)**: Created dedicated dashboard widgets covering Finance, IT & Systems, and Purchase & Store navigation groups:
+  - **Finance Operations Widget (`FinanceOverviewWidget`)**: Real-time hub tracking pending adjustments (count & total amount in NPR), active salary/tips holds, monthly leavers, terminations, and pending HRMS sync with direct resource navigation.
+  - **IT & Systems Hub Widget (`ItOverviewWidget`)**: Dedicated operational view monitoring ID card requests across lifecycles (pending design, designed, in print queue, completed), biometric allotments/enrollments, print batches, and user mapping.
+  - **Purchase & Store Hub Widget (`PurchaseStoreOverviewWidget`)**: Inventory and supply queue tracking monthly nametag distribution, pending unofficial nametag requests, total nametag fines amount/count, and unacknowledged fines.
+- **Filament Shield Widget Permissions**: Registered Shield permissions (`View:FinanceOverviewWidget`, `View:ItOverviewWidget`, `View:PurchaseStoreOverviewWidget`) with `HasWidgetShield` integration for role-based category visibility.
+
+---
+
 ## [2.6.0] - 2026-10-27
 
 ### Added
