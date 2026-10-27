@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.5.4';
+    public const CURRENT_VERSION = '2.5.5';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,25 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.5.5',
+                'date' => '2026-10-27',
+                'title' => 'Designation Default Tips Amount & Dynamic Employee Tips Rendering',
+                'type' => 'patch',
+                'badge' => 'HR & Payroll',
+                'badge_color' => 'success',
+                'highlights' => 'Added a default tips amount field to Designations, and enabled dynamic expected tips calculation during employee creation and editing without syncing uncalculated values to Google Sheets.',
+                'changes' => [
+                    'added' => [
+                        'Designation Default Tips Amount: Added default_tips_amount field to designations table, model, form schema, table columns, and export service.',
+                        'Automatic Tips Amount Assignment: Added booted model saving hook on Employee to automatically assign default tips amount when creating or saving with a designation if tips amount is null.',
+                    ],
+                    'changed' => [
+                        'Dynamic Employee Form Tips Rendering: Configured designation_id and tips_adj to reactively calculate and render the expected tips amount during employee creation and editing.',
+                        'Local DB Tips Persistence: Dehydrated tips_amount in employee form so the expected amount is saved in the database while keeping Google Sheets sync isolated from non-calculated values.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.5.4',
                 'date' => '2026-10-27',

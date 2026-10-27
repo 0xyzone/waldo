@@ -91,6 +91,24 @@ class Employee extends Model
     }
 
     /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (Employee $employee) {
+            if ($employee->tips_amount === null && $employee->designation_id) {
+                $designation = $employee->relationLoaded('designation')
+                    ? $employee->designation
+                    : Designation::find($employee->designation_id);
+
+                if ($designation && $designation->default_tips_amount !== null) {
+                    $employee->tips_amount = (float) $designation->default_tips_amount + (float) ($employee->tips_adj ?? 0);
+                }
+            }
+        });
+    }
+
+    /**
      * Get the department that the employee belongs to.
      */
     public function department(): BelongsTo

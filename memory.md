@@ -156,4 +156,9 @@
 - **Behavior**: All date and datetime pickers across form schemas, action modals, and table filters display calendars starting on Sunday by default without needing manual per-field settings.
 - **Flatpickr Integration**: Flatpickr calendar instances in the document studio layout explicitly default `firstDayOfWeek: 0` (Sunday).
 
+### 16. Designation Default Tips & Employee Tips Calculation
+- **Designation Baseline**: `default_tips_amount` (decimal 15,2) on `designations` table, model, and form allows setting the standard baseline tips for each designation.
+- **Dynamic Expected Tips in Employee Form**: When selecting a designation in `EmployeeForm` or updating `tips_adj`, the form reactively renders the expected tips amount (`designation.default_tips_amount + tips_adj`).
+- **Local Persistence & Sync Decoupling**: The rendered `tips_amount` is dehydrated and saved to the local database on employee creation/update (and auto-assigned via `Employee::saving` if null). It is explicitly omitted from Google Sheets push sync (`GoogleSheetsService::$columnMap`), preserving the Google Sheet formula as the sheet's source of truth while providing expected values locally.
+
 

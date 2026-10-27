@@ -24,6 +24,7 @@ class DesignationExportService
             'department' => 'Department',
             'name' => 'Designation Title',
             'rank' => 'Sort Rank',
+            'default_tips_amount' => 'Default Tips Amount (₹)',
             'active_staff' => 'Active Staff Count',
             'is_active' => 'Active Status',
             'has_description' => 'JD Added?',
@@ -42,6 +43,7 @@ class DesignationExportService
             'department' => $record->department?->name ?? '-',
             'name' => $record->name ?? '-',
             'rank' => $record->rank !== null ? $record->rank : '-',
+            'default_tips_amount' => $record->default_tips_amount !== null ? (float) $record->default_tips_amount : '-',
             'active_staff' => $record->relationLoaded('employees')
                 ? $record->employees->where('employee_status', 'Active')->count()
                 : Employee::where('designation_id', $record->id)->where('employee_status', 'Active')->count(),

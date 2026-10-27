@@ -57,6 +57,11 @@ class DesignationsTable
                     ->badge()
                     ->color('success')
                     ->alignCenter(),
+                TextColumn::make('default_tips_amount')
+                    ->label('Default Tips')
+                    ->formatStateUsing(fn ($state) => $state !== null ? '₹'.($state == (int) $state ? number_format($state, 0) : number_format($state, 2)) : '-')
+                    ->sortable()
+                    ->alignEnd(),
                 IconColumn::make('is_active')
                     ->label('Active')
                     ->boolean()

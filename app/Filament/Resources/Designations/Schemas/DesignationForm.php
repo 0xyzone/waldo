@@ -66,11 +66,19 @@ class DesignationForm
                             ->placeholder('Lower number = higher priority')
                             ->helperText('Used for ordering in reports.'),
 
+                        TextInput::make('default_tips_amount')
+                            ->label('Default Tips Amount')
+                            ->numeric()
+                            ->prefix('₹')
+                            ->placeholder('0.00')
+                            ->helperText('Baseline tips amount for employees under this designation.'),
+
                         Toggle::make('is_active')
                             ->label('Active')
                             ->helperText('Inactive designations are hidden from dropdowns.')
                             ->default(true)
-                            ->inline(false),
+                            ->inline(false)
+                            ->columnSpanFull(),
                     ]),
             ]);
     }

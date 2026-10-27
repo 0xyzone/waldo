@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Employees\Schemas;
 
 use App\Helpers\NepaliDate\NepaliDate;
+use App\Models\Designation;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
@@ -178,7 +179,10 @@ class EmployeeForm
                                             ->searchable()
                                             ->preload()
                                             ->live()
-                                            ->afterStateUpdated(fn (callable $set) => $set('designation_id', null)),
+                                            ->afterStateUpdated(function (callable $set) {
+                                                $set('designation_id', null);
+                                                $set('tips_amount', null);
+                                            }),
                                         Select::make('designation_id')
                                             ->relationship(
                                                 name: 'designation',
@@ -189,7 +193,18 @@ class EmployeeForm
                                                     ->when($get('department_id'), fn ($q, $deptId) => $q->where('department_id', $deptId))
                                             )
                                             ->searchable()
-                                            ->preload(),
+                                            ->preload()
+                                            ->live()
+                                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                                $defaultTips = 0.0;
+                                                if ($state) {
+                                                    $designation = Designation::find($state);
+                                                    $defaultTips = $designation?->default_tips_amount !== null ? (float) $designation->default_tips_amount : 0.0;
+                                                }
+                                                $adj = (float) ($get('tips_adj') ?? 0);
+                                                $total = $defaultTips + $adj;
+                                                $set('tips_amount', $state ? $total : ($adj > 0 ? $adj : null));
+                                            }),
                                     ]),
                                 Grid::make(['default' => 1, 'sm' => 2])
                                     ->schema([
@@ -284,13 +299,41 @@ class EmployeeForm
                                                     ->numeric()
                                                     ->prefix('₹')
                                                     ->disabled()
-                                                    ->dehydrated(false)
-                                                    ->helperText('Calculated by Sheet (Desig. Wise + Adj.)'),
+                                                    ->dehydrated()
+                                                    ->helperText('Expected tips (Desig. Default + Adj.). Google Sheet calculates & syncs final value.')
+                                                    ->formatStateUsing(function ($state, callable $get) {
+                                                        if ($state !== null && $state !== '') {
+                                                            return $state;
+                                                        }
+                                                        $desigId = $get('designation_id');
+                                                        if ($desigId) {
+                                                            $desig = Designation::find($desigId);
+                                                            if ($desig && $desig->default_tips_amount !== null) {
+                                                                $adj = (float) ($get('tips_adj') ?? 0);
+
+                                                                return (float) $desig->default_tips_amount + $adj;
+                                                            }
+                                                        }
+
+                                                        return $state;
+                                                    }),
                                                 TextInput::make('tips_adj')
                                                     ->label('Tips Adj.')
                                                     ->numeric()
                                                     ->prefix('₹')
-                                                    ->placeholder('0.00'),
+                                                    ->placeholder('0.00')
+                                                    ->live(onBlur: true)
+                                                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                                        $desigId = $get('designation_id');
+                                                        $defaultTips = 0.0;
+                                                        if ($desigId) {
+                                                            $designation = Designation::find($desigId);
+                                                            $defaultTips = $designation?->default_tips_amount !== null ? (float) $designation->default_tips_amount : 0.0;
+                                                        }
+                                                        $adj = (float) ($state ?? 0);
+                                                        $total = $defaultTips + $adj;
+                                                        $set('tips_amount', $desigId ? $total : ($adj > 0 ? $adj : null));
+                                                    }),
                                                 Select::make('tips_status')
                                                     ->label('Tips Status')
                                                     ->options([

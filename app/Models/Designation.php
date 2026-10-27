@@ -21,6 +21,7 @@ class Designation extends Model
         'name',
         'job_description',
         'rank',
+        'default_tips_amount',
         'is_active',
     ];
 
@@ -31,6 +32,7 @@ class Designation extends Model
      */
     protected $casts = [
         'rank' => 'integer',
+        'default_tips_amount' => 'decimal:2',
         'is_active' => 'boolean',
     ];
 

@@ -4,6 +4,18 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.5] - 2026-10-27
+
+### Added
+- **Designation Default Tips Amount**: Added a `default_tips_amount` field to designations (`designations` table, model, form schema, table columns, and export service) to store the baseline expected tips for each designation.
+- **Automatic Tips Default on Model Save**: Added model saving hook in `Employee` to auto-populate `tips_amount` from the designation's `default_tips_amount` plus adjustment whenever creating or saving an employee without explicit tips.
+
+### Changed
+- **Reactive Expected Tips Rendering**: Configured `designation_id` and `tips_adj` in `EmployeeForm` to dynamically calculate and render the expected tips amount (`default_tips_amount + tips_adj`) during employee creation and editing.
+- **Local DB Tips Persistence**: Dehydrated `tips_amount` so the expected tips amount is properly stored in the local database while remaining decoupled from Google Sheets push synchronization.
+
+---
+
 ## [2.5.4] - 2026-10-27
 
 ### Added
