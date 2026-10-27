@@ -97,26 +97,23 @@ class AppServiceProvider extends ServiceProvider
             });
         });
 
-        // Globally configure all Actions (Create, Edit, View, Table/Page Actions) to slide over with 7xl modal width
+        // Globally configure modal Actions (Create, Edit, View, Table/Page Actions) to slide over with 7xl modal width when opened as modals
         Action::configureUsing(function (Action $action): void {
             $action->slideOver();
         });
 
         CreateAction::configureUsing(function (CreateAction $action): void {
-            $action->modal(true)
-                ->slideOver()
+            $action->slideOver()
                 ->modalWidth(Width::SevenExtraLarge);
         });
 
         EditAction::configureUsing(function (EditAction $action): void {
-            $action->modal(true)
-                ->slideOver()
+            $action->slideOver()
                 ->modalWidth(Width::SevenExtraLarge);
         });
 
         ViewAction::configureUsing(function (ViewAction $action): void {
-            $action->modal(true)
-                ->slideOver()
+            $action->slideOver()
                 ->modalWidth(Width::SevenExtraLarge);
         });
 

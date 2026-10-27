@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.5.8';
+    public const CURRENT_VERSION = '2.5.9';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,22 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.5.9',
+                'date' => '2026-10-27',
+                'title' => 'Restore Dedicated Role Creation Routing & Fix Action Modal Override',
+                'type' => 'patch',
+                'badge' => 'Filament Shield',
+                'badge_color' => 'primary',
+                'highlights' => 'Resolved "Array to string conversion" QueryException when creating or editing roles by uncoupling global modal(true) overrides and explicitly directing Create and Edit role actions to dedicated pages.',
+                'changes' => [
+                    'fixed' => [
+                        'Removed Global modal(true) Override: Removed forced modal(true) from CreateAction, EditAction, and ViewAction in AppServiceProvider so resources with dedicated create/edit page lifecycles are not prematurely hijacked into modal forms.',
+                        'Explicit Dedicated Page Routing on Roles: Bound CreateAction on ListRoles and EditAction on RoleResource to their respective full-page URLs (/kamkaj/shield/roles/create and /kamkaj/shield/roles/{record}/edit).',
+                        'Guard Name Fallback: Added automatic fallback to default auth guard in CreateRole afterCreate and EditRole afterSave.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.5.8',
                 'date' => '2026-10-27',

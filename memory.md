@@ -169,6 +169,7 @@
 - **Schema Scale**: The Role management schema (`RoleResource`, `EnhancedResourcePermissionsForm`, `EnhancedPagePermissionsForm`) contains over 430 granular permissions arranged across navigation groups, tabs, grids, and collapsible sections.
 - **Memory Optimization**: Livewire's component state snapshotting and JSON serialization across this large schema consumes ~147MB of memory, exceeding PHP's default `128M` limit. Runtime memory has been raised to `512M` across entry points (`public/index.php`, `AppServiceProvider::boot()`, and `CreateRole` / `EditRole` page `mount()` methods).
 - **Sanitized Permission Sync**: In `CreateRole::mutateFormDataBeforeCreate` and `EditRole::mutateFormDataBeforeSave`, extracted permission collections are filtered to strictly non-empty string values before executing `firstOrCreate` and `syncPermissions`.
+- **Dedicated Page Routing**: Removed global `modal(true)` override on `CreateAction`/`EditAction` in `AppServiceProvider` and bound `ListRoles` CreateAction and `RoleResource` EditAction to `getUrl('create')` and `getUrl('edit', ...)` respectively, ensuring role operations are routed to dedicated pages where permission arrays are filtered out before SQL insertion.
 
 ### 18. Vite & Tailwind Build Optimization
 - **Multithreading**: Removed legacy single-thread Rayon limiter (`RAYON_NUM_THREADS=1`) from `package.json`, allowing Tailwind v4's Rust compiler to utilize all available CPU threads in parallel and eliminating cross-platform shell syntax errors on Windows Command Prompt/PowerShell.

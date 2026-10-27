@@ -4,6 +4,15 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.9] - 2026-10-27
+
+### Fixed
+- **Removed Global Action `modal(true)` Override**: Removed the forced `modal(true)` call from `CreateAction`, `EditAction`, and `ViewAction` in `AppServiceProvider`. Now, resources with full dedicated create/edit page routes (such as Roles, Employees, and Candidates) correctly navigate to their dedicated page URLs instead of forcing a raw modal that bypassed page lifecycle hooks and triggered `Array to string conversion` query errors.
+- **Explicit Role Page URL Routing**: Bound `CreateAction` on `ListRoles` and `EditAction` on `RoleResource` explicitly to `RoleResource::getUrl('create')` and `RoleResource::getUrl('edit', ...)` respectively.
+- **Guard Name Safety Fallback**: Ensured `afterCreate()` and `afterSave()` in `CreateRole` and `EditRole` safely fall back to `Utils::getFilamentAuthGuard()` if `guard_name` is missing from submitted form data.
+
+---
+
 ## [2.5.8] - 2026-10-27
 
 ### Changed

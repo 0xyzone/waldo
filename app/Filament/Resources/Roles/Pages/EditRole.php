@@ -53,11 +53,12 @@ class EditRole extends EditRecord
 
     protected function afterSave(): void
     {
+        $guardName = $this->data['guard_name'] ?? Utils::getFilamentAuthGuard();
         $permissionModels = collect();
-        $this->permissions->each(function (string $permission) use ($permissionModels): void {
+        $this->permissions->each(function (string $permission) use ($permissionModels, $guardName): void {
             $permissionModels->push(Utils::getPermissionModel()::firstOrCreate([
                 'name' => $permission,
-                'guard_name' => $this->data['guard_name'],
+                'guard_name' => $guardName,
             ]));
         });
 

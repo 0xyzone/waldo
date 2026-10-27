@@ -31,6 +31,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Unique;
 use Override;
@@ -159,7 +160,8 @@ class RoleResource extends Resource
                 //
             ])
             ->actions([
-                EditAction::make(),
+                EditAction::make()
+                    ->url(fn (Model $record): string => RoleResource::getUrl('edit', ['record' => $record])),
                 DeleteAction::make(),
             ])
             ->bulkActions([
