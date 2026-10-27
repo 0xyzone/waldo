@@ -53,9 +53,74 @@
             printReport() {
                 if (!this.activeDeptId) return;
                 window.open(`{{ url('/reports/departments') }}/${this.activeDeptId}/print`, '_blank');
+            },
+
+            // Print Report Scope Modal State
+            isPrintModalOpen: false,
+            printScope: 'all',
+            selectedDeptIds: [],
+            deptSearch: '',
+            isDeptDropdownOpen: false,
+            printValidationWarning: false,
+            availableDepartments: @js(collect($this->stats)->map(fn($d) => ['id' => $d['id'], 'name' => $d['name'], 'count' => $d['count']])->values()),
+
+            openPrintModal() {
+                this.isPrintModalOpen = true;
+                this.printValidationWarning = false;
+                this.deptSearch = '';
+                this.isDeptDropdownOpen = false;
+            },
+
+            closePrintModal() {
+                this.isPrintModalOpen = false;
+                this.isDeptDropdownOpen = false;
+                this.printValidationWarning = false;
+            },
+
+            toggleDept(id) {
+                const idx = this.selectedDeptIds.indexOf(id);
+                if (idx > -1) {
+                    this.selectedDeptIds.splice(idx, 1);
+                } else {
+                    this.selectedDeptIds.push(id);
+                }
+                if (this.selectedDeptIds.length > 0) {
+                    this.printValidationWarning = false;
+                }
+            },
+
+            selectAllDepts() {
+                this.selectedDeptIds = this.availableDepartments.map(d => d.id);
+                this.printValidationWarning = false;
+            },
+
+            clearDeptSelection() {
+                this.selectedDeptIds = [];
+            },
+
+            get filteredAvailableDepartments() {
+                const q = (this.deptSearch || '').toLowerCase().trim();
+                if (!q) return this.availableDepartments;
+                return this.availableDepartments.filter(d => d.name.toLowerCase().includes(q));
+            },
+
+            submitPrintReport() {
+                if (this.printScope === 'all') {
+                    window.open('{{ url('/reports/departments') }}', '_blank');
+                    this.closePrintModal();
+                } else {
+                    if (this.selectedDeptIds.length === 0) {
+                        this.printValidationWarning = true;
+                        this.isDeptDropdownOpen = true;
+                        return;
+                    }
+                    const url = '{{ url('/reports/departments') }}?department_ids=' + this.selectedDeptIds.join(',');
+                    window.open(url, '_blank');
+                    this.closePrintModal();
+                }
             }
          }"
-         @keydown.escape.window="closeModal()"
+         @keydown.escape.window="if (isPrintModalOpen) { closePrintModal(); } else if (isOpen) { closeModal(); }"
          class="relative w-full rounded-3xl bg-white dark:bg-[#121826] border border-slate-200/80 dark:border-white/[0.07] p-6 sm:p-8 shadow-[0_2px_12px_rgba(15,23,42,0.03)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition-all duration-300">
 
         <!-- Top Header & Actions -->
@@ -80,11 +145,11 @@
                     <x-filament::icon icon="heroicon-m-arrow-top-right-on-square" class="h-4 w-4" />
                     <span>Interactive View</span>
                 </a>
-                <a href="{{ url('/reports/departments') }}" target="_blank"
+                <button type="button" @click="openPrintModal()"
                    class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 transition-all active:scale-95 cursor-pointer">
                     <x-filament::icon icon="heroicon-m-printer" class="h-4 w-4" />
                     <span>Print Report</span>
-                </a>
+                </button>
             </div>
         </div>
 
@@ -311,6 +376,216 @@
                                 </table>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Print Report Scope Selection Modal -->
+        <template x-teleport="body">
+            <div x-show="isPrintModalOpen"
+                 x-cloak
+                 class="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-[9999] flex items-center justify-center p-3 sm:p-6"
+                 style="display: none;">
+
+                <div @click.stop
+                     x-show="isPrintModalOpen"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 scale-95 translate-y-3"
+                     x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 scale-95 translate-y-3"
+                     class="relative w-full max-w-lg rounded-3xl bg-white dark:bg-[#121826] border border-slate-200/80 dark:border-white/[0.08] text-slate-900 dark:text-slate-100 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+
+                    <!-- Modal Header -->
+                    <div class="p-6 border-b border-slate-100 dark:border-white/[0.06] flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/30">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-orange-500 to-red-600 text-white shadow-md shadow-orange-500/20">
+                                <x-filament::icon icon="heroicon-m-printer" class="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
+                                    Print Department Report
+                                </h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                                    Choose whether to print all departments or select specific ones.
+                                </p>
+                            </div>
+                        </div>
+
+                        <button type="button" @click="closePrintModal()"
+                                class="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer">
+                            <x-filament::icon icon="heroicon-m-x-mark" class="h-5 w-5" />
+                        </button>
+                    </div>
+
+                    <!-- Modal Body -->
+                    <div class="p-6 space-y-5 overflow-y-auto">
+                        <!-- Radio Options -->
+                        <div class="space-y-3">
+                            <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                                Report Scope
+                            </label>
+
+                            <!-- Option 1: All Departments -->
+                            <label class="relative flex items-start gap-3.5 p-4 rounded-2xl border transition-all cursor-pointer select-none"
+                                   :class="printScope === 'all'
+                                       ? 'bg-orange-50/60 dark:bg-orange-950/20 border-orange-500 ring-2 ring-orange-500/20 dark:border-orange-500'
+                                       : 'bg-slate-50/50 dark:bg-slate-900/40 border-slate-200/80 dark:border-white/[0.06] hover:bg-slate-100/60 dark:hover:bg-slate-800/40'">
+                                <input type="radio" name="print_scope" value="all" x-model="printScope"
+                                       class="mt-1 h-4 w-4 text-orange-600 border-slate-300 dark:border-slate-600 focus:ring-orange-500 focus:ring-offset-0 cursor-pointer">
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm font-bold text-slate-900 dark:text-slate-100">All Departments</span>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300">
+                                            {{ count($this->stats) }} Departments
+                                        </span>
+                                    </div>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                        Print a full summary report including all active departments and designations.
+                                    </p>
+                                </div>
+                            </label>
+
+                            <!-- Option 2: Select Departments -->
+                            <label class="relative flex items-start gap-3.5 p-4 rounded-2xl border transition-all cursor-pointer select-none"
+                                   :class="printScope === 'selected'
+                                       ? 'bg-orange-50/60 dark:bg-orange-950/20 border-orange-500 ring-2 ring-orange-500/20 dark:border-orange-500'
+                                       : 'bg-slate-50/50 dark:bg-slate-900/40 border-slate-200/80 dark:border-white/[0.06] hover:bg-slate-100/60 dark:hover:bg-slate-800/40'">
+                                <input type="radio" name="print_scope" value="selected" x-model="printScope"
+                                       class="mt-1 h-4 w-4 text-orange-600 border-slate-300 dark:border-slate-600 focus:ring-orange-500 focus:ring-offset-0 cursor-pointer">
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm font-bold text-slate-900 dark:text-slate-100">Select Departments</span>
+                                        <span x-show="selectedDeptIds.length > 0"
+                                              x-text="`${selectedDeptIds.length} Selected`"
+                                              class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
+                                        </span>
+                                    </div>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                        Choose one or more specific departments to include in the printed report.
+                                    </p>
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- Department Selection Dropdown (Only shown when 'selected' is active) -->
+                        <div x-show="printScope === 'selected'"
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 -translate-y-2"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             class="space-y-2 pt-2 border-t border-slate-100 dark:border-white/[0.06]">
+                            <div class="flex items-center justify-between">
+                                <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                                    Target Departments
+                                </label>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" @click="selectAllDepts()"
+                                            class="text-[11px] font-semibold text-orange-600 dark:text-orange-400 hover:underline cursor-pointer">
+                                        Select All
+                                    </button>
+                                    <span class="text-slate-300 dark:text-slate-700">&bull;</span>
+                                    <button type="button" @click="clearDeptSelection()"
+                                            class="text-[11px] font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:underline cursor-pointer">
+                                        Clear
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Dropdown Trigger Box -->
+                            <div class="relative" @click.outside="isDeptDropdownOpen = false">
+                                <button type="button" @click="isDeptDropdownOpen = !isDeptDropdownOpen"
+                                        class="w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border text-left transition-all cursor-pointer focus:outline-none"
+                                        :class="printValidationWarning
+                                            ? 'border-red-500 ring-2 ring-red-500/20'
+                                            : (isDeptDropdownOpen ? 'border-orange-500 ring-2 ring-orange-500/20' : 'border-slate-200 dark:border-white/[0.08] hover:border-slate-300 dark:hover:border-white/[0.15]')">
+                                    <div class="flex-1 flex flex-wrap items-center gap-1.5 overflow-hidden">
+                                        <template x-if="selectedDeptIds.length === 0">
+                                            <span class="text-xs text-slate-400 dark:text-slate-500">
+                                                Click to select departments...
+                                            </span>
+                                        </template>
+                                        <template x-if="selectedDeptIds.length > 0">
+                                            <div class="flex flex-wrap items-center gap-1">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20"
+                                                      x-text="`${selectedDeptIds.length} Department${selectedDeptIds.length > 1 ? 's' : ''} Selected`">
+                                                </span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <x-filament::icon icon="heroicon-m-chevron-down"
+                                                      class="h-4 w-4 text-slate-400 transition-transform duration-200"
+                                                      ::class="isDeptDropdownOpen ? 'rotate-180 text-orange-500' : ''" />
+                                </button>
+
+                                <!-- Dropdown List Panel -->
+                                <div x-show="isDeptDropdownOpen"
+                                     x-transition:enter="transition ease-out duration-150"
+                                     x-transition:enter-start="opacity-0 scale-95"
+                                     x-transition:enter-end="opacity-100 scale-100"
+                                     x-transition:leave="transition ease-in duration-100"
+                                     x-transition:leave-start="opacity-100 scale-100"
+                                     x-transition:leave-end="opacity-0 scale-95"
+                                     class="absolute z-50 left-0 right-0 mt-1.5 rounded-2xl bg-white dark:bg-[#121826] border border-slate-200 dark:border-white/[0.1] shadow-2xl p-2.5 space-y-2">
+
+                                    <!-- Search input -->
+                                    <div class="relative">
+                                        <x-filament::icon icon="heroicon-m-magnifying-glass" class="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                                        <input type="text" x-model="deptSearch"
+                                               placeholder="Filter departments..."
+                                               class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-white/[0.08] focus:border-orange-500 focus:ring-1 focus:ring-orange-500/20 outline-none text-slate-900 dark:text-slate-100">
+                                    </div>
+
+                                    <!-- Department Items List -->
+                                    <div class="max-h-56 overflow-y-auto space-y-1 pr-1">
+                                        <template x-for="dept in filteredAvailableDepartments" :key="dept.id">
+                                            <div @click="toggleDept(dept.id)"
+                                                 class="flex items-center justify-between p-2 rounded-xl text-xs cursor-pointer select-none transition-colors"
+                                                 :class="selectedDeptIds.includes(dept.id)
+                                                     ? 'bg-orange-50/80 dark:bg-orange-950/30 text-orange-900 dark:text-orange-200 font-semibold'
+                                                     : 'hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-300'">
+                                                <div class="flex items-center gap-2.5">
+                                                    <input type="checkbox"
+                                                           :checked="selectedDeptIds.includes(dept.id)"
+                                                           class="h-3.5 w-3.5 rounded text-orange-600 border-slate-300 dark:border-slate-600 focus:ring-orange-500 pointer-events-none">
+                                                    <span x-text="dept.name"></span>
+                                                </div>
+                                                <span class="text-[10px] text-slate-400 font-mono"
+                                                      x-text="`${dept.count} staff`">
+                                                </span>
+                                            </div>
+                                        </template>
+
+                                        <div x-show="filteredAvailableDepartments.length === 0"
+                                             class="py-4 text-center text-xs text-slate-400 italic">
+                                            No departments match search.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Validation Warning -->
+                            <div x-show="printValidationWarning"
+                                 x-transition
+                                 class="flex items-center gap-1.5 text-xs font-semibold text-red-500 pt-1">
+                                <x-filament::icon icon="heroicon-m-exclamation-circle" class="h-4 w-4 shrink-0 text-red-500" />
+                                <span>Please select at least one department to print.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <div class="p-5 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-end gap-3 bg-slate-50/50 dark:bg-slate-900/30">
+                        <button type="button" @click="closePrintModal()"
+                                class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                            Cancel
+                        </button>
+                        <button type="button" @click="submitPrintReport()"
+                                class="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 active:scale-95 transition-all cursor-pointer">
+                            <x-filament::icon icon="heroicon-m-printer" class="h-4 w-4 text-white" />
+                            <span>Print Report</span>
+                        </button>
                     </div>
                 </div>
             </div>

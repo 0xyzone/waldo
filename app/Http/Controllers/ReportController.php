@@ -69,10 +69,22 @@ class ReportController extends Controller
      */
     public function departments(Request $request)
     {
+        $departmentIds = $request->input('department_ids');
         $departmentId = $request->input('department_id');
 
+        if ($departmentIds) {
+            if (is_string($departmentIds)) {
+                $departmentIds = explode(',', $departmentIds);
+            }
+            $departmentIds = array_filter(array_map('intval', (array) $departmentIds));
+        } elseif ($departmentId) {
+            $departmentIds = [(int) $departmentId];
+        } else {
+            $departmentIds = null;
+        }
+
         $departments = Department::where('is_active', true)
-            ->when($departmentId, fn ($query) => $query->where('id', $departmentId))
+            ->when(! empty($departmentIds), fn ($query) => $query->whereIn('id', $departmentIds))
             ->with([
                 'parent',
                 'designations' => function ($query) {

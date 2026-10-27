@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.5.3';
+    public const CURRENT_VERSION = '2.5.4';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,24 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.5.4',
+                'date' => '2026-10-27',
+                'title' => 'Department Overview Print Report Scope Modal & Filtering',
+                'type' => 'patch',
+                'badge' => 'Reports & UI',
+                'badge_color' => 'warning',
+                'highlights' => 'Added an interactive modal popup to the Print Report action in the Department Overview widget, enabling users to print either all departments or specific selected departments.',
+                'changes' => [
+                    'added' => [
+                        'Print Scope Selection Modal: Introduced a sleek modal with radio options to choose between "All Departments" and "Select Departments".',
+                        'Multi-Department Dropdown Selector: Integrated a searchable multi-select department dropdown with quick Select All / Clear actions and live selection counts.',
+                    ],
+                    'changed' => [
+                        'Multi-Department Controller Filtering: Updated ReportController@departments to accept and filter reports by department_ids array or comma-separated list alongside single department_id.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.5.3',
                 'date' => '2026-10-27',

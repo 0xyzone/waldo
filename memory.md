@@ -87,8 +87,9 @@
 - **Department Statistics Widget**: `App\Filament\Widgets\DepartmentEmployeeStatsWidget`
   - Renders interactive department cards on the dashboard with designation progress bars.
   - Clicking any department card opens a detail modal matching `/reports/departments/view` (average service tenure, gender distribution progress bars, searchable active employee list, print report, and role-protected Excel export).
+  - **Print Report Scope Modal**: Clicking "Print Report" in the widget header opens a dedicated scope modal allowing the user to choose between printing "All Departments" or "Select Departments". Selecting specific departments reveals a searchable multi-select dropdown with checkbox toggles, live staff counters, and Select All / Clear actions.
 - **Interactive Department Reports Page**: `GET /reports/departments/view` (`ReportController@departmentsView`)
-- **Printable Department Reports**: `GET /reports/departments` and `GET /reports/departments/{id}/print`
+- **Printable Department Reports**: `GET /reports/departments` (supports `department_id` or multi-department `department_ids`) and `GET /reports/departments/{id}/print`
 - **Department Employees Excel Export**: `GET /reports/departments/{id}/export` (Protected by `HR|super_admin` role)
 
 ### 9. Candidates & Document Printing
