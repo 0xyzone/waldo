@@ -14,6 +14,7 @@ use Filament\Resources\Pages\ListRecords;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 class ListUsers extends ListRecords
 {
