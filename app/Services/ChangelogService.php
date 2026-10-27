@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.5.13';
+    public const CURRENT_VERSION = '2.6.0';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,24 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.6.0',
+                'date' => '2026-10-27',
+                'title' => 'Dashboard Operations Suite & Filament Shield Widget Permissions',
+                'type' => 'minor',
+                'badge' => 'Dashboard',
+                'badge_color' => 'primary',
+                'highlights' => 'Introduced 4 new high-fidelity dashboard widgets built with Waldo\'s Zen Soft Tech dark aesthetic and generated granular Filament Shield permissions for role-based widget visibility.',
+                'changes' => [
+                    'added' => [
+                        'Workforce Overview Widget: Real-time workforce metrics tracking active, suspended, resigning, and tips-on-hold staff with interactive gender diversity distribution bars and quick navigation.',
+                        'Pending Operations Widget: Centralized operational queue tracking pending financial adjustments, active suspensions, and pending salary increment requests with pulsing status alerts.',
+                        'Offboarding & Leavers Tracker Widget: Dedicated offboarding overview displaying this month\'s leavers, salary/tips holds, and quick leaver timeline cards.',
+                        'Promotions & Growth Widget: Staff advancement tracker showing monthly promotions, acknowledgement rates, HRMS sync statuses, and recent promotion history.',
+                        'Filament Shield Widget Permissions: Generated and registered View:WorkforceOverviewWidget, View:PendingOperationsWidget, View:LeaversTrackerWidget, and View:PromotionTransferActivityWidget permissions for granular role access.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.5.13',
                 'date' => '2026-10-27',

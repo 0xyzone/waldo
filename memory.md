@@ -195,3 +195,14 @@
   - **Sleek Segmented Switcher**: Refined segmented tab control with active dot pulse indicators and a bidirectional "Swap" button (`⇄`) to toggle direction while carrying over converted values.
   - **Bilingual Nepali Month Selector**: Added full Nepali script month titles (e.g., `01 - Baishakh (बैशाख)`) and custom chevrons.
   - **Ambient Glowing Result Card**: Upgraded output into an ambient glowing card displaying large bold localized typography, interactive copy button with green checkmark confirmation, monospaced numeric date badge, and bilingual weekday badge.
+
+### 21. Dashboard Operations Suite & Shield Widget Permissions
+- **Widgets**:
+  - `App\Filament\Widgets\WorkforceOverviewWidget` (Sort: 4, `lg: 1`): Real-time metrics for active, suspended, resigning, and tips-on-hold employees, plus male/female diversity distribution bar.
+  - `App\Filament\Widgets\PendingOperationsWidget` (Sort: 5, `lg: 1`): Operational queue monitoring pending adjustments, active suspensions, and pending salary increment requests.
+  - `App\Filament\Widgets\LeaversTrackerWidget` (Sort: 6, `lg: 1`): Leaver tracking for this month, salary/tips financial holds, and recent exit timeline.
+  - `App\Filament\Widgets\PromotionTransferActivityWidget` (Sort: 7, `lg: 1`): Staff advancement metrics, acknowledgement rate, HRMS sync status, and recent promotion records.
+- **Visuals**: All 4 widgets adhere to Waldo's "Zen Soft Tech" dark aesthetic (`rounded-3xl`, ambient blur glow, metric stat cards, and full-height alignment).
+- **Filament Shield Permissions**:
+  - Trait: `BezhanSalleh\FilamentShield\Traits\HasWidgetShield` attached to all widgets.
+  - Registered permissions: `View:WorkforceOverviewWidget`, `View:PendingOperationsWidget`, `View:LeaversTrackerWidget`, `View:PromotionTransferActivityWidget`.

@@ -4,6 +4,18 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.0] - 2026-10-27
+
+### Added
+- **Dashboard Operations Suite (4 New Widgets)**: Created 4 high-fidelity widgets matching Waldo's "Zen Soft Tech" dark aesthetic (`rounded-3xl`, ambient blur glows, custom metric pills, and quick action links):
+  - **Workforce Overview Widget (`WorkforceOverviewWidget`)**: Real-time staff statistics tracking Active, Suspended, Resigning This Month, and Tips on Hold counts, along with male/female diversity distribution bars.
+  - **Pending Operations Widget (`PendingOperationsWidget`)**: Operational queue hub tracking pending financial adjustments, ongoing employee suspensions, and pending salary increment requests with action status pills.
+  - **Offboarding & Leavers Tracker Widget (`LeaversTrackerWidget`)**: Dedicated exit management overview highlighting monthly leaver counts, salary/tips holds, and a recent leaver activity timeline.
+  - **Promotions & Growth Widget (`PromotionTransferActivityWidget`)**: Staff advancement tracker monitoring monthly promotions, acknowledgement completion rates, HRMS sync statuses, and recent promotion milestones.
+- **Filament Shield Widget Permissions**: Registered Shield permissions (`View:WorkforceOverviewWidget`, `View:PendingOperationsWidget`, `View:LeaversTrackerWidget`, `View:PromotionTransferActivityWidget`) with `HasWidgetShield` integration for role-based widget access control.
+
+---
+
 ## [2.5.13] - 2026-10-27
 
 ### Fixed
