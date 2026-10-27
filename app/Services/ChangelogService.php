@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.5.6';
+    public const CURRENT_VERSION = '2.5.7';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,21 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.5.7',
+                'date' => '2026-10-27',
+                'title' => 'Role Creation & Permissions Livewire Memory Optimization',
+                'type' => 'patch',
+                'badge' => 'Filament Shield',
+                'badge_color' => 'primary',
+                'highlights' => 'Resolved 500 error when creating or updating roles caused by memory exhaustion during Livewire state dehydration with large permission schemas, and sanitized role permissions filtering.',
+                'changes' => [
+                    'changed' => [
+                        'Raised Request Memory Limit: Elevated runtime PHP memory limit to 512M across application bootstrap (public/index.php, AppServiceProvider) and role resource pages to accommodate large Livewire permission snapshots without hitting 128M memory limits.',
+                        'Sanitized Permission Extraction: Filtered role form permissions on CreateRole and EditRole to ensure only valid non-empty string permission identifiers are passed to firstOrCreate and syncPermissions.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.5.6',
                 'date' => '2026-10-27',

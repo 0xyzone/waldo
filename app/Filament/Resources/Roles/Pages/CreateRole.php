@@ -17,6 +17,12 @@ class CreateRole extends CreateRecord
 
     protected static string $resource = RoleResource::class;
 
+    public function mount(): void
+    {
+        @ini_set('memory_limit', '512M');
+        parent::mount();
+    }
+
     #[Override]
     protected function mutateFormDataBeforeCreate(array $data): array
     {
@@ -24,6 +30,7 @@ class CreateRole extends CreateRecord
             ->filter(fn (mixed $permission, string $key): bool => ! in_array($key, ['name', 'guard_name', 'select_all', Utils::getTenantModelForeignKey()], true))
             ->values()
             ->flatten()
+            ->filter(fn (mixed $permission): bool => is_string($permission) && filled($permission))
             ->unique();
 
         if (Utils::isTenancyEnabled() && Arr::has($data, Utils::getTenantModelForeignKey()) && filled($data[Utils::getTenantModelForeignKey()])) {

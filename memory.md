@@ -165,4 +165,9 @@
   - `DesignationImportService::downloadTipsSampleTemplate()`: Generates pre-populated sample templates (CSV & XLSX) containing all existing designations, department names, and currently assigned default tips amounts.
   - `DesignationsTable`: Dedicated `Import Tips` toolbar action with sample template download buttons and overwrite toggles.
 
+### 17. Role Management & Livewire Memory Optimization
+- **Schema Scale**: The Role management schema (`RoleResource`, `EnhancedResourcePermissionsForm`, `EnhancedPagePermissionsForm`) contains over 430 granular permissions arranged across navigation groups, tabs, grids, and collapsible sections.
+- **Memory Optimization**: Livewire's component state snapshotting and JSON serialization across this large schema consumes ~147MB of memory, exceeding PHP's default `128M` limit. Runtime memory has been raised to `512M` across entry points (`public/index.php`, `AppServiceProvider::boot()`, and `CreateRole` / `EditRole` page `mount()` methods).
+- **Sanitized Permission Sync**: In `CreateRole::mutateFormDataBeforeCreate` and `EditRole::mutateFormDataBeforeSave`, extracted permission collections are filtered to strictly non-empty string values before executing `firstOrCreate` and `syncPermissions`.
+
 

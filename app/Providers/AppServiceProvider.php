@@ -49,6 +49,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
+        @ini_set('memory_limit', '512M');
 
         if (! getenv('OPENSSL_CONF')) {
             $defaultConf = 'D:\\wamp64\\bin\\php\\php8.4.15\\extras\\ssl\\openssl.cnf';

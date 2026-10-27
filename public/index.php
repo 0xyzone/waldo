@@ -2,6 +2,7 @@
 
 error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
 ini_set('display_errors', '0');
+ini_set('memory_limit', '512M');
 
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;

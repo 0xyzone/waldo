@@ -4,6 +4,14 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.7] - 2026-10-27
+
+### Changed
+- **Raised Request Memory Limit**: Configured runtime PHP memory limit to 512M across application bootstrap (`public/index.php`, `AppServiceProvider`) and role resource pages (`CreateRole`, `EditRole`) to resolve 500 internal server errors caused by memory exhaustion when Livewire snapshots the 400+ permission schema.
+- **Sanitized Role Permissions Filtering**: Filtered raw flattened role permissions to ensure only valid non-empty string permission names are passed to `firstOrCreate` and `syncPermissions`.
+
+---
+
 ## [2.5.6] - 2026-10-27
 
 ### Added
