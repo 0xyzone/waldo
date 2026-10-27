@@ -68,6 +68,17 @@ class ListUsers extends ListRecords
 
                     Mail::to($record->email)
                         ->send(new WelcomeUserMail($record, $plainPassword));
+                    
+                    $role = Role::findByName('basic');
+                    if($role) {
+                        $record->assignRole($role);
+                    } else {
+                        Role::create([
+                            'name' => 'basic',
+                            'guard_name' => 'web',
+                        ]);
+                        $record->assignRole('basic');
+                    }
                 }),
         ];
     }
