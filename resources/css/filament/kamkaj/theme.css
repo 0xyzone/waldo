@@ -329,6 +329,25 @@ a,
     box-shadow: var(--shadow-soft-md) !important;
 }
 
+/* Custom card widgets: eliminate duplicate outer border and background box */
+.fi-wi-widget.fi-wi-clean,
+.fi-wi-widget:has(> [data-widget-card]) {
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+:is(.dark, :root.dark) .fi-wi-widget.fi-wi-clean,
+:is(.dark, :root.dark) .fi-wi-widget:has(> [data-widget-card]) {
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
 /* Section Headers */
 .fi-section-header {
     padding: 1.25rem 1.5rem !important;

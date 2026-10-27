@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.5.11';
+    public const CURRENT_VERSION = '2.5.12';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,26 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.5.12',
+                'date' => '2026-10-27',
+                'title' => 'Custom Calendar Picker & Clean Widget Box Alignment',
+                'type' => 'patch',
+                'badge' => 'Dashboard',
+                'badge_color' => 'primary',
+                'highlights' => 'Replaced native date input with a custom Sunday-first interactive calendar popover, repositioned calendar icon to the end of the input, and eliminated nested widget card backgrounds.',
+                'changes' => [
+                    'fixed' => [
+                        'Eliminated Double Widget Box: Added .fi-wi-clean and [data-widget-card] zero-border rules in theme.css to prevent outer .fi-wi-widget from rendering an awkward empty box below custom dashboard widgets.',
+                        'Clean Height Alignment: Set full-height flex column stretching so Date Converter aligns its top and bottom borders cleanly with BirthdayListWidget.',
+                    ],
+                    'improved' => [
+                        'Custom Calendar Popover: Built an interactive, Sunday-first Alpine.js calendar dropdown featuring month/year quick selects, previous/next navigation, active date glow, and jump-to-today action.',
+                        'Right-Aligned Date Trigger Icon: Repositioned the calendar icon to the trailing end of the date input inside a dedicated accent pill with hover glow.',
+                        'Rich Date Typography: Displayed bold localized date text with formatted English and subtle ISO helper previews.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.5.11',
                 'date' => '2026-10-27',

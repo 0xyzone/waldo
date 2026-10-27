@@ -184,12 +184,14 @@
   - `replace`: Overwrites all existing roles and assigns only the newly selected roles using `syncRoles()`.
 - **Security & Authorization**: Custom permission `AssignRoles` added to `UserResource::getShieldResourcePermissions()`. The action modal prevents non-super-admin users from assigning the `super_admin` role.
 
-### 20. Date Converter Dashboard Widget Redesign
+### 20. Date Converter Dashboard Widget Redesign & Custom Calendar
 - **Widget**: `App\Filament\Widgets\DateConverterWidget` and `resources/views/filament/widgets/date-converter-widget.blade.php`.
-- **Aesthetic**: Redesigned to adhere to Waldo's "Zen Soft Tech" dark/light design system:
-  - Ambient glow blur backdrops and clean rounded cards (`rounded-3xl`, `border-slate-200/80 dark:border-white/[0.08]`).
-  - Sleek segmented tab control with active dot pulse indicators replacing harsh orange-red gradient pills.
-  - Quick action controls: instant "Today" reset button (`setToday()`) and bidirectional "Swap" button (`swapTab()`) transferring converted values between AD and BS modes.
-  - Native dark theme datepicker support via `[color-scheme:light] dark:[color-scheme:dark]`, resolving awkward white calendar popups and mismatched controls on Windows Chromium.
-  - Bilingual Nepali month labels in BS selects (e.g. `01 - Baishakh (बैशाख)`) with custom dropdown chevrons.
-  - Ambient glowing result card featuring bold localized typography, interactive click-to-copy button with green checkmark confirmation, monospaced numeric date badge, and bilingual weekday badge.
+- **Aesthetic & Layout**: Redesigned to adhere to Waldo's "Zen Soft Tech" dark/light design system:
+  - **Eliminated Double Widget Box**: Configured `.fi-wi-clean` and `[data-widget-card]` in `theme.css` with transparent background and zero border to prevent outer `.fi-wi-widget` from rendering an awkward empty box below custom dashboard widgets.
+  - **Height Alignment**: Used full-height flex column stretching so Date Converter aligns top and bottom borders cleanly with sibling widgets.
+  - **Custom Interactive Calendar Popover**: Replaced native browser `<input type="date">` with an Alpine.js custom calendar popover featuring Sunday-first day alignment, month/year navigation dropdowns, active date glowing pills, and "Jump to Today" shortcut.
+  - **Right-Aligned Date Trigger Icon**: Repositioned the calendar icon to the trailing end of the input inside a dedicated accent pill with active hover glow.
+  - **Rich Date Typography**: Replaced raw numeric date formatting with bold localized day and date text (e.g. `Tuesday, October 27, 2026`) accompanied by an ISO helper preview.
+  - **Sleek Segmented Switcher**: Refined segmented tab control with active dot pulse indicators and a bidirectional "Swap" button (`⇄`) to toggle direction while carrying over converted values.
+  - **Bilingual Nepali Month Selector**: Added full Nepali script month titles (e.g., `01 - Baishakh (बैशाख)`) and custom chevrons.
+  - **Ambient Glowing Result Card**: Upgraded output into an ambient glowing card displaying large bold localized typography, interactive copy button with green checkmark confirmation, monospaced numeric date badge, and bilingual weekday badge.

@@ -4,6 +4,19 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.12] - 2026-10-27
+
+### Fixed
+- **Eliminated Double Widget Box**: Added `.fi-wi-clean` and `[data-widget-card]` zero-border/transparent styling in `theme.css`. This prevents the outer `.fi-wi-widget` grid wrapper from rendering a second empty card box beneath `DateConverterWidget`.
+- **Harmonious Height Alignment**: Configured full-height flex column stretching so the Date Converter card aligns top and bottom borders cleanly with sibling widgets.
+
+### Improved
+- **Custom Interactive Calendar Popover**: Replaced native browser `<input type="date">` with an Alpine.js custom calendar popover featuring Sunday-first day alignment, month/year navigation dropdowns, active date glowing pills, and "Jump to Today" shortcut.
+- **Right-Aligned Date Trigger Icon**: Repositioned the calendar icon to the trailing end of the input inside a dedicated accent pill with active hover glow.
+- **Rich Date Typography**: Replaced raw numeric date formatting with bold localized day and date text (e.g. `Tuesday, October 27, 2026`) accompanied by an ISO helper preview.
+
+---
+
 ## [2.5.11] - 2026-10-27
 
 ### Improved
