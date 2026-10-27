@@ -7,8 +7,10 @@ use App\Models\Designation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use OpenSpout\Common\Entity\Row;
+use OpenSpout\Common\Entity\Style\Style;
 use OpenSpout\Reader\XLSX\Reader as XlsxReader;
 use OpenSpout\Writer\CSV\Writer as CsvWriter;
+use OpenSpout\Writer\XLSX\Writer as XlsxWriter;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DesignationImportService
@@ -45,6 +47,49 @@ class DesignationImportService
             $writer->close();
         }, $fileName, [
             'Content-Type' => 'text/csv',
+        ]);
+    }
+
+    /**
+     * Download sample CSV or Excel file populated with existing designations and their default tips values.
+     */
+    public function downloadTipsSampleTemplate(string $format = 'csv'): StreamedResponse
+    {
+        $extension = $format === 'xlsx' ? 'xlsx' : 'csv';
+        $fileName = 'designations_default_tips_sample_'.now()->format('Y_m_d_His').'.'.$extension;
+
+        $designations = Designation::with('department')
+            ->ordered()
+            ->get();
+
+        return response()->streamDownload(function () use ($designations, $format) {
+            $writer = $format === 'xlsx' ? new XlsxWriter : new CsvWriter;
+            $writer->openToFile('php://output');
+
+            $headers = ['ID', 'Designation Title', 'Department', 'Default Tips Amount'];
+
+            $headerStyle = $format === 'xlsx' ? (new Style)
+                ->setFontBold()
+                ->setFontColor('FFFFFF')
+                ->setBackgroundColor('1E293B') : null;
+
+            $writer->addRow(Row::fromValues($headers, $headerStyle));
+
+            foreach ($designations as $desig) {
+                $tipsVal = $desig->default_tips_amount !== null ? (float) $desig->default_tips_amount : '';
+                $writer->addRow(Row::fromValues([
+                    $desig->id,
+                    $desig->name,
+                    $desig->department?->name ?? '',
+                    $tipsVal,
+                ]));
+            }
+
+            $writer->close();
+        }, $fileName, [
+            'Content-Type' => $format === 'xlsx'
+                ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                : 'text/csv',
         ]);
     }
 
@@ -93,6 +138,7 @@ class DesignationImportService
         $descriptionCol = $headerInfo['description'];
         $departmentCol = $headerInfo['department'];
         $idCol = $headerInfo['id'];
+        $tipsCol = $headerInfo['tips'] ?? null;
         $startRow = $headerInfo['start_row'];
 
         // Preload departments & designations for fast lookup
@@ -115,6 +161,7 @@ class DesignationImportService
             $descriptionCol,
             $departmentCol,
             $idCol,
+            $tipsCol,
             $departments,
             $designationsByName,
             $designationsById,
@@ -177,19 +224,32 @@ class DesignationImportService
                     continue;
                 }
 
-                // Format description
-                $formattedDesc = $this->formatDescriptionForStorage($rawDesc);
+                $hasChanges = false;
 
-                // Check overwrite condition
-                if (! $overwriteExisting && ! empty($matchedDesignation->job_description)) {
-                    $skippedCount++;
-
-                    continue;
+                // Update description if present
+                if ($rawDesc !== '') {
+                    $formattedDesc = $this->formatDescriptionForStorage($rawDesc);
+                    if ($overwriteExisting || empty($matchedDesignation->job_description)) {
+                        $matchedDesignation->job_description = $formattedDesc;
+                        $hasChanges = true;
+                    }
                 }
 
-                $matchedDesignation->job_description = $formattedDesc;
-                $matchedDesignation->save();
-                $updatedCount++;
+                // Update tips if present
+                if ($tipsCol !== null) {
+                    $tipsAmount = $this->sanitizeTipsAmount($row[$tipsCol] ?? null);
+                    if ($tipsAmount !== null && ($overwriteExisting || $matchedDesignation->default_tips_amount === null)) {
+                        $matchedDesignation->default_tips_amount = $tipsAmount;
+                        $hasChanges = true;
+                    }
+                }
+
+                if ($hasChanges) {
+                    $matchedDesignation->save();
+                    $updatedCount++;
+                } else {
+                    $skippedCount++;
+                }
             }
         });
 
@@ -268,6 +328,9 @@ class DesignationImportService
             } elseif (in_array($norm, ['id', 'designation_id'])) {
                 $idCol = $idx;
                 $isHeaderRow = true;
+            } elseif (in_array($norm, ['default_tips_amount', 'default_tips', 'tips_amount', 'tips', 'default_tips_value', 'tips_value', 'amount', 'expected_tips', 'base_tips', 'tips_amount_inr', 'tips_amount_npr'])) {
+                $tipsCol = $idx;
+                $isHeaderRow = true;
             }
         }
 
@@ -276,7 +339,7 @@ class DesignationImportService
             if ($desigCol === null && count($firstRow) > 0) {
                 $desigCol = 0;
             }
-            if ($descCol === null && count($firstRow) > 1) {
+            if ($descCol === null && count($firstRow) > 1 && $firstRow[1] !== ($firstRow[$tipsCol ?? -1] ?? null)) {
                 $descCol = ($desigCol === 0) ? 1 : 0;
             }
 
@@ -285,6 +348,7 @@ class DesignationImportService
                 'description' => $descCol,
                 'department' => $deptCol,
                 'id' => $idCol,
+                'tips' => $tipsCol ?? null,
                 'start_row' => 1,
             ];
         }
@@ -295,8 +359,277 @@ class DesignationImportService
             'description' => count($firstRow) > 1 ? 1 : null,
             'department' => count($firstRow) > 2 ? 2 : null,
             'id' => null,
+            'tips' => null,
             'start_row' => 0,
         ];
+    }
+
+    /**
+     * Import default tips values from an uploaded CSV or XLSX file.
+     *
+     * @return array{
+     *     total_rows: int,
+     *     updated: int,
+     *     skipped: int,
+     *     unmatched: int,
+     *     unmatched_names: array<string>
+     * }
+     */
+    public function importTipsFile(string $filePath, bool $overwriteExisting = true): array
+    {
+        $absolutePath = $filePath;
+        if (Storage::disk('public')->exists($filePath)) {
+            $absolutePath = Storage::disk('public')->path($filePath);
+        } elseif (Storage::disk('local')->exists($filePath)) {
+            $absolutePath = Storage::disk('local')->path($filePath);
+        }
+
+        if (! file_exists($absolutePath)) {
+            throw new \RuntimeException("The uploaded file could not be located at: {$absolutePath}");
+        }
+
+        $rows = $this->extractRowsFromFile($absolutePath);
+
+        // Safely remove temp file after loading
+        @unlink($absolutePath);
+
+        if (empty($rows)) {
+            return [
+                'total_rows' => 0,
+                'updated' => 0,
+                'skipped' => 0,
+                'unmatched' => 0,
+                'unmatched_names' => [],
+            ];
+        }
+
+        $headerInfo = $this->detectTipsHeaderColumns($rows);
+
+        $idCol = $headerInfo['id'];
+        $designationCol = $headerInfo['designation'];
+        $departmentCol = $headerInfo['department'];
+        $tipsCol = $headerInfo['tips'];
+        $startRow = $headerInfo['start_row'];
+
+        if ($tipsCol === null) {
+            throw new \InvalidArgumentException('Could not detect a tips column in the uploaded file. Please make sure the header contains "Default Tips Amount" or "Tips".');
+        }
+
+        // Preload departments & designations for fast lookup
+        $departments = Department::all()->keyBy(fn ($d) => strtolower(trim((string) $d->name)));
+        $designationsByName = Designation::all()->groupBy(fn ($d) => strtolower(trim((string) $d->name)));
+        $designationsById = Designation::all()->keyBy('id');
+
+        $updatedCount = 0;
+        $skippedCount = 0;
+        $unmatchedCount = 0;
+        $unmatchedNames = [];
+        $totalProcessed = 0;
+
+        DB::transaction(function () use (
+            $rows,
+            $startRow,
+            $idCol,
+            $designationCol,
+            $departmentCol,
+            $tipsCol,
+            $departments,
+            $designationsByName,
+            $designationsById,
+            $overwriteExisting,
+            &$updatedCount,
+            &$skippedCount,
+            &$unmatchedCount,
+            &$unmatchedNames,
+            &$totalProcessed
+        ) {
+            $rowCount = count($rows);
+
+            for ($i = $startRow; $i < $rowCount; $i++) {
+                $row = $rows[$i];
+
+                $rawId = $idCol !== null ? trim((string) ($row[$idCol] ?? '')) : '';
+                $rawDesig = $designationCol !== null ? trim((string) ($row[$designationCol] ?? '')) : '';
+                $rawDept = $departmentCol !== null ? trim((string) ($row[$departmentCol] ?? '')) : '';
+                $rawTips = $tipsCol !== null ? ($row[$tipsCol] ?? null) : null;
+
+                if ($rawId === '' && $rawDesig === '') {
+                    continue;
+                }
+
+                $totalProcessed++;
+
+                /** @var Designation|null $matchedDesignation */
+                $matchedDesignation = null;
+
+                // 1. Try matching by ID if present
+                if ($rawId !== '' && is_numeric($rawId)) {
+                    $matchedDesignation = $designationsById->get((int) $rawId);
+                }
+
+                // 2. Try matching by Department + Name if department specified
+                if (! $matchedDesignation && $rawDesig !== '' && $rawDept !== '') {
+                    $matchedDept = $departments->get(strtolower($rawDept));
+                    if ($matchedDept) {
+                        $group = $designationsByName->get(strtolower($rawDesig));
+                        if ($group) {
+                            $matchedDesignation = $group->firstWhere('department_id', $matchedDept->id);
+                        }
+                    }
+                }
+
+                // 3. Fallback to matching by designation name
+                if (! $matchedDesignation && $rawDesig !== '') {
+                    $group = $designationsByName->get(strtolower($rawDesig));
+                    if ($group && $group->isNotEmpty()) {
+                        $matchedDesignation = $group->first();
+                    }
+                }
+
+                if (! $matchedDesignation) {
+                    $unmatchedCount++;
+                    if (! in_array($rawDesig, $unmatchedNames, true) && $rawDesig !== '') {
+                        $unmatchedNames[] = $rawDesig;
+                    }
+
+                    continue;
+                }
+
+                $tipsAmount = $this->sanitizeTipsAmount($rawTips);
+
+                if ($tipsAmount === null) {
+                    $skippedCount++;
+
+                    continue;
+                }
+
+                if (! $overwriteExisting && $matchedDesignation->default_tips_amount !== null) {
+                    $skippedCount++;
+
+                    continue;
+                }
+
+                $matchedDesignation->default_tips_amount = $tipsAmount;
+                $matchedDesignation->save();
+                $updatedCount++;
+            }
+        });
+
+        return [
+            'total_rows' => $totalProcessed,
+            'updated' => $updatedCount,
+            'skipped' => $skippedCount,
+            'unmatched' => $unmatchedCount,
+            'unmatched_names' => array_slice($unmatchedNames, 0, 10),
+        ];
+    }
+
+    /**
+     * Detect column indices specifically for tips import.
+     *
+     * @param  array<int, array<int, mixed>>  $rows
+     * @return array{
+     *     id: int|null,
+     *     designation: int|null,
+     *     department: int|null,
+     *     tips: int|null,
+     *     start_row: int
+     * }
+     */
+    protected function detectTipsHeaderColumns(array $rows): array
+    {
+        $firstRow = $rows[0] ?? [];
+        $idCol = null;
+        $desigCol = null;
+        $deptCol = null;
+        $tipsCol = null;
+        $isHeaderRow = false;
+
+        foreach ($firstRow as $idx => $cell) {
+            $norm = strtolower(trim((string) $cell));
+            $norm = preg_replace('/[^a-z0-9_]/', '', str_replace([' ', '-', '.'], '_', $norm));
+
+            if (in_array($norm, ['id', 'designation_id', 'desig_id'])) {
+                $idCol = $idx;
+                $isHeaderRow = true;
+            } elseif (in_array($norm, ['designation', 'designation_title', 'designation_name', 'name', 'title', 'job_title', 'job_designation'])) {
+                $desigCol = $idx;
+                $isHeaderRow = true;
+            } elseif (in_array($norm, ['department', 'department_name', 'dept', 'dept_name'])) {
+                $deptCol = $idx;
+                $isHeaderRow = true;
+            } elseif (in_array($norm, ['default_tips_amount', 'default_tips', 'tips_amount', 'tips', 'default_tips_value', 'tips_value', 'amount', 'expected_tips', 'base_tips', 'tips_amount_inr', 'tips_amount_npr'])) {
+                $tipsCol = $idx;
+                $isHeaderRow = true;
+            }
+        }
+
+        if ($isHeaderRow) {
+            return [
+                'id' => $idCol,
+                'designation' => $desigCol,
+                'department' => $deptCol,
+                'tips' => $tipsCol,
+                'start_row' => 1,
+            ];
+        }
+
+        // Fallback for headerless files:
+        // If 4 columns: [ID, Designation, Department, Tips]
+        if (count($firstRow) >= 4) {
+            return [
+                'id' => 0,
+                'designation' => 1,
+                'department' => 2,
+                'tips' => 3,
+                'start_row' => 0,
+            ];
+        }
+
+        // If 3 columns: [Designation, Department, Tips]
+        if (count($firstRow) === 3) {
+            return [
+                'id' => null,
+                'designation' => 0,
+                'department' => 1,
+                'tips' => 2,
+                'start_row' => 0,
+            ];
+        }
+
+        // If 2 columns: [Designation, Tips]
+        return [
+            'id' => null,
+            'designation' => 0,
+            'department' => null,
+            'tips' => 1,
+            'start_row' => 0,
+        ];
+    }
+
+    /**
+     * Sanitize and extract float amount from raw cell value.
+     */
+    public function sanitizeTipsAmount(mixed $rawVal): ?float
+    {
+        if ($rawVal === null) {
+            return null;
+        }
+
+        $clean = trim((string) $rawVal);
+        if ($clean === '' || $clean === '-' || strtolower($clean) === 'null') {
+            return null;
+        }
+
+        // Remove currency symbols, commas, spaces
+        $clean = str_replace([',', ' ', '₹', '$', 'Rs.', 'Rs', 'NPR', 'INR'], '', $clean);
+        $clean = preg_replace('/[^\d.]/', '', $clean);
+
+        if ($clean === '' || ! is_numeric($clean)) {
+            return null;
+        }
+
+        return round((float) $clean, 2);
     }
 
     /**

@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.5.5';
+    public const CURRENT_VERSION = '2.5.6';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,24 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.5.6',
+                'date' => '2026-10-27',
+                'title' => 'Designations Default Tips Import & Pre-filled Sample Template Downloads',
+                'type' => 'patch',
+                'badge' => 'Imports & HR',
+                'badge_color' => 'primary',
+                'highlights' => 'Added a dedicated "Import Tips" action to Designations supporting CSV and Excel file uploads, along with dynamic pre-filled sample templates containing all existing designations and their current default tips.',
+                'changes' => [
+                    'added' => [
+                        'Import Default Tips Action: Introduced an Import Tips toolbar action on Designations supporting both CSV and XLSX formats with overwrite toggles and detailed import statistics.',
+                        'Pre-filled Sample Template Generator: Added sample download capabilities (in both CSV and Excel .xlsx) that automatically populate all existing designations, department associations, and existing default tips amounts.',
+                    ],
+                    'changed' => [
+                        'Smart Header & Delimiter Detection: Enhanced designation import parsing to flexibly detect headers (ID, title, department, tips) with fallback support for headerless spreadsheets and multi-format currency sanitization.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.5.5',
                 'date' => '2026-10-27',

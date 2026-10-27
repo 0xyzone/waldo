@@ -4,6 +4,17 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.6] - 2026-10-27
+
+### Added
+- **Designation Default Tips Import**: Added a dedicated `Import Tips` action to the Designations table toolbar allowing bulk import of default tips amounts from CSV or Excel (`.xlsx`) files with overwrite control.
+- **Pre-filled Sample Template Downloads**: Built sample file generation (in both `.csv` and `.xlsx` formats) that automatically pre-populates all existing designations, associated departments, and their current default tips amounts.
+
+### Changed
+- **Multi-Format Header & Value Parsing**: Added resilient column detection for designation ID, title, department, and tips columns with currency stripping and support for headerless spreadsheets.
+
+---
+
 ## [2.5.5] - 2026-10-27
 
 ### Added

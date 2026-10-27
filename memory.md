@@ -160,5 +160,9 @@
 - **Designation Baseline**: `default_tips_amount` (decimal 15,2) on `designations` table, model, and form allows setting the standard baseline tips for each designation.
 - **Dynamic Expected Tips in Employee Form**: When selecting a designation in `EmployeeForm` or updating `tips_adj`, the form reactively renders the expected tips amount (`designation.default_tips_amount + tips_adj`).
 - **Local Persistence & Sync Decoupling**: The rendered `tips_amount` is dehydrated and saved to the local database on employee creation/update (and auto-assigned via `Employee::saving` if null). It is explicitly omitted from Google Sheets push sync (`GoogleSheetsService::$columnMap`), preserving the Google Sheet formula as the sheet's source of truth while providing expected values locally.
+- **Bulk Import & Pre-filled Sample Template**:
+  - `DesignationImportService::importTipsFile()`: Imports default tips values from CSV or XLSX with flexible column matching (ID, title, department, tips) and currency symbol sanitization.
+  - `DesignationImportService::downloadTipsSampleTemplate()`: Generates pre-populated sample templates (CSV & XLSX) containing all existing designations, department names, and currently assigned default tips amounts.
+  - `DesignationsTable`: Dedicated `Import Tips` toolbar action with sample template download buttons and overwrite toggles.
 
 

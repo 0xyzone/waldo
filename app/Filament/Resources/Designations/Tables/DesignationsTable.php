@@ -236,6 +236,72 @@ class DesignationsTable
                                 ->send();
                         }
                     }),
+                Action::make('importTips')
+                    ->label('Import Tips')
+                    ->icon('heroicon-o-arrow-up-tray')
+                    ->color('primary')
+                    ->modalHeading('Import Default Tips from CSV / Excel')
+                    ->modalDescription('Upload an Excel (.xlsx) or CSV file containing designation default tips amounts.')
+                    ->modalSubmitActionLabel('Start Import')
+                    ->extraModalFooterActions([
+                        Action::make('downloadTipsSampleCsv')
+                            ->label('Sample CSV (Pre-filled)')
+                            ->icon('heroicon-o-arrow-down-tray')
+                            ->color('gray')
+                            ->action(fn (DesignationImportService $service) => $service->downloadTipsSampleTemplate('csv')),
+                        Action::make('downloadTipsSampleXlsx')
+                            ->label('Sample Excel (Pre-filled)')
+                            ->icon('heroicon-o-arrow-down-tray')
+                            ->color('gray')
+                            ->action(fn (DesignationImportService $service) => $service->downloadTipsSampleTemplate('xlsx')),
+                    ])
+                    ->form([
+                        FileUpload::make('file')
+                            ->label('CSV or Excel File (.csv / .xlsx)')
+                            ->disk('public')
+                            ->directory('designations-imports')
+                            ->acceptedFileTypes([
+                                'text/csv',
+                                'text/plain',
+                                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                'application/vnd.ms-excel',
+                                'application/csv',
+                            ])
+                            ->required()
+                            ->helperText('Supports columns: ID (optional), Designation Title, Department, Default Tips Amount'),
+                        Toggle::make('overwrite_existing')
+                            ->label('Overwrite existing default tips')
+                            ->helperText('When enabled, existing tips will be updated with values from the file. When disabled, only designations with empty tips are updated.')
+                            ->default(true),
+                    ])
+                    ->action(function (array $data, DesignationImportService $service) {
+                        try {
+                            $result = $service->importTipsFile($data['file'], (bool) ($data['overwrite_existing'] ?? true));
+
+                            $msg = "Imported {$result['total_rows']} row(s): updated {$result['updated']} designation tips";
+                            if ($result['skipped'] > 0) {
+                                $msg .= ", skipped {$result['skipped']}";
+                            }
+                            if ($result['unmatched'] > 0) {
+                                $msg .= ", unmatched {$result['unmatched']}";
+                                if (! empty($result['unmatched_names'])) {
+                                    $msg .= ' ['.implode(', ', $result['unmatched_names']).']';
+                                }
+                            }
+
+                            Notification::make()
+                                ->title('Tips Import Completed')
+                                ->body($msg)
+                                ->success()
+                                ->send();
+                        } catch (\Throwable $e) {
+                            Notification::make()
+                                ->title('Tips Import Failed')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
+                    }),
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                     Action::make('copySelectedNames')
