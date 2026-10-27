@@ -187,7 +187,7 @@
 ### 20. Date Converter Dashboard Widget Redesign & Custom Calendar
 - **Widget**: `App\Filament\Widgets\DateConverterWidget` and `resources/views/filament/widgets/date-converter-widget.blade.php`.
 - **Aesthetic & Layout**: Redesigned to adhere to Waldo's "Zen Soft Tech" dark/light design system:
-  - **Eliminated Double Widget Box**: Configured `.fi-wi-clean` and `[data-widget-card]` in `theme.css` with transparent background and zero border to prevent outer `.fi-wi-widget` from rendering an awkward empty box below custom dashboard widgets.
+  - **Eliminated Double Widget Box & Corner Outlines Globally**: Uncoupled `.fi-wi-widget` from elevated card rules in `theme.css` and made all widget grid wrappers strictly transparent (`border: none`, `box-shadow: none`, `background: transparent`). This ensures custom widgets (`BirthdayListWidget`, `DateConverterWidget`, `DepartmentEmployeeStatsWidget`) render clean, single-layer `rounded-3xl` cards without any secondary outline or ghost background peeking out around the corners.
   - **Height Alignment**: Used full-height flex column stretching so Date Converter aligns top and bottom borders cleanly with sibling widgets.
   - **Custom Interactive Calendar Popover**: Replaced native browser `<input type="date">` with an Alpine.js custom calendar popover featuring Sunday-first day alignment, month/year navigation dropdowns, active date glowing pills, and "Jump to Today" shortcut.
   - **Right-Aligned Date Trigger Icon**: Repositioned the calendar icon to the trailing end of the input inside a dedicated accent pill with active hover glow.

@@ -4,6 +4,13 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.13] - 2026-10-27
+
+### Fixed
+- **Global Elimination of Nested Widget Corner Outlines**: Uncoupled `.fi-wi-widget` from the elevated card border rules in `theme.css`. Because all custom dashboard widgets (`BirthdayListWidget`, `DateConverterWidget`, `DepartmentEmployeeStatsWidget`) render their own `rounded-3xl` cards, the outer `.fi-wi-widget` wrapper has been made strictly transparent with zero borders and zero shadows globally, eliminating the secondary outline previously peeking around the corners of every widget on the dashboard.
+
+---
+
 ## [2.5.12] - 2026-10-27
 
 ### Fixed

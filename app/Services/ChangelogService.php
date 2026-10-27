@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.5.12';
+    public const CURRENT_VERSION = '2.5.13';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,21 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.5.13',
+                'date' => '2026-10-27',
+                'title' => 'Global Elimination of Nested Widget Corner Outlines',
+                'type' => 'patch',
+                'badge' => 'Dashboard',
+                'badge_color' => 'primary',
+                'highlights' => 'Removed .fi-wi-widget from global elevated card styling in theme.css, ensuring widget wrappers remain purely transparent layout elements and completely eliminating the duplicate background layer and corner outlines across all dashboard widgets.',
+                'changes' => [
+                    'fixed' => [
+                        'Global Widget Wrapper Transparency: Uncoupled .fi-wi-widget from .fi-section/.fi-card elevated borders in theme.css and set it to strictly transparent globally with zero borders and zero shadows.',
+                        'Clean Corner Profiles: Eliminated the secondary outline previously visible behind rounded-3xl corners on Birthdays & Cards, Date Converter, and Department Overview widgets.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.5.12',
                 'date' => '2026-10-27',

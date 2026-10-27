@@ -295,7 +295,6 @@ a,
    ========================================================================== */
 .fi-section,
 .fi-card,
-.fi-wi-widget,
 .fi-ta-ctn {
     background-color: var(--surface-card) !important;
     border: 1px solid var(--surface-border) !important;
@@ -307,15 +306,13 @@ a,
 }
 
 .fi-section:hover,
-.fi-card:hover,
-.fi-wi-widget:hover {
+.fi-card:hover {
     box-shadow: var(--shadow-soft-md) !important;
     border-color: rgba(249, 115, 22, 0.25) !important;
 }
 
 :is(.dark, :root.dark) .fi-section,
 :is(.dark, :root.dark) .fi-card,
-:is(.dark, :root.dark) .fi-wi-widget,
 :is(.dark, :root.dark) .fi-ta-ctn {
     background-color: var(--surface-card) !important;
     border-color: var(--surface-border) !important;
@@ -323,15 +320,18 @@ a,
 }
 
 :is(.dark, :root.dark) .fi-section:hover,
-:is(.dark, :root.dark) .fi-card:hover,
-:is(.dark, :root.dark) .fi-wi-widget:hover {
+:is(.dark, :root.dark) .fi-card:hover {
     border-color: rgba(249, 115, 22, 0.3) !important;
     box-shadow: var(--shadow-soft-md) !important;
 }
 
-/* Custom card widgets: eliminate duplicate outer border and background box */
-.fi-wi-widget.fi-wi-clean,
-.fi-wi-widget:has(> [data-widget-card]) {
+/* ==========================================================================
+   Widget Grid Wrappers: Pure transparent layout elements.
+   Ensures custom widget cards never render a duplicate outer border, shadow,
+   or background layer peeking out around rounded corners.
+   ========================================================================== */
+.fi-wi-widget,
+:is(.dark, :root.dark) .fi-wi-widget {
     background-color: transparent !important;
     border: none !important;
     border-radius: 0 !important;
@@ -339,13 +339,10 @@ a,
     padding: 0 !important;
 }
 
-:is(.dark, :root.dark) .fi-wi-widget.fi-wi-clean,
-:is(.dark, :root.dark) .fi-wi-widget:has(> [data-widget-card]) {
-    background-color: transparent !important;
-    border: none !important;
-    border-radius: 0 !important;
+.fi-wi-widget:hover,
+:is(.dark, :root.dark) .fi-wi-widget:hover {
+    border-color: transparent !important;
     box-shadow: none !important;
-    padding: 0 !important;
 }
 
 /* Section Headers */
