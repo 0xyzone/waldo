@@ -74,7 +74,6 @@ class ListEmployees extends ListRecords
                         ->helperText('Total days worked is calculated up to and including this date.')
                         ->default(now()->toDateString())
                         ->displayFormat('d F, Y')
-                        ->firstDayOfWeek(0)
                         ->native(false)
                         ->required(),
                     Radio::make('scope')

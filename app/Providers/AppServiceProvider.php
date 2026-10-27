@@ -14,6 +14,8 @@ use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
 use Filament\Auth\Notifications\VerifyEmail;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Support\Enums\Width;
 use Filament\Support\Facades\FilamentView;
 use Filament\Tables\Table;
@@ -103,6 +105,15 @@ class AppServiceProvider extends ServiceProvider
             $action->modal(true)
                 ->slideOver()
                 ->modalWidth(Width::SevenExtraLarge);
+        });
+
+        // Globally configure all datepicker and datetimepicker fields to start the week on Sunday
+        DatePicker::configureUsing(function (DatePicker $datePicker): void {
+            $datePicker->firstDayOfWeek(7);
+        });
+
+        DateTimePicker::configureUsing(function (DateTimePicker $dateTimePicker): void {
+            $dateTimePicker->firstDayOfWeek(7);
         });
 
         // Inject custom CSS to style employees table rows based on status

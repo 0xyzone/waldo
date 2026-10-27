@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.5.1';
+    public const CURRENT_VERSION = '2.5.2';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,22 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.5.2',
+                'date' => '2026-10-27',
+                'title' => 'Global Sunday-First Week Start for Datepickers',
+                'type' => 'patch',
+                'badge' => 'UI / Localization',
+                'badge_color' => 'success',
+                'highlights' => 'Configured all datepicker and datetimepicker fields across the application to start the calendar week on Sunday by default.',
+                'changes' => [
+                    'changed' => [
+                        'Global Datepicker Configuration: Globally configured DatePicker and DateTimePicker components in AppServiceProvider to use Sunday as the first day of the week (firstDayOfWeek 7).',
+                        'Removed Redundant Local Configs: Streamlined form schemas across Candidates, Employees, and Biometric Allotments to inherit the global Sunday-first calendar default.',
+                        'Flatpickr Sunday Default: Explicitly set Flatpickr default firstDayOfWeek to 0 (Sunday) in the document studio layout.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.5.1',
                 'date' => '2026-10-26',

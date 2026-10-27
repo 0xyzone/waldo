@@ -4,6 +4,15 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.2] - 2026-10-27
+
+### Changed
+- **Global Sunday-First Calendar Default**: Configured `DatePicker` and `DateTimePicker` components globally in `AppServiceProvider` via `configureUsing` so that all datepicker fields start the week on Sunday (`firstDayOfWeek(7)`).
+- **Streamlined Resource Form Schemas**: Removed manual `firstDayOfWeek(0)` calls from Candidate, Employee, and Biometric Allotment schemas to inherit the global Sunday-first configuration cleanly.
+- **Flatpickr Global Default**: Ensured Flatpickr calendar instances in the document studio layout explicitly default `firstDayOfWeek` to 0 (Sunday).
+
+---
+
 ## [2.5.1] - 2026-10-26
 
 ### Fixed

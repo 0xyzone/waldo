@@ -177,7 +177,6 @@ class BiometricAllotmentForm
                                     ->preload()
                                     ->required(),
                                 DatePicker::make('join_date')
-                                    ->firstDayOfWeek(0)
                                     ->label('Joined Date')
                                     ->native(false)
                                     ->afterStateHydrated(function ($component, $state): void {

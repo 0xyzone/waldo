@@ -48,7 +48,6 @@ class CandidateForm
                     ->label('Date of Birth (AD)')
                     ->native(false)
                     ->live(onBlur: true)
-                    ->firstDayOfWeek(0)
                     ->hint(function ($state) {
                         if (! empty($state)) {
                             try {

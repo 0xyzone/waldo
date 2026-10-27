@@ -146,10 +146,11 @@
   - Records requests for existing employees (`source = employee`) with database search/autofill, or external non-employee persons (`source = custom`).
   - `name_on_tag`: Captures specific display name to be physically printed on the tag.
   - `remarks`: Reason or special printing/distribution instructions.
-  - List View Real-Time Status Updates: `SelectColumn` for instant transitions between `Pending`, `In Progress`, `Ready`, `Distributed`, and `Cancelled`.
   - Automated Action Log History: Tracks status changes, user stamps, and timestamps.
 
-
-
+### 15. Global Datepicker Configuration (Sunday-First Calendar)
+- **Framework Components**: Filament `DatePicker` and `DateTimePicker` are globally configured via `configureUsing` in `AppServiceProvider::boot()` with `firstDayOfWeek(7)` (Sunday).
+- **Behavior**: All date and datetime pickers across form schemas, action modals, and table filters display calendars starting on Sunday by default without needing manual per-field settings.
+- **Flatpickr Integration**: Flatpickr calendar instances in the document studio layout explicitly default `firstDayOfWeek: 0` (Sunday).
 
 
