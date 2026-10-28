@@ -268,6 +268,13 @@ a,
         opacity: 0 !important;
         visibility: hidden !important;
     }
+
+    /* Hide edge pull handle when sidebar is open so it does not float over sidebar contents */
+    .fi-layout:has(.fi-sidebar.fi-sidebar-open) #mobile-edge-handle {
+        opacity: 0 !important;
+        pointer-events: none !important;
+        transform: translateY(-50%) translateX(-100%) !important;
+    }
 }
 
 /* Sidebar Group Label: Refined Minimal Micro-Typography */

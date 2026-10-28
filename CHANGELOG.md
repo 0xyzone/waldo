@@ -4,6 +4,17 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.10] - 2026-10-28
+
+### Added & Enhanced
+- **Click-Outside Sidebar Dismissal & Enhanced Gesture Responsiveness**:
+  - **Global Click-Outside Dismissal**: Added a capture-phase global click listener that immediately closes the mobile sidebar when clicking anywhere on the screen outside the sidebar (including topbar, cards, and backdrop overlay).
+  - **Refined Edge Gesture Zone**: Tuned the edge swipe margin to a natural 45-60px mobile touch zone with a 10px initiation trigger and directional dominance filtering, restoring effortless swipe-to-open mechanics.
+  - **Bi-directional Finger Dragging**: Maintained 1:1 finger tracking when swiping right to open or swiping left to close with velocity-assisted snap animations.
+  - **Edge Pull Handle Auto-Hide**: Configured CSS to automatically hide the orange edge pull tab (`#mobile-edge-handle`) while the sidebar is open to keep navigation clean.
+
+---
+
 ## [2.8.9] - 2026-10-28
 
 ### Fixed & Enhanced

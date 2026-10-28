@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.8.9';
+    public const CURRENT_VERSION = '2.8.10';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,21 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.8.10',
+                'date' => '2026-10-28',
+                'title' => 'Click-Outside Sidebar Dismissal & Enhanced Gesture Responsiveness',
+                'type' => 'micro',
+                'badge' => 'Mobile UX',
+                'badge_color' => 'primary',
+                'description' => 'Enabled instant sidebar dismissal when clicking anywhere outside the open sidebar on mobile screens, and refined swipe thresholds and gesture mechanics for seamless finger tracking.',
+                'highlights' => [
+                    'Global Click-Outside Dismissal: Added a capture-phase click listener that immediately closes the mobile sidebar when clicking anywhere on the screen outside the sidebar (including topbar, cards, and backdrop overlay).',
+                    'Refined Edge Gesture Zone: Tuned the edge swipe margin to a natural 45-60px mobile touch zone with a 10px initiation trigger and directional dominance filtering, restoring effortless swipe-to-open mechanics.',
+                    'Bi-directional Finger Dragging: Maintained 1:1 finger tracking when swiping right to open or swiping left to close with velocity-assisted snap animations.',
+                    'Edge Pull Handle Auto-Hide: Configured CSS to automatically hide the orange edge pull tab (#mobile-edge-handle) while the sidebar is open to keep navigation clean.',
+                ],
+            ],
             [
                 'version' => '2.8.9',
                 'date' => '2026-10-28',

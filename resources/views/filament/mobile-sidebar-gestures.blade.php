@@ -4,7 +4,7 @@
     <button id="mobile-edge-handle"
             type="button"
             aria-label="Open navigation sidebar"
-            class="pointer-events-auto fixed left-0 top-1/2 -translate-y-1/2 w-3.5 h-16 rounded-r-xl bg-gradient-to-b from-orange-400/80 via-orange-500/90 to-amber-500/80 text-white shadow-md shadow-orange-500/30 flex items-center justify-center transition-all duration-200 active:w-5 active:scale-105 z-40 opacity-70 hover:opacity-100 touch-none">
+            class="pointer-events-auto fixed left-0 top-1/2 -translate-y-1/2 w-4 h-16 rounded-r-xl bg-gradient-to-b from-orange-400/85 via-orange-500/95 to-amber-500/85 text-white shadow-md shadow-orange-500/30 flex items-center justify-center transition-all duration-200 active:w-5 active:scale-105 z-40 opacity-75 hover:opacity-100 touch-none">
         <svg class="w-2.5 h-2.5 text-white -ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
         </svg>
@@ -13,14 +13,14 @@
 
 <script>
     (function () {
-        // Strict edge zone: within 25px of the left screen edge, or touching the handle
+        // Natural mobile edge zone: up to 50px or 15% of viewport width
         function getEdgeThreshold() {
-            return 25;
+            return Math.max(45, Math.min(60, Math.floor(window.innerWidth * 0.15)));
         }
 
-        const SWIPE_MIN_TRIGGER = 14;     // Min horizontal distance (px) before locking into drag (prevents taps from dragging)
-        const VELOCITY_THRESHOLD = 0.22;  // Low flick velocity threshold (px/ms)
-        const OPEN_DISTANCE_MIN = 40;     // Min drag needed to trigger open
+        const SWIPE_MIN_TRIGGER = 10;     // Min horizontal distance (px) before locking into drag
+        const VELOCITY_THRESHOLD = 0.18;  // Flick velocity threshold (px/ms)
+        const OPEN_DISTANCE_MIN = 35;     // Min px drag needed to trigger open/close
 
         let startX = 0;
         let startY = 0;
@@ -51,11 +51,10 @@
             return false;
         }
 
-        function isInteractiveElement(target) {
+        function isFormInput(target) {
             if (!target) return false;
-            return !!target.closest(
-                'input, textarea, select, button, a, [role="button"], [contenteditable="true"], .table-editor-cell, [data-no-gesture]'
-            );
+            // Only exclude form text inputs so typing or selecting text near the edge is uninterrupted
+            return !!target.closest('input, textarea, select, [contenteditable="true"], .table-editor-cell, [data-no-gesture]');
         }
 
         function initElements() {
@@ -141,12 +140,13 @@
             const isEdgeHandleHit = edgeHandle && edgeHandle.contains(e.target);
 
             if (!isOpen) {
+                // Open gesture: starts either on edge handle or within edge threshold
                 if (isEdgeHandleHit || startX <= getEdgeThreshold()) {
-                    if (!isEdgeHandleHit && isInteractiveElement(e.target)) return;
+                    if (!isEdgeHandleHit && isFormInput(e.target)) return;
                     gestureDirection = 'open';
                 }
             } else {
-                // If sidebar is open, swipe left anywhere to close
+                // Close gesture: when open, user can swipe left from anywhere
                 gestureDirection = 'close';
             }
         }
@@ -166,14 +166,14 @@
 
             if (!isDragging) {
                 // Cancel if vertical scrolling dominates
-                if (absY > 12 && absY > absX * 1.5) {
+                if (absY > 12 && absY > absX * 1.4) {
                     isVerticalScroll = true;
                     cleanupStyles();
                     return;
                 }
 
                 // Lock into horizontal drag once threshold is exceeded and horizontal exceeds vertical
-                if (absX >= SWIPE_MIN_TRIGGER && absX >= absY * 1.3) {
+                if (absX >= SWIPE_MIN_TRIGGER && absX >= absY * 1.1) {
                     if (gestureDirection === 'open' && deltaX > 0) {
                         isDragging = true;
                     } else if (gestureDirection === 'close' && deltaX < 0) {
@@ -202,7 +202,7 @@
                     sidebarEl.style.setProperty('transform', 'none', 'important');
                     sidebarEl.style.setProperty('pointer-events', 'none', 'important');
 
-                    if (overlayEl && clampedDelta > 10) {
+                    if (overlayEl && clampedDelta > 8) {
                         const progress = clampedDelta / sidebarWidth;
                         overlayEl.style.setProperty('display', 'block', 'important');
                         overlayEl.style.setProperty('opacity', (progress * 0.6).toFixed(3), 'important');
@@ -255,7 +255,7 @@
             const store = getSidebarStore();
 
             if (gestureDirection === 'open') {
-                const shouldOpen = deltaX > OPEN_DISTANCE_MIN || (velocity > VELOCITY_THRESHOLD && deltaX > 20);
+                const shouldOpen = deltaX > OPEN_DISTANCE_MIN || (velocity > VELOCITY_THRESHOLD && deltaX > 15);
 
                 sidebarEl.classList.remove('fi-sidebar-dragging');
                 sidebarEl.style.setProperty('transition', 'translate 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1)', 'important');
@@ -288,7 +288,7 @@
                     }, 280);
                 }
             } else if (gestureDirection === 'close') {
-                const shouldClose = deltaX < -OPEN_DISTANCE_MIN || (velocity < -VELOCITY_THRESHOLD && deltaX < -20);
+                const shouldClose = deltaX < -OPEN_DISTANCE_MIN || (velocity < -VELOCITY_THRESHOLD && deltaX < -15);
 
                 sidebarEl.classList.remove('fi-sidebar-dragging');
                 sidebarEl.style.setProperty('transition', 'translate 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1)', 'important');
@@ -337,6 +337,35 @@
             document.addEventListener('touchend', handlePointerEnd, { passive: true });
             document.addEventListener('touchcancel', cleanupStyles, { passive: true });
         }
+
+        // Click outside handler: clicking elsewhere from the sidebar when it is open closes it
+        document.addEventListener('click', function (e) {
+            if (window.innerWidth >= 1024) return;
+            initElements();
+
+            const store = getSidebarStore();
+            const isOpen = store ? store.isOpen : (sidebarEl && sidebarEl.classList.contains('fi-sidebar-open'));
+            if (!isOpen) return;
+
+            // If click was inside the sidebar itself, allow interaction
+            if (sidebarEl && sidebarEl.contains(e.target)) {
+                return;
+            }
+
+            // If click was on sidebar toggle buttons or edge handle, let their own handlers work
+            if (e.target.closest('.fi-topbar-sidebar-toggle-btn, .fi-layout-sidebar-toggle-btn, .fi-sidebar-open-sidebar-btn, #mobile-edge-handle')) {
+                return;
+            }
+
+            // Clicked anywhere else on the screen outside the sidebar -> close immediately
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (store) {
+                store.close();
+            }
+            cleanupStyles();
+        }, true); // Capture phase ensures it catches clicks before they are swallowed
 
         // Keep overlay state strictly in sync with Alpine store
         function setupAlpineSync() {

@@ -314,10 +314,13 @@
   - **Alpine Store Synchronization (`mobile-sidebar-gestures.blade.php`)**: Added a reactive `Alpine.effect` watcher that guarantees the overlay is explicitly hidden whenever `$store.sidebar.isOpen` is `false`, and only made visible when the sidebar is open or actively being dragged.
   - **Gesture Gate Precision**: Restricted open swipe detection strictly to within 25px of the viewport edge (or `#mobile-edge-handle`), increased horizontal trigger to 14px with dominant directional filtering (`absX >= absY * 1.3`), and excluded interactive buttons/links, ensuring standard taps anywhere on the screen pass directly through without interference.
 
-
-
-
-
-
+### 33. Click-Outside Sidebar Dismissal & Enhanced Gesture Responsiveness (v2.8.10)
+- **Problem**:
+  - The mobile sidebar did not dismiss when clicking elsewhere on the screen (such as topbar or content outside the sidebar).
+  - Edge gestures were excessively constricted to a 25px sliver and excluded elements like buttons, making swipe-to-open hard to trigger.
+- **Solution**:
+  - **Capture-Phase Click-Outside Dismissal (`mobile-sidebar-gestures.blade.php`)**: Added a global capture-phase click listener that intercepts any click outside `.fi-sidebar` when open and immediately closes the sidebar (`store.close()`), guaranteeing reliable one-tap dismissal anywhere on the screen.
+  - **Refined Swipe Initiation (`mobile-sidebar-gestures.blade.php`)**: Expanded edge initiation zone to a natural 45-60px margin (or `#mobile-edge-handle`), lowered movement threshold to 10px, and restricted filtering strictly to form text inputs so edge swipes initiate effortlessly across headers, cards, and page elements.
+  - **Auto-Hide Edge Pull Handle (`theme.css`)**: Added `.fi-layout:has(.fi-sidebar.fi-sidebar-open) #mobile-edge-handle` to slide and fade the handle out of view while the sidebar is open.
 
 
