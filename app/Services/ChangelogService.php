@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.8.10';
+    public const CURRENT_VERSION = '2.8.11';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,22 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.8.11',
+                'date' => '2026-10-28',
+                'title' => 'Chat UI Modernization, Jitter-Free Alignment & Real-Time Performance',
+                'type' => 'micro',
+                'badge' => 'Chat UX',
+                'badge_color' => 'primary',
+                'description' => 'Completely redesigned the floating chat feed with natural message bubble alignments, date separator chips, floating hover action/reaction capsule, and zero-latency client-side sending without screen flicker.',
+                'highlights' => [
+                    'Natural Message Alignments: Restructured chat feed layout with balanced widths (max-w-[84%] sm:max-w-[76%]), distinct bubble tail corners, inline floating timestamps, and clean separation between sender and receiver bubbles.',
+                    'Zero Jitter Floating Actions Capsule: Moved quick-reaction emojis and message action buttons (reply, forward, pin, delete) into an anchored floating capsule above the message bubble on hover, completely preventing layout shifts.',
+                    'Modern Date Dividers & De-congested State: Added elegant date separator chips (Today, Yesterday, formatted dates) and styled deleted messages as subtle dashed border pills.',
+                    'Anti-Flicker & Realtime Responsiveness: Deduplicated Echo channel listeners, debounced status and reaction updates, and implemented instantaneous 0ms client-side textarea reset on send.',
+                    'Sleek Pill Composer: Modernized the bottom input form into a unified rounded-2xl island with glowing gradient send button, smooth auto-resizing, and quick attachment/mic controls.',
+                ],
+            ],
             [
                 'version' => '2.8.10',
                 'date' => '2026-10-28',

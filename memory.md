@@ -323,4 +323,17 @@
   - **Refined Swipe Initiation (`mobile-sidebar-gestures.blade.php`)**: Expanded edge initiation zone to a natural 45-60px margin (or `#mobile-edge-handle`), lowered movement threshold to 10px, and restricted filtering strictly to form text inputs so edge swipes initiate effortlessly across headers, cards, and page elements.
   - **Auto-Hide Edge Pull Handle (`theme.css`)**: Added `.fi-layout:has(.fi-sidebar.fi-sidebar-open) #mobile-edge-handle` to slide and fade the handle out of view while the sidebar is open.
 
+### 34. Chat UI Modernization, Jitter-Free Alignment & Real-Time Performance (v2.8.11)
+- **Problem**:
+  - The chat feed felt cramped and congested.
+  - Message bubble alignment was irregular, sender names stretched containers, timestamps created awkward gaps, and hover action buttons sat in the same flex row, causing visible layout jitter when hovering messages.
+  - Redundant Echo channel events triggered concurrent Livewire requests causing noticeable UI flickering. Sending messages had noticeable lag due to sequential client-to-server rounds.
+- **Solution**:
+  - **Natural Layout & Alignments (`floating-chat-widget.blade.php`)**: Restructured message feed with balanced widths (`max-w-[84%] sm:max-w-[76%]`), distinct bubble tail corners (`rounded-br-xs` for outgoing, `rounded-bl-xs` for incoming), inline floating timestamps (`float-right`), and clean separation between sender and receiver bubbles.
+  - **Zero Jitter Floating Capsule (`floating-chat-widget.blade.php`)**: Moved quick-reaction emojis and message action buttons (reply, forward, pin, delete) into an anchored floating capsule above the message bubble on hover, completely preventing layout shifts.
+  - **Modern Date Dividers & De-congested State**: Added elegant date separator chips ('Today', 'Yesterday', formatted dates) and styled deleted messages as subtle dashed border pills.
+  - **Anti-Flicker & Realtime Responsiveness**: Deduplicated Echo channel listeners, debounced status and reaction updates, and implemented instantaneous 0ms client-side textarea reset on send.
+  - **Sleek Pill Composer**: Modernized the bottom input form into a unified rounded-2xl island with glowing gradient send button, smooth auto-resizing, and quick attachment/mic controls.
+
+
 

@@ -240,8 +240,12 @@ class FloatingChatWidget extends Component
         $this->attachment = null;
     }
 
-    public function sendMessage(): void
+    public function sendMessage(?string $text = null): void
     {
+        if ($text !== null) {
+            $this->messageText = $text;
+        }
+
         $text = trim($this->messageText);
 
         if (blank($text) && ! $this->attachment && ! $this->voiceNote) {

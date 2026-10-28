@@ -4,6 +4,18 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.11] - 2026-10-28
+
+### Added & Enhanced
+- **Chat UI Modernization, Jitter-Free Alignment & Real-Time Performance**:
+  - **Natural Message Alignments**: Restructured chat feed layout with balanced widths (`max-w-[84%] sm:max-w-[76%]`), distinct bubble tail corners (`rounded-br-xs` for outgoing, `rounded-bl-xs` for incoming), inline floating timestamps, and clean separation between sender and receiver bubbles.
+  - **Zero Jitter Floating Actions Capsule**: Moved quick-reaction emojis and message action buttons (reply, forward, pin, delete) into an anchored floating capsule above the message bubble on hover, completely preventing layout shifts.
+  - **Modern Date Dividers & De-congested State**: Added elegant date separator chips ('Today', 'Yesterday', formatted dates) and styled deleted messages as subtle dashed border pills.
+  - **Anti-Flicker & Realtime Responsiveness**: Deduplicated Echo channel listeners, debounced status and reaction updates, and implemented instantaneous 0ms client-side textarea reset on send.
+  - **Sleek Pill Composer**: Modernized the bottom input form into a unified rounded-2xl island with glowing gradient send button, smooth auto-resizing, and quick attachment/mic controls.
+
+---
+
 ## [2.8.10] - 2026-10-28
 
 ### Added & Enhanced

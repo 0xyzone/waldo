@@ -93,6 +93,16 @@
             });
         },
     
+        _refreshTimer: null,
+        debouncedRefresh(delay = 180) {
+            if (this._refreshTimer) {
+                clearTimeout(this._refreshTimer);
+            }
+            this._refreshTimer = setTimeout(() => {
+                $wire.$refresh();
+            }, delay);
+        },
+
         initEcho() {
             if (!window.Echo) return;
     
@@ -122,26 +132,18 @@
     
             window.Echo.private(`chat.user.{{ auth()->id() }}`)
                 .listen('.message.sent', (e) => {
+                    if (this.isOpen && this.activeConversationId === e.conversation_id) {
+                        return;
+                    }
                     if (this.isSoundNotificationEnabled()) {
                         this.playTing();
                     }
-                    $wire.$refresh();
-                    if (this.isOpen && this.activeConversationId === e.conversation_id) {
-                        this.$nextTick(() => this.scrollToBottom());
-                    }
+                    this.debouncedRefresh(200);
                 })
-                .listen('.message.deleted', (e) => {
-                    $wire.$refresh();
-                })
-                .listen('.message.pinned', (e) => {
-                    $wire.$refresh();
-                })
-                .listen('.message.reacted', (e) => {
-                    $wire.$refresh();
-                })
-                .listen('.message.status', () => {
-                    $wire.$refresh();
-                });
+                .listen('.message.deleted', () => this.debouncedRefresh(180))
+                .listen('.message.pinned', () => this.debouncedRefresh(180))
+                .listen('.message.reacted', () => this.debouncedRefresh(180))
+                .listen('.message.status', () => this.debouncedRefresh(180));
     
             if (this.activeConversationId) {
                 this.subscribeToConversation(this.activeConversationId);
@@ -162,21 +164,12 @@
                         this.playTing();
                     }
                     $wire.incomingMessage(payload);
-                    $wire.$refresh();
                     this.$nextTick(() => this.scrollToBottom());
                 })
-                .listen('.message.deleted', () => {
-                    $wire.$refresh();
-                })
-                .listen('.message.pinned', () => {
-                    $wire.$refresh();
-                })
-                .listen('.message.reacted', () => {
-                    $wire.$refresh();
-                })
-                .listen('.message.status', () => {
-                    $wire.$refresh();
-                });
+                .listen('.message.deleted', () => this.debouncedRefresh(180))
+                .listen('.message.pinned', () => this.debouncedRefresh(180))
+                .listen('.message.reacted', () => this.debouncedRefresh(180))
+                .listen('.message.status', () => this.debouncedRefresh(180));
         },
     
         scrollToBottom() {
@@ -924,103 +917,119 @@
 
                         <!-- Active Chat Feed -->
                         <div x-ref="floatingFeed"
-                            class="flex-1 overflow-y-auto p-3 space-y-2.5 bg-gray-50/40 dark:bg-gray-950/40">
-                            @php $messages = $this->messages; @endphp
+                            class="flex-1 overflow-y-auto px-3.5 py-3 space-y-1.5 bg-slate-50/70 dark:bg-slate-950/50 scroll-smooth">
+                            @php
+                                $messages = $this->messages;
+                                $prevMsgDate = null;
+                            @endphp
                             @forelse($messages as $msg)
                                 @php
                                     $isMe = $msg->sender_id === auth()->id();
                                     $canDelete = $msg->canBeDeletedBy(auth()->id());
                                     $isPinned = $msg->isCurrentlyPinned();
+                                    $msgDate = $msg->created_at?->format('Y-m-d');
+                                    $showDateDivider = ($prevMsgDate !== $msgDate);
+                                    $prevMsgDate = $msgDate;
                                 @endphp
-                                <div id="float-msg-{{ $msg->id }}" wire:key="float-msg-{{ $msg->id }}"
-                                    class="group relative flex flex-col {{ $isMe ? 'items-end' : 'items-start' }}">
-                                    <div
-                                        class="flex items-end gap-1.5 max-w-[88%] {{ $isMe ? 'flex-row-reverse' : 'flex-row' }}">
-                                        @if (!$isMe)
-                                            @if ($msg->sender?->avatar_url)
-                                                <img src="{{ $msg->sender->getFilamentAvatarUrl() }}"
-                                                    class="h-6 w-6 rounded-full object-cover flex-shrink-0" />
+                                @if ($showDateDivider && $msg->created_at)
+                                    <div class="flex items-center justify-center my-3 select-none">
+                                        <span class="px-3 py-0.5 text-[10px] font-semibold tracking-wide text-slate-500 dark:text-slate-400 bg-white/90 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-full shadow-2xs backdrop-blur-xs">
+                                            @if ($msg->created_at->isToday())
+                                                Today
+                                            @elseif ($msg->created_at->isYesterday())
+                                                Yesterday
                                             @else
-                                                <div
-                                                    class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-[10px] font-bold text-amber-700 dark:text-amber-300">
-                                                    {{ strtoupper(substr($msg->sender?->name ?? 'U', 0, 1)) }}
-                                                </div>
+                                                {{ $msg->created_at->format('M j, Y') }}
                                             @endif
+                                        </span>
+                                    </div>
+                                @endif
+
+                                <div id="float-msg-{{ $msg->id }}" wire:key="float-msg-{{ $msg->id }}"
+                                    class="group relative flex w-full {{ $isMe ? 'justify-end' : 'justify-start' }} py-0.5">
+                                    <div
+                                        class="flex items-end gap-1.5 max-w-[84%] sm:max-w-[76%] {{ $isMe ? 'flex-row-reverse' : 'flex-row' }}">
+                                        @if (!$isMe)
+                                            <div class="flex-shrink-0 self-end mb-0.5">
+                                                @if ($msg->sender?->avatar_url)
+                                                    <img src="{{ $msg->sender->getFilamentAvatarUrl() }}"
+                                                        class="h-6 w-6 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700" />
+                                                @else
+                                                    <div
+                                                        class="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-tr from-amber-500/20 to-orange-500/20 text-[10px] font-bold text-amber-700 dark:text-amber-300 ring-1 ring-amber-500/30">
+                                                        {{ strtoupper(substr($msg->sender?->name ?? 'U', 0, 1)) }}
+                                                    </div>
+                                                @endif
+                                            </div>
                                         @endif
 
-                                        <div
-                                            class="relative rounded-2xl px-3 py-2 text-xs shadow-sm transition-all {{ $isMe ? 'bg-amber-600 text-white rounded-br-sm' : 'bg-white text-gray-900 border border-gray-200 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-100 rounded-bl-sm' }} {{ !$isMe && $msg->mentionsUser(auth()->id()) ? 'ring-2 ring-amber-500/80 dark:ring-amber-400/80 border-amber-400/60 dark:border-amber-500/60 bg-amber-50/50 dark:bg-amber-950/20' : '' }}">
-                                            @if ($this->activeConversation->isGroup() && !$isMe)
-                                                <div class="flex items-center justify-between gap-1 mb-0.5">
-                                                    <span
-                                                        class="block text-[10px] font-semibold text-amber-600 dark:text-amber-400">
-                                                        {{ $msg->sender?->name }}
-                                                    </span>
-                                                    @if ($msg->mentionsUser(auth()->id()))
+                                        <div class="relative w-fit">
+                                            <div
+                                                class="relative rounded-2xl px-3 py-2 text-xs shadow-xs transition-all {{ $msg->is_deleted ? 'bg-slate-100/70 dark:bg-slate-800/50 border border-dashed border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-2xl' : ($isMe ? 'bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 text-white rounded-br-xs shadow-orange-500/15' : 'bg-white text-slate-900 border border-slate-200/80 dark:border-slate-700/60 dark:bg-slate-800 dark:text-slate-100 rounded-bl-xs shadow-slate-900/5') }} {{ !$isMe && !$msg->is_deleted && $msg->mentionsUser(auth()->id()) ? 'ring-2 ring-amber-400 dark:ring-amber-400/80 bg-amber-50/70 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700' : '' }}">
+                                                @if ($this->activeConversation->isGroup() && !$isMe && !$msg->is_deleted)
+                                                    <div class="flex items-center justify-between gap-2 mb-1 leading-none">
                                                         <span
-                                                            class="inline-flex items-center gap-0.5 rounded bg-amber-500/20 px-1 py-0.2 text-[8px] font-bold text-amber-800 dark:bg-amber-400/20 dark:text-amber-300 ring-1 ring-amber-400/30">
+                                                            class="text-[11px] font-bold text-amber-600 dark:text-amber-400">
+                                                            {{ $msg->sender?->name }}
+                                                        </span>
+                                                        @if ($msg->mentionsUser(auth()->id()))
+                                                            <span
+                                                                class="inline-flex items-center gap-0.5 rounded-full bg-amber-500/20 px-1.5 py-0.2 text-[8px] font-bold text-amber-800 dark:bg-amber-400/20 dark:text-amber-300 ring-1 ring-amber-400/30">
+                                                                @ Tagged you
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                @elseif(!$isMe && !$msg->is_deleted && $msg->mentionsUser(auth()->id()))
+                                                    <div class="mb-1 leading-none">
+                                                        <span
+                                                            class="inline-flex items-center gap-0.5 rounded-full bg-amber-500/20 px-1.5 py-0.2 text-[8px] font-bold text-amber-800 dark:bg-amber-400/20 dark:text-amber-300 ring-1 ring-amber-400/30">
                                                             @ Tagged you
                                                         </span>
-                                                    @endif
-                                                </div>
-                                            @elseif(!$isMe && $msg->mentionsUser(auth()->id()))
-                                                <div class="mb-0.5">
-                                                    <span
-                                                        class="inline-flex items-center gap-0.5 rounded bg-amber-500/20 px-1 py-0.2 text-[8px] font-bold text-amber-800 dark:bg-amber-400/20 dark:text-amber-300 ring-1 ring-amber-400/30">
-                                                        @ Tagged you
-                                                    </span>
-                                                </div>
-                                            @endif
-
-                                            @if ($msg->is_forwarded)
-                                                <div
-                                                    class="mb-1 flex items-center gap-1 text-[9px] italic {{ $isMe ? 'text-amber-200/90' : 'text-gray-500 dark:text-gray-400' }}">
-                                                    <svg class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24"
-                                                        stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M15 15l6-6m0 0l-6-6m6 6H9a6 6 0 00-6 6v3" />
-                                                    </svg>
-                                                    <span>Forwarded</span>
-                                                </div>
-                                            @endif
-
-                                            @if ($isPinned)
-                                                <div
-                                                    class="mb-1 flex items-center gap-1 text-[9px] font-bold {{ $isMe ? 'text-amber-200' : 'text-amber-600 dark:text-amber-400' }}">
-                                                    <span>📌 Pinned</span>
-                                                    @if ($msg->pinned_until)
-                                                        <span
-                                                            class="opacity-75">({{ $msg->getPinnedTimeRemaining() }})</span>
-                                                    @endif
-                                                </div>
-                                            @endif
-
-                                            @if ($msg->reply_to_id && $msg->replyTo)
-                                                <div @click="scrollToMessage({{ $msg->reply_to_id }})"
-                                                    class="mb-1.5 cursor-pointer rounded-lg border-l-4 px-2 py-1 transition text-left select-none {{ $isMe ? 'border-amber-300 bg-black/15 hover:bg-black/25 text-white' : 'border-amber-500 bg-gray-50 hover:bg-gray-100 text-gray-800 dark:border-amber-400 dark:bg-gray-700/50 dark:hover:bg-gray-700/80 dark:text-gray-200' }}"
-                                                    title="Jump to replied message">
-                                                    <div
-                                                        class="flex items-center justify-between gap-1 text-[10px] font-bold {{ $isMe ? 'text-amber-200' : 'text-amber-600 dark:text-amber-400' }}">
-                                                        <span>{{ $msg->replyTo->sender?->name ?? 'User' }}</span>
                                                     </div>
-                                                    <p class="truncate text-[10px] opacity-90 font-normal">
-                                                        {{ $msg->replyTo->getReplySnippet(45) }}
-                                                    </p>
-                                                </div>
-                                            @endif
+                                                @endif
+
+                                                @if ($msg->is_forwarded && !$msg->is_deleted)
+                                                    <div class="mb-1 flex items-center gap-1 text-[9px] italic {{ $isMe ? 'text-amber-100/90' : 'text-slate-500 dark:text-slate-400' }}">
+                                                        <svg class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l6-6m0 0l-6-6m6 6H9a6 6 0 00-6 6v3" />
+                                                        </svg>
+                                                        <span>Forwarded</span>
+                                                    </div>
+                                                @endif
+
+                                                @if ($isPinned && !$msg->is_deleted)
+                                                    <div class="mb-1 flex items-center gap-1 text-[9px] font-bold {{ $isMe ? 'text-amber-100' : 'text-amber-600 dark:text-amber-400' }}">
+                                                        <span>📌 Pinned</span>
+                                                        @if ($msg->pinned_until)
+                                                            <span class="opacity-75">({{ $msg->getPinnedTimeRemaining() }})</span>
+                                                        @endif
+                                                    </div>
+                                                @endif
+
+                                                @if ($msg->reply_to_id && $msg->replyTo && !$msg->is_deleted)
+                                                    <div @click="scrollToMessage({{ $msg->reply_to_id }})"
+                                                        class="mb-1.5 cursor-pointer rounded-lg border-l-3 px-2 py-1 transition text-left select-none {{ $isMe ? 'border-amber-300 bg-black/15 hover:bg-black/25 text-white' : 'border-amber-500 bg-slate-100 hover:bg-slate-200/70 text-slate-800 dark:border-amber-400 dark:bg-slate-700/60 dark:hover:bg-slate-700/90 dark:text-slate-200' }}"
+                                                        title="Jump to replied message">
+                                                        <div class="text-[10px] font-bold {{ $isMe ? 'text-amber-200' : 'text-amber-600 dark:text-amber-400' }}">
+                                                            {{ $msg->replyTo->sender?->name ?? 'User' }}
+                                                        </div>
+                                                        <p class="truncate text-[10px] opacity-90 font-normal">
+                                                            {{ $msg->replyTo->getReplySnippet(45) }}
+                                                        </p>
+                                                    </div>
+                                                @endif
 
                                             <!-- Message Body / Attachments or Deleted State -->
                                             @if ($msg->is_deleted)
                                                 <div
-                                                    class="flex items-center gap-1.5 py-0.5 italic {{ $isMe ? 'text-amber-100/90' : 'text-gray-500 dark:text-gray-400' }}">
+                                                    class="flex items-center gap-1.5 py-0.5 italic text-slate-500 dark:text-slate-400 text-[11px]">
                                                     <svg class="h-3.5 w-3.5 opacity-70 flex-shrink-0" fill="none"
                                                         viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
                                                             stroke-width="2"
                                                             d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                                                     </svg>
-                                                    <span class="text-xs">This message was deleted</span>
+                                                    <span>This message was deleted</span>
                                                 </div>
                                             @else
                                                 @if ($msg->isImage())
@@ -1049,10 +1058,10 @@
                                                 @elseif($msg->isAudio())
                                                     <!-- Modern Waveform Voice Note Player -->
                                                     <div x-data="voicePlayer('{{ $msg->getAttachmentUrl() }}', $el)" data-voice-player
-                                                        class="my-1 flex items-center gap-2 rounded-xl px-2.5 py-1.5 transition-all {{ $isMe ? 'bg-amber-700/60 text-white' : 'bg-gray-100 dark:bg-gray-700/70 text-gray-900 dark:text-white' }} min-w-[210px] max-w-[250px] select-none">
+                                                        class="my-1 flex items-center gap-2 rounded-xl px-2.5 py-1.5 transition-all {{ $isMe ? 'bg-black/15 border border-white/10 text-white' : 'bg-slate-100/90 dark:bg-slate-700/60 border border-slate-200/60 dark:border-slate-600/40 text-slate-800 dark:text-slate-100' }} min-w-[210px] max-w-[250px] select-none">
                                                         <!-- Play/Pause Button -->
                                                         <button type="button" @click="togglePlay"
-                                                            class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full shadow transition-transform active:scale-95 {{ $isMe ? 'bg-white text-amber-700 hover:bg-amber-50' : 'bg-amber-600 text-white hover:bg-amber-500' }}"
+                                                            class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full shadow transition-transform active:scale-95 cursor-pointer {{ $isMe ? 'bg-white text-orange-600 hover:bg-orange-50' : 'bg-amber-600 text-white hover:bg-amber-500' }}"
                                                             title="Play / Pause">
                                                             <template x-if="!isPlaying">
                                                                 <svg class="h-3.5 w-3.5 ml-0.5" fill="currentColor"
@@ -1078,17 +1087,17 @@
                                                                         :style="`height: ${barHeight}px;`"
                                                                         :class="(idx / (bars.length - 1)) <= (progress / 100) ?
                                                                         '{{ $isMe ? 'bg-white' : 'bg-amber-600 dark:bg-amber-400' }}' :
-                                                                        '{{ $isMe ? 'bg-amber-300/40' : 'bg-gray-300 dark:bg-gray-500' }}'">
+                                                                        '{{ $isMe ? 'bg-white/40' : 'bg-slate-300 dark:bg-slate-500' }}'">
                                                                     </div>
                                                                 </template>
                                                             </div>
 
                                                             <div
-                                                                class="flex items-center justify-between text-[9px] {{ $isMe ? 'text-amber-100/90' : 'text-gray-500 dark:text-gray-400' }} font-mono">
+                                                                class="flex items-center justify-between text-[9px] {{ $isMe ? 'text-amber-100/90' : 'text-slate-500 dark:text-slate-400' }} font-mono">
                                                                 <span
                                                                     x-text="formatSecs(isPlaying ? currentTime : (duration || currentTime))">0:00</span>
                                                                 <button type="button" @click="cycleSpeed"
-                                                                    class="rounded px-0.5 text-[8px] font-bold uppercase transition hover:bg-black/10 dark:hover:bg-white/10"
+                                                                    class="rounded px-0.5 text-[8px] font-bold uppercase transition hover:bg-black/10 dark:hover:bg-white/10 cursor-pointer"
                                                                     x-text="speed + 'x'">
                                                                     1x
                                                                 </button>
@@ -1099,7 +1108,7 @@
                                                             <button type="button"
                                                                 wire:confirm="Delete this voice message? It will be replaced with 'This message was deleted'."
                                                                 wire:click="deleteMessage({{ $msg->id }})"
-                                                                class="rounded p-1 transition {{ $isMe ? 'text-amber-200 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40' }}"
+                                                                class="rounded p-1 transition cursor-pointer {{ $isMe ? 'text-amber-200 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40' }}"
                                                                 title="Delete voice note (valid for 15 mins or admin)">
                                                                 <svg class="h-3.5 w-3.5" fill="none"
                                                                     viewBox="0 0 24 24" stroke="currentColor">
@@ -1111,40 +1120,27 @@
                                                         @endif
                                                     </div>
                                                 @elseif($msg->isFile())
-                                                    <div
-                                                        class="my-1 flex items-center justify-between gap-2 rounded-lg p-1.5 {{ $isMe ? 'bg-amber-700/50 text-white' : 'bg-gray-100 dark:bg-gray-700/60 text-gray-900 dark:text-white' }}">
+                                                    <div class="my-1 flex items-center justify-between gap-2 rounded-xl p-2 {{ $isMe ? 'bg-black/15 text-white border border-white/10' : 'bg-slate-100 dark:bg-slate-700/60 text-slate-900 dark:text-white border border-slate-200/60 dark:border-slate-600/40' }}">
                                                         <div class="flex items-center gap-1.5 min-w-0">
-                                                            <svg class="h-4 w-4 flex-shrink-0" fill="none"
-                                                                viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2"
-                                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                            <svg class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                             </svg>
-                                                            <span
-                                                                class="truncate text-[11px] font-medium">{{ $msg->attachment_name }}</span>
+                                                            <span class="truncate text-[11px] font-medium">{{ $msg->attachment_name }}</span>
                                                         </div>
                                                         <div class="flex items-center gap-1 flex-shrink-0">
-                                                            <a href="{{ $msg->getAttachmentUrl() }}"
-                                                                download="{{ $msg->attachment_name }}"
+                                                            <a href="{{ $msg->getAttachmentUrl() }}" download="{{ $msg->attachment_name }}"
                                                                 class="p-1 hover:opacity-80" title="Download">
-                                                                <svg class="h-3.5 w-3.5" fill="none"
-                                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path stroke-linecap="round"
-                                                                        stroke-linejoin="round" stroke-width="2"
-                                                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                                                 </svg>
                                                             </a>
                                                             @if ($canDelete)
                                                                 <button type="button"
                                                                     wire:confirm="Delete this file attachment? It will be replaced with 'This message was deleted'."
                                                                     wire:click="deleteMessage({{ $msg->id }})"
-                                                                    class="p-1 text-red-500 hover:opacity-80"
-                                                                    title="Delete file (valid for 15 mins or admin)">
-                                                                    <svg class="h-3.5 w-3.5" fill="none"
-                                                                        viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path stroke-linecap="round"
-                                                                            stroke-linejoin="round" stroke-width="2"
-                                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                    class="p-1 text-red-500 hover:opacity-80 cursor-pointer" title="Delete file">
+                                                                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                                     </svg>
                                                                 </button>
                                                             @endif
@@ -1152,194 +1148,189 @@
                                                     </div>
                                                 @endif
 
-                                                @if (
-                                                    $msg->body &&
+                                                @php
+                                                    $hasTextBody = $msg->body &&
                                                         !$msg->is_deleted &&
                                                         !($msg->isImage() && $msg->body === $msg->attachment_name) &&
                                                         !($msg->isAudio() && $msg->body === 'Voice message') &&
-                                                        !($msg->isFile() && $msg->body === $msg->attachment_name))
-                                                    <p class="whitespace-pre-wrap break-words leading-relaxed">
-                                                        {!! $msg->getFormattedBodyHtml($isMe) !!}</p>
+                                                        !($msg->isFile() && $msg->body === $msg->attachment_name);
+                                                @endphp
+
+                                                @if ($hasTextBody)
+                                                    <div class="whitespace-pre-wrap break-words leading-relaxed select-text">
+                                                        {!! $msg->getFormattedBodyHtml($isMe) !!}
+                                                        <span class="inline-flex items-center gap-1 float-right ml-2.5 pt-1 -mb-0.5 text-[9px] font-medium leading-none select-none {{ $isMe ? 'text-amber-100/80' : 'text-slate-400 dark:text-slate-500' }}">
+                                                            <span>{{ $msg->created_at?->format('h:i A') }}</span>
+                                                            @if ($isMe)
+                                                                @php $deliveryStatus = $msg->getDeliveryStatus(auth()->id()); @endphp
+                                                                @if ($deliveryStatus === 'seen')
+                                                                    <span title="Read" class="inline-flex items-center text-sky-200 drop-shadow-[0_0_2px_rgba(56,189,248,0.6)]">
+                                                                        <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M2 13l4 4L14 7" />
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M8 13l4 4L20 7" />
+                                                                        </svg>
+                                                                    </span>
+                                                                @elseif($deliveryStatus === 'delivered')
+                                                                    <span title="Delivered" class="inline-flex items-center text-amber-200/90">
+                                                                        <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 13l4 4L14 7" />
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 13l4 4L20 7" />
+                                                                        </svg>
+                                                                    </span>
+                                                                @else
+                                                                    <span title="Sent" class="inline-flex items-center text-amber-200/70">
+                                                                        <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                                        </svg>
+                                                                    </span>
+                                                                @endif
+                                                            @endif
+                                                        </span>
+                                                    </div>
+                                                @elseif(!$msg->is_deleted)
+                                                    <div class="mt-1 flex items-center justify-end gap-1 text-[9px] font-medium leading-none select-none {{ $isMe ? 'text-amber-100/80' : 'text-slate-400 dark:text-slate-500' }}">
+                                                        <span>{{ $msg->created_at?->format('h:i A') }}</span>
+                                                        @if ($isMe)
+                                                            @php $deliveryStatus = $msg->getDeliveryStatus(auth()->id()); @endphp
+                                                            @if ($deliveryStatus === 'seen')
+                                                                <span title="Read" class="inline-flex items-center text-sky-200 drop-shadow-[0_0_2px_rgba(56,189,248,0.6)]">
+                                                                    <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M2 13l4 4L14 7" />
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" d="M8 13l4 4L20 7" />
+                                                                    </svg>
+                                                                </span>
+                                                            @elseif($deliveryStatus === 'delivered')
+                                                                <span title="Delivered" class="inline-flex items-center text-amber-200/90">
+                                                                    <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 13l4 4L14 7" />
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 13l4 4L20 7" />
+                                                                    </svg>
+                                                                </span>
+                                                            @else
+                                                                <span title="Sent" class="inline-flex items-center text-amber-200/70">
+                                                                    <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                                    </svg>
+                                                                </span>
+                                                            @endif
+                                                        @endif
+                                                    </div>
                                                 @endif
                                             @endif
-
-                                            <div
-                                                class="mt-0.5 flex items-center justify-end gap-1 text-[9px] {{ $isMe ? 'text-amber-100/75' : 'text-gray-400' }}">
-                                                <span>{{ $msg->created_at?->format('h:i A') }}</span>
-                                                @if ($isMe && !$msg->is_deleted)
-                                                    @php $deliveryStatus = $msg->getDeliveryStatus(auth()->id()); @endphp
-                                                    @if ($deliveryStatus === 'seen')
-                                                        <!-- Double Blue Tick (Seen / Read) -->
-                                                        <span title="Read"
-                                                            class="inline-flex items-center text-sky-400 dark:text-sky-300">
-                                                            <svg class="h-3 w-3 drop-shadow-[0_0_2px_rgba(56,189,248,0.6)]"
-                                                                viewBox="0 0 24 24" fill="none"
-                                                                stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2.3" d="M2 13l4 4L14 7" />
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2.3" d="M8 13l4 4L20 7" />
-                                                            </svg>
-                                                        </span>
-                                                    @elseif($deliveryStatus === 'delivered')
-                                                        <!-- Double Gray Tick (Delivered) -->
-                                                        <span title="Delivered"
-                                                            class="inline-flex items-center text-amber-200/90 dark:text-slate-300">
-                                                            <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none"
-                                                                stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2" d="M2 13l4 4L14 7" />
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2" d="M8 13l4 4L20 7" />
-                                                            </svg>
-                                                        </span>
-                                                    @else
-                                                        <!-- Single Gray Tick (Sent) -->
-                                                        <span title="Sent"
-                                                            class="inline-flex items-center text-amber-200/70 dark:text-slate-400">
-                                                            <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none"
-                                                                stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2" d="M5 13l4 4L19 7" />
-                                                            </svg>
-                                                        </span>
-                                                    @endif
-                                                @endif
-                                            </div>
                                         </div>
 
-                                        <!-- Message Actions (Reply, Forward, Pin, Delete) -->
+                                        <!-- Floating Action & Quick Reaction Pill (on hover) -->
                                         @if (!$msg->is_deleted)
-                                            <div
-                                                class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5 self-center">
+                                            <div x-data="{ showExtraEmojis: false }"
+                                                class="absolute -top-3.5 {{ $isMe ? 'right-2' : 'left-2' }} z-20 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-150 transform scale-95 group-hover:scale-100 flex items-center gap-0.5 rounded-full border border-slate-200/90 dark:border-slate-700/80 bg-white/95 dark:bg-slate-800/95 px-1.5 py-0.5 shadow-md backdrop-blur-xs">
+                                                @php
+                                                    $quickEmojis = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
+                                                    $extraEmojis = ['🎉', '👏', '🙏', '💯', '🚀', '👀'];
+                                                @endphp
+                                                @foreach ($quickEmojis as $qEmoji)
+                                                    <button type="button"
+                                                        wire:click="toggleReaction({{ $msg->id }}, '{{ $qEmoji }}')"
+                                                        class="rounded-full p-0.5 text-xs transition-transform hover:scale-125 active:scale-90 cursor-pointer"
+                                                        title="React {{ $qEmoji }}">
+                                                        {{ $qEmoji }}
+                                                    </button>
+                                                @endforeach
+
+                                                <div class="relative">
+                                                    <button type="button" @click="showExtraEmojis = !showExtraEmojis"
+                                                        class="rounded-full p-0.5 text-[10px] text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 transition cursor-pointer"
+                                                        title="More emojis">
+                                                        ➕
+                                                    </button>
+
+                                                    <div x-show="showExtraEmojis" x-transition
+                                                        @click.outside="showExtraEmojis = false"
+                                                        class="absolute bottom-full mb-1 {{ $isMe ? 'right-0' : 'left-0' }} flex items-center gap-0.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white/95 p-1 shadow-xl backdrop-blur-xs dark:bg-slate-800/95 z-30"
+                                                        style="display: none;">
+                                                        @foreach ($extraEmojis as $eEmoji)
+                                                            <button type="button"
+                                                                wire:click="toggleReaction({{ $msg->id }}, '{{ $eEmoji }}')"
+                                                                @click="showExtraEmojis = false"
+                                                                class="rounded-full p-0.5 text-xs transition-transform hover:scale-125 active:scale-90 cursor-pointer"
+                                                                title="React {{ $eEmoji }}">
+                                                                {{ $eEmoji }}
+                                                            </button>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+
+                                                <div class="h-3 w-px bg-slate-200 dark:bg-slate-700 mx-0.5"></div>
+
                                                 <!-- Reply Button -->
                                                 <button type="button" wire:click="setReply({{ $msg->id }})"
-                                                    class="rounded p-1 text-gray-400 hover:text-amber-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                                                    class="rounded-full p-1 text-slate-400 hover:text-amber-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
                                                     title="Reply to message">
-                                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24"
-                                                        stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 016 6v3" />
+                                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 016 6v3" />
                                                     </svg>
                                                 </button>
 
                                                 <!-- Forward Button -->
-                                                <button type="button"
-                                                    wire:click="openForwardModal({{ $msg->id }})"
-                                                    class="rounded p-1 text-gray-400 hover:text-amber-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                                                <button type="button" wire:click="openForwardModal({{ $msg->id }})"
+                                                    class="rounded-full p-1 text-slate-400 hover:text-amber-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
                                                     title="Forward message">
-                                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24"
-                                                        stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M15 15l6-6m0 0l-6-6m6 6H9a6 6 0 00-6 6v3" />
+                                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l6-6m0 0l-6-6m6 6H9a6 6 0 00-6 6v3" />
                                                     </svg>
                                                 </button>
+
                                                 <!-- Pin Message Button -->
                                                 @if ($isPinned)
-                                                    <button type="button"
-                                                        wire:click="unpinMessage({{ $msg->id }})"
-                                                        class="rounded p-1 text-amber-600 hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-gray-800"
+                                                    <button type="button" wire:click="unpinMessage({{ $msg->id }})"
+                                                        class="rounded-full p-1 text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-slate-700 transition cursor-pointer"
                                                         title="Unpin message">
-                                                        <span class="text-xs">📌</span>
+                                                        <span class="text-[11px] leading-none">📌</span>
                                                     </button>
                                                 @else
-                                                    <button type="button"
-                                                        wire:click="openPinMessageModal({{ $msg->id }})"
-                                                        class="rounded p-1 text-gray-400 hover:text-amber-600 hover:bg-gray-100 dark:hover:bg-gray-800"
+                                                    <button type="button" wire:click="openPinMessageModal({{ $msg->id }})"
+                                                        class="rounded-full p-1 text-slate-400 hover:text-amber-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
                                                         title="Pin message on top">
-                                                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24"
-                                                            stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                                                         </svg>
                                                     </button>
                                                 @endif
 
-                                                <!-- Delete Message Button (valid only within 15 mins) -->
+                                                <!-- Delete Message Button -->
                                                 @if ($canDelete)
                                                     <button type="button"
                                                         wire:confirm="Delete this message? It will be replaced with 'This message was deleted'."
                                                         wire:click="deleteMessage({{ $msg->id }})"
-                                                        class="rounded p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40"
-                                                        title="Delete message (valid for 15 mins or admin)">
-                                                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24"
-                                                            stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        class="rounded-full p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition cursor-pointer"
+                                                        title="Delete message">
+                                                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                         </svg>
                                                     </button>
                                                 @endif
                                             </div>
                                         @endif
-                                    </div>
 
-                                    <!-- Floating Quick Reaction Bar (on hover) -->
-                                    @if (!$msg->is_deleted)
-                                        <div x-data="{ showExtraEmojis: false }"
-                                            class="absolute -top-3 {{ $isMe ? 'right-3' : 'left-8' }} z-20 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity duration-150 flex items-center gap-0.5 rounded-full border border-gray-200 bg-white/95 px-1 py-0.5 shadow-md backdrop-blur dark:border-gray-700 dark:bg-gray-800/95">
-                                            @php
-                                                $quickEmojis = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
-                                                $extraEmojis = ['🎉', '👏', '🙏', '💯', '🚀', '👀'];
-                                            @endphp
-                                            @foreach ($quickEmojis as $qEmoji)
-                                                <button type="button"
-                                                    wire:click="toggleReaction({{ $msg->id }}, '{{ $qEmoji }}')"
-                                                    class="rounded-full p-0.5 text-xs transition-transform hover:scale-125 active:scale-95"
-                                                    title="React {{ $qEmoji }}">
-                                                    {{ $qEmoji }}
-                                                </button>
-                                            @endforeach
-
-                                            <div class="relative">
-                                                <button type="button" @click="showExtraEmojis = !showExtraEmojis"
-                                                    class="rounded-full p-0.5 text-[10px] text-gray-500 hover:text-amber-600 dark:text-gray-400 dark:hover:text-amber-400 transition"
-                                                    title="More emojis">
-                                                    ➕
-                                                </button>
-
-                                                <div x-show="showExtraEmojis" x-transition
-                                                    @click.outside="showExtraEmojis = false"
-                                                    class="absolute bottom-full mb-1 {{ $isMe ? 'right-0' : 'left-0' }} flex items-center gap-0.5 rounded-full border border-gray-200 bg-white/95 p-1 shadow-xl backdrop-blur dark:border-gray-700 dark:bg-gray-800/95 z-30"
-                                                    style="display: none;">
-                                                    @foreach ($extraEmojis as $eEmoji)
+                                        <!-- Reaction Summary Pills -->
+                                        @if (!$msg->is_deleted)
+                                            @php $reactionsSummary = $msg->getReactionsSummary(auth()->id()); @endphp
+                                            @if (!empty($reactionsSummary))
+                                                <div class="mt-1 flex flex-wrap items-center gap-1 {{ $isMe ? 'justify-end pr-0.5' : 'justify-start pl-0.5' }}">
+                                                    @foreach ($reactionsSummary as $rec)
                                                         <button type="button"
-                                                            wire:click="toggleReaction({{ $msg->id }}, '{{ $eEmoji }}')"
-                                                            @click="showExtraEmojis = false"
-                                                            class="rounded-full p-0.5 text-xs transition-transform hover:scale-125 active:scale-95"
-                                                            title="React {{ $eEmoji }}">
-                                                            {{ $eEmoji }}
+                                                            wire:click="toggleReaction({{ $msg->id }}, '{{ $rec['reaction'] }}')"
+                                                            class="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] transition-all shadow-2xs cursor-pointer {{ $rec['reacted_by_me'] ? 'bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700/80 font-bold ring-1 ring-amber-400/40' : 'bg-white text-slate-700 border border-slate-200/90 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-700' }}"
+                                                            title="{{ implode(', ', $rec['users']) }} reacted">
+                                                            <span class="text-xs leading-none">{{ $rec['reaction'] }}</span>
+                                                            <span class="text-[10px] font-semibold">{{ $rec['count'] }}</span>
                                                         </button>
                                                     @endforeach
                                                 </div>
-                                            </div>
-                                        </div>
-                                    @endif
-
-                                    <!-- Reaction Summary Pills -->
-                                    @if (!$msg->is_deleted)
-                                        @php $reactionsSummary = $msg->getReactionsSummary(auth()->id()); @endphp
-                                        @if (!empty($reactionsSummary))
-                                            <div
-                                                class="mt-0.5 flex flex-wrap items-center gap-1 {{ $isMe ? 'justify-end pr-1' : 'justify-start pl-7' }}">
-                                                @foreach ($reactionsSummary as $rec)
-                                                    <button type="button"
-                                                        wire:click="toggleReaction({{ $msg->id }}, '{{ $rec['reaction'] }}')"
-                                                        class="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.2 text-[10px] transition-all shadow-xs cursor-pointer {{ $rec['reacted_by_me'] ? 'bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700/80 font-bold ring-1 ring-amber-400/40' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700' }}"
-                                                        title="{{ implode(', ', $rec['users']) }} reacted">
-                                                        <span
-                                                            class="text-xs leading-none">{{ $rec['reaction'] }}</span>
-                                                        <span
-                                                            class="text-[10px] font-semibold">{{ $rec['count'] }}</span>
-                                                    </button>
-                                                @endforeach
-                                            </div>
+                                            @endif
                                         @endif
-                                    @endif
+                                    </div>
                                 </div>
+                            </div>
                             @empty
                                 <div
                                     class="flex h-full items-center justify-center text-center p-4 text-gray-400 text-xs">
@@ -1428,17 +1419,21 @@
                                 this.showMentionMenu = false;
                                 const input = this.$refs.floatMessageInput;
                                 const text = input ? input.value : ($wire.messageText || '');
-                                if (text.trim().length > 0 || $wire.attachment) {
-                                    $wire.set('messageText', text).then(() => {
-                                        $wire.sendMessage();
-                                        if (input) {
-                                            input.value = '';
-                                        }
-                                        this.$nextTick(() => {
-                                            this.resizeInput();
-                                        });
-                                    });
+                                if (!text.trim() && !$wire.attachment) {
+                                    return;
                                 }
+
+                                if (input) {
+                                    input.value = '';
+                                }
+                                this.$nextTick(() => {
+                                    this.resizeInput();
+                                });
+
+                                $wire.sendMessage(text);
+                                this.$nextTick(() => {
+                                    this.scrollToBottom();
+                                });
                             },
                         
                             get filteredMembers() {
@@ -1914,19 +1909,18 @@
                                     </div>
                                 </div>
 
-                                <!-- Normal Input Form -->
+                                <!-- Modern Integrated Capsule Input Form -->
                                 <form x-show="!isRecording" @submit.prevent="submitMessage()"
-                                    class="flex items-end gap-1.5">
+                                    class="flex items-end gap-1.5 bg-slate-100/80 dark:bg-slate-800/60 p-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 focus-within:border-amber-500/60 focus-within:ring-2 focus-within:ring-amber-500/20 focus-within:bg-white dark:focus-within:bg-slate-800 transition-all duration-150">
                                     <!-- File input hidden -->
                                     <input type="file" x-ref="floatFileInput" wire:model="attachment"
                                         class="hidden" />
 
                                     <!-- Paperclip File Button -->
                                     <button type="button" @click="$refs.floatFileInput.click()"
-                                        class="flex-shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-200 transition mb-0.5"
+                                        class="flex-shrink-0 rounded-xl p-1.5 text-slate-400 hover:text-amber-600 hover:bg-white dark:hover:bg-slate-700 transition cursor-pointer"
                                         title="Attach file or photo">
-                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                                         </svg>
@@ -1934,10 +1928,9 @@
 
                                     <!-- Microphone Voice Note Button -->
                                     <button type="button" @click="startRecording"
-                                        class="flex-shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-amber-600 dark:hover:bg-gray-800 dark:hover:text-amber-400 transition mb-0.5"
+                                        class="flex-shrink-0 rounded-xl p-1.5 text-slate-400 hover:text-amber-600 hover:bg-white dark:hover:bg-slate-700 transition cursor-pointer"
                                         title="Record voice message">
-                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                                         </svg>
@@ -1946,10 +1939,9 @@
                                     @if ($isFloatingGroup)
                                         <!-- Quick Mention Button (@) -->
                                         <button type="button" @click="openMentionMenu"
-                                            class="flex-shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-amber-600 dark:hover:bg-gray-800 dark:hover:text-amber-400 transition mb-0.5"
+                                            class="flex-shrink-0 rounded-xl p-1.5 text-slate-400 hover:text-amber-600 hover:bg-white dark:hover:bg-slate-700 transition cursor-pointer"
                                             title="Mention group member (@all or @member)">
-                                            <span
-                                                class="flex h-4 w-4 items-center justify-center text-xs font-black leading-none select-none">@</span>
+                                            <span class="flex h-4 w-4 items-center justify-center text-xs font-black leading-none select-none">@</span>
                                         </button>
                                     @endif
 
@@ -1957,18 +1949,18 @@
                                     <div class="relative flex-1 min-w-0" wire:ignore>
                                         <textarea x-ref="floatMessageInput" wire:model="messageText" rows="1" @input="detectMention(); resizeInput();"
                                             @click="detectMention" @keyup="detectMention" @keydown="handleFloatInputKeyDown"
-                                            @paste="$nextTick(() => resizeInput())" @cut="$nextTick(() => resizeInput())" :placeholder="'Type here...'"
-                                            class="chat-input-field block w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-xs leading-normal text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 resize-none"
-                                            style="min-height: 34px; max-height: 110px; overflow-y: hidden;"></textarea>
+                                            @paste="$nextTick(() => resizeInput())" @cut="$nextTick(() => resizeInput())" placeholder="Type a message..."
+                                            class="chat-input-field block w-full bg-transparent px-1.5 py-1 text-xs leading-normal text-slate-900 placeholder-slate-400 focus:outline-none dark:text-slate-100 dark:placeholder-slate-500 resize-none border-0 focus:ring-0"
+                                            style="min-height: 30px; max-height: 110px; overflow-y: hidden;"></textarea>
                                     </div>
 
                                     <!-- Enter Key Mode Toggle (Option to switch Enter behavior) -->
                                     <button type="button" @click="toggleEnterMode()"
-                                        class="flex-shrink-0 rounded-lg px-1.5 py-1 text-[10px] font-bold border transition mb-0.5 select-none"
+                                        class="flex-shrink-0 rounded-lg px-1.5 py-1 text-[10px] font-bold border transition select-none cursor-pointer"
                                         :class="enterIsNewLine
                                             ?
-                                            'border-amber-400 bg-amber-500/10 text-amber-600 dark:border-amber-500 dark:bg-amber-950/40 dark:text-amber-400 shadow-sm' :
-                                            'border-gray-200 bg-gray-50 text-gray-400 hover:text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400'"
+                                            'border-amber-400 bg-amber-500/10 text-amber-600 dark:border-amber-500 dark:bg-amber-950/40 dark:text-amber-400 shadow-2xs' :
+                                            'border-slate-200 bg-white/70 text-slate-400 hover:text-slate-600 dark:border-slate-700 dark:bg-slate-700/60 dark:text-slate-400'"
                                         :title="enterIsNewLine
                                             ?
                                             'Current mode: Enter adds new line (Ctrl+Enter to send). Click to switch to Enter sends.' :
@@ -1981,12 +1973,11 @@
                                         </span>
                                     </button>
 
-                                    <!-- Send Button -->
+                                    <!-- Send Button with glowing gradient -->
                                     <button type="submit"
-                                        class="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-amber-600 text-white shadow transition hover:bg-amber-500 mb-0.5"
+                                        class="inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white shadow-xs transition-all hover:from-amber-600 hover:to-orange-600 active:scale-95 cursor-pointer"
                                         :title="enterIsNewLine ? 'Send message (Ctrl+Enter)' : 'Send message (Enter)'">
-                                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor">
+                                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                                         </svg>
