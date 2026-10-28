@@ -1151,7 +1151,7 @@
                                     @if($msg->is_forwarded)
                                         <div class="mb-1 flex items-center gap-1 text-[10px] italic {{ $isMe ? 'text-amber-200/90' : 'text-gray-500 dark:text-slate-400' }}">
                                             <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l6-6m0 0l-6-6m6 6H9a6 6 0 00-6 6v3"/>
                                             </svg>
                                             <span>Forwarded</span>
                                         </div>
@@ -1369,7 +1369,7 @@
                                             title="Reply to message"
                                         >
                                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6-6m-6-6l6 6"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 016 6v3"/>
                                             </svg>
                                         </button>
 
@@ -1381,7 +1381,7 @@
                                             title="Forward message"
                                         >
                                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10H11a8 8 0 00-8 8v2m18-10l-6-6m6 6l-6 6"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l6-6m0 0l-6-6m6 6H9a6 6 0 00-6 6v3"/>
                                             </svg>
                                         </button>
                                         @if($isPinned)
@@ -1829,7 +1829,7 @@
                         <div class="mb-2 flex items-center justify-between rounded-xl bg-amber-500/10 border-l-4 border-amber-500 px-3 py-2 text-xs dark:bg-amber-950/30 dark:border-amber-400">
                             <div class="flex items-center gap-2 min-w-0">
                                 <svg class="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6-6m-6-6l6 6"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 016 6v3"/>
                                 </svg>
                                 <div class="min-w-0">
                                     <span class="block font-bold text-amber-700 dark:text-amber-300 text-[11px]">

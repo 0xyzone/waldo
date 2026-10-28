@@ -642,22 +642,44 @@
             return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
         }
     }"
-    class="fixed bottom-5 right-5 z-40 flex flex-col items-end font-sans"
+    x-on:toggle-floating-chat.window="$wire.toggleWidget()"
+    class="font-sans"
 >
-    <!-- Floating Window Popover -->
+    <!-- Slide-over Drawer (Backdrop & Panel) -->
     <div
         x-show="isOpen"
-        x-transition:enter="transition ease-out duration-200"
-        x-transition:enter-start="opacity-0 translate-y-4 scale-95"
-        x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-        x-transition:leave="transition ease-in duration-150"
-        x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-        x-transition:leave-end="opacity-0 translate-y-4 scale-95"
+        x-cloak
+        class="fixed inset-0 z-50 overflow-hidden"
         style="display: none;"
-        class="mb-3 flex h-[540px] max-h-[84vh] w-[calc(100vw-1.5rem)] sm:w-[410px] max-w-[410px] flex-col overflow-hidden rounded-2xl border border-gray-200/90 bg-white shadow-2xl backdrop-blur-xl dark:border-gray-800 dark:bg-gray-900"
+        @keydown.escape.window="isOpen = false"
     >
-        <!-- Window Top Bar -->
-        <div class="flex items-center justify-between border-b border-gray-100 bg-gray-50/90 px-3.5 py-2.5 dark:border-gray-800/80 dark:bg-gray-800/80">
+        <!-- Backdrop Overlay -->
+            <div
+                x-show="isOpen"
+                x-transition:enter="ease-out duration-300"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="ease-in duration-200"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                @click="isOpen = false"
+                class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity"
+            ></div>
+
+            <!-- Slide-over Drawer Panel -->
+            <div class="fixed inset-y-0 right-0 flex max-w-full pl-6 sm:pl-10 pointer-events-none">
+                <div
+                    x-show="isOpen"
+                    x-transition:enter="transform transition ease-out duration-300"
+                    x-transition:enter-start="translate-x-full"
+                    x-transition:enter-end="translate-x-0"
+                    x-transition:leave="transform transition ease-in duration-200"
+                    x-transition:leave-start="translate-x-0"
+                    x-transition:leave-end="translate-x-full"
+                    class="pointer-events-auto flex h-full w-screen max-w-md sm:max-w-lg flex-col overflow-hidden border-l border-gray-200/90 bg-white shadow-2xl backdrop-blur-xl dark:border-gray-800 dark:bg-gray-900"
+                >
+                    <!-- Window Top Bar -->
+                    <div class="flex items-center justify-between border-b border-gray-100 bg-gray-50/90 px-3.5 py-2.5 dark:border-gray-800/80 dark:bg-gray-800/80">
             <div class="flex items-center gap-2 min-w-0 flex-1">
                 @if($this->activeConversation)
                     @php
@@ -822,8 +844,10 @@
                 <!-- Close Button -->
                 <button
                     type="button"
+                    @click="isOpen = false"
                     wire:click="toggleWidget"
-                    class="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+                    class="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-200 cursor-pointer"
+                    title="Close drawer (Esc)"
                 >
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -973,7 +997,7 @@
                                 @if($msg->is_forwarded)
                                     <div class="mb-1 flex items-center gap-1 text-[9px] italic {{ $isMe ? 'text-amber-200/90' : 'text-gray-500 dark:text-gray-400' }}">
                                         <svg class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l6-6m0 0l-6-6m6 6H9a6 6 0 00-6 6v3"/>
                                         </svg>
                                         <span>Forwarded</span>
                                     </div>
@@ -1178,7 +1202,7 @@
                                         title="Reply to message"
                                     >
                                         <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6-6m-6-6l6 6"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 016 6v3"/>
                                         </svg>
                                     </button>
 
@@ -1190,7 +1214,7 @@
                                         title="Forward message"
                                     >
                                         <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10H11a8 8 0 00-8 8v2m18-10l-6-6m6 6l-6 6"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l6-6m0 0l-6-6m6 6H9a6 6 0 00-6 6v3"/>
                                         </svg>
                                     </button>
                                     <!-- Pin Message Button -->
@@ -1635,7 +1659,7 @@
                     <div class="mb-2 flex items-center justify-between rounded-xl bg-amber-500/10 border-l-4 border-amber-500 px-2.5 py-1.5 text-xs dark:bg-amber-950/30 dark:border-amber-400">
                         <div class="flex items-center gap-1.5 min-w-0">
                             <svg class="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6-6m-6-6l6 6"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 016 6v3"/>
                             </svg>
                             <div class="min-w-0">
                                 <span class="block font-bold text-amber-700 dark:text-amber-300 text-[10px]">
@@ -3245,32 +3269,9 @@
         };
     };
 </script>
-
-    <!-- Floating Action Button Launcher -->
-    @php $unreadTotal = auth()->user()?->unreadMessagesCount() ?? 0; @endphp
-    <button
-        type="button"
-        wire:click="toggleWidget"
-        class="group relative flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-tr from-amber-600 to-amber-500 text-white shadow-xl shadow-amber-500/25 transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none"
-        title="Open Chat"
-    >
-        <span x-show="!isOpen">
-            <svg class="h-6 w-6 transition group-hover:rotate-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-            </svg>
-        </span>
-        <span x-show="isOpen" style="display: none;">
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-        </span>
-
-        @if($unreadTotal > 0)
-            <span class="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-extrabold text-white shadow-md animate-pulse">
-                {{ $unreadTotal }}
-            </span>
-        @endif
-    </button>
+                </div>
+            </div>
+        </div>
 </div>
 @endif
 </div>

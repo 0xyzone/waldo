@@ -204,19 +204,44 @@ a,
 }
 
 /* ==========================================================================
-   Sidebar Navigation: Soft Pill Elegance & Clean Group Hierarchy
+   Sidebar Navigation: Soft Pill Elegance, Slide Animation & Clean Hierarchy
    ========================================================================== */
 .fi-sidebar {
     background-color: var(--surface-card) !important;
     border-right: 1px solid var(--surface-border) !important;
-    transition: width var(--duration-normal) var(--ease-spring),
+    transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+                width 300ms cubic-bezier(0.16, 1, 0.3, 1),
+                max-width 300ms cubic-bezier(0.16, 1, 0.3, 1),
+                min-width 300ms cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 320ms ease,
                 background-color var(--duration-normal) ease,
                 border-color var(--duration-normal) ease !important;
+    will-change: transform, width;
 }
 
 :is(.dark, :root.dark) .fi-sidebar {
     background-color: #0e1320 !important;
     border-right-color: var(--surface-border) !important;
+}
+
+/* Mobile Off-Canvas Drawer Slide Animations (< 1024px) */
+@media (max-width: 1023.98px) {
+    .fi-sidebar {
+        transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+                    box-shadow 320ms ease !important;
+        will-change: transform;
+    }
+
+    .fi-sidebar.fi-sidebar-open {
+        box-shadow: 12px 0 40px -5px rgba(0, 0, 0, 0.35) !important;
+    }
+
+    .fi-sidebar-close-overlay {
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        background-color: rgba(11, 15, 25, 0.55) !important;
+        transition: opacity 300ms ease, backdrop-filter 300ms ease !important;
+    }
 }
 
 /* Sidebar Group Label: Refined Minimal Micro-Typography */
@@ -272,8 +297,28 @@ a,
     transform: scale(1.05);
 }
 
-/* Collapsed Desktop Sidebar Polish */
+/* Desktop Collapsible Sidebar Polish (>= 1024px) */
 @media (min-width: 1024px) {
+    .fi-body-has-sidebar-collapsible-on-desktop .fi-sidebar {
+        transition: width 300ms cubic-bezier(0.16, 1, 0.3, 1),
+                    min-width 300ms cubic-bezier(0.16, 1, 0.3, 1),
+                    max-width 300ms cubic-bezier(0.16, 1, 0.3, 1),
+                    background-color var(--duration-normal) ease,
+                    border-color var(--duration-normal) ease !important;
+    }
+
+    .fi-body-has-sidebar-collapsible-on-desktop .fi-main-ctn {
+        transition: padding 300ms cubic-bezier(0.16, 1, 0.3, 1),
+                    margin 300ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    .fi-sidebar-item-label,
+    .fi-sidebar-group-label,
+    .fi-sidebar-item-badge-ctn,
+    .fi-sidebar-group-collapse-btn {
+        transition: opacity 200ms ease, transform 200ms ease !important;
+    }
+
     .fi-body-has-sidebar-collapsible-on-desktop .fi-sidebar:not(.fi-sidebar-open) {
         width: var(--collapsed-sidebar-width, 4.25rem) !important;
         max-width: var(--collapsed-sidebar-width, 4.25rem) !important;

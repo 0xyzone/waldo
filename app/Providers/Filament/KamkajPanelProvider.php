@@ -263,12 +263,20 @@ class KamkajPanelProvider extends PanelProvider
                 fn () => auth()->check() ? new HtmlString(Blade::render('@livewire(\App\Livewire\WebsocketStatusIndicator::class)')) : ''
             )
             ->renderHook(
+                PanelsRenderHook::USER_MENU_BEFORE,
+                fn () => auth()->check() ? view('filament.chat-topbar-button') : ''
+            )
+            ->renderHook(
                 PanelsRenderHook::BODY_END,
                 fn () => auth()->check() ? new HtmlString(Blade::render('@livewire(\App\Livewire\FloatingChatWidget::class)')) : ''
             )
             ->renderHook(
                 PanelsRenderHook::BODY_END,
                 fn () => view('filament.wizard-keyboard-shortcuts')
+            )
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn () => view('filament.mobile-sidebar-gestures')
             );
     }
 }

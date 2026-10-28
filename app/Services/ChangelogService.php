@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.8.1';
+    public const CURRENT_VERSION = '2.8.2';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,36 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.8.2',
+                'date' => '2026-10-28',
+                'title' => 'Top Navigation Bar Chat Drawer & Standardized Reply Icons',
+                'type' => 'micro',
+                'badge' => 'UX / Navigation',
+                'badge_color' => 'info',
+                'description' => 'Replaced the permanent floating bottom-right chat bubble with a sleek top navigation bar button and full-height slide-over drawer, and corrected malformed SVG reply/forward icons.',
+                'highlights' => [
+                    'Eliminated permanent bottom-right floating chat bubble that obstructed tables, forms, and pagination.',
+                    'Added top navigation bar chat launcher with real-time unread messages badge.',
+                    'Implemented responsive full-height slide-over drawer with backdrop overlay, smooth animations, and escape/close triggers.',
+                    'Fixed malformed and distorted SVG paths for Reply and Forward buttons across all chat interfaces.',
+                ],
+            ],
+            [
+                'version' => '2.8.2',
+                'date' => '2026-10-28',
+                'title' => 'Sidebar Slide Animations, Mobile Touch Gestures & Topbar Chat Drawer',
+                'type' => 'micro',
+                'badge' => 'UI & Navigation',
+                'badge_color' => 'primary',
+                'description' => 'Added smooth cubic-bezier slide animations for sidebar navigation, mobile edge swipe gestures, transformed chat launcher into a topbar slide-over drawer, and fixed chat action icons.',
+                'highlights' => [
+                    'Smooth Sidebar Slide Animations: Added cubic-bezier transform and width transitions to the sidebar and backdrop overlay on both desktop collapsible states and mobile views.',
+                    'Mobile Touch Screen Gestures: Implemented native-feeling swipe gestures (edge swipe right to open, swipe left to close) with real-time translation tracking and subtle edge indicator.',
+                    'Topbar Chat Drawer: Relocated persistent floating chat bubble to an unobtrusive top navigation bar button with live unread badge, opening into a smooth slide-over drawer overlay.',
+                    'Chat Reply & Forward Icons: Replaced distorted custom SVG paths with clean, modern Heroicons across both the chat drawer and full-screen chat page.',
+                ],
+            ],
             [
                 'version' => '2.8.1',
                 'date' => '2026-10-28',

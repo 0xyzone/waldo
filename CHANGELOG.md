@@ -4,6 +4,18 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.2] - 2026-10-28
+
+### Added & Enhanced
+- **Sidebar Slide Animations & Mobile Screen Gestures**:
+  - **Smooth Cubic-Bezier Slide Transitions**: Enhanced `.fi-sidebar` with hardware-accelerated transform, width, and box-shadow cubic-bezier animations (`cubic-bezier(0.16, 1, 0.3, 1)`) across desktop collapsible modes and mobile viewports.
+  - **Mobile Touch Screen Gestures**: Added edge swipe detection (`resources/views/filament/mobile-sidebar-gestures.blade.php`) where swiping from the left screen edge (`<= 45px`) smoothly slides the sidebar open with real-time finger translation and a subtle tactile edge indicator.
+  - **Swipe Left to Close**: Enabled intuitive right-to-left swipe gestures while the sidebar drawer is open to slide it closed, guarded by a vertical scroll lock to prevent interfering with normal page scrolling.
+  - **Topbar Chat Drawer Overhaul**: Replaced the persistent floating bottom-right chat bubble with a top navigation icon button (`filament.chat-topbar-button`) with live unread badge, opening a full-height right-anchored slide-over drawer that never obstructs page controls.
+  - **Chat Action Icons Redesign**: Replaced distorted and inconsistent custom SVG paths for Reply, Forward, and Forwarded indicators with clean, modern Heroicons across both the floating drawer widget and the main chat page.
+
+---
+
 ## [2.8.1] - 2026-10-28
 
 ### Fixed & Enhanced

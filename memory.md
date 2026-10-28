@@ -237,3 +237,20 @@
   - **Export Modal Improvements**: Unified export filter inputs and multiselect employee list with dark theme tokens and custom scrollbars.
   - **Interactive Copy Notification**: Connected `#copy-toast` floating glassmorphism banner with emerald check icon confirming copied SSID values.
 
+### 25. Sidebar Slide Animations, Mobile Gestures & Topbar Chat Drawer (v2.8.2)
+- **Sidebar Slide Animations (`resources/css/filament/kamkaj/theme.css`)**:
+  - Upgraded `.fi-sidebar` with hardware-accelerated cubic-bezier transitions (`transform 320ms cubic-bezier(0.16, 1, 0.3, 1)`, `width 300ms cubic-bezier(0.16, 1, 0.3, 1)`, and `box-shadow 320ms ease`).
+  - Mobile off-canvas drawer slides smoothly in and out without snappy jumps.
+  - Desktop collapsible state transitions width and item labels smoothly without layout stutter.
+  - Overlay `.fi-sidebar-close-overlay` enhanced with smooth opacity and `backdrop-filter: blur(8px)`.
+- **Mobile Touch Screen Gestures (`resources/views/filament/mobile-sidebar-gestures.blade.php`)**:
+  - Registered via `PanelsRenderHook::BODY_END` in `KamkajPanelProvider.php`.
+  - Edge swipe right (`startX <= 45px`) initiates real-time touch dragging with responsive translation, proportional backdrop fade, and an orange glowing edge hint pill.
+  - Swipe left when open smoothly closes the drawer with velocity and distance detection.
+  - Guarded with vertical scroll lock (`absY > absX`) to prevent interfering with normal page scrolling, form inputs, or open modal windows.
+- **Topbar Chat Drawer Overhaul**:
+  - Replaced obstructive persistent bottom-right floating button with a top navigation icon button (`resources/views/filament/chat-topbar-button.blade.php`) featuring a real-time unread messages badge and Echo websocket listener.
+  - Converted chat launcher into a full-height right-anchored slide-over drawer overlay (`resources/views/livewire/floating-chat-widget.blade.php`) with smooth backdrop blur.
+  - Redesigned chat action icons (Reply, Forward, Forwarded indicator) using clean Heroicons across both widget and full chat page (`resources/views/filament/pages/chat.blade.php`).
+
+

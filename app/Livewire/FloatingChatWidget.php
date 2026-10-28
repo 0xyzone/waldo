@@ -129,6 +129,8 @@ class FloatingChatWidget extends Component
             $this->messageSearch = '';
             $this->showMessageSearch = false;
         }
+
+        $this->dispatch('chat-unread-updated', count: auth()->user()?->unreadMessagesCount() ?? 0);
     }
 
     public function selectConversation(int $id): void
@@ -152,6 +154,7 @@ class FloatingChatWidget extends Component
 
         $this->dispatch('floating-conversation-changed', conversationId: $id);
         $this->dispatch('scroll-floating-chat');
+        $this->dispatch('chat-unread-updated', count: auth()->user()?->unreadMessagesCount() ?? 0);
     }
 
     public function startConversationWith(int $userId): void
