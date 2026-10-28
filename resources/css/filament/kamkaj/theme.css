@@ -246,6 +246,10 @@ a,
         box-shadow: none !important;
     }
 
+    .fi-sidebar.fi-sidebar-dragging {
+        transition: none !important;
+    }
+
     .fi-sidebar-close-overlay {
         backdrop-filter: blur(8px) !important;
         -webkit-backdrop-filter: blur(8px) !important;

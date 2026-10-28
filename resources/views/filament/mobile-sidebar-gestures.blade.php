@@ -1,22 +1,26 @@
 {{-- Mobile Screen Gestures for Filament Sidebar Navigation --}}
-<div id="mobile-sidebar-gesture-root" class="pointer-events-none fixed inset-0 z-40 overflow-hidden lg:hidden" aria-hidden="true">
-    {{-- Subtle edge pull indicator --}}
-    <div id="mobile-edge-indicator"
-         class="pointer-events-none fixed left-0 top-1/2 -translate-y-1/2 w-1.5 h-16 rounded-r-full bg-gradient-to-b from-orange-400 via-orange-500 to-amber-500 opacity-0 shadow-lg shadow-orange-500/50 transition-opacity duration-200 z-50">
-    </div>
+<div id="mobile-sidebar-gesture-root" class="fixed inset-0 z-40 overflow-hidden pointer-events-none lg:hidden" aria-hidden="true">
+    {{-- Tactile edge pull tab: gives an immediate visual affordance and easy touch target --}}
+    <button id="mobile-edge-handle"
+            type="button"
+            aria-label="Open navigation sidebar"
+            class="pointer-events-auto fixed left-0 top-1/2 -translate-y-1/2 w-3.5 h-16 rounded-r-xl bg-gradient-to-b from-orange-400/80 via-orange-500/90 to-amber-500/80 text-white shadow-md shadow-orange-500/30 flex items-center justify-center transition-all duration-200 active:w-5 active:scale-105 z-40 opacity-70 hover:opacity-100 touch-none">
+        <svg class="w-2.5 h-2.5 text-white -ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+    </button>
 </div>
 
 <script>
     (function () {
-        // Only run on touch-capable devices and screens under 1024px (Filament lg breakpoint)
-        if (!('ontouchstart' in window) && navigator.maxTouchPoints <= 0) {
-            // Still allow browser devtools touch simulation
+        function getEdgeThreshold() {
+            // Generous edge zone: up to 80px or 25% of viewport width
+            return Math.min(80, Math.floor(window.innerWidth * 0.25));
         }
 
-        const EDGE_THRESHOLD = 45;      // Max distance from left screen edge to start open swipe (px)
-        const SWIPE_MIN_TRIGGER = 12;   // Min deltaX before locking into horizontal drag (px)
-        const VELOCITY_THRESHOLD = 0.35; // px per ms for fast flicks
-        const RATIO_LOCK = 1.25;        // deltaX must be 1.25x greater than deltaY to prevent hijacking vertical scroll
+        const SWIPE_MIN_TRIGGER = 5;      // Min horizontal distance (px) before locking into drag
+        const VELOCITY_THRESHOLD = 0.18;  // Low flick velocity threshold (px/ms)
+        const OPEN_DISTANCE_MIN = 35;     // Just 35px drag needed to trigger open
 
         let startX = 0;
         let startY = 0;
@@ -28,8 +32,8 @@
         let gestureDirection = null; // 'open' | 'close' | null
         let sidebarEl = null;
         let overlayEl = null;
+        let edgeHandle = null;
         let sidebarWidth = 280;
-        let edgeIndicator = null;
 
         function getSidebarStore() {
             return (window.Alpine && typeof window.Alpine.store === 'function')
@@ -38,7 +42,6 @@
         }
 
         function isModalActive() {
-            // Check if any modal or drawer is actively displayed
             const openModal = document.querySelector('.fi-modal:not([style*="display: none"]) .fi-modal-window');
             if (openModal && openModal.offsetParent !== null) return true;
 
@@ -50,15 +53,16 @@
 
         function isInteractiveElement(target) {
             if (!target) return false;
+            // Only exclude form inputs so touches over tables, cards, and page content initiate smoothly
             return !!target.closest(
-                'input, textarea, select, button, a, [contenteditable="true"], [data-no-gesture], pre, code, table, .table-editor-cell'
+                'input, textarea, select, [contenteditable="true"], .table-editor-cell, [data-no-gesture]'
             );
         }
 
         function initElements() {
             sidebarEl = document.querySelector('.fi-sidebar');
             overlayEl = document.querySelector('.fi-sidebar-close-overlay');
-            edgeIndicator = document.getElementById('mobile-edge-indicator');
+            edgeHandle = document.getElementById('mobile-edge-handle');
             if (sidebarEl) {
                 sidebarWidth = sidebarEl.offsetWidth || 280;
             }
@@ -66,35 +70,49 @@
 
         function cleanupStyles() {
             if (sidebarEl) {
-                sidebarEl.style.translate = '';
-                sidebarEl.style.transform = '';
-                sidebarEl.style.transition = '';
-                sidebarEl.style.pointerEvents = '';
+                sidebarEl.classList.remove('fi-sidebar-dragging');
+                sidebarEl.style.removeProperty('translate');
+                sidebarEl.style.removeProperty('transform');
+                sidebarEl.style.removeProperty('transition');
+                sidebarEl.style.removeProperty('pointer-events');
             }
             if (overlayEl) {
-                overlayEl.style.opacity = '';
-                overlayEl.style.transition = '';
+                overlayEl.style.removeProperty('opacity');
+                overlayEl.style.removeProperty('transition');
+                overlayEl.style.removeProperty('display');
+                overlayEl.style.removeProperty('pointer-events');
             }
-            if (edgeIndicator) {
-                edgeIndicator.style.opacity = '0';
-                edgeIndicator.style.transform = 'translateY(-50%)';
+            if (edgeHandle) {
+                edgeHandle.style.transform = 'translateY(-50%)';
             }
             isDragging = false;
             isVerticalScroll = false;
             gestureDirection = null;
         }
 
-        document.addEventListener('touchstart', function (e) {
+        function getCoords(e) {
+            if (e.touches && e.touches.length > 0) {
+                return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            }
+            if (e.clientX !== undefined) {
+                return { x: e.clientX, y: e.clientY };
+            }
+            return { x: 0, y: 0 };
+        }
+
+        function handlePointerStart(e) {
             if (window.innerWidth >= 1024) return;
-            if (e.touches.length !== 1) return;
+            if (e.touches && e.touches.length > 1) return;
+            // Allow primary mouse button or any touch/pen
+            if (e.pointerType === 'mouse' && e.buttons !== 1) return;
             if (isModalActive()) return;
 
             initElements();
             if (!sidebarEl) return;
 
-            const touch = e.touches[0];
-            startX = touch.clientX;
-            startY = touch.clientY;
+            const coords = getCoords(e);
+            startX = coords.x;
+            startY = coords.y;
             currentX = startX;
             currentY = startY;
             startTime = Date.now();
@@ -105,48 +123,41 @@
             const store = getSidebarStore();
             const isOpen = store ? store.isOpen : sidebarEl.classList.contains('fi-sidebar-open');
 
+            const isEdgeHandleHit = edgeHandle && edgeHandle.contains(e.target);
+
             if (!isOpen) {
-                // Potential OPEN swipe from left edge
-                if (startX <= EDGE_THRESHOLD) {
-                    // Avoid triggering if touching an interactive control on the edge
-                    if (isInteractiveElement(e.target)) return;
+                if (isEdgeHandleHit || startX <= getEdgeThreshold()) {
+                    if (!isEdgeHandleHit && isInteractiveElement(e.target)) return;
                     gestureDirection = 'open';
-                    if (edgeIndicator) {
-                        edgeIndicator.style.top = Math.max(40, Math.min(window.innerHeight - 40, startY)) + 'px';
-                        edgeIndicator.style.opacity = '0.4';
-                    }
                 }
             } else {
-                // Potential CLOSE swipe when open (swiping left anywhere on sidebar or overlay)
                 gestureDirection = 'close';
             }
-        }, { passive: true });
+        }
 
-        document.addEventListener('touchmove', function (e) {
+        function handlePointerMove(e) {
             if (window.innerWidth >= 1024) return;
             if (!gestureDirection || isVerticalScroll) return;
-            if (e.touches.length !== 1) return;
 
-            const touch = e.touches[0];
-            currentX = touch.clientX;
-            currentY = touch.clientY;
+            const coords = getCoords(e);
+            currentX = coords.x;
+            currentY = coords.y;
 
             const deltaX = currentX - startX;
             const deltaY = currentY - startY;
             const absX = Math.abs(deltaX);
             const absY = Math.abs(deltaY);
 
-            // Determine intention early
             if (!isDragging) {
-                if (absY > absX && absY > 8) {
-                    // User is scrolling vertically - cancel gesture
+                // Cancel if vertical scroll clearly dominates after moving at least 16px
+                if (absY > 16 && absY > absX * 1.8) {
                     isVerticalScroll = true;
                     cleanupStyles();
                     return;
                 }
 
-                if (absX >= SWIPE_MIN_TRIGGER && absX > absY * RATIO_LOCK) {
-                    // Valid horizontal gesture detected
+                // Lock into horizontal drag after just 5px horizontal movement
+                if (absX >= SWIPE_MIN_TRIGGER && absX >= absY * 0.6) {
                     if (gestureDirection === 'open' && deltaX > 0) {
                         isDragging = true;
                     } else if (gestureDirection === 'close' && deltaX < 0) {
@@ -159,99 +170,120 @@
             }
 
             if (isDragging) {
-                // Prevent browser horizontal rubber-banding
                 if (e.cancelable) {
                     e.preventDefault();
                 }
 
-                sidebarEl.style.transition = 'none';
-                if (overlayEl) overlayEl.style.transition = 'none';
+                sidebarEl.classList.add('fi-sidebar-dragging');
+                sidebarEl.style.setProperty('transition', 'none', 'important');
+                if (overlayEl) overlayEl.style.setProperty('transition', 'none', 'important');
 
                 if (gestureDirection === 'open') {
                     const clampedDelta = Math.max(0, Math.min(deltaX, sidebarWidth));
                     const translateX = -sidebarWidth + clampedDelta;
-                    sidebarEl.style.transform = 'translateX(' + translateX + 'px)';
-                    sidebarEl.style.pointerEvents = 'none';
+
+                    // Real-time synchronization: use !important to override stylesheet rules
+                    sidebarEl.style.setProperty('translate', translateX + 'px 0', 'important');
+                    sidebarEl.style.setProperty('transform', 'none', 'important');
+                    sidebarEl.style.setProperty('pointer-events', 'none', 'important');
 
                     if (overlayEl) {
                         const progress = clampedDelta / sidebarWidth;
-                        overlayEl.style.display = 'block';
-                        overlayEl.style.opacity = (progress * 0.6).toFixed(3);
+                        overlayEl.style.setProperty('display', 'block', 'important');
+                        overlayEl.style.setProperty('opacity', (progress * 0.6).toFixed(3), 'important');
+                        overlayEl.style.setProperty('pointer-events', 'auto', 'important');
                     }
 
-                    if (edgeIndicator) {
-                        const indicatorProgress = Math.min(1, clampedDelta / 80);
-                        edgeIndicator.style.opacity = (0.4 + indicatorProgress * 0.6).toString();
-                        edgeIndicator.style.transform = 'translateY(-50%) scale(' + (1 + indicatorProgress * 0.5) + ')';
+                    if (edgeHandle) {
+                        edgeHandle.style.transform = 'translate(' + Math.min(clampedDelta, 40) + 'px, -50%)';
                     }
                 } else if (gestureDirection === 'close') {
                     const clampedDelta = Math.max(-sidebarWidth, Math.min(0, deltaX));
-                    sidebarEl.style.transform = 'translateX(' + clampedDelta + 'px)';
+
+                    sidebarEl.style.setProperty('translate', clampedDelta + 'px 0', 'important');
+                    sidebarEl.style.setProperty('transform', 'none', 'important');
 
                     if (overlayEl) {
                         const progress = 1 - (Math.abs(clampedDelta) / sidebarWidth);
-                        overlayEl.style.opacity = Math.max(0, progress * 0.6).toFixed(3);
+                        overlayEl.style.setProperty('opacity', Math.max(0, progress * 0.6).toFixed(3), 'important');
                     }
                 }
             }
-        }, { passive: false });
+        }
 
-        document.addEventListener('touchend', function (e) {
+        function handlePointerEnd(e) {
             if (window.innerWidth >= 1024) return;
+
+            const deltaX = currentX - startX;
+            const absX = Math.abs(deltaX);
+            const absY = Math.abs(currentY - startY);
+            const isEdgeHandleHit = edgeHandle && edgeHandle.contains(e.target);
+
+            // Handle direct tap on edge handle
+            if (!isDragging && isEdgeHandleHit && absX < 10 && absY < 10) {
+                const store = getSidebarStore();
+                if (store) {
+                    store.open();
+                }
+                cleanupStyles();
+                return;
+            }
+
             if (!isDragging) {
                 cleanupStyles();
                 return;
             }
 
-            const deltaX = currentX - startX;
             const elapsed = Math.max(1, Date.now() - startTime);
             const velocity = deltaX / elapsed; // px / ms
             const store = getSidebarStore();
 
             if (gestureDirection === 'open') {
-                const shouldOpen = deltaX > (sidebarWidth * 0.3) || (velocity > VELOCITY_THRESHOLD && deltaX > 25);
+                const shouldOpen = deltaX > OPEN_DISTANCE_MIN || (velocity > VELOCITY_THRESHOLD && deltaX > 15);
 
-                sidebarEl.style.transition = 'translate 300ms cubic-bezier(0.16, 1, 0.3, 1), transform 300ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 300ms ease';
-                if (overlayEl) overlayEl.style.transition = 'opacity 300ms ease';
+                sidebarEl.classList.remove('fi-sidebar-dragging');
+                sidebarEl.style.setProperty('transition', 'translate 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1)', 'important');
+                if (overlayEl) overlayEl.style.setProperty('transition', 'opacity 280ms ease', 'important');
 
                 if (shouldOpen) {
-                    sidebarEl.style.translate = '0 0';
-                    sidebarEl.style.transform = 'translateX(0)';
-                    if (overlayEl) overlayEl.style.opacity = '0.6';
+                    sidebarEl.style.setProperty('translate', '0 0', 'important');
+                    sidebarEl.style.setProperty('transform', 'none', 'important');
+                    if (overlayEl) overlayEl.style.setProperty('opacity', '0.6', 'important');
 
                     setTimeout(function () {
                         if (store) store.open();
                         cleanupStyles();
-                    }, 300);
+                    }, 280);
                 } else {
-                    sidebarEl.style.translate = '-100% 0';
-                    sidebarEl.style.transform = 'translateX(-100%)';
-                    if (overlayEl) overlayEl.style.opacity = '0';
+                    sidebarEl.style.setProperty('translate', '-100% 0', 'important');
+                    sidebarEl.style.setProperty('transform', 'none', 'important');
+                    if (overlayEl) overlayEl.style.setProperty('opacity', '0', 'important');
 
                     setTimeout(function () {
                         if (store) store.close();
                         cleanupStyles();
-                    }, 300);
+                    }, 280);
                 }
             } else if (gestureDirection === 'close') {
-                const shouldClose = deltaX < -(sidebarWidth * 0.25) || (velocity < -VELOCITY_THRESHOLD && deltaX < -25);
+                const shouldClose = deltaX < -OPEN_DISTANCE_MIN || (velocity < -VELOCITY_THRESHOLD && deltaX < -15);
 
-                sidebarEl.style.transition = 'translate 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1)';
-                if (overlayEl) overlayEl.style.transition = 'opacity 280ms ease';
+                sidebarEl.classList.remove('fi-sidebar-dragging');
+                sidebarEl.style.setProperty('transition', 'translate 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1)', 'important');
+                if (overlayEl) overlayEl.style.setProperty('transition', 'opacity 280ms ease', 'important');
 
                 if (shouldClose) {
-                    sidebarEl.style.translate = '-100% 0';
-                    sidebarEl.style.transform = 'translateX(-100%)';
-                    if (overlayEl) overlayEl.style.opacity = '0';
+                    sidebarEl.style.setProperty('translate', '-100% 0', 'important');
+                    sidebarEl.style.setProperty('transform', 'none', 'important');
+                    if (overlayEl) overlayEl.style.setProperty('opacity', '0', 'important');
 
                     setTimeout(function () {
                         if (store) store.close();
                         cleanupStyles();
                     }, 280);
                 } else {
-                    sidebarEl.style.translate = '0 0';
-                    sidebarEl.style.transform = 'translateX(0)';
-                    if (overlayEl) overlayEl.style.opacity = '0.6';
+                    sidebarEl.style.setProperty('translate', '0 0', 'important');
+                    sidebarEl.style.setProperty('transform', 'none', 'important');
+                    if (overlayEl) overlayEl.style.setProperty('opacity', '0.6', 'important');
 
                     setTimeout(function () {
                         if (store) store.open();
@@ -261,10 +293,19 @@
             } else {
                 cleanupStyles();
             }
-        }, { passive: true });
+        }
 
-        document.addEventListener('touchcancel', function () {
-            cleanupStyles();
-        }, { passive: true });
+        // Register both Pointer Events (modern touch & mouse) and Touch Events (legacy fallback)
+        if (window.PointerEvent) {
+            document.addEventListener('pointerdown', handlePointerStart, { passive: true });
+            document.addEventListener('pointermove', handlePointerMove, { passive: false });
+            document.addEventListener('pointerup', handlePointerEnd, { passive: true });
+            document.addEventListener('pointercancel', cleanupStyles, { passive: true });
+        } else {
+            document.addEventListener('touchstart', handlePointerStart, { passive: true });
+            document.addEventListener('touchmove', handlePointerMove, { passive: false });
+            document.addEventListener('touchend', handlePointerEnd, { passive: true });
+            document.addEventListener('touchcancel', cleanupStyles, { passive: true });
+        }
     })();
 </script>

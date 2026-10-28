@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.8.6';
+    public const CURRENT_VERSION = '2.8.7';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,21 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.8.7',
+                'date' => '2026-10-28',
+                'title' => 'Mobile Sidebar Swipe Gestures & Tactile Edge Pull Tab Overhaul',
+                'type' => 'micro',
+                'badge' => 'Mobile UX',
+                'badge_color' => 'primary',
+                'description' => 'Overhauled mobile screen gestures to trigger effortlessly: added a tactile edge pull tab, expanded swipe zone to 80px, unified with Pointer Events, and applied real-time live translation.',
+                'highlights' => [
+                    'Tactile Edge Pull Tab: Added a floating orange edge pull tab on the left screen margin that opens the sidebar with a single tap or smooth drag gesture.',
+                    'Expanded Edge Zone & Reduced Friction: Broadened edge detection threshold to 80px (or 25% of viewport), reduced trigger distance to 5px, and removed restrictive element filters so swipes over tables and cards initiate immediately.',
+                    'Real-Time Live Drag Tracking: Fixed CSS stylesheet overrides by utilizing setProperty("translate", ...) with !important during active drag, ensuring the sidebar glides synchronously with the finger with zero lag.',
+                    'Unified Pointer Events: Migrated gesture engine to the modern Pointer Events API for seamless compatibility across touchscreens, stylus, and mobile viewports.',
+                ],
+            ],
             [
                 'version' => '2.8.6',
                 'date' => '2026-10-28',

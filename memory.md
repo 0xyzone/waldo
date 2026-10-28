@@ -289,6 +289,15 @@
   - Embedded `action-log-changes-table` into `ActionLogSection`'s repeater schema, allowing users to see field diffs directly within individual resource view/edit forms.
   - Enhanced `HasActionLogs::bootHasActionLogs()` updating hook to properly normalize `DateTimeInterface` instances and strict boolean comparisons.
 
+### 30. Mobile Sidebar Gestures & Tactile Edge Pull Tab (v2.8.7)
+- **Problem**: Opening the sidebar on mobile was difficult and took excessive effort. The swipe edge threshold was constrained to only 45px, touches over tables or links were blocked by aggressive interactive element filters, any vertical drift over 8px killed the gesture, and CSS `!important` rules on `.fi-sidebar:not(.fi-sidebar-open)` prevented inline translation styles from updating the sidebar position in real time.
+- **Solution**:
+  - **Tactile Edge Pull Tab**: Added an orange floating pull tab button (`#mobile-edge-handle`) on the left screen edge that opens the sidebar with a tap or live drag.
+  - **Lower Friction & Wider Zone**: Broadened edge swipe threshold to 80px (or 25% of viewport width), reduced initiation trigger to 5px, and removed restrictive filters so swipes over tables, cards, and links initiate immediately.
+  - **Real-Time Live Dragging**: Added `.fi-sidebar-dragging` to remove CSS transitions while moving and used `.style.setProperty('translate', ..., 'important')` to override stylesheet rules, providing smooth 1:1 finger tracking.
+  - **W3C Pointer Events**: Upgraded gesture listeners to Pointer Events API with touch fallback for universal cross-device responsiveness.
+
+
 
 
 

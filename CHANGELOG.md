@@ -4,6 +4,18 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.7] - 2026-10-28
+
+### Added & Enhanced
+- **Mobile Sidebar Swipe Gestures & Tactile Edge Pull Tab Overhaul**:
+  - **Tactile Edge Pull Tab**: Added an orange floating pull tab (`#mobile-edge-handle`) on the left screen edge on mobile viewports. Users can tap it to open the sidebar immediately or drag it to slide the sidebar open.
+  - **Effortless Swipe Triggering**: Expanded the left edge activation zone from 45px to 80px (or 25% of viewport width) and reduced the swipe initiation threshold from 12px to 5px with forgiving vertical motion tolerance.
+  - **Removed Restrictive Element Filters**: Swiping over tables, cards, and links now initiates smoothly without being aborted (only active form inputs like textareas and dropdowns are excluded).
+  - **Real-Time Finger Tracking**: Fixed CSS `!important` stylesheet conflicts during dragging by utilizing `.style.setProperty('translate', ..., 'important')` and adding `.fi-sidebar-dragging` to disable transitions while moving, providing 1:1 synchronous finger response.
+  - **Unified Pointer Events**: Migrated gesture detection to the W3C Pointer Events API (`pointerdown`, `pointermove`, `pointerup`) with touch fallback for universal support across touchscreens, trackpads, and devtools.
+
+---
+
 ## [2.8.6] - 2026-10-28
 
 ### Fixed & Enhanced
