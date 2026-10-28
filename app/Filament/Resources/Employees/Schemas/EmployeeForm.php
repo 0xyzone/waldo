@@ -236,19 +236,19 @@ class EmployeeForm
                                                 }
                                             })
                                             ->suffixAction(
-                                                Action::make('copyDateOfBirth')
+                                                Action::make('copyDateOfJoining')
                                                     ->icon('heroicon-m-clipboard-document-list')
                                                     ->color('gray')
-                                                    ->tooltip('Copy date of birth')
+                                                    ->tooltip('Copy date of joining')
                                                     ->alpineClickHandler(function (mixed $state): string {
                                                         $date = strtotime($state);
-                                                        $jsDate = Js::from($date);
+                                                        $convertedDate = date('Y.m.d', $date);
+                                                        $jsDate = Js::from($convertedDate);
 
                                                         return <<<JS
                                                             const currentVal = (typeof state !== 'undefined' && state) ? state : {$jsDate};
-                                                            const date = String(currentVal).replace(/[^0-9]/g, '');
-                                                            window.navigator.clipboard.writeText(date);
-                                                            \$tooltip('Copied ' + date, {
+                                                            window.navigator.clipboard.writeText(currentVal);
+                                                            \$tooltip('Copied ' + currentVal, {
                                                                 theme: \$store.theme,
                                                                 timeout: 2000,
                                                             });
