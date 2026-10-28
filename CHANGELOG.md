@@ -4,6 +4,16 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.6] - 2026-10-28
+
+### Fixed & Enhanced
+- **Action Log Attribute Modifications (Old & New Values) Display**:
+  - **Fixed Attribute Modifications Infolist View**: Resolved an issue in `ActionLogInfolist` where Filament's `TextEntry` treated associative diff arrays as item lists, passing each element (`['old' => ..., 'new' => ...]`) into the formatter and causing field names to show as "Old" / "New" with `null` values. Replaced with `ViewEntry` using a clean `action-log-changes-table` Blade component that renders proper field names, before/after comparisons, boolean badges (`true`/`false`), and formatted values.
+  - **In-Form Record View Field Diffs**: Integrated the changes diff table into `ActionLogSection`'s repeater schema across all admin panel resources (Employees, Candidates, Promotions, Transfers, Leavers, Suspensions, etc.), allowing users to view exact before/after field values directly within each record's edit or view form.
+  - **Normalized Value Tracking**: Enhanced `HasActionLogs` model trait to cleanly normalize `DateTimeInterface` instances (`Y-m-d H:i:s`), strict boolean equality comparisons, and JSON scalars before computing diffs.
+
+---
+
 ## [2.8.5] - 2026-10-28
 
 ### Fixed & Stability

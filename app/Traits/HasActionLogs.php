@@ -42,6 +42,18 @@ trait HasActionLogs
             $dirty = $model->getDirty();
             $ignored = ['updated_at', 'created_at', 'remember_token', 'password', 'two_factor_secret', 'two_factor_recovery_codes'];
 
+            $normalize = function ($val) {
+                if ($val instanceof \DateTimeInterface) {
+                    return $val->format('Y-m-d H:i:s');
+                }
+
+                if (is_bool($val) || is_numeric($val) || is_string($val) || is_null($val)) {
+                    return $val;
+                }
+
+                return json_encode($val, JSON_UNESCAPED_SLASHES);
+            };
+
             $changes = [];
             foreach ($dirty as $key => $newValue) {
                 if (in_array($key, $ignored, true)) {
@@ -50,14 +62,30 @@ trait HasActionLogs
 
                 $oldValue = $model->getOriginal($key);
 
+                $normOld = $normalize($oldValue);
+                $normNew = $normalize($newValue);
+
                 // Skip if effectively identical
-                if ($oldValue === $newValue || (is_numeric($oldValue) && is_numeric($newValue) && (string) $oldValue === (string) $newValue)) {
+                if ($normOld === $normNew) {
                     continue;
                 }
 
+                if (is_numeric($normOld) && is_numeric($normNew) && (string) $normOld === (string) $normNew) {
+                    continue;
+                }
+
+                // If boolean values
+                if (is_bool($oldValue) || is_bool($newValue)) {
+                    if ((bool) $oldValue === (bool) $newValue) {
+                        continue;
+                    }
+                    $normOld = (bool) $oldValue;
+                    $normNew = (bool) $newValue;
+                }
+
                 $changes[$key] = [
-                    'old' => is_scalar($oldValue) || is_null($oldValue) ? $oldValue : json_encode($oldValue),
-                    'new' => is_scalar($newValue) || is_null($newValue) ? $newValue : json_encode($newValue),
+                    'old' => $normOld,
+                    'new' => $normNew,
                 ];
             }
 

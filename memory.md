@@ -281,6 +281,15 @@
   - Added redirect to `/kamkaj` on `mount()`.
   - Excluded `Chat::class` in `config/filament-shield.php` to prevent permission bloat.
 
+### 29. Action Log Attribute Modifications (Old & New Values) Fix (v2.8.6)
+- **Root Cause**: `ActionLogInfolist.php` used `TextEntry::make('changes')->formatStateUsing(...)`. In Filament v5, when state is an associative array, `TextEntry` treats it as a list of items and invokes `formatStateUsing` separately for each key-value pair. The formatter was receiving `['old' => ..., 'new' => ...]` as `$state` where `$field` was string `'old'` / `'new'` and `$val` was scalar, causing `is_array($val)` to fail and rendering duplicate tables showing `Field: Old | null | null` and `Field: New | null | null`.
+- **Solution**:
+  - Replaced `TextEntry` with `ViewEntry::make('changes')` in `ActionLogInfolist.php`.
+  - Created `resources/views/filament/components/action-log-changes-table.blade.php`: renders a unified, beautiful comparison table showing the actual field names with old and new values, boolean true/false badges, null labels, numbers, and formatted dates.
+  - Embedded `action-log-changes-table` into `ActionLogSection`'s repeater schema, allowing users to see field diffs directly within individual resource view/edit forms.
+  - Enhanced `HasActionLogs::bootHasActionLogs()` updating hook to properly normalize `DateTimeInterface` instances and strict boolean comparisons.
+
+
 
 
 

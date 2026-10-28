@@ -3,10 +3,13 @@
 namespace App\Filament\Components;
 
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Illuminate\Database\Eloquent\Model;
 
 class ActionLogSection
 {
@@ -38,6 +41,12 @@ class ActionLogSection
                                     ->label('Timestamp')
                                     ->disabled(),
                             ]),
+
+                        Placeholder::make('changes')
+                            ->hiddenLabel()
+                            ->visible(fn (?Model $record, Get $get): bool => ! empty($record?->changes) || ! empty($get('changes')))
+                            ->view('filament.components.action-log-changes-table')
+                            ->columnSpanFull(),
                     ])
                     ->addable(false)
                     ->deletable(false)

@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.8.5';
+    public const CURRENT_VERSION = '2.8.6';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,20 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.8.6',
+                'date' => '2026-10-28',
+                'title' => 'Fix Action Log Attribute Modifications Old & New Values Display',
+                'type' => 'micro',
+                'badge' => 'Bug Fix',
+                'badge_color' => 'success',
+                'description' => 'Resolved a display issue where Action Log field modifications showed "null" for both old and new values due to TextEntry array splitting, and added in-form field diff tables to record views.',
+                'highlights' => [
+                    'Fixed Field Modification Diff Display: Replaced TextEntry with ViewEntry and created a dedicated action-log-changes-table Blade component, properly displaying real field names with before and after values (including boolean true/false badges, nulls, numbers, and dates).',
+                    'In-Form Record View Diff Visibility: Added the changes table to the ActionLogSection repeater across all resource forms, allowing users to view field modifications directly inside individual record edit and view pages.',
+                    'Data Normalization in HasActionLogs: Improved updating hook in HasActionLogs trait to normalize DateTimeInterface instances, scalar types, and boolean comparisons.',
+                ],
+            ],
             [
                 'version' => '2.8.5',
                 'date' => '2026-10-28',
