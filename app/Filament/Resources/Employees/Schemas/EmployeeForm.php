@@ -266,6 +266,7 @@ class EmployeeForm
                                             ->default('Morning'),
                                     ]),
                                 Section::make('HRMS Credentials')
+                                ->description('Click on values to copy')
                                     ->visibleOn('view')
                                     ->schema([
                                         Grid::make(['default' => 1, 'sm' => 3])
