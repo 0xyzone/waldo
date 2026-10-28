@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Candidates\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use App\Helpers\NepaliDate\NepaliDate;
 use App\Models\Designation;
 use Carbon\Carbon;
@@ -127,6 +128,7 @@ class CandidateForm
                     ->maxSize(20480),
                 Textarea::make('notes')
                     ->autosize(),
+                ActionLogSection::make(),
             ]);
     }
 }

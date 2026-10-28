@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\EmployeeTransfers\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use App\Models\Department;
 use App\Models\Designation;
 use App\Models\Employee;
@@ -105,6 +106,7 @@ class EmployeeTransferForm
                             ->columnSpanFull()
                             ->disabled(fn (callable $get) => ! $get('employee_id')),
                     ]),
+                ActionLogSection::make(),
             ]);
     }
 }

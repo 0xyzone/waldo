@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\DiscordSettingResource\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Grid;
@@ -41,6 +42,7 @@ class DiscordSettingForm
                             ->label('')
                             ->content(fn () => view('filament.pages.discord-info')),
                     ]),
+                ActionLogSection::make(),
             ]);
     }
 }

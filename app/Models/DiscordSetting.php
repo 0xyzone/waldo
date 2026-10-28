@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasActionLogs;
 use Illuminate\Database\Eloquent\Model;
 
 class DiscordSetting extends Model
 {
+    use HasActionLogs;
+
     /**
      * The attributes that are mass assignable.
      *

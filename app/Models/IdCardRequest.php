@@ -37,6 +37,19 @@ class IdCardRequest extends Model
                 'action_description' => "Request created with status '{$request->status}'",
                 'created_at' => now(),
             ]);
+
+            ActionLog::create([
+                'actionable_type' => IdCardRequest::class,
+                'actionable_id' => (string) $request->id,
+                'user_id' => $user?->id,
+                'user_name' => $userName,
+                'action' => 'created',
+                'from_status' => null,
+                'to_status' => $request->status,
+                'action_description' => "Request created with status '{$request->status}'",
+                'changes' => null,
+                'created_at' => now(),
+            ]);
         });
 
         static::updating(function (IdCardRequest $request) {
@@ -52,6 +65,19 @@ class IdCardRequest extends Model
                     'from_status' => $fromStatus,
                     'to_status' => $toStatus,
                     'action_description' => "Status updated from '{$fromStatus}' to '{$toStatus}'",
+                    'created_at' => now(),
+                ]);
+
+                ActionLog::create([
+                    'actionable_type' => IdCardRequest::class,
+                    'actionable_id' => (string) $request->id,
+                    'user_id' => $user?->id,
+                    'user_name' => $userName,
+                    'action' => 'status_changed',
+                    'from_status' => $fromStatus,
+                    'to_status' => $toStatus,
+                    'action_description' => "Status updated from '{$fromStatus}' to '{$toStatus}'",
+                    'changes' => ['status' => ['old' => $fromStatus, 'new' => $toStatus]],
                     'created_at' => now(),
                 ]);
             }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TerminatedEmployees\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -84,6 +85,7 @@ class TerminatedEmployeeForm
                                     ->native(false),
                             ]),
                     ]),
+                ActionLogSection::make(),
             ]);
     }
 }

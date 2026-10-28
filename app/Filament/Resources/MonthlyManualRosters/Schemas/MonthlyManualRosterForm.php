@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\MonthlyManualRosters\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -77,6 +78,7 @@ class MonthlyManualRosterForm
                             ->placeholder('e.g. Shifts confirmed with heads of department; pending HRMS entry')
                             ->rows(3),
                     ]),
+                ActionLogSection::make(),
             ]);
     }
 }

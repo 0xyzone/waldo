@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TipsAdjustments\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use App\Models\Employee;
 use App\Models\TipsAdjustment;
 use Filament\Forms\Components\Placeholder;
@@ -182,6 +183,7 @@ class TipsAdjustmentForm
 
                 Textarea::make('remarks')
                     ->columnSpanFull(),
+                ActionLogSection::make(),
             ]);
     }
 }

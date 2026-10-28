@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\MonthlyManualAttendances\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -77,6 +78,7 @@ class MonthlyManualAttendanceForm
                             ->placeholder('e.g. Month-end attendance confirmation from respective department heads; pending HRMS punch input')
                             ->rows(3),
                     ]),
+                ActionLogSection::make(),
             ]);
     }
 }

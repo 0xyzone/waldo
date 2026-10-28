@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasActionLogs;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
@@ -25,7 +26,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, HasPushSubscriptions, HasRoles, Notifiable;
+    use HasActionLogs, HasApiTokens, HasFactory, HasPushSubscriptions, HasRoles, Notifiable;
 
     /**
      * Flag to allow reactivation only when validated with Super Admin OTP.

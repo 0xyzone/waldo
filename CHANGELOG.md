@@ -4,6 +4,17 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.0] - 2026-10-28
+
+### Added
+- **Universal Action Logging System**:
+  - **`HasActionLogs` Trait**: Polymorphic model trait that automatically logs record creations, deletions, status transitions, and individual attribute modifications (with before/after diffs in JSON).
+  - **In-Form Action Log History**: Embedded `ActionLogSection` component at the bottom of edit/view forms across all application resources (Biometric Allotments, Candidates, Employees, Leavers, Promotions, Transfers, Suspensions, Salary Increments, Tips Reports, Nametag Distributions, Nametag Fines, Settings, etc.).
+  - **Dedicated Action Logs Resource (`ActionLogResource`)**: Central audit trail resource under *System Settings* featuring searchable and filterable log history by resource type, action, user, and date range, with a detailed slideover inspector displaying full attribute diffs.
+  - **Unified `action_logs` Migration**: Created polymorphic `action_logs` table with composite indexing and backfilled existing history from legacy ID card request and unofficial nametag logs.
+
+---
+
 ## [2.7.1] - 2026-10-27
 
 ### Fixed

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TipsReports\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use App\Models\Employee;
 use App\Models\TipsDepartmentMapping;
 use App\Services\TipsCalculationService;
@@ -353,6 +354,7 @@ class TipsReportForm
                         ]),
                 ])
                     ->columnSpanFull(),
+                ActionLogSection::make(),
             ]);
     }
 }

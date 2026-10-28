@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasActionLogs;
 use Illuminate\Database\Eloquent\Model;
 
 class AppSetting extends Model
 {
+    use HasActionLogs;
+
     /**
      * The table associated with the model.
      *

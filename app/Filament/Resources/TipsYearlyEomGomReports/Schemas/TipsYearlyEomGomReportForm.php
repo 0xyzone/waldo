@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TipsYearlyEomGomReports\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use App\Models\TipsYearlyEomGomReport;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -47,6 +48,7 @@ class TipsYearlyEomGomReportForm
                         ->rows(3)
                         ->columnSpanFull(),
                 ]),
+                ActionLogSection::make(),
             ]);
     }
 }

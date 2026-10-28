@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\NametagDistributions\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use App\Models\Employee;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -102,6 +103,7 @@ class NametagDistributionForm
                             ->rows(3)
                             ->columnSpanFull(),
                     ]),
+                ActionLogSection::make(),
             ]);
     }
 }

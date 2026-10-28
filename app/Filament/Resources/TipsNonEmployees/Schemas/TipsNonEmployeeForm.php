@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TipsNonEmployees\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use App\Models\TipsNonEmployee;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -59,6 +60,7 @@ class TipsNonEmployeeForm
                                 ->helperText('When enabled, this person will be automatically included in newly generated tips distribution sheets.'),
                         ]),
                     ]),
+                ActionLogSection::make(),
             ]);
     }
 }

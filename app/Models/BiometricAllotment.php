@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasActionLogs;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class BiometricAllotment extends Model
 {
+    use HasActionLogs;
+
     /**
      * The primary key associated with the table.
      *

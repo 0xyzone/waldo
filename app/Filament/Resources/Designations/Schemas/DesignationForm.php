@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Designations\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -80,6 +81,7 @@ class DesignationForm
                             ->inline(false)
                             ->columnSpanFull(),
                     ]),
+                ActionLogSection::make(),
             ]);
     }
 }

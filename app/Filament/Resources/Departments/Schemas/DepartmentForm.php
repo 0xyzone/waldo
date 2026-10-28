@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Departments\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use App\Models\Department;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -56,6 +57,7 @@ class DepartmentForm
                             ->default(true)
                             ->inline(false),
                     ]),
+                ActionLogSection::make(),
             ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use App\Models\User;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -74,6 +75,7 @@ class UserForm
                     ->required()
                     ->searchable()
                     ->hiddenOn('create'),
+                ActionLogSection::make(),
             ]);
     }
 }

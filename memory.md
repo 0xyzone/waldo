@@ -214,3 +214,16 @@
   - `App\Filament\Widgets\PurchaseStoreOverviewWidget` (Sort: 5, `lg: 1`): Supply & store tracker monitoring nametag distributions this month, pending unofficial nametag requests, nametag fines amount/count, and unacknowledged fines.
 - **Filament Shield Permissions**:
   - Registered permissions: `View:FinanceOverviewWidget`, `View:ItOverviewWidget`, `View:PurchaseStoreOverviewWidget`.
+
+### 23. Universal Action Logging & Dedicated Action Logs Resource (v2.8.0)
+- **Model**: `App\Models\ActionLog` (`action_logs` table)
+  - Fields: `actionable_type`, `actionable_id` (string supporting both integer IDs and alphanumeric codes like `CWD650`), `user_id`, `user_name`, `action` (`created`, `updated`, `status_changed`, `deleted`), `from_status`, `to_status`, `action_description`, `changes` (JSON attribute diffs with old/new values), `created_at`.
+- **Trait**: `App\Traits\HasActionLogs`
+  - Attached to all Eloquent models across the application.
+  - Automatically captures model creation, attribute modifications (ignoring timestamps and secret fields), status transitions, and deletions without requiring manual hooks.
+- **Form Component**: `App\Filament\Components\ActionLogSection`
+  - Embedded at the bottom of edit/view forms across all resources.
+  - Displays a clean, collapsible "Action Log History" repeater with User, Status Set, Action Log description, and timestamp.
+- **Dedicated Central Resource**: `App\Filament\Resources\ActionLogs\ActionLogResource`
+  - Located under *System Settings* (Sort: 15).
+  - Displays audit trail across every resource in the entire system with search, resource filtering, action type filtering, date range filtering, and a slideover modal inspector with colored attribute diff tables.

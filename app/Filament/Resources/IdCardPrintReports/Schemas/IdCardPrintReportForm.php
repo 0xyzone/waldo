@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\IdCardPrintReports\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -77,6 +78,7 @@ class IdCardPrintReportForm
                             ->columnSpanFull(),
                     ])
                     ->collapsible(),
+                ActionLogSection::make(),
             ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TipsEomGomExcludedDepartments\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use App\Models\Department;
 use App\Models\TipsEomGomExcludedDepartment;
 use Filament\Forms\Components\Select;
@@ -29,6 +30,7 @@ class TipsEomGomExcludedDepartmentForm
                     ->placeholder('e.g. Back-office department or excluded by management policy')
                     ->rows(3)
                     ->columnSpanFull(),
+                ActionLogSection::make(),
             ]);
     }
 }

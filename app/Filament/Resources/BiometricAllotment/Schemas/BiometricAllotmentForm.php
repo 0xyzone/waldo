@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\BiometricAllotment\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use App\Filament\Resources\BiometricAllotment\BiometricAllotmentResource;
 use App\Models\BiometricAllotment;
 use App\Models\MapUser;
@@ -286,6 +287,7 @@ class BiometricAllotmentForm
                             ->columnSpanFull(),
                     ])
                     ->columnSpanFull(),
+                ActionLogSection::make(),
             ]);
     }
 }

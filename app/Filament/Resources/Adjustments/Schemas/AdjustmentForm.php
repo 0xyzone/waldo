@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Adjustments\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use App\Models\Employee;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -140,6 +141,7 @@ class AdjustmentForm
                                     ->disabled(fn () => ! auth()->user()->hasRole('Finance')),
                             ]),
                     ]),
+                ActionLogSection::make(),
             ]);
     }
 }

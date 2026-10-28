@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\NametagFines\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use App\Models\Employee;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -125,6 +126,7 @@ class NametagFineForm
                             ->rows(3)
                             ->columnSpanFull(),
                     ]),
+                ActionLogSection::make(),
             ]);
     }
 }

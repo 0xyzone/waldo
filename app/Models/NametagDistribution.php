@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
-use App\Models\User;
+use App\Traits\HasActionLogs;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class NametagDistribution extends Model
 {
+    use HasActionLogs;
+
     /**
      * The attributes that are mass assignable.
      *

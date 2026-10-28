@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ManualAttendanceEmployees\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use App\Models\Employee;
 use App\Models\ManualAttendanceEmployee;
 use Filament\Forms\Components\Placeholder;
@@ -99,6 +100,7 @@ class ManualAttendanceEmployeeForm
                             ->placeholder('e.g. Special schedule, kitchen staff, remote manual attendance')
                             ->rows(3),
                     ]),
+                ActionLogSection::make(),
             ]);
     }
 }

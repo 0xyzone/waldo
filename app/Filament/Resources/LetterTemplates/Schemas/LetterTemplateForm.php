@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\LetterTemplates\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
@@ -243,6 +244,7 @@ class LetterTemplateForm
                             ->columnSpan(['default' => 1, 'lg' => 7]),
                     ])
                     ->columnSpanFull(),
+                ActionLogSection::make(),
             ]);
     }
 }

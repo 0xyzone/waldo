@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\HasActionLogs;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 
 class Candidate extends Model
 {
+    use HasActionLogs;
+
     /**
      * The attributes that are mass assignable.
      *

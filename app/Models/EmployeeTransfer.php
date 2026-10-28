@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use App\Jobs\SyncTransferToSheetJob;
+use App\Traits\HasActionLogs;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
 
 class EmployeeTransfer extends Model
 {
+    use HasActionLogs;
+
     /**
      * The attributes that are mass assignable.
      *

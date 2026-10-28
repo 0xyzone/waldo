@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasActionLogs;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Employee extends Model
 {
+    use HasActionLogs;
+
     /**
      * The primary key associated with the table.
      *

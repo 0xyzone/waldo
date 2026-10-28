@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Leavers\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -59,6 +60,7 @@ class LeaverForm
                                     ->default(true),
                             ]),
                     ]),
+                ActionLogSection::make(),
             ]);
     }
 }

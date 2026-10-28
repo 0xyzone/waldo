@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\MapUsers\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
@@ -17,6 +18,7 @@ class MapUserForm
                     ->required(),
                 TextInput::make('setby_name')
                     ->required(),
+                ActionLogSection::make(),
             ]);
     }
 }

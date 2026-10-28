@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Employees\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use App\Helpers\NepaliDate\NepaliDate;
 use App\Models\Designation;
 use Carbon\Carbon;
@@ -233,7 +234,27 @@ class EmployeeForm
                                                 } catch (\Exception) {
                                                     return $state;
                                                 }
-                                            }),
+                                            })
+                                            ->suffixAction(
+                                                Action::make('copyDateOfBirth')
+                                                    ->icon('heroicon-m-clipboard-document-list')
+                                                    ->color('gray')
+                                                    ->tooltip('Copy date of birth')
+                                                    ->alpineClickHandler(function (mixed $state): string {
+                                                        $date = strtotime($state);
+                                                        $jsDate = Js::from($date);
+
+                                                        return <<<JS
+                                                            const currentVal = (typeof state !== 'undefined' && state) ? state : {$jsDate};
+                                                            const date = String(currentVal).replace(/[^0-9]/g, '');
+                                                            window.navigator.clipboard.writeText(date);
+                                                            \$tooltip('Copied ' + date, {
+                                                                theme: \$store.theme,
+                                                                timeout: 2000,
+                                                            });
+                                                            JS;
+                                                    })
+                                            ),
                                         Select::make('shift')
                                             ->label('Shift')
                                             ->options([
@@ -362,6 +383,7 @@ class EmployeeForm
                             ]),
                     ])
                     ->columnSpanFull(),
+                ActionLogSection::make(),
             ]);
     }
 }

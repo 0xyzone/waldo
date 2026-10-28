@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\EmployeeSuspensions\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -81,6 +82,7 @@ class EmployeeSuspensionForm
                             ->maxSize(10240) // 10MB per file
                             ->columnSpanFull(),
                     ]),
+                ActionLogSection::make(),
             ]);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TipsDepartmentMappings\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use App\Models\Department;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -102,6 +103,7 @@ class TipsDepartmentMappingForm
                         ->default(true),
                 ])
                     ->columnSpanFull(),
+                ActionLogSection::make(),
             ]);
     }
 }

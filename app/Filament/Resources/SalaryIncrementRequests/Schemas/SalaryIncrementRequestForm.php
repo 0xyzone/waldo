@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SalaryIncrementRequests\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use App\Models\Employee;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -138,6 +139,7 @@ class SalaryIncrementRequestForm
                                 ->helperText(fn (Get $get) => $get('increment_percentage') ? "({$get('increment_percentage')}%)" : null),
                         ]),
                     ]),
+                ActionLogSection::make(),
             ]);
     }
 }

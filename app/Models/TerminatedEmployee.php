@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasActionLogs;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TerminatedEmployee extends Model
 {
+    use HasActionLogs;
+
     protected $fillable = [
         'employee_id',
         'last_working_date',

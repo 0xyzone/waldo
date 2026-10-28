@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasActionLogs;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MonthlyManualRoster extends Model
 {
+    use HasActionLogs;
+
     /**
      * The table associated with the model.
      *

@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.7.1';
+    public const CURRENT_VERSION = '2.8.0';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,23 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.8.0',
+                'date' => '2026-10-28',
+                'title' => 'Universal Action Logs & Central Audit Trail Resource',
+                'type' => 'minor',
+                'badge' => 'Audit & Security',
+                'badge_color' => 'success',
+                'highlights' => 'Introduced a polymorphic action logging system recording record creation, status updates, and field diffs across all admin panel resources, complete with an in-form Action Log History section and a dedicated central Action Logs resource.',
+                'changes' => [
+                    'added' => [
+                        'Universal HasActionLogs Trait: Automatically records create, update (with JSON field-level before/after diffs), status transitions, and deletion events across all models.',
+                        'Central Action Logs Resource: Dedicated full-featured audit trail viewer under System Settings with filtering by resource type, action, date range, and modal inspection.',
+                        'In-Form Action Log History Section: Reusable collapsible section embedded across all resources (Biometric Allotments, Candidates, Employees, Leavers, Promotions, Transfers, Suspensions, Salary Increments, Tips, Nametags, Settings, etc.).',
+                        'Unified Action Logs Migration: Created action_logs table with composite indexing and backfilled existing history from id_card_request_logs and unofficial_nametag_request_logs.',
+                    ],
+                ],
+            ],
             [
                 'version' => '2.7.1',
                 'date' => '2026-10-27',

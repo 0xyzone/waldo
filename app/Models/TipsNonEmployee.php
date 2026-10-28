@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasActionLogs;
 use Illuminate\Database\Eloquent\Model;
 
 class TipsNonEmployee extends Model
 {
+    use HasActionLogs;
+
     protected $fillable = [
         'code',
         'name',

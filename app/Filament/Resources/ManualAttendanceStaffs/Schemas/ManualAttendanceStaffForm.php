@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ManualAttendanceStaffs\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use App\Models\Employee;
 use App\Models\ManualAttendanceStaff;
 use Filament\Forms\Components\Placeholder;
@@ -99,6 +100,7 @@ class ManualAttendanceStaffForm
                             ->placeholder('e.g. Remote worker, kitchen staff, exempt from biometric device')
                             ->rows(3),
                     ]),
+                ActionLogSection::make(),
             ]);
     }
 }
