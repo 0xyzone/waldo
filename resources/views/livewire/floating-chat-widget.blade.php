@@ -965,7 +965,7 @@
 
                                         <div class="relative w-fit">
                                             <div
-                                                class="relative rounded-2xl px-3 py-2 text-xs shadow-xs transition-all {{ $msg->is_deleted ? 'bg-slate-100/70 dark:bg-slate-800/50 border border-dashed border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-2xl' : ($isMe ? 'bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 text-white rounded-br-xs shadow-orange-500/15' : 'bg-white text-slate-900 border border-slate-200/80 dark:border-slate-700/60 dark:bg-slate-800 dark:text-slate-100 rounded-bl-xs shadow-slate-900/5') }} {{ !$isMe && !$msg->is_deleted && $msg->mentionsUser(auth()->id()) ? 'ring-2 ring-amber-400 dark:ring-amber-400/80 bg-amber-50/70 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700' : '' }}">
+                                                class="relative rounded-2xl px-2.5 py-1.5 text-xs shadow-xs transition-all {{ $msg->is_deleted ? 'bg-slate-100/70 dark:bg-slate-800/50 border border-dashed border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-2xl' : ($isMe ? 'bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 text-white rounded-br-xs shadow-orange-500/15' : 'bg-white text-slate-900 border border-slate-200/80 dark:border-slate-700/60 dark:bg-slate-800 dark:text-slate-100 rounded-bl-xs shadow-slate-900/5') }} {{ !$isMe && !$msg->is_deleted && $msg->mentionsUser(auth()->id()) ? 'ring-2 ring-amber-400 dark:ring-amber-400/80 bg-amber-50/70 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700' : '' }}">
                                                 @if ($this->activeConversation->isGroup() && !$isMe && !$msg->is_deleted)
                                                     <div class="flex items-center justify-between gap-2 mb-1 leading-none">
                                                         <span
@@ -1157,9 +1157,9 @@
                                                 @endphp
 
                                                 @if ($hasTextBody)
-                                                    <div class="whitespace-pre-wrap break-words leading-relaxed select-text">
-                                                        {!! $msg->getFormattedBodyHtml($isMe) !!}
-                                                        <span class="inline-flex items-center gap-1 float-right ml-2.5 pt-1 -mb-0.5 text-[9px] font-medium leading-none select-none {{ $isMe ? 'text-amber-100/80' : 'text-slate-400 dark:text-slate-500' }}">
+                                                    <div class="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 max-w-full select-text leading-snug">
+                                                        <span class="break-words select-text">{!! $msg->getFormattedBodyHtml($isMe) !!}</span>
+                                                        <span class="inline-flex items-center gap-1 text-[9px] font-medium leading-none select-none opacity-80 whitespace-nowrap self-end pb-0.5 ml-auto {{ $isMe ? 'text-amber-100/90' : 'text-slate-400 dark:text-slate-500' }}">
                                                             <span>{{ $msg->created_at?->format('h:i A') }}</span>
                                                             @if ($isMe)
                                                                 @php $deliveryStatus = $msg->getDeliveryStatus(auth()->id()); @endphp
@@ -1353,6 +1353,7 @@
                             mentionCursorPos: 0,
                             members: @js($this->groupMembers),
                             isGroup: {{ $isFloatingGroup ? 'true' : 'false' }},
+                            hasText: false,
                             enterIsNewLine: (function() {
                                 try {
                                     return localStorage.getItem('waldo_chat_enter_mode') === 'newline';
@@ -1361,15 +1362,28 @@
                                 }
                             })(),
                         
+                            updateHasText() {
+                                const val = this.$refs.floatMessageInput?.value?.trim() || '';
+                                this.hasText = val.length > 0;
+                            },
+
                             init() {
-                                this.$nextTick(() => this.resizeInput());
+                                this.updateHasText();
+                                this.$nextTick(() => {
+                                    this.resizeInput();
+                                    this.updateHasText();
+                                });
                                 $wire.on('floating-conversation-changed', () => {
-                                    this.$nextTick(() => this.resizeInput());
+                                    this.$nextTick(() => {
+                                        this.resizeInput();
+                                        this.updateHasText();
+                                    });
                                 });
                                 $wire.on('focus-floating-input', () => {
                                     this.$nextTick(() => {
                                         this.$refs.floatMessageInput?.focus();
                                         this.resizeInput();
+                                        this.updateHasText();
                                     });
                                 });
                             },
@@ -1390,11 +1404,12 @@
                                 if (trailingNewlines > 0) {
                                     scrollH += (trailingNewlines * 20);
                                 }
-                                const minHeight = 34;
+                                const minHeight = 30;
                                 const maxHeight = 110;
                                 const targetHeight = Math.min(Math.max(scrollH, minHeight), maxHeight);
                                 el.style.height = targetHeight + 'px';
                                 el.style.overflowY = scrollH > maxHeight ? 'auto' : 'hidden';
+                                this.updateHasText();
                             },
                         
                             insertNewline() {
@@ -1412,6 +1427,7 @@
                                 this.$nextTick(() => {
                                     el.focus();
                                     this.resizeInput();
+                                    this.updateHasText();
                                 });
                             },
                         
@@ -1426,8 +1442,10 @@
                                 if (input) {
                                     input.value = '';
                                 }
+                                this.hasText = false;
                                 this.$nextTick(() => {
                                     this.resizeInput();
+                                    this.updateHasText();
                                 });
 
                                 $wire.sendMessage(text);
@@ -1909,16 +1927,16 @@
                                     </div>
                                 </div>
 
-                                <!-- Modern Integrated Capsule Input Form -->
+                                <!-- Modern Clean Capsule Composer Form -->
                                 <form x-show="!isRecording" @submit.prevent="submitMessage()"
-                                    class="flex items-end gap-1.5 bg-slate-100/80 dark:bg-slate-800/60 p-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 focus-within:border-amber-500/60 focus-within:ring-2 focus-within:ring-amber-500/20 focus-within:bg-white dark:focus-within:bg-slate-800 transition-all duration-150">
+                                    class="flex items-center gap-1.5 bg-slate-100/90 dark:bg-slate-800/80 px-2 py-1.5 rounded-full border border-slate-200/80 dark:border-slate-700/60 focus-within:border-amber-500/60 focus-within:ring-2 focus-within:ring-amber-500/20 focus-within:bg-white dark:focus-within:bg-slate-800 transition-all duration-150">
                                     <!-- File input hidden -->
                                     <input type="file" x-ref="floatFileInput" wire:model="attachment"
                                         class="hidden" />
 
                                     <!-- Paperclip File Button -->
                                     <button type="button" @click="$refs.floatFileInput.click()"
-                                        class="flex-shrink-0 rounded-xl p-1.5 text-slate-400 hover:text-amber-600 hover:bg-white dark:hover:bg-slate-700 transition cursor-pointer"
+                                        class="flex-shrink-0 rounded-full p-1.5 text-slate-400 hover:text-amber-600 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 transition cursor-pointer"
                                         title="Attach file or photo">
                                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1926,62 +1944,55 @@
                                         </svg>
                                     </button>
 
-                                    <!-- Microphone Voice Note Button -->
-                                    <button type="button" @click="startRecording"
-                                        class="flex-shrink-0 rounded-xl p-1.5 text-slate-400 hover:text-amber-600 hover:bg-white dark:hover:bg-slate-700 transition cursor-pointer"
-                                        title="Record voice message">
-                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                                        </svg>
-                                    </button>
-
                                     @if ($isFloatingGroup)
                                         <!-- Quick Mention Button (@) -->
                                         <button type="button" @click="openMentionMenu"
-                                            class="flex-shrink-0 rounded-xl p-1.5 text-slate-400 hover:text-amber-600 hover:bg-white dark:hover:bg-slate-700 transition cursor-pointer"
+                                            class="flex-shrink-0 rounded-full p-1.5 text-slate-400 hover:text-amber-600 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 transition cursor-pointer"
                                             title="Mention group member (@all or @member)">
                                             <span class="flex h-4 w-4 items-center justify-center text-xs font-black leading-none select-none">@</span>
                                         </button>
                                     @endif
 
-                                    <!-- Input Field (Autosizing Textarea according to text wrapping) -->
+                                    <!-- Input Field (Autosizing Textarea) -->
                                     <div class="relative flex-1 min-w-0" wire:ignore>
-                                        <textarea x-ref="floatMessageInput" wire:model="messageText" rows="1" @input="detectMention(); resizeInput();"
-                                            @click="detectMention" @keyup="detectMention" @keydown="handleFloatInputKeyDown"
-                                            @paste="$nextTick(() => resizeInput())" @cut="$nextTick(() => resizeInput())" placeholder="Type a message..."
+                                        <textarea x-ref="floatMessageInput" wire:model="messageText" rows="1"
+                                            @input="updateHasText(); detectMention(); resizeInput();"
+                                            @click="detectMention" @keyup="updateHasText(); detectMention($event);" @keydown="handleFloatInputKeyDown"
+                                            @paste="$nextTick(() => { resizeInput(); updateHasText(); })"
+                                            @cut="$nextTick(() => { resizeInput(); updateHasText(); })"
+                                            placeholder="Type a message..."
                                             class="chat-input-field block w-full bg-transparent px-1.5 py-1 text-xs leading-normal text-slate-900 placeholder-slate-400 focus:outline-none dark:text-slate-100 dark:placeholder-slate-500 resize-none border-0 focus:ring-0"
-                                            style="min-height: 30px; max-height: 110px; overflow-y: hidden;"></textarea>
+                                            style="min-height: 24px; max-height: 100px; overflow-y: hidden;"></textarea>
                                     </div>
 
-                                    <!-- Enter Key Mode Toggle (Option to switch Enter behavior) -->
-                                    <button type="button" @click="toggleEnterMode()"
-                                        class="flex-shrink-0 rounded-lg px-1.5 py-1 text-[10px] font-bold border transition select-none cursor-pointer"
-                                        :class="enterIsNewLine
-                                            ?
-                                            'border-amber-400 bg-amber-500/10 text-amber-600 dark:border-amber-500 dark:bg-amber-950/40 dark:text-amber-400 shadow-2xs' :
-                                            'border-slate-200 bg-white/70 text-slate-400 hover:text-slate-600 dark:border-slate-700 dark:bg-slate-700/60 dark:text-slate-400'"
-                                        :title="enterIsNewLine
-                                            ?
-                                            'Current mode: Enter adds new line (Ctrl+Enter to send). Click to switch to Enter sends.' :
-                                            'Current mode: Enter sends message (Shift+Enter for new line). Click to switch to Enter adds new line.'">
-                                        <span x-show="!enterIsNewLine" class="flex items-center gap-0.5">
-                                            <span>↵</span><span class="text-[9px]">Send</span>
-                                        </span>
-                                        <span x-show="enterIsNewLine" class="flex items-center gap-0.5">
-                                            <span>↵</span><span class="text-[9px]">Line</span>
-                                        </span>
-                                    </button>
+                                    <!-- Morphing Action Button (Record vs Send) -->
+                                    <div class="flex-shrink-0 flex items-center">
+                                        <!-- Mic Record Button (when no message typed) -->
+                                        <button type="button" x-show="!hasText && !@js(!empty($attachment))" @click="startRecording"
+                                            x-transition:enter="transition ease-out duration-150"
+                                            x-transition:enter-start="opacity-0 scale-75"
+                                            x-transition:enter-end="opacity-100 scale-100"
+                                            class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-200/80 hover:bg-amber-500/20 text-slate-600 hover:text-amber-600 dark:bg-slate-700/80 dark:text-slate-300 dark:hover:text-amber-400 transition-all active:scale-90 cursor-pointer shadow-2xs"
+                                            title="Record voice message">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                                            </svg>
+                                        </button>
 
-                                    <!-- Send Button with glowing gradient -->
-                                    <button type="submit"
-                                        class="inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white shadow-xs transition-all hover:from-amber-600 hover:to-orange-600 active:scale-95 cursor-pointer"
-                                        :title="enterIsNewLine ? 'Send message (Ctrl+Enter)' : 'Send message (Enter)'">
-                                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                                        </svg>
-                                    </button>
+                                        <!-- Send Button (when text typed or attachment added) -->
+                                        <button type="submit" x-show="hasText || @js(!empty($attachment))"
+                                            x-transition:enter="transition ease-out duration-150"
+                                            x-transition:enter-start="opacity-0 scale-75"
+                                            x-transition:enter-end="opacity-100 scale-100"
+                                            class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-amber-500 to-orange-500 text-white shadow-sm hover:from-amber-600 hover:to-orange-600 active:scale-95 transition-all cursor-pointer"
+                                            :title="enterIsNewLine ? 'Send message (Ctrl+Enter)' : 'Send message (Enter)'">
+                                            <svg class="h-4 w-4 translate-x-px" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                            </svg>
+                                        </button>
+                                    </div>
                                 </form>
                             @endif
                         </div>

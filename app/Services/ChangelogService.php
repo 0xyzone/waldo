@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.8.11';
+    public const CURRENT_VERSION = '2.8.12';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,21 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.8.12',
+                'date' => '2026-10-28',
+                'title' => 'Compact Chat Bubbles & Morphing Dynamic Composer',
+                'type' => 'micro',
+                'badge' => 'Chat UX',
+                'badge_color' => 'primary',
+                'description' => 'Reduced message bubble padding and eliminated white-space expansion for short mentions and text. Streamlined the composer bar with a dynamic action button that morphs from microphone to send button when text is entered.',
+                'highlights' => [
+                    'Compact Message Bubbles: Eliminated whitespace-pre-wrap template gaps and replaced float-right with inline flex wrapping, reducing short message bubble height from 102px down to a crisp 33px.',
+                    'Reduced Bubble Padding: Tuned bubble padding to compact px-2.5 py-1.5 for a space-efficient chat experience.',
+                    'Dynamic Morphing Action Button: The action button dynamically displays a microphone icon when the textarea is empty, and automatically morphs into a glowing send button as soon as text is typed or an attachment is selected.',
+                    'Streamlined Bottom Composer: Removed the redundant Enter-toggle button and duplicate mic button from the composer row, giving full focus and room to the input textarea with attachment and mention controls.',
+                ],
+            ],
             [
                 'version' => '2.8.11',
                 'date' => '2026-10-28',

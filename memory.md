@@ -335,5 +335,15 @@
   - **Anti-Flicker & Realtime Responsiveness**: Deduplicated Echo channel listeners, debounced status and reaction updates, and implemented instantaneous 0ms client-side textarea reset on send.
   - **Sleek Pill Composer**: Modernized the bottom input form into a unified rounded-2xl island with glowing gradient send button, smooth auto-resizing, and quick attachment/mic controls.
 
+### 35. Compact Chat Bubbles & Morphing Dynamic Composer (v2.8.12)
+- **Problem**:
+  - Chat bubbles had excessive padding and rendered unexpectedly large (102px high for single mentions like `@all` and `@test`), leaving massive empty orange boxes.
+  - The message composer area was congested with redundant buttons (separate mic button on the left, Enter mode toggle button on the right, and send button).
+- **Solution**:
+  - **Compact Message Layout (`floating-chat-widget.blade.php`)**: Reduced bubble padding to `px-2.5 py-1.5`, removed `whitespace-pre-wrap` template newline artifacts, and switched from `float-right` to inline flex wrapping (`flex flex-wrap items-baseline gap-x-2`), cutting single mention/short message bubble height from 102px down to 33px.
+  - **Morphing Action Button**: Replaced duplicate buttons with a unified dynamic action button on the far right. Displays a microphone icon when the textarea is empty, and automatically morphs into a glowing send button as soon as text is typed or an attachment is attached.
+  - **De-congested Composer Row**: Removed the standalone Enter mode toggle button and left-side mic button, centering the auto-growing input with paperclip attachment and group mention controls.
+
+
 
 

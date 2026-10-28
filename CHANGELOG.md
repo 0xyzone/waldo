@@ -4,6 +4,17 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.12] - 2026-10-28
+
+### Added & Enhanced
+- **Compact Chat Bubbles & Morphing Dynamic Composer**:
+  - **Compact Message Bubbles**: Eliminated `whitespace-pre-wrap` template gaps and replaced `float-right` with inline flex wrapping, reducing short message bubble height from 102px down to a crisp 33px.
+  - **Reduced Bubble Padding**: Tuned bubble padding to compact `px-2.5 py-1.5` for a space-efficient chat experience.
+  - **Dynamic Morphing Action Button**: The action button dynamically displays a microphone icon when the textarea is empty, and automatically morphs into a glowing send button as soon as text is typed or an attachment is selected.
+  - **Streamlined Bottom Composer**: Removed the redundant Enter-toggle button and duplicate mic button from the composer row, giving full focus and room to the input textarea with attachment and mention controls.
+
+---
+
 ## [2.8.11] - 2026-10-28
 
 ### Added & Enhanced
