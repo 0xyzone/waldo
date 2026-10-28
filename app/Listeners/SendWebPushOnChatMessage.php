@@ -41,7 +41,7 @@ class SendWebPushOnChatMessage
             default => Str::limit($event->body, 120),
         };
 
-        $actionUrl = url('/kamkaj/chat?c='.$event->conversationId);
+        $actionUrl = url('/kamkaj');
         $icon = $event->senderAvatar ?: asset('pwa-icons/icon-192x192.png');
         $tag = 'chat-conversation-'.$event->conversationId;
 

@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.8.2';
+    public const CURRENT_VERSION = '2.8.3';
 
     public static function getCurrentVersion(): string
     {
@@ -72,18 +72,18 @@ class ChangelogService
     {
         return [
             [
-                'version' => '2.8.2',
+                'version' => '2.8.3',
                 'date' => '2026-10-28',
-                'title' => 'Top Navigation Bar Chat Drawer & Standardized Reply Icons',
+                'title' => 'Retire Dedicated Chat Page in Favor of Global Chat Drawer',
                 'type' => 'micro',
-                'badge' => 'UX / Navigation',
+                'badge' => 'Cleanup & UX',
                 'badge_color' => 'info',
-                'description' => 'Replaced the permanent floating bottom-right chat bubble with a sleek top navigation bar button and full-height slide-over drawer, and corrected malformed SVG reply/forward icons.',
+                'description' => 'Removed the legacy full-page chat resource (/kamkaj/chat) from sidebar navigation and routing, unifying all messaging workflows into the responsive slide-over chat drawer.',
                 'highlights' => [
-                    'Eliminated permanent bottom-right floating chat bubble that obstructed tables, forms, and pagination.',
-                    'Added top navigation bar chat launcher with real-time unread messages badge.',
-                    'Implemented responsive full-height slide-over drawer with backdrop overlay, smooth animations, and escape/close triggers.',
-                    'Fixed malformed and distorted SVG paths for Reply and Forward buttons across all chat interfaces.',
+                    'Removed redundant full-page Chat resource (Chat.php and chat.blade.php), eliminating dead weight and decluttering the sidebar navigation.',
+                    'Retired /kamkaj/chat route and updated database and web push notification handlers to link directly to the portal.',
+                    'Removed full-view transition buttons from the quick chat drawer header and conversation list footer.',
+                    'Updated unit test suite to align with active Filament pages.',
                 ],
             ],
             [
@@ -98,7 +98,7 @@ class ChangelogService
                     'Smooth Sidebar Slide Animations: Added cubic-bezier transform and width transitions to the sidebar and backdrop overlay on both desktop collapsible states and mobile views.',
                     'Mobile Touch Screen Gestures: Implemented native-feeling swipe gestures (edge swipe right to open, swipe left to close) with real-time translation tracking and subtle edge indicator.',
                     'Topbar Chat Drawer: Relocated persistent floating chat bubble to an unobtrusive top navigation bar button with live unread badge, opening into a smooth slide-over drawer overlay.',
-                    'Chat Reply & Forward Icons: Replaced distorted custom SVG paths with clean, modern Heroicons across both the chat drawer and full-screen chat page.',
+                    'Chat Reply & Forward Icons: Replaced distorted custom SVG paths with clean, modern Heroicons across the chat widget.',
                 ],
             ],
             [

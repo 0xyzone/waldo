@@ -4,6 +4,18 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.3] - 2026-10-28
+
+### Removed & Cleaned
+- **Retired Dedicated Chat Page in Favor of Global Chat Drawer**:
+  - **Removed Full-Page Chat Resource**: Deleted `app/Filament/Pages/Chat.php` and its associated view `resources/views/filament/pages/chat.blade.php`.
+  - **Sidebar Menu Declutter**: Removed the redundant "Chat" navigation link from the main sidebar navigation under Dashboard.
+  - **Route & Notification Cleanup**: Retired `/kamkaj/chat` route and updated database and web push notification handlers to link cleanly to `/kamkaj` where the global topbar chat drawer operates.
+  - **Widget Link Streamlining**: Removed full-view popup transition buttons from the quick chat drawer header and conversation list footer.
+  - **Permission Test Alignment**: Updated `tests/Unit/ShieldEnhancedPermissionsTest.php` to match active Filament pages.
+
+---
+
 ## [2.8.2] - 2026-10-28
 
 ### Added & Enhanced

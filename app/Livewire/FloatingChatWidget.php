@@ -326,7 +326,7 @@ class FloatingChatWidget extends Component
                         ->actions([
                             Action::make('view')
                                 ->label('Open Chat')
-                                ->url(url('/kamkaj/chat?c='.$conversation->id))
+                                ->url(url('/kamkaj'))
                                 ->markAsRead(),
                         ])
                         ->sendToDatabase($targetUser);

@@ -3,7 +3,6 @@
 namespace Tests\Unit;
 
 use App\Filament\Pages\Changelog;
-use App\Filament\Pages\Chat;
 use App\Filament\Pages\SsfUploadGenerator;
 use App\Filament\Resources\EmployeePromotions\EmployeePromotionResource;
 use App\Filament\Resources\Employees\EmployeeResource;
@@ -26,10 +25,6 @@ class ShieldEnhancedPermissionsTest extends TestCase
 
         $changelogPerms = Changelog::getShieldPagePermissions();
         $this->assertArrayHasKey('view', $changelogPerms);
-
-        $chatPerms = Chat::getShieldPagePermissions();
-        $this->assertArrayHasKey('view', $chatPerms);
-        $this->assertArrayHasKey('createGroupChat', $chatPerms);
     }
 
     public function test_resources_declare_enhanced_permissions(): void

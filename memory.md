@@ -251,6 +251,14 @@
 - **Topbar Chat Drawer Overhaul**:
   - Replaced obstructive persistent bottom-right floating button with a top navigation icon button (`resources/views/filament/chat-topbar-button.blade.php`) featuring a real-time unread messages badge and Echo websocket listener.
   - Converted chat launcher into a full-height right-anchored slide-over drawer overlay (`resources/views/livewire/floating-chat-widget.blade.php`) with smooth backdrop blur.
-  - Redesigned chat action icons (Reply, Forward, Forwarded indicator) using clean Heroicons across both widget and full chat page (`resources/views/filament/pages/chat.blade.php`).
+  - Redesigned chat action icons (Reply, Forward, Forwarded indicator) using clean Heroicons across the chat widget.
+
+### 26. Retirement of Dedicated Chat Page (v2.8.3)
+- **Removed Dedicated Chat Page**: Removed `app/Filament/Pages/Chat.php` and its associated view `resources/views/filament/pages/chat.blade.php`.
+- **Sidebar Cleanup**: Removed "Chat" from the sidebar navigation menu, giving full focus to Dashboard and domain operational groups.
+- **Route & Notification Updates**: Retired route `/kamkaj/chat`. Database mentions and web push notifications now link directly to `/kamkaj` where the global drawer handles conversations.
+- **Drawer Links**: Removed obsolete full-screen page toggle links from inside the chat drawer.
+- **Unit Test Alignment**: Updated `tests/Unit/ShieldEnhancedPermissionsTest.php` to align with active Filament pages.
+
 
 
