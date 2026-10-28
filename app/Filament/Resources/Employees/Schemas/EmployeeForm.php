@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Employees\Schemas;
 
 use App\Filament\Components\ActionLogSection;
 use App\Helpers\NepaliDate\NepaliDate;
+use App\Models\Department;
 use App\Models\Designation;
 use Carbon\Carbon;
 use Filament\Actions\Action;
