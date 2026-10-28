@@ -183,7 +183,26 @@ class EmployeeForm
                                             ->afterStateUpdated(function (callable $set) {
                                                 $set('designation_id', null);
                                                 $set('tips_amount', null);
-                                            }),
+                                            })
+                                            ->suffixAction(
+                                                Action::make('copyDepartment')
+                                                    ->icon('heroicon-m-clipboard-document-list')
+                                                    ->color('gray')
+                                                    ->tooltip('Copy department')
+                                                    ->alpineClickHandler(function (mixed $state): string {
+                                                        $departmentName = Department::find($state)?->name;
+                                                        $jsDepartment = Js::from($departmentName);
+
+                                                        return <<<JS
+                                                            const currentVal =  (typeof state !== 'undefined' && state) ? state : {$jsDepartment};
+                                                            window.navigator.clipboard.writeText(currentVal);
+                                                            \$tooltip('Copied ' + currentVal, {
+                                                                theme: \$store.theme,
+                                                                timeout: 2000,
+                                                            });
+                                                            JS;
+                                                    })
+                                            ),
                                         Select::make('designation_id')
                                             ->relationship(
                                                 name: 'designation',
