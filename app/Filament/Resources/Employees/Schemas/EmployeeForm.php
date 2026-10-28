@@ -202,7 +202,8 @@ class EmployeeForm
                                                     ->color('gray')
                                                     ->tooltip('Copy designation')
                                                     ->alpineClickHandler(function (mixed $state): string {
-                                                        $jsDesignation = Js::from($state);
+                                                        $designationName = Designation::find($state)?->name;
+                                                        $jsDesignation = Js::from($designationName);
 
                                                         return <<<JS
                                                             const currentVal =  (typeof state !== 'undefined' && state) ? state : {$jsDesignation};
