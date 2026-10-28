@@ -196,6 +196,24 @@ class EmployeeForm
                                             ->searchable()
                                             ->preload()
                                             ->live()
+                                            ->suffixAction(
+                                                Action::make('copyDesignation')
+                                                    ->icon('heroicon-m-clipboard-document-list')
+                                                    ->color('gray')
+                                                    ->tooltip('Copy designation')
+                                                    ->alpineClickHandler(function (mixed $state): string {
+                                                        $jsDesignation = Js::from($state);
+
+                                                        return <<<JS
+                                                            const currentVal =  (typeof state !== 'undefined' && state) ? state : {$jsDesignation};
+                                                            window.navigator.clipboard.writeText(currentVal);
+                                                            \$tooltip('Copied ' + currentVal, {
+                                                                theme: \$store.theme,
+                                                                timeout: 2000,
+                                                            });
+                                                            JS;
+                                                    })
+                                            )
                                             ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                                 $defaultTips = 0.0;
                                                 if ($state) {
