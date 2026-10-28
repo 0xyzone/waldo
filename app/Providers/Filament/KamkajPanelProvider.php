@@ -277,6 +277,10 @@ class KamkajPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::BODY_END,
                 fn () => view('filament.mobile-sidebar-gestures')
+            )
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn () => view('filament.modal-click-outside')
             );
     }
 }

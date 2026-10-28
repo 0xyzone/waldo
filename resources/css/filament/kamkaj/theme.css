@@ -209,14 +209,15 @@ a,
 .fi-sidebar {
     background-color: var(--surface-card) !important;
     border-right: 1px solid var(--surface-border) !important;
-    transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+    transition: translate 350ms cubic-bezier(0.16, 1, 0.3, 1),
+                transform 350ms cubic-bezier(0.16, 1, 0.3, 1),
                 width 300ms cubic-bezier(0.16, 1, 0.3, 1),
                 max-width 300ms cubic-bezier(0.16, 1, 0.3, 1),
                 min-width 300ms cubic-bezier(0.16, 1, 0.3, 1),
-                box-shadow 320ms ease,
+                box-shadow 350ms ease,
                 background-color var(--duration-normal) ease,
                 border-color var(--duration-normal) ease !important;
-    will-change: transform, width;
+    will-change: translate, transform, width;
 }
 
 :is(.dark, :root.dark) .fi-sidebar {
@@ -227,19 +228,29 @@ a,
 /* Mobile Off-Canvas Drawer Slide Animations (< 1024px) */
 @media (max-width: 1023.98px) {
     .fi-sidebar {
-        transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
-                    box-shadow 320ms ease !important;
-        will-change: transform;
+        transition: translate 350ms cubic-bezier(0.16, 1, 0.3, 1),
+                    transform 350ms cubic-bezier(0.16, 1, 0.3, 1),
+                    box-shadow 350ms ease !important;
+        will-change: translate, transform;
     }
 
     .fi-sidebar.fi-sidebar-open {
+        translate: 0 0 !important;
+        transform: translateX(0) !important;
         box-shadow: 12px 0 40px -5px rgba(0, 0, 0, 0.35) !important;
+    }
+
+    .fi-sidebar:not(.fi-sidebar-open) {
+        translate: -100% 0 !important;
+        transform: translateX(-100%) !important;
+        box-shadow: none !important;
     }
 
     .fi-sidebar-close-overlay {
         backdrop-filter: blur(8px) !important;
         -webkit-backdrop-filter: blur(8px) !important;
         background-color: rgba(11, 15, 25, 0.55) !important;
+        cursor: pointer !important;
         transition: opacity 300ms ease, backdrop-filter 300ms ease !important;
     }
 }
@@ -607,8 +618,7 @@ select optgroup {
 }
 
 /* ==========================================================================
-   Slide-Over Modals & Drawers: Full-Height Edge-Anchored Across All Screens
-   Seamless slide-in animation from the screen edge (prevents popups on mobile)
+   Slide-Over & Centered Modals: Smooth Slide Animations & Click-Away Support
    ========================================================================== */
 
 /* Slide-over container: Fixed flex container anchored flush to viewport edges */
@@ -627,7 +637,8 @@ select optgroup {
     margin: 0 !important;
     border: none !important;
     overflow: hidden !important;
-    pointer-events: none !important;
+    pointer-events: auto !important;
+    cursor: pointer;
 }
 
 .fi-modal.fi-modal-slide-over.fi-modal-slide-over-from-start > .fi-modal-window-ctn {
@@ -637,6 +648,7 @@ select optgroup {
 /* Slide-over window: Full-height panel flush against the edge */
 .fi-modal.fi-modal-slide-over > .fi-modal-window-ctn > .fi-modal-window {
     pointer-events: auto !important;
+    cursor: default;
     position: relative !important;
     height: 100dvh !important;
     max-height: 100dvh !important;
@@ -655,7 +667,10 @@ select optgroup {
     align-self: stretch !important;
     background-color: var(--surface-card) !important;
     overflow: hidden !important;
-    transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), opacity 300ms ease !important;
+    transition: translate 350ms cubic-bezier(0.16, 1, 0.3, 1),
+                transform 350ms cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 300ms ease !important;
+    will-change: translate, transform;
 }
 
 :is(.dark, :root.dark) .fi-modal.fi-modal-slide-over > .fi-modal-window-ctn > .fi-modal-window {
@@ -708,23 +723,26 @@ select optgroup {
     border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
-/* Transition classes for smooth horizontal slide-over animations */
+/* Slide-over horizontal slide transitions */
 .fi-modal.fi-modal-slide-over.fi-modal-slide-over-from-end > .fi-modal-window-ctn > .fi-modal-window.fi-transition-enter-start,
 .fi-modal.fi-modal-slide-over.fi-modal-slide-over-from-end > .fi-modal-window-ctn > .fi-modal-window.fi-transition-leave-end {
+    translate: 100% 0 !important;
     transform: translateX(100%) !important;
 }
 
 .fi-modal.fi-modal-slide-over.fi-modal-slide-over-from-start > .fi-modal-window-ctn > .fi-modal-window.fi-transition-enter-start,
 .fi-modal.fi-modal-slide-over.fi-modal-slide-over-from-start > .fi-modal-window-ctn > .fi-modal-window.fi-transition-leave-end {
+    translate: -100% 0 !important;
     transform: translateX(-100%) !important;
 }
 
 .fi-modal.fi-modal-slide-over > .fi-modal-window-ctn > .fi-modal-window.fi-transition-enter-end,
 .fi-modal.fi-modal-slide-over > .fi-modal-window-ctn > .fi-modal-window.fi-transition-leave-start {
+    translate: 0 0 !important;
     transform: translateX(0) !important;
 }
 
-/* Desktop Only: Non-slide-over confirmation/alert modals remain centered */
+/* Centered modals (Desktop >= 640px): Smooth Vertical Sliding Animation */
 @media (min-width: 640px) {
     .fi-modal:not(.fi-modal-slide-over) > .fi-modal-window-ctn {
         display: grid !important;
@@ -734,6 +752,8 @@ select optgroup {
         min-height: 100dvh !important;
         padding: 1.5rem !important;
         overflow-y: auto !important;
+        pointer-events: auto !important;
+        cursor: pointer;
     }
 
     .fi-modal:not(.fi-modal-slide-over) > .fi-modal-window-ctn > .fi-modal-window {
@@ -745,10 +765,32 @@ select optgroup {
         border: 1px solid var(--surface-border) !important;
         border-radius: 1.5rem !important;
         box-shadow: var(--shadow-soft-lg) !important;
+        cursor: default;
+        pointer-events: auto !important;
+        transition: translate 340ms cubic-bezier(0.16, 1, 0.3, 1),
+                    transform 340ms cubic-bezier(0.16, 1, 0.3, 1),
+                    scale 340ms cubic-bezier(0.16, 1, 0.3, 1),
+                    opacity 280ms ease !important;
+        will-change: translate, transform, opacity, scale;
+    }
+
+    /* Centered modal sliding enter & leave animations */
+    .fi-modal:not(.fi-modal-slide-over) > .fi-modal-window-ctn > .fi-modal-window.fi-transition-enter-start,
+    .fi-modal:not(.fi-modal-slide-over) > .fi-modal-window-ctn > .fi-modal-window.fi-transition-leave-end {
+        translate: 0 45px !important;
+        transform: translateY(45px) scale(0.96) !important;
+        opacity: 0 !important;
+    }
+
+    .fi-modal:not(.fi-modal-slide-over) > .fi-modal-window-ctn > .fi-modal-window.fi-transition-enter-end,
+    .fi-modal:not(.fi-modal-slide-over) > .fi-modal-window-ctn > .fi-modal-window.fi-transition-leave-start {
+        translate: 0 0 !important;
+        transform: translateY(0) scale(1) !important;
+        opacity: 1 !important;
     }
 }
 
-/* Mobile Screens (< 640px): ALL modals slide over from the right edge */
+/* Mobile Screens (< 640px): ALL modals slide over smoothly from the right edge */
 @media (max-width: 639.98px) {
     .fi-modal > .fi-modal-window-ctn {
         display: flex !important;
@@ -765,11 +807,13 @@ select optgroup {
         margin: 0 !important;
         border: none !important;
         overflow: hidden !important;
-        pointer-events: none !important;
+        pointer-events: auto !important;
+        cursor: pointer;
     }
 
     .fi-modal > .fi-modal-window-ctn > .fi-modal-window {
         pointer-events: auto !important;
+        cursor: default;
         position: relative !important;
         width: 100vw !important;
         max-width: 100vw !important;
@@ -788,17 +832,22 @@ select optgroup {
         align-self: stretch !important;
         background-color: var(--surface-card) !important;
         overflow: hidden !important;
-        transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), opacity 300ms ease !important;
+        transition: translate 340ms cubic-bezier(0.16, 1, 0.3, 1),
+                    transform 340ms cubic-bezier(0.16, 1, 0.3, 1),
+                    opacity 300ms ease !important;
+        will-change: translate, transform;
     }
 
     .fi-modal:not(.fi-modal-slide-over) > .fi-modal-window-ctn > .fi-modal-window.fi-transition-enter-start,
     .fi-modal:not(.fi-modal-slide-over) > .fi-modal-window-ctn > .fi-modal-window.fi-transition-leave-end {
+        translate: 100% 0 !important;
         transform: translateX(100%) !important;
-        opacity: 0.8 !important;
+        opacity: 0.7 !important;
     }
 
     .fi-modal:not(.fi-modal-slide-over) > .fi-modal-window-ctn > .fi-modal-window.fi-transition-enter-end,
     .fi-modal:not(.fi-modal-slide-over) > .fi-modal-window-ctn > .fi-modal-window.fi-transition-leave-start {
+        translate: 0 0 !important;
         transform: translateX(0) !important;
         opacity: 1 !important;
     }
@@ -808,6 +857,8 @@ select optgroup {
     backdrop-filter: blur(12px) !important;
     -webkit-backdrop-filter: blur(12px) !important;
     background-color: rgba(11, 15, 25, 0.65) !important;
+    cursor: pointer !important;
+    transition: opacity 300ms ease !important;
 }
 
 /* ==========================================================================

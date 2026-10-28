@@ -260,5 +260,19 @@
 - **Drawer Links**: Removed obsolete full-screen page toggle links from inside the chat drawer.
 - **Unit Test Alignment**: Updated `tests/Unit/ShieldEnhancedPermissionsTest.php` to align with active Filament pages.
 
+### 27. Sidebar Close Slide Animation, Modal Slide & Click-Outside, and Chat Close Fix (v2.8.4)
+- **Sidebar Closing Slide Animation (`resources/css/filament/kamkaj/theme.css`)**:
+  - Tailwind CSS v4 compiles `-translate-x-full` and `translate-x-0` into CSS `translate: -100% 0` and `translate: 0 0`.
+  - Added dual CSS transitions on `.fi-sidebar`: `transition: translate 350ms cubic-bezier(0.16, 1, 0.3, 1), transform 350ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 350ms ease !important; will-change: translate, transform;`.
+  - Explicitly styled `.fi-sidebar:not(.fi-sidebar-open)` with both `translate: -100% 0 !important; transform: translateX(-100%) !important;` so mobile drawer closes with the identical smooth slide as it opens.
+- **Modal Slide Animations & Click-Outside Handling**:
+  - Restored pointer events on `.fi-modal-window-ctn` (`pointer-events: auto !important; cursor: pointer;`) with child `.fi-modal-window` set to `pointer-events: auto !important; cursor: default;`.
+  - Added delegated backdrop listener in `resources/views/filament/modal-click-outside.blade.php` (registered via `PanelsRenderHook::BODY_END` in `KamkajPanelProvider.php`) ensuring clicks anywhere outside the dialog window close the active modal via Alpine `$data(modal).close()`.
+  - Added cubic-bezier slide transitions to all modals: centered modals slide up into place and slide down on close, and slide-over drawers smoothly slide to and from the right edge.
+- **Chat Drawer Close Button Fix (`app/Livewire/FloatingChatWidget.php`)**:
+  - Implemented explicit `closeWidget(): void` method setting `$this->isOpen = false` without inverting state.
+  - Bound close button, backdrop, and Escape listener directly to `closeWidget()`, resolving the `@entangle('isOpen')` vs `wire:click="toggleWidget"` race condition that previously caused the drawer to toggle back open.
+
+
 
 

@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.8.3';
+    public const CURRENT_VERSION = '2.8.4';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,21 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.8.4',
+                'date' => '2026-10-28',
+                'title' => 'Sidebar Close Slide Animation, Modal Slide & Click-Outside, and Chat Close Fix',
+                'type' => 'micro',
+                'badge' => 'UI & Animations',
+                'badge_color' => 'success',
+                'description' => 'Added smooth sliding exit animations when closing the sidebar and modals, enabled instant click-outside-to-close behavior across all modals, and resolved a race condition with the chat drawer close button.',
+                'highlights' => [
+                    'Smooth Sidebar Closing Slide Animation: Enhanced `.fi-sidebar` CSS with both `translate` and `transform` transitions matching Tailwind CSS v4 output, ensuring the sidebar slides out to the left gracefully rather than snapping shut.',
+                    'Modal Sliding Animations: Added cubic-bezier slide transitions to all modal dialogs (sliding up smoothly into place and sliding down on close, with slide-overs entering and exiting from the right edge).',
+                    'Modal Click-Outside Close: Restored container pointer events on `.fi-modal-window-ctn` and added delegated backdrop click handlers so clicking anywhere outside an active modal dialog immediately closes it.',
+                    'Chat Drawer Close Button Fix: Implemented an explicit `closeWidget()` action on FloatingChatWidget to eliminate the Livewire @entangle vs wire:click toggle race condition, making the close button and overlay 100% reliable.',
+                ],
+            ],
             [
                 'version' => '2.8.3',
                 'date' => '2026-10-28',

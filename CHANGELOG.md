@@ -4,6 +4,17 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.4] - 2026-10-28
+
+### Added & Fixed
+- **Sidebar Closing Slide Animation, Modal Slide & Click-Outside, and Chat Close Button**:
+  - **Sidebar Close Slide Animation**: Configured dual `translate` and `transform` CSS transitions on `.fi-sidebar` using `cubic-bezier(0.16, 1, 0.3, 1)` matching Tailwind CSS v4's property output, ensuring the sidebar slides out to the left smoothly when closed rather than snapping shut abruptly.
+  - **Modal Slide-In & Slide-Out Animations**: Implemented cubic-bezier slide transitions across all modal dialogs. Standard dialogs slide up into the viewport on open and down on close, while slide-over drawers smoothly translate from and to the screen edge.
+  - **Modal Click-Outside Close**: Restored pointer events on `.fi-modal-window-ctn` (`pointer-events: auto !important`) and installed a delegated backdrop click-outside handler (`resources/views/filament/modal-click-outside.blade.php`), ensuring clicks anywhere outside the dialog window immediately and smoothly close the modal.
+  - **Chat Drawer Close Button Fix**: Added an explicit `closeWidget(): void` method in `FloatingChatWidget.php` and bound it directly to the drawer close button, backdrop, and Escape listener, fixing the Livewire `@entangle` vs `wire:click="toggleWidget"` state inversion race condition.
+
+---
+
 ## [2.8.3] - 2026-10-28
 
 ### Removed & Cleaned

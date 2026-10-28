@@ -133,6 +133,12 @@ class FloatingChatWidget extends Component
         $this->dispatch('chat-unread-updated', count: auth()->user()?->unreadMessagesCount() ?? 0);
     }
 
+    public function closeWidget(): void
+    {
+        $this->isOpen = false;
+        $this->dispatch('chat-unread-updated', count: auth()->user()?->unreadMessagesCount() ?? 0);
+    }
+
     public function selectConversation(int $id): void
     {
         $conversation = Conversation::with(['users', 'participants'])->find($id);

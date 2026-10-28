@@ -66,6 +66,7 @@
 
         function cleanupStyles() {
             if (sidebarEl) {
+                sidebarEl.style.translate = '';
                 sidebarEl.style.transform = '';
                 sidebarEl.style.transition = '';
                 sidebarEl.style.pointerEvents = '';
@@ -210,48 +211,52 @@
             if (gestureDirection === 'open') {
                 const shouldOpen = deltaX > (sidebarWidth * 0.3) || (velocity > VELOCITY_THRESHOLD && deltaX > 25);
 
-                sidebarEl.style.transition = 'transform 280ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 280ms ease';
-                if (overlayEl) overlayEl.style.transition = 'opacity 280ms ease';
+                sidebarEl.style.transition = 'translate 300ms cubic-bezier(0.16, 1, 0.3, 1), transform 300ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 300ms ease';
+                if (overlayEl) overlayEl.style.transition = 'opacity 300ms ease';
 
                 if (shouldOpen) {
+                    sidebarEl.style.translate = '0 0';
                     sidebarEl.style.transform = 'translateX(0)';
                     if (overlayEl) overlayEl.style.opacity = '0.6';
 
                     setTimeout(function () {
                         if (store) store.open();
                         cleanupStyles();
-                    }, 280);
+                    }, 300);
                 } else {
+                    sidebarEl.style.translate = '-100% 0';
                     sidebarEl.style.transform = 'translateX(-100%)';
                     if (overlayEl) overlayEl.style.opacity = '0';
 
                     setTimeout(function () {
                         if (store) store.close();
                         cleanupStyles();
-                    }, 280);
+                    }, 300);
                 }
             } else if (gestureDirection === 'close') {
                 const shouldClose = deltaX < -(sidebarWidth * 0.25) || (velocity < -VELOCITY_THRESHOLD && deltaX < -25);
 
-                sidebarEl.style.transition = 'transform 260ms cubic-bezier(0.16, 1, 0.3, 1)';
-                if (overlayEl) overlayEl.style.transition = 'opacity 260ms ease';
+                sidebarEl.style.transition = 'translate 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1)';
+                if (overlayEl) overlayEl.style.transition = 'opacity 280ms ease';
 
                 if (shouldClose) {
+                    sidebarEl.style.translate = '-100% 0';
                     sidebarEl.style.transform = 'translateX(-100%)';
                     if (overlayEl) overlayEl.style.opacity = '0';
 
                     setTimeout(function () {
                         if (store) store.close();
                         cleanupStyles();
-                    }, 260);
+                    }, 280);
                 } else {
+                    sidebarEl.style.translate = '0 0';
                     sidebarEl.style.transform = 'translateX(0)';
                     if (overlayEl) overlayEl.style.opacity = '0.6';
 
                     setTimeout(function () {
                         if (store) store.open();
                         cleanupStyles();
-                    }, 260);
+                    }, 280);
                 }
             } else {
                 cleanupStyles();

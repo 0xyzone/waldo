@@ -650,7 +650,7 @@
         x-cloak
         class="fixed inset-0 z-50 overflow-hidden"
         style="display: none;"
-        @keydown.escape.window="isOpen = false"
+        @keydown.escape.window="if (isOpen) { isOpen = false; $wire.closeWidget(); }"
     >
         <!-- Backdrop Overlay -->
             <div
@@ -661,7 +661,7 @@
                 x-transition:leave="ease-in duration-200"
                 x-transition:leave-start="opacity-100"
                 x-transition:leave-end="opacity-0"
-                @click="isOpen = false"
+                @click="isOpen = false; $wire.closeWidget()"
                 class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity"
             ></div>
 
@@ -669,10 +669,10 @@
             <div class="fixed inset-y-0 right-0 flex max-w-full pl-6 sm:pl-10 pointer-events-none">
                 <div
                     x-show="isOpen"
-                    x-transition:enter="transform transition ease-out duration-300"
+                    x-transition:enter="transition-all ease-out duration-300"
                     x-transition:enter-start="translate-x-full"
                     x-transition:enter-end="translate-x-0"
-                    x-transition:leave="transform transition ease-in duration-200"
+                    x-transition:leave="transition-all ease-in duration-200"
                     x-transition:leave-start="translate-x-0"
                     x-transition:leave-end="translate-x-full"
                     class="pointer-events-auto flex h-full w-screen max-w-md sm:max-w-lg flex-col overflow-hidden border-l border-gray-200/90 bg-white shadow-2xl backdrop-blur-xl dark:border-gray-800 dark:bg-gray-900"
@@ -832,8 +832,8 @@
                 <!-- Close Button -->
                 <button
                     type="button"
-                    @click="isOpen = false"
-                    wire:click="toggleWidget"
+                    @click="isOpen = false; $wire.closeWidget()"
+                    wire:click="closeWidget"
                     class="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-200 cursor-pointer"
                     title="Close drawer (Esc)"
                 >
