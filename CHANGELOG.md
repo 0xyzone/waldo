@@ -4,6 +4,18 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.1] - 2026-10-28
+
+### Fixed & Enhanced
+- **Employee SSID/SSF Directory Dark Theme & Dropdown UI Overhaul**:
+  - **High-Contrast Input Contrast**: Resolved color mismatch in dark mode where typed query text in the search bar blended invisibly into the dark container background.
+  - **Padding Collision Fix**: Fixed search input icon padding overlap to prevent the magnifying glass from encroaching on placeholders and query text.
+  - **Modern Custom Dropdown Chevrons**: Replaced clunky native OS select dropdowns with custom chevron-down indicators, sleek borders, and styled option popups.
+  - **Modal Dark Theme Integration**: Enhanced export modal inputs, filters, and scrollable employee selector.
+  - **Interactive Copy Notifications**: Implemented floating copy toast alert with green check badge when copying employee SSIDs.
+
+---
+
 ## [2.8.0] - 2026-10-28
 
 ### Added

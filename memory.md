@@ -227,3 +227,13 @@
 - **Dedicated Central Resource**: `App\Filament\Resources\ActionLogs\ActionLogResource`
   - Located under *System Settings* (Sort: 15).
   - Displays audit trail across every resource in the entire system with search, resource filtering, action type filtering, date range filtering, and a slideover modal inspector with colored attribute diff tables.
+
+### 24. Employee SSID/SSF Public Directory UI Overhaul (v2.8.1)
+- **View**: `resources/views/employees/ssid-list.blade.php` (Route: `/employee-ssids`)
+- **Fixes & Enhancements**:
+  - **Dark Mode Color Mismatch**: Added explicit `class="dark"` and `style="color-scheme: dark;"` to `<html>` and introduced `.directory-input` and `.directory-select` CSS tokens to prevent dark text (`#0f172a`) from rendering on dark inputs.
+  - **Padding Collision Elimination**: Corrected search input padding (`padding-left: 2.75rem !important`) so the magnifying glass icon never overlaps placeholder or typed text.
+  - **Modern Custom Dropdowns**: Restyled Department and Status `<select>` elements with sleek borders, custom chevron down SVG indicators, and dark-themed `<option>` popup backgrounds (`#0f172a`).
+  - **Export Modal Improvements**: Unified export filter inputs and multiselect employee list with dark theme tokens and custom scrollbars.
+  - **Interactive Copy Notification**: Connected `#copy-toast` floating glassmorphism banner with emerald check icon confirming copied SSID values.
+

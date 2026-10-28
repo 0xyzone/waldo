@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.8.0';
+    public const CURRENT_VERSION = '2.8.1';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,22 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.8.1',
+                'date' => '2026-10-28',
+                'title' => 'Employee SSID/SSF Directory Dark Theme & Dropdown UI Overhaul',
+                'type' => 'micro',
+                'badge' => 'UI Enhancement',
+                'badge_color' => 'warning',
+                'description' => 'Fixed dark mode text contrast issues in search inputs and redesigned select dropdowns with custom chevron arrows and interactive copy notifications.',
+                'highlights' => [
+                    'Resolved input color mismatch in dark theme where typed text blended into dark background.',
+                    'Fixed padding collision where search icon overlapped placeholder and query text.',
+                    'Overhauled department and status dropdowns with custom chevron indicators and styled option popups.',
+                    'Enhanced export modal inputs and scrollable employee selector.',
+                    'Added floating copy toast confirmation when copying employee SSIDs.',
+                ],
+            ],
             [
                 'version' => '2.8.0',
                 'date' => '2026-10-28',

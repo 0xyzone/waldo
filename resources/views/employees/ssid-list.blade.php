@@ -279,7 +279,7 @@
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="md:col-span-2">
+                    <div class="">
                         <button type="submit"
                             class="w-full py-2.5 sm:py-3 px-4 bg-gradient-to-r from-orange-500 via-orange-600 to-red-600 hover:from-orange-600 hover:to-red-700 active:scale-[0.98] text-white text-sm font-semibold rounded-xl transition shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2 cursor-pointer border border-orange-400/30">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
