@@ -50,8 +50,8 @@ class ListEmployees extends ListRecords
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('onboarded', 'no')->where('employee_status', 'Active'))
                 ->badge(Employee::where('onboarded', 'no')->where('employee_status', 'Active')->count()),
             'no_ssf' => Tab::make('No SSF')
-                ->modifyQueryUsing(fn (Builder $query) => $query->where('employee_status', 'Active')->where(fn (Builder $q) => $q->where('ssfid', '')->orWhereNull('ssfid')))
-                ->badge(Employee::where('employee_status', 'Active')->where(fn (Builder $q) => $q->where('ssfid', '')->orWhereNull('ssfid'))->count()),
+                ->modifyQueryUsing(fn (Builder $query) => $query->where('employee_status', 'Active')->where(fn (Builder $q) => $q->where('ssid', '')->orWhereNull('ssid')))
+                ->badge(Employee::where('employee_status', 'Active')->where(fn (Builder $q) => $q->where('ssid', '')->orWhereNull('ssid'))->count()),
         ];
     }
 
