@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 use App\Filament\Pages\ChangeInitialPassword;
+use App\Filament\Pages\Chat;
 use BezhanSalleh\FilamentShield\Resources\Roles\RoleResource;
 use Filament\Pages\Dashboard;
 use Filament\Widgets\AccountWidget;
@@ -200,6 +201,7 @@ return [
         'exclude' => [
             Dashboard::class,
             ChangeInitialPassword::class,
+            Chat::class,
         ],
     ],
 

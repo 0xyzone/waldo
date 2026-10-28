@@ -273,6 +273,15 @@
   - Implemented explicit `closeWidget(): void` method setting `$this->isOpen = false` without inverting state.
   - Bound close button, backdrop, and Escape listener directly to `closeWidget()`, resolving the `@entangle('isOpen')` vs `wire:click="toggleWidget"` race condition that previously caused the drawer to toggle back open.
 
+### 28. Navigation Crash Guard for Remote Filament Component Caches (v2.8.5)
+- **Problem**: When a Filament page class (such as `App\Filament\Pages\Chat`) is deleted, remote or production environments running `php artisan filament:cache-components` continue to reference the class in `bootstrap/cache/filament/panels/kamkaj.php`. When `NavigationManager::mountNavigation()` iterates through cached pages, PHP throws a fatal error: `Class "App\Filament\Pages\Chat" not found` on every request.
+- **Solution**:
+  - Created a backward-compatible stub `App\Filament\Pages\Chat` extending `Filament\Pages\Page`.
+  - Configured `shouldRegisterNavigation(): bool => false` so it registers no sidebar or navigation items.
+  - Added redirect to `/kamkaj` on `mount()`.
+  - Excluded `Chat::class` in `config/filament-shield.php` to prevent permission bloat.
+
+
 
 
 

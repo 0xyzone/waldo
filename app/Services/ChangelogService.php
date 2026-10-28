@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.8.4';
+    public const CURRENT_VERSION = '2.8.5';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,19 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.8.5',
+                'date' => '2026-10-28',
+                'title' => 'Resilient Chat Page Navigation Stub for Remote Component Caches',
+                'type' => 'micro',
+                'badge' => 'Stability & Cache Fix',
+                'badge_color' => 'danger',
+                'description' => 'Restored a lightweight App\Filament\Pages\Chat stub with navigation registration disabled to prevent fatal 500 errors when deployed environments have stale cached panel components.',
+                'highlights' => [
+                    'Navigation Crash Guard: Provided an App\Filament\Pages\Chat stub that keeps shouldRegisterNavigation() as false and redirects to /kamkaj, eliminating Class "App\Filament\Pages\Chat" not found exceptions caused by stale filament:cache-components.',
+                    'Shield Permission Exclusion: Registered Chat::class in config/filament-shield.php exclude array to prevent unnecessary permission generation.',
+                ],
+            ],
             [
                 'version' => '2.8.4',
                 'date' => '2026-10-28',

@@ -4,6 +4,16 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.5] - 2026-10-28
+
+### Fixed & Stability
+- **Navigation Crash Guard for Remote Filament Component Caches**:
+  - Restored a lightweight `App\Filament\Pages\Chat` stub with `shouldRegisterNavigation(): bool => false` and a redirect to `/kamkaj`.
+  - Resolves fatal `Class "App\Filament\Pages\Chat" not found` errors triggered on remote environments (such as staging/production) where `php artisan filament:cache-components` had cached page classes from before the page was removed.
+  - Excluded `Chat::class` in `config/filament-shield.php` to prevent redundant role permission generation.
+
+---
+
 ## [2.8.4] - 2026-10-28
 
 ### Added & Fixed
