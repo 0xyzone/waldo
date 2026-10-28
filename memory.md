@@ -297,6 +297,14 @@
   - **Real-Time Live Dragging**: Added `.fi-sidebar-dragging` to remove CSS transitions while moving and used `.style.setProperty('translate', ..., 'important')` to override stylesheet rules, providing smooth 1:1 finger tracking.
   - **W3C Pointer Events**: Upgraded gesture listeners to Pointer Events API with touch fallback for universal cross-device responsiveness.
 
+### 31. Human-Readable Entity Resolution for Action Log Foreign Key Values (v2.8.8)
+- **Problem**: Modifying foreign key fields (e.g. `designation_id` from 44 to 33) displayed raw numeric IDs in action logs, forcing users to guess which department, designation, employee, or user was affected.
+- **Solution**:
+  - **`App\Services\ActionLogValueResolver`**: Service mapping `designation_id`, `department_id`, `employee_id`, `user_id`, `candidate_id`, `letter_template_id`, and generic BelongsTo relationships to their human-readable names with per-request in-memory lookup caching.
+  - **Enhanced Diff Table (`action-log-changes-table.blade.php`)**: Displays resolved entity names (e.g. "GRA → Driver") with subtle `#ID` badges, and strips trailing `_id` from field column labels (e.g. "Designation" instead of "Designation Id").
+  - **Descriptive Action Summaries**: `HasActionLogs` updating event generates human-readable entity change summaries (e.g. "Updated: Designation (GRA → Driver)") rather than raw attribute keys.
+
+
 
 
 

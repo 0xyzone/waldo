@@ -49,17 +49,39 @@
                         $isDiffArray = is_array($val) && (array_key_exists('old', $val) || array_key_exists('new', $val));
                         $old = $isDiffArray ? ($val['old'] ?? null) : null;
                         $new = $isDiffArray ? ($val['new'] ?? null) : $val;
-                        $fieldName = \Illuminate\Support\Str::headline(str_replace('_', ' ', (string) $field));
+
+                        $fieldName = \App\Services\ActionLogValueResolver::formatFieldLabel((string) $field);
+                        $actionableType = $record?->actionable_type;
+
+                        $oldResolved = \App\Services\ActionLogValueResolver::resolve((string) $field, $old, $actionableType);
+                        $newResolved = \App\Services\ActionLogValueResolver::resolve((string) $field, $new, $actionableType);
                     @endphp
                     <tr class="hover:bg-gray-50/70 dark:hover:bg-gray-800/40 transition-colors">
                         <td class="px-3.5 py-2.5 font-medium text-gray-800 dark:text-gray-200 align-top">
-                            {{ $fieldName }}
+                            <span class="font-semibold">{{ $fieldName }}</span>
+                            @if (str_ends_with(strtolower((string) $field), '_id'))
+                                <span class="block text-[10px] text-gray-400 dark:text-gray-500 font-mono">{{ $field }}</span>
+                            @endif
                         </td>
                         <td class="px-3.5 py-2.5 text-rose-600 dark:text-rose-400 bg-rose-50/40 dark:bg-rose-950/20 align-top">
-                            {!! $formatVal($old) !!}
+                            @if ($oldResolved['is_resolved'])
+                                <div class="flex flex-col gap-0.5">
+                                    <span class="font-medium text-gray-900 dark:text-gray-100 font-sans">{{ $oldResolved['label'] }}</span>
+                                    <span class="text-[10px] text-rose-500/80 font-mono tracking-tight">ID: #{{ $oldResolved['original'] }}</span>
+                                </div>
+                            @else
+                                {!! $formatVal($old) !!}
+                            @endif
                         </td>
                         <td class="px-3.5 py-2.5 text-emerald-600 dark:text-emerald-400 bg-emerald-50/40 dark:bg-emerald-950/20 font-semibold align-top">
-                            {!! $formatVal($new) !!}
+                            @if ($newResolved['is_resolved'])
+                                <div class="flex flex-col gap-0.5">
+                                    <span class="font-semibold text-emerald-600 dark:text-emerald-400 font-sans">{{ $newResolved['label'] }}</span>
+                                    <span class="text-[10px] text-emerald-600/70 dark:text-emerald-400/70 font-mono tracking-tight">ID: #{{ $newResolved['original'] }}</span>
+                                </div>
+                            @else
+                                {!! $formatVal($new) !!}
+                            @endif
                         </td>
                     </tr>
                 @endforeach

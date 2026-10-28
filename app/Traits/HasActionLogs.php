@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Models\ActionLog;
+use App\Services\ActionLogValueResolver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Auth;
@@ -105,12 +106,23 @@ trait HasActionLogs
                 $actionDescription = "Status updated from '{$fromStatus}' to '{$toStatus}'";
                 $otherChanged = array_diff(array_keys($changes), ['status']);
                 if (! empty($otherChanged)) {
-                    $otherNames = implode(', ', array_map(fn ($k) => str_replace('_', ' ', $k), $otherChanged));
+                    $otherNames = implode(', ', array_map(fn ($k) => ActionLogValueResolver::formatFieldLabel($k), $otherChanged));
                     $actionDescription .= ' (also updated: '.Str::limit($otherNames, 100).')';
                 }
             } else {
-                $changedNames = implode(', ', array_map(fn ($k) => str_replace('_', ' ', $k), array_keys($changes)));
-                $actionDescription = 'Updated: '.Str::limit($changedNames, 150);
+                $summaries = [];
+                foreach ($changes as $key => $diff) {
+                    $fieldLabel = ActionLogValueResolver::formatFieldLabel($key);
+                    $oldRes = ActionLogValueResolver::resolve($key, $diff['old'], $model->getMorphClass());
+                    $newRes = ActionLogValueResolver::resolve($key, $diff['new'], $model->getMorphClass());
+
+                    if ($oldRes['is_resolved'] && $newRes['is_resolved'] && $oldRes['label'] !== $newRes['label']) {
+                        $summaries[] = "{$fieldLabel} ({$oldRes['label']} → {$newRes['label']})";
+                    } else {
+                        $summaries[] = $fieldLabel;
+                    }
+                }
+                $actionDescription = 'Updated: '.Str::limit(implode(', ', $summaries), 150);
             }
 
             ActionLog::create([

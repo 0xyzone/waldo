@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.8.7';
+    public const CURRENT_VERSION = '2.8.8';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,21 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.8.8',
+                'date' => '2026-10-28',
+                'title' => 'Human-Readable Entity Resolution for Action Log Foreign Key Values',
+                'type' => 'micro',
+                'badge' => 'Audit & UX',
+                'badge_color' => 'success',
+                'description' => 'Resolved raw foreign key IDs in Action Log diffs (such as designation_id, department_id, employee_id, user_id) to their human-readable names with subtle ID labels.',
+                'highlights' => [
+                    'Entity Resolution Service: Created ActionLogValueResolver to map foreign keys (designation_id, department_id, employee_id, user_id, etc.) to human-readable names with per-request memoized lookups.',
+                    'Clear Before & After Presentation: Action log diff tables now display real names (e.g. "GRA (#44) → Driver (#33)") rather than ambiguous raw integer IDs.',
+                    'Clean Field Column Labels: Database column suffixes like "_id" are cleaned into clean labels (e.g. "Designation", "Department") while preserving the technical column identifier below.',
+                    'Action Description Summary Enhancement: Action logs created during model updates now summarize meaningful entity changes (e.g. "Updated: Designation (GRA → Driver)") instead of raw column strings.',
+                ],
+            ],
             [
                 'version' => '2.8.7',
                 'date' => '2026-10-28',

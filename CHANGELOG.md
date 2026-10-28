@@ -4,6 +4,17 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.8] - 2026-10-28
+
+### Added & Enhanced
+- **Human-Readable Entity Resolution for Action Log Foreign Key Values**:
+  - **Entity Name Resolution**: Built `App\Services\ActionLogValueResolver` to resolve foreign key IDs (such as `designation_id`, `department_id`, `employee_id`, `user_id`, `candidate_id`, `letter_template_id`) to their actual human-readable names (e.g. "Senior Barista", "Food & Beverage", "Sunil Thakur") with per-request in-memory lookup caching.
+  - **Action Log Diffs Presentation**: Updated `action-log-changes-table.blade.php` to display resolved entity names in clear font with the numeric `#ID` attached as a subtle subtext label, providing instant clarity on exactly what was changed.
+  - **Clean Field Labels**: Cleaned column names by removing trailing `_id` (e.g. displaying "Designation" instead of "Designation Id") while keeping the raw database field identifier in mono subtext.
+  - **Descriptive Action Summaries**: Updated `HasActionLogs` updating event to format human-readable summaries (e.g. "Updated: Designation (GRA → Driver)") rather than raw attribute keys.
+
+---
+
 ## [2.8.7] - 2026-10-28
 
 ### Added & Enhanced
