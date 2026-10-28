@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.8.8';
+    public const CURRENT_VERSION = '2.8.9';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,21 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.8.9',
+                'date' => '2026-10-28',
+                'title' => 'Fix Mobile Screen Touch Blocking by Sidebar Backdrop Overlay',
+                'type' => 'micro',
+                'badge' => 'Bug Fix',
+                'badge_color' => 'success',
+                'description' => 'Eliminated the stuck translucent black overlay on mobile screens by strictly gating sidebar swipe gestures to the extreme edge, preventing accidental micro-drags during regular taps, and enforcing strict CSS and Alpine synchronization for .fi-sidebar-close-overlay.',
+                'highlights' => [
+                    'Strict Overlay Isolation: Added CSS rules guaranteeing .fi-sidebar-close-overlay is forced to display: none !important and pointer-events: none !important whenever the sidebar is not open or actively dragging.',
+                    'Alpine Store Synchronization: Added real-time reactive Alpine effect watcher that synchronizes overlay visibility with $store.sidebar.isOpen across all page navigations, viewport resizes, and component life-cycles.',
+                    'Swipe Activation Precision: Restricted open gesture triggering strictly to within 25px of the viewport edge (or the edge pull handle) and raised the horizontal threshold to 14px with dominant directional checks, preventing taps anywhere on the screen from triggering drags.',
+                    'Restored Complete Mobile Interactivity: Users can now tap cards, links, tables, and buttons freely across the entire mobile screen without triggering backdrops.',
+                ],
+            ],
             [
                 'version' => '2.8.8',
                 'date' => '2026-10-28',

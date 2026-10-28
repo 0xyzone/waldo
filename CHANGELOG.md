@@ -4,6 +4,17 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.9] - 2026-10-28
+
+### Fixed & Enhanced
+- **Fix Mobile Screen Touch Blocking by Sidebar Backdrop Overlay**:
+  - **Strict Backdrop Isolation**: Added CSS rules guaranteeing `.fi-sidebar-close-overlay` is strictly hidden (`display: none !important; pointer-events: none !important; opacity: 0 !important; visibility: hidden !important`) whenever the sidebar is not open or actively dragging.
+  - **Alpine Store Synchronization**: Added real-time reactive Alpine effect watcher that synchronizes overlay visibility with `$store.sidebar.isOpen` across all page navigations, viewport resizes, and component life-cycles.
+  - **Swipe Activation Precision**: Restricted open gesture triggering strictly to within 25px of the viewport edge (or the edge pull handle `#mobile-edge-handle`) and raised the horizontal threshold to 14px with dominant directional checks, preventing taps anywhere on the screen from triggering drags.
+  - **Restored Complete Mobile Interactivity**: Users can now tap cards, links, tables, and buttons freely across the entire mobile screen without triggering backdrops.
+
+---
+
 ## [2.8.8] - 2026-10-28
 
 ### Added & Enhanced

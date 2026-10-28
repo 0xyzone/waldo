@@ -257,6 +257,17 @@ a,
         cursor: pointer !important;
         transition: opacity 300ms ease, backdrop-filter 300ms ease !important;
     }
+
+    /* Prevent overlay from intercepting touches or showing when sidebar is closed or dragging is not active */
+    .fi-sidebar-close-overlay[style*="display: none"],
+    .fi-sidebar-close-overlay[style*="opacity: 0"],
+    .fi-sidebar-close-overlay[style*="pointer-events: none"],
+    .fi-layout:not(:has(.fi-sidebar.fi-sidebar-open)):not(:has(.fi-sidebar.fi-sidebar-dragging)) .fi-sidebar-close-overlay {
+        display: none !important;
+        pointer-events: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
 }
 
 /* Sidebar Group Label: Refined Minimal Micro-Typography */

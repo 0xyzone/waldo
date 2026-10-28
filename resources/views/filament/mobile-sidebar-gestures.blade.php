@@ -13,14 +13,14 @@
 
 <script>
     (function () {
+        // Strict edge zone: within 25px of the left screen edge, or touching the handle
         function getEdgeThreshold() {
-            // Generous edge zone: up to 80px or 25% of viewport width
-            return Math.min(80, Math.floor(window.innerWidth * 0.25));
+            return 25;
         }
 
-        const SWIPE_MIN_TRIGGER = 5;      // Min horizontal distance (px) before locking into drag
-        const VELOCITY_THRESHOLD = 0.18;  // Low flick velocity threshold (px/ms)
-        const OPEN_DISTANCE_MIN = 35;     // Just 35px drag needed to trigger open
+        const SWIPE_MIN_TRIGGER = 14;     // Min horizontal distance (px) before locking into drag (prevents taps from dragging)
+        const VELOCITY_THRESHOLD = 0.22;  // Low flick velocity threshold (px/ms)
+        const OPEN_DISTANCE_MIN = 40;     // Min drag needed to trigger open
 
         let startX = 0;
         let startY = 0;
@@ -53,9 +53,8 @@
 
         function isInteractiveElement(target) {
             if (!target) return false;
-            // Only exclude form inputs so touches over tables, cards, and page content initiate smoothly
             return !!target.closest(
-                'input, textarea, select, [contenteditable="true"], .table-editor-cell, [data-no-gesture]'
+                'input, textarea, select, button, a, [role="button"], [contenteditable="true"], .table-editor-cell, [data-no-gesture]'
             );
         }
 
@@ -68,6 +67,28 @@
             }
         }
 
+        function syncOverlayState() {
+            if (!overlayEl) {
+                overlayEl = document.querySelector('.fi-sidebar-close-overlay');
+            }
+            if (!overlayEl || window.innerWidth >= 1024) return;
+
+            const store = getSidebarStore();
+            const isOpen = store ? !!store.isOpen : (sidebarEl && sidebarEl.classList.contains('fi-sidebar-open'));
+
+            if (!isOpen) {
+                overlayEl.style.setProperty('display', 'none', 'important');
+                overlayEl.style.setProperty('opacity', '0', 'important');
+                overlayEl.style.setProperty('pointer-events', 'none', 'important');
+                overlayEl.style.setProperty('visibility', 'hidden', 'important');
+            } else {
+                overlayEl.style.setProperty('display', 'block', 'important');
+                overlayEl.style.setProperty('opacity', '0.6', 'important');
+                overlayEl.style.setProperty('pointer-events', 'auto', 'important');
+                overlayEl.style.removeProperty('visibility');
+            }
+        }
+
         function cleanupStyles() {
             if (sidebarEl) {
                 sidebarEl.classList.remove('fi-sidebar-dragging');
@@ -76,18 +97,14 @@
                 sidebarEl.style.removeProperty('transition');
                 sidebarEl.style.removeProperty('pointer-events');
             }
-            if (overlayEl) {
-                overlayEl.style.removeProperty('opacity');
-                overlayEl.style.removeProperty('transition');
-                overlayEl.style.removeProperty('display');
-                overlayEl.style.removeProperty('pointer-events');
-            }
             if (edgeHandle) {
                 edgeHandle.style.transform = 'translateY(-50%)';
             }
             isDragging = false;
             isVerticalScroll = false;
             gestureDirection = null;
+
+            syncOverlayState();
         }
 
         function getCoords(e) {
@@ -103,7 +120,6 @@
         function handlePointerStart(e) {
             if (window.innerWidth >= 1024) return;
             if (e.touches && e.touches.length > 1) return;
-            // Allow primary mouse button or any touch/pen
             if (e.pointerType === 'mouse' && e.buttons !== 1) return;
             if (isModalActive()) return;
 
@@ -122,7 +138,6 @@
 
             const store = getSidebarStore();
             const isOpen = store ? store.isOpen : sidebarEl.classList.contains('fi-sidebar-open');
-
             const isEdgeHandleHit = edgeHandle && edgeHandle.contains(e.target);
 
             if (!isOpen) {
@@ -131,6 +146,7 @@
                     gestureDirection = 'open';
                 }
             } else {
+                // If sidebar is open, swipe left anywhere to close
                 gestureDirection = 'close';
             }
         }
@@ -149,15 +165,15 @@
             const absY = Math.abs(deltaY);
 
             if (!isDragging) {
-                // Cancel if vertical scroll clearly dominates after moving at least 16px
-                if (absY > 16 && absY > absX * 1.8) {
+                // Cancel if vertical scrolling dominates
+                if (absY > 12 && absY > absX * 1.5) {
                     isVerticalScroll = true;
                     cleanupStyles();
                     return;
                 }
 
-                // Lock into horizontal drag after just 5px horizontal movement
-                if (absX >= SWIPE_MIN_TRIGGER && absX >= absY * 0.6) {
+                // Lock into horizontal drag once threshold is exceeded and horizontal exceeds vertical
+                if (absX >= SWIPE_MIN_TRIGGER && absX >= absY * 1.3) {
                     if (gestureDirection === 'open' && deltaX > 0) {
                         isDragging = true;
                     } else if (gestureDirection === 'close' && deltaX < 0) {
@@ -182,16 +198,16 @@
                     const clampedDelta = Math.max(0, Math.min(deltaX, sidebarWidth));
                     const translateX = -sidebarWidth + clampedDelta;
 
-                    // Real-time synchronization: use !important to override stylesheet rules
                     sidebarEl.style.setProperty('translate', translateX + 'px 0', 'important');
                     sidebarEl.style.setProperty('transform', 'none', 'important');
                     sidebarEl.style.setProperty('pointer-events', 'none', 'important');
 
-                    if (overlayEl) {
+                    if (overlayEl && clampedDelta > 10) {
                         const progress = clampedDelta / sidebarWidth;
                         overlayEl.style.setProperty('display', 'block', 'important');
                         overlayEl.style.setProperty('opacity', (progress * 0.6).toFixed(3), 'important');
                         overlayEl.style.setProperty('pointer-events', 'auto', 'important');
+                        overlayEl.style.removeProperty('visibility');
                     }
 
                     if (edgeHandle) {
@@ -220,7 +236,7 @@
             const isEdgeHandleHit = edgeHandle && edgeHandle.contains(e.target);
 
             // Handle direct tap on edge handle
-            if (!isDragging && isEdgeHandleHit && absX < 10 && absY < 10) {
+            if (!isDragging && isEdgeHandleHit && absX < 12 && absY < 12) {
                 const store = getSidebarStore();
                 if (store) {
                     store.open();
@@ -239,7 +255,7 @@
             const store = getSidebarStore();
 
             if (gestureDirection === 'open') {
-                const shouldOpen = deltaX > OPEN_DISTANCE_MIN || (velocity > VELOCITY_THRESHOLD && deltaX > 15);
+                const shouldOpen = deltaX > OPEN_DISTANCE_MIN || (velocity > VELOCITY_THRESHOLD && deltaX > 20);
 
                 sidebarEl.classList.remove('fi-sidebar-dragging');
                 sidebarEl.style.setProperty('transition', 'translate 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1)', 'important');
@@ -248,7 +264,11 @@
                 if (shouldOpen) {
                     sidebarEl.style.setProperty('translate', '0 0', 'important');
                     sidebarEl.style.setProperty('transform', 'none', 'important');
-                    if (overlayEl) overlayEl.style.setProperty('opacity', '0.6', 'important');
+                    if (overlayEl) {
+                        overlayEl.style.setProperty('opacity', '0.6', 'important');
+                        overlayEl.style.setProperty('pointer-events', 'auto', 'important');
+                        overlayEl.style.removeProperty('visibility');
+                    }
 
                     setTimeout(function () {
                         if (store) store.open();
@@ -257,7 +277,10 @@
                 } else {
                     sidebarEl.style.setProperty('translate', '-100% 0', 'important');
                     sidebarEl.style.setProperty('transform', 'none', 'important');
-                    if (overlayEl) overlayEl.style.setProperty('opacity', '0', 'important');
+                    if (overlayEl) {
+                        overlayEl.style.setProperty('opacity', '0', 'important');
+                        overlayEl.style.setProperty('pointer-events', 'none', 'important');
+                    }
 
                     setTimeout(function () {
                         if (store) store.close();
@@ -265,7 +288,7 @@
                     }, 280);
                 }
             } else if (gestureDirection === 'close') {
-                const shouldClose = deltaX < -OPEN_DISTANCE_MIN || (velocity < -VELOCITY_THRESHOLD && deltaX < -15);
+                const shouldClose = deltaX < -OPEN_DISTANCE_MIN || (velocity < -VELOCITY_THRESHOLD && deltaX < -20);
 
                 sidebarEl.classList.remove('fi-sidebar-dragging');
                 sidebarEl.style.setProperty('transition', 'translate 280ms cubic-bezier(0.16, 1, 0.3, 1), transform 280ms cubic-bezier(0.16, 1, 0.3, 1)', 'important');
@@ -274,7 +297,10 @@
                 if (shouldClose) {
                     sidebarEl.style.setProperty('translate', '-100% 0', 'important');
                     sidebarEl.style.setProperty('transform', 'none', 'important');
-                    if (overlayEl) overlayEl.style.setProperty('opacity', '0', 'important');
+                    if (overlayEl) {
+                        overlayEl.style.setProperty('opacity', '0', 'important');
+                        overlayEl.style.setProperty('pointer-events', 'none', 'important');
+                    }
 
                     setTimeout(function () {
                         if (store) store.close();
@@ -283,7 +309,11 @@
                 } else {
                     sidebarEl.style.setProperty('translate', '0 0', 'important');
                     sidebarEl.style.setProperty('transform', 'none', 'important');
-                    if (overlayEl) overlayEl.style.setProperty('opacity', '0.6', 'important');
+                    if (overlayEl) {
+                        overlayEl.style.setProperty('opacity', '0.6', 'important');
+                        overlayEl.style.setProperty('pointer-events', 'auto', 'important');
+                        overlayEl.style.removeProperty('visibility');
+                    }
 
                     setTimeout(function () {
                         if (store) store.open();
@@ -295,7 +325,7 @@
             }
         }
 
-        // Register both Pointer Events (modern touch & mouse) and Touch Events (legacy fallback)
+        // Register pointer events for modern touch/mouse handling
         if (window.PointerEvent) {
             document.addEventListener('pointerdown', handlePointerStart, { passive: true });
             document.addEventListener('pointermove', handlePointerMove, { passive: false });
@@ -307,5 +337,36 @@
             document.addEventListener('touchend', handlePointerEnd, { passive: true });
             document.addEventListener('touchcancel', cleanupStyles, { passive: true });
         }
+
+        // Keep overlay state strictly in sync with Alpine store
+        function setupAlpineSync() {
+            initElements();
+            if (window.Alpine) {
+                window.Alpine.effect(function () {
+                    syncOverlayState();
+                });
+            } else {
+                document.addEventListener('alpine:init', function () {
+                    window.Alpine.effect(function () {
+                        syncOverlayState();
+                    });
+                }, { once: true });
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupAlpineSync);
+        } else {
+            setupAlpineSync();
+        }
+
+        document.addEventListener('livewire:navigated', function () {
+            initElements();
+            syncOverlayState();
+        });
+
+        window.addEventListener('resize', function () {
+            syncOverlayState();
+        });
     })();
 </script>

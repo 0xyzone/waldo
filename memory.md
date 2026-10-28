@@ -304,6 +304,16 @@
   - **Enhanced Diff Table (`action-log-changes-table.blade.php`)**: Displays resolved entity names (e.g. "GRA → Driver") with subtle `#ID` badges, and strips trailing `_id` from field column labels (e.g. "Designation" instead of "Designation Id").
   - **Descriptive Action Summaries**: `HasActionLogs` updating event generates human-readable entity change summaries (e.g. "Updated: Designation (GRA → Driver)") rather than raw attribute keys.
 
+### 32. Mobile Screen Touch Blocking by Backdrop Overlay Fix (v2.8.9)
+- **Problem**: When tapping or clicking anywhere on mobile screens, a translucent black backdrop overlay with blur (`.fi-sidebar-close-overlay`) appeared, intercepting all clicks and preventing interaction with cards, buttons, tables, and links.
+- **Root Cause**:
+  - The swipe open gesture listener had an overly broad 80px threshold and a 5px drag trigger. Any regular tap on the left side of the mobile viewport with minimal finger jitter was classified as a drag gesture, forcing `display: block !important` and `pointer-events: auto !important` on `.fi-sidebar-close-overlay`.
+  - When the gesture aborted, `cleanupStyles()` removed inline `display`, wiping out Alpine's `display: none` style while `$store.sidebar.isOpen` remained `false`. This left the overlay permanently rendered by default CSS stylesheet rules (`position: fixed; inset: 0; z-index: 30; background-color: rgba(...)`), blocking subsequent screen clicks.
+- **Solution**:
+  - **CSS Overlay Isolation (`theme.css`)**: Added `.fi-layout:not(:has(.fi-sidebar.fi-sidebar-open)):not(:has(.fi-sidebar.fi-sidebar-dragging)) .fi-sidebar-close-overlay` with `display: none !important; pointer-events: none !important; opacity: 0 !important; visibility: hidden !important` so the overlay can never display or capture pointer events unless the sidebar is open or actively dragging.
+  - **Alpine Store Synchronization (`mobile-sidebar-gestures.blade.php`)**: Added a reactive `Alpine.effect` watcher that guarantees the overlay is explicitly hidden whenever `$store.sidebar.isOpen` is `false`, and only made visible when the sidebar is open or actively being dragged.
+  - **Gesture Gate Precision**: Restricted open swipe detection strictly to within 25px of the viewport edge (or `#mobile-edge-handle`), increased horizontal trigger to 14px with dominant directional filtering (`absX >= absY * 1.3`), and excluded interactive buttons/links, ensuring standard taps anywhere on the screen pass directly through without interference.
+
 
 
 
