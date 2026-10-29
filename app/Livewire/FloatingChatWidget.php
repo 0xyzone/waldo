@@ -39,6 +39,8 @@ class FloatingChatWidget extends Component
 
     public bool $showMessageSearch = false;
 
+    public int $messagesLimit = 50;
+
     public ?int $pinningMessageId = null;
 
     public ?int $pinningConversationId = null;
@@ -148,6 +150,7 @@ class FloatingChatWidget extends Component
         }
 
         $this->activeConversationId = $id;
+        $this->messagesLimit = 50;
         $this->attachment = null;
         $this->voiceNote = null;
         $this->replyingToMessageId = null;
@@ -383,7 +386,7 @@ class FloatingChatWidget extends Component
             'type' => 'text',
         ]);
 
-        $this->safeBroadcast(new MessageDeleted($message));
+        $this->safeBroadcast(new MessageDeleted($message, auth()->id()));
 
         Notification::make()
             ->success()
@@ -606,8 +609,12 @@ class FloatingChatWidget extends Component
 
         $conversations = Conversation::query()
             ->whereHas('participants', fn ($q) => $q->where('user_id', $userId))
-            ->with('participants')
+            ->whereHas('messages', fn ($q) => $q->where('sender_id', '!=', $userId)->whereNull('delivered_at'))
             ->get();
+
+        if ($conversations->isEmpty()) {
+            return;
+        }
 
         foreach ($conversations as $conv) {
             $conv->markAsDeliveredFor($userId);
@@ -709,8 +716,27 @@ class FloatingChatWidget extends Component
                     return true;
                 }
 
-                return $conv->messages()->whereRaw('LOWER(body) LIKE ?', ['%'.$term.'%'])->exists();
+                return false;
             });
+        }
+
+        $unreadMap = Message::query()
+            ->selectRaw('messages.conversation_id, COUNT(*) as count')
+            ->join('conversation_participants as cp', function ($join) use ($userId) {
+                $join->on('cp.conversation_id', '=', 'messages.conversation_id')
+                    ->where('cp.user_id', '=', $userId);
+            })
+            ->where('messages.sender_id', '!=', $userId)
+            ->where(function ($q) {
+                $q->whereNull('cp.last_read_at')
+                    ->orWhereColumn('messages.created_at', '>', 'cp.last_read_at');
+            })
+            ->groupBy('messages.conversation_id')
+            ->pluck('count', 'conversation_id')
+            ->all();
+
+        foreach ($conversations as $conv) {
+            $conv->setAttribute('unread_count', $unreadMap[$conv->id] ?? 0);
         }
 
         return $conversations->sortByDesc(fn ($conv) => $conv->isPinnedFor($userId))->values();
@@ -742,22 +768,43 @@ class FloatingChatWidget extends Component
             ->get();
     }
 
+    public function loadOlderMessages(): void
+    {
+        $this->messagesLimit += 50;
+    }
+
+    public function getTotalMessagesCountProperty(): int
+    {
+        if (! $this->activeConversationId) {
+            return 0;
+        }
+
+        return Message::where('conversation_id', $this->activeConversationId)->count();
+    }
+
     public function getMessagesProperty(): Collection
     {
         if (! $this->activeConversationId) {
             return new Collection;
         }
 
-        $query = Message::where('conversation_id', $this->activeConversationId)
-            ->with(['sender', 'pinnedBy', 'reactions.user', 'replyTo.sender', 'conversation.participants.user'])
-            ->orderBy('created_at', 'asc');
-
         if (filled($this->messageSearch)) {
             $term = '%'.strtolower($this->messageSearch).'%';
-            $query->whereRaw('LOWER(body) LIKE ?', [$term]);
+
+            return Message::where('conversation_id', $this->activeConversationId)
+                ->with(['sender', 'pinnedBy', 'reactions.user', 'replyTo.sender', 'conversation.participants.user'])
+                ->whereRaw('LOWER(body) LIKE ?', [$term])
+                ->orderBy('created_at', 'asc')
+                ->get();
         }
 
-        return $query->get();
+        return Message::where('conversation_id', $this->activeConversationId)
+            ->with(['sender', 'pinnedBy', 'reactions.user', 'replyTo.sender', 'conversation.participants.user'])
+            ->latest('id')
+            ->take($this->messagesLimit)
+            ->get()
+            ->reverse()
+            ->values();
     }
 
     public function setReply(int $messageId): void

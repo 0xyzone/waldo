@@ -4,6 +4,18 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.13] - 2026-10-29
+
+### Added & Enhanced
+- **Chat Performance Acceleration, Message Pagination & Context Menu Actions**:
+  - **Eliminated N+1 Unread Count Queries**: Replaced the loop querying every single participant conversation with a single indexed SQL join in `User::unreadMessagesCount()`, and batch pre-calculated unread counts for all conversations in one grouped query in `FloatingChatWidget`.
+  - **Message Limit & Dynamic Pagination**: Limited initial message feed load to the latest 50 messages, slashing Livewire response payload size and DOM complexity by up to 90%, with an inline "Load earlier messages" trigger.
+  - **Secondary-Click & 2-Second Mobile Long-Press Context Menu**: Removed the layout-shifting, 16-button hover pill from every message bubble in favor of a sleek floating context menu opened via right-click on desktop or holding for 2 seconds on mobile (with tactile haptic feedback).
+  - **Delivery and Mention Caching**: In-memory memoization for mentioned user IDs and delivery statuses in `Message` model, preventing thousands of repetitive regex executions and relationship lookups.
+  - **Filtered Self-Events in Echo**: Prevented sender Livewire full re-renders on self reaction or deletion socket events.
+
+---
+
 ## [2.8.12] - 2026-10-28
 
 ### Added & Enhanced

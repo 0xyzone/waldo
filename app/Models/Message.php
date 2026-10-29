@@ -46,19 +46,30 @@ class Message extends Model
         ];
     }
 
+    protected ?string $memoizedDeliveryStatus = null;
+
+    /**
+     * @var array<int>|null
+     */
+    protected ?array $memoizedMentionedUserIds = null;
+
     /**
      * Get the delivery status of this message for the viewer.
      * Returns: 'sent' | 'delivered' | 'seen'
      */
     public function getDeliveryStatus(int $viewerUserId): string
     {
+        if ($this->memoizedDeliveryStatus !== null) {
+            return $this->memoizedDeliveryStatus;
+        }
+
         if ($this->sender_id !== $viewerUserId || $this->is_deleted) {
-            return 'sent';
+            return $this->memoizedDeliveryStatus = 'sent';
         }
 
         $conversation = $this->conversation;
         if (! $conversation) {
-            return 'sent';
+            return $this->memoizedDeliveryStatus = 'sent';
         }
 
         $viewer = auth()->user() && auth()->id() === $viewerUserId ? auth()->user() : User::find($viewerUserId);
@@ -70,14 +81,14 @@ class Message extends Model
                 ?? $conversation->participants()->where('user_id', '!=', $viewerUserId)->first();
 
             if (! $otherParticipant) {
-                return 'sent';
+                return $this->memoizedDeliveryStatus = 'sent';
             }
 
             // Check if seen (read)
             if ($otherParticipant->last_read_at && $otherParticipant->last_read_at >= $this->created_at) {
                 // If viewer has disabled read receipts, viewer cannot see blue ticks (WhatsApp rule)
                 if (! $viewerSharesReceipts) {
-                    return 'delivered';
+                    return $this->memoizedDeliveryStatus = 'delivered';
                 }
 
                 $recipientUser = $otherParticipant->user ?? User::find($otherParticipant->user_id);
@@ -85,18 +96,18 @@ class Message extends Model
 
                 // If recipient disabled read receipts, sender cannot see blue ticks either
                 if (! $recipientSharesReceipts) {
-                    return 'delivered';
+                    return $this->memoizedDeliveryStatus = 'delivered';
                 }
 
-                return 'seen';
+                return $this->memoizedDeliveryStatus = 'seen';
             }
 
             // Check if delivered
             if ($this->delivered_at !== null || ($otherParticipant->last_delivered_at && $otherParticipant->last_delivered_at >= $this->created_at)) {
-                return 'delivered';
+                return $this->memoizedDeliveryStatus = 'delivered';
             }
 
-            return 'sent';
+            return $this->memoizedDeliveryStatus = 'sent';
         }
 
         // Group chat
@@ -106,24 +117,24 @@ class Message extends Model
         }
 
         if ($otherParticipants->isEmpty()) {
-            return 'sent';
+            return $this->memoizedDeliveryStatus = 'sent';
         }
 
         $allRead = $otherParticipants->every(fn ($p) => $p->last_read_at && $p->last_read_at >= $this->created_at);
         if ($allRead) {
             if (! $viewerSharesReceipts) {
-                return 'delivered';
+                return $this->memoizedDeliveryStatus = 'delivered';
             }
 
-            return 'seen';
+            return $this->memoizedDeliveryStatus = 'seen';
         }
 
         $anyDelivered = $this->delivered_at !== null || $otherParticipants->contains(fn ($p) => $p->last_delivered_at && $p->last_delivered_at >= $this->created_at);
         if ($anyDelivered) {
-            return 'delivered';
+            return $this->memoizedDeliveryStatus = 'delivered';
         }
 
-        return 'sent';
+        return $this->memoizedDeliveryStatus = 'sent';
     }
 
     public function replyTo(): BelongsTo
@@ -283,14 +294,18 @@ class Message extends Model
      */
     public function parseMentionedUserIds(): array
     {
-        if (blank($this->body) || ! $this->conversation_id) {
-            return [];
+        if ($this->memoizedMentionedUserIds !== null) {
+            return $this->memoizedMentionedUserIds;
+        }
+
+        if (blank($this->body) || ! $this->conversation_id || ! str_contains($this->body, '@')) {
+            return $this->memoizedMentionedUserIds = [];
         }
 
         $body = $this->body;
         $conversation = $this->conversation ?? Conversation::find($this->conversation_id);
         if (! $conversation) {
-            return [];
+            return $this->memoizedMentionedUserIds = [];
         }
 
         $conversation->loadMissing('users');
@@ -328,7 +343,7 @@ class Message extends Model
             }
         }
 
-        return array_values(array_unique($mentionedIds));
+        return $this->memoizedMentionedUserIds = array_values(array_unique($mentionedIds));
     }
 
     public function mentionsUser(User|int $user): bool

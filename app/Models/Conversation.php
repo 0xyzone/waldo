@@ -124,7 +124,10 @@ class Conversation extends Model
      */
     public function unreadCountFor(int $userId): int
     {
-        $participant = $this->participants()->where('user_id', $userId)->first();
+        $participant = $this->relationLoaded('participants')
+            ? $this->participants->firstWhere('user_id', $userId)
+            : $this->participants()->where('user_id', $userId)->first();
+
         $lastReadAt = $participant?->last_read_at;
 
         return $this->messages()

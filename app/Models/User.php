@@ -153,20 +153,16 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
 
     public function unreadMessagesCount(): int
     {
-        $participants = ConversationParticipant::where('user_id', $this->id)->get();
-
-        if ($participants->isEmpty()) {
-            return 0;
-        }
-
-        $unread = 0;
-        foreach ($participants as $participant) {
-            $unread += Message::where('conversation_id', $participant->conversation_id)
-                ->where('sender_id', '!=', $this->id)
-                ->when($participant->last_read_at, fn ($q) => $q->where('created_at', '>', $participant->last_read_at))
-                ->count();
-        }
-
-        return $unread;
+        return (int) Message::query()
+            ->join('conversation_participants as cp', function ($join) {
+                $join->on('cp.conversation_id', '=', 'messages.conversation_id')
+                    ->where('cp.user_id', '=', $this->id);
+            })
+            ->where('messages.sender_id', '!=', $this->id)
+            ->where(function ($q) {
+                $q->whereNull('cp.last_read_at')
+                    ->orWhereColumn('messages.created_at', '>', 'cp.last_read_at');
+            })
+            ->count();
     }
 }

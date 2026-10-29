@@ -29,6 +29,141 @@
         micStream: null,
         vizBars: Array(32).fill(3),
         vizRaf: null,
+
+        // Context Menu & 2s Mobile Long-Press State
+        contextMenu: {
+            show: false,
+            x: 0,
+            y: 0,
+            messageId: null,
+            isMe: false,
+            canDelete: false,
+            isPinned: false,
+            body: '',
+            showExtraEmojis: false,
+            copied: false,
+        },
+        longPressTimer: null,
+        longPressMessageId: null,
+        longPressStartX: 0,
+        longPressStartY: 0,
+        isLongPressing: false,
+        activeHoldMsgId: null,
+
+        startLongPress(e, msg) {
+            if (msg.isDeleted) return;
+            this.cancelLongPress();
+            if (!e.touches || !e.touches[0]) return;
+            const touch = e.touches[0];
+            this.longPressStartX = touch.clientX;
+            this.longPressStartY = touch.clientY;
+            this.longPressMessageId = msg.id;
+            this.isLongPressing = true;
+            this.activeHoldMsgId = msg.id;
+
+            this.longPressTimer = setTimeout(() => {
+                if (this.isLongPressing && this.longPressMessageId === msg.id) {
+                    if (navigator.vibrate) {
+                        try { navigator.vibrate(35); } catch (err) {}
+                    }
+                    this.openContextMenuAt(this.longPressStartX, this.longPressStartY, msg);
+                    this.cancelLongPress();
+                }
+            }, 2000);
+        },
+
+        moveLongPress(e) {
+            if (!this.isLongPressing || !e.touches || !e.touches[0]) return;
+            const touch = e.touches[0];
+            const dx = Math.abs(touch.clientX - this.longPressStartX);
+            const dy = Math.abs(touch.clientY - this.longPressStartY);
+            if (dx > 8 || dy > 8) {
+                this.cancelLongPress();
+            }
+        },
+
+        cancelLongPress() {
+            if (this.longPressTimer) {
+                clearTimeout(this.longPressTimer);
+                this.longPressTimer = null;
+            }
+            this.isLongPressing = false;
+            this.longPressMessageId = null;
+            this.activeHoldMsgId = null;
+        },
+
+        openContextMenu(e, msg) {
+            if (msg.isDeleted) return;
+            this.cancelLongPress();
+            e.preventDefault();
+            e.stopPropagation();
+            this.openContextMenuAt(e.clientX, e.clientY, msg);
+        },
+
+        openContextMenuAt(clientX, clientY, msg) {
+            this.contextMenu.show = false;
+            this.contextMenu.showExtraEmojis = false;
+            this.contextMenu.copied = false;
+            this.contextMenu.messageId = msg.id;
+            this.contextMenu.isMe = msg.isMe;
+            this.contextMenu.canDelete = msg.canDelete;
+            this.contextMenu.isPinned = msg.isPinned;
+            this.contextMenu.body = msg.body || '';
+
+            this.$nextTick(() => {
+                const feed = this.$refs.floatingFeed;
+                const feedRect = feed ? feed.getBoundingClientRect() : { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight, width: window.innerWidth, height: window.innerHeight };
+
+                const menuWidth = 265;
+                const menuHeight = this.contextMenu.canDelete ? 260 : 210;
+
+                let posX = clientX;
+                let posY = clientY;
+
+                if (posX + menuWidth > feedRect.right - 10) {
+                    posX = feedRect.right - menuWidth - 10;
+                }
+                if (posX < feedRect.left + 10) {
+                    posX = feedRect.left + 10;
+                }
+
+                if (posY + menuHeight > feedRect.bottom - 10) {
+                    posY = Math.max(feedRect.top + 10, posY - menuHeight);
+                }
+                if (posY < feedRect.top + 10) {
+                    posY = feedRect.top + 10;
+                }
+
+                this.contextMenu.x = Math.round(posX);
+                this.contextMenu.y = Math.round(posY);
+                this.contextMenu.show = true;
+            });
+        },
+
+        closeContextMenu() {
+            this.contextMenu.show = false;
+            this.contextMenu.showExtraEmojis = false;
+        },
+
+        copyMessageText(text) {
+            if (!text) return;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text);
+            } else {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            }
+            this.contextMenu.copied = true;
+            setTimeout(() => {
+                this.closeContextMenu();
+            }, 500);
+        },
     
         canViewUserOnline(userId) {
             if (!this.viewerOnlineStatusEnabled) return false;
@@ -140,9 +275,18 @@
                     }
                     this.debouncedRefresh(200);
                 })
-                .listen('.message.deleted', () => this.debouncedRefresh(180))
-                .listen('.message.pinned', () => this.debouncedRefresh(180))
-                .listen('.message.reacted', () => this.debouncedRefresh(180))
+                .listen('.message.deleted', (e) => {
+                    if (e && e.deletedBy === {{ auth()->id() }}) return;
+                    this.debouncedRefresh(180);
+                })
+                .listen('.message.pinned', (e) => {
+                    if (e && e.pinnedBy === {{ auth()->id() }}) return;
+                    this.debouncedRefresh(180);
+                })
+                .listen('.message.reacted', (e) => {
+                    if (e && e.userId === {{ auth()->id() }}) return;
+                    this.debouncedRefresh(180);
+                })
                 .listen('.message.status', () => this.debouncedRefresh(180));
     
             if (this.activeConversationId) {
@@ -166,9 +310,18 @@
                     $wire.incomingMessage(payload);
                     this.$nextTick(() => this.scrollToBottom());
                 })
-                .listen('.message.deleted', () => this.debouncedRefresh(180))
-                .listen('.message.pinned', () => this.debouncedRefresh(180))
-                .listen('.message.reacted', () => this.debouncedRefresh(180))
+                .listen('.message.deleted', (e) => {
+                    if (e && e.deletedBy === {{ auth()->id() }}) return;
+                    this.debouncedRefresh(180);
+                })
+                .listen('.message.pinned', (e) => {
+                    if (e && e.pinnedBy === {{ auth()->id() }}) return;
+                    this.debouncedRefresh(180);
+                })
+                .listen('.message.reacted', (e) => {
+                    if (e && e.userId === {{ auth()->id() }}) return;
+                    this.debouncedRefresh(180);
+                })
                 .listen('.message.status', () => this.debouncedRefresh(180));
         },
     
@@ -917,11 +1070,25 @@
 
                         <!-- Active Chat Feed -->
                         <div x-ref="floatingFeed"
+                            @scroll.passive="closeContextMenu()"
                             class="flex-1 overflow-y-auto px-3.5 py-3 space-y-1.5 bg-slate-50/70 dark:bg-slate-950/50 scroll-smooth">
                             @php
                                 $messages = $this->messages;
+                                $totalMessagesCount = $this->totalMessagesCount;
+                                $isChatGroup = $this->activeConversation->isGroup();
                                 $prevMsgDate = null;
                             @endphp
+                            @if ($totalMessagesCount > $this->messagesLimit && blank($messageSearch))
+                                <div class="flex justify-center my-1.5">
+                                    <button type="button" wire:click="loadOlderMessages"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 dark:text-amber-300 dark:bg-amber-950/60 dark:hover:bg-amber-900/60 border border-amber-200 dark:border-amber-800 transition shadow-2xs cursor-pointer">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                                        </svg>
+                                        <span>Load earlier messages ({{ $totalMessagesCount - $this->messagesLimit }} more)</span>
+                                    </button>
+                                </div>
+                            @endif
                             @forelse($messages as $msg)
                                 @php
                                     $isMe = $msg->sender_id === auth()->id();
@@ -963,10 +1130,19 @@
                                             </div>
                                         @endif
 
-                                        <div class="relative w-fit">
+                                        <div class="relative w-fit"
+                                            @if (!$msg->is_deleted)
+                                                @contextmenu.prevent="openContextMenu($event, { id: {{ $msg->id }}, isMe: {{ $isMe ? 'true' : 'false' }}, canDelete: {{ $canDelete ? 'true' : 'false' }}, isPinned: {{ $isPinned ? 'true' : 'false' }}, body: @js($msg->body ?? ''), isDeleted: false })"
+                                                @touchstart="startLongPress($event, { id: {{ $msg->id }}, isMe: {{ $isMe ? 'true' : 'false' }}, canDelete: {{ $canDelete ? 'true' : 'false' }}, isPinned: {{ $isPinned ? 'true' : 'false' }}, body: @js($msg->body ?? ''), isDeleted: false })"
+                                                @touchmove="moveLongPress($event)"
+                                                @touchend="cancelLongPress()"
+                                                @touchcancel="cancelLongPress()"
+                                            @endif
+                                        >
                                             <div
-                                                class="relative rounded-2xl px-2.5 py-1.5 text-xs shadow-xs transition-all {{ $msg->is_deleted ? 'bg-slate-100/70 dark:bg-slate-800/50 border border-dashed border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-2xl' : ($isMe ? 'bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 text-white rounded-br-xs shadow-orange-500/15' : 'bg-white text-slate-900 border border-slate-200/80 dark:border-slate-700/60 dark:bg-slate-800 dark:text-slate-100 rounded-bl-xs shadow-slate-900/5') }} {{ !$isMe && !$msg->is_deleted && $msg->mentionsUser(auth()->id()) ? 'ring-2 ring-amber-400 dark:ring-amber-400/80 bg-amber-50/70 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700' : '' }}">
-                                                @if ($this->activeConversation->isGroup() && !$isMe && !$msg->is_deleted)
+                                                :class="activeHoldMsgId === {{ $msg->id }} ? 'scale-[0.98] ring-2 ring-amber-400 opacity-90' : ''"
+                                                class="relative rounded-2xl px-2.5 py-1.5 text-xs shadow-xs transition-all select-text cursor-default {{ $msg->is_deleted ? 'bg-slate-100/70 dark:bg-slate-800/50 border border-dashed border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-2xl' : ($isMe ? 'bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 text-white rounded-br-xs shadow-orange-500/15' : 'bg-white text-slate-900 border border-slate-200/80 dark:border-slate-700/60 dark:bg-slate-800 dark:text-slate-100 rounded-bl-xs shadow-slate-900/5') }} {{ !$isMe && !$msg->is_deleted && $msg->mentionsUser(auth()->id()) ? 'ring-2 ring-amber-400 dark:ring-amber-400/80 bg-amber-50/70 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700' : '' }}">
+                                                @if ($isChatGroup && !$isMe && !$msg->is_deleted)
                                                     <div class="flex items-center justify-between gap-2 mb-1 leading-none">
                                                         <span
                                                             class="text-[11px] font-bold text-amber-600 dark:text-amber-400">
@@ -1039,21 +1215,6 @@
                                                             <img src="{{ $msg->getAttachmentUrl() }}"
                                                                 class="max-h-48 max-w-full rounded-lg object-cover hover:opacity-95 transition" />
                                                         </a>
-                                                        @if ($canDelete)
-                                                            <button type="button"
-                                                                wire:confirm="Delete this image attachment? It will be replaced with 'This message was deleted'."
-                                                                wire:click="deleteMessage({{ $msg->id }})"
-                                                                class="absolute top-1.5 right-1.5 flex items-center gap-1 rounded-md bg-black/60 px-1.5 py-0.5 text-[10px] font-bold text-white shadow backdrop-blur hover:bg-red-600 transition"
-                                                                title="Delete image (valid for 15 mins or admin)">
-                                                                <svg class="h-3 w-3" fill="none"
-                                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path stroke-linecap="round"
-                                                                        stroke-linejoin="round" stroke-width="2"
-                                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                                </svg>
-                                                                <span>Delete</span>
-                                                            </button>
-                                                        @endif
                                                     </div>
                                                 @elseif($msg->isAudio())
                                                     <!-- Modern Waveform Voice Note Player -->
@@ -1103,21 +1264,6 @@
                                                                 </button>
                                                             </div>
                                                         </div>
-
-                                                        @if ($canDelete)
-                                                            <button type="button"
-                                                                wire:confirm="Delete this voice message? It will be replaced with 'This message was deleted'."
-                                                                wire:click="deleteMessage({{ $msg->id }})"
-                                                                class="rounded p-1 transition cursor-pointer {{ $isMe ? 'text-amber-200 hover:text-white hover:bg-white/10' : 'text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40' }}"
-                                                                title="Delete voice note (valid for 15 mins or admin)">
-                                                                <svg class="h-3.5 w-3.5" fill="none"
-                                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path stroke-linecap="round"
-                                                                        stroke-linejoin="round" stroke-width="2"
-                                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                                </svg>
-                                                            </button>
-                                                        @endif
                                                     </div>
                                                 @elseif($msg->isFile())
                                                     <div class="my-1 flex items-center justify-between gap-2 rounded-xl p-2 {{ $isMe ? 'bg-black/15 text-white border border-white/10' : 'bg-slate-100 dark:bg-slate-700/60 text-slate-900 dark:text-white border border-slate-200/60 dark:border-slate-600/40' }}">
@@ -1134,16 +1280,6 @@
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                                                 </svg>
                                                             </a>
-                                                            @if ($canDelete)
-                                                                <button type="button"
-                                                                    wire:confirm="Delete this file attachment? It will be replaced with 'This message was deleted'."
-                                                                    wire:click="deleteMessage({{ $msg->id }})"
-                                                                    class="p-1 text-red-500 hover:opacity-80 cursor-pointer" title="Delete file">
-                                                                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                                    </svg>
-                                                                </button>
-                                                            @endif
                                                         </div>
                                                     </div>
                                                 @endif
@@ -1219,98 +1355,6 @@
                                             @endif
                                         </div>
 
-                                        <!-- Floating Action & Quick Reaction Pill (on hover) -->
-                                        @if (!$msg->is_deleted)
-                                            <div x-data="{ showExtraEmojis: false }"
-                                                class="absolute -top-3.5 {{ $isMe ? 'right-2' : 'left-2' }} z-20 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-150 transform scale-95 group-hover:scale-100 flex items-center gap-0.5 rounded-full border border-slate-200/90 dark:border-slate-700/80 bg-white/95 dark:bg-slate-800/95 px-1.5 py-0.5 shadow-md backdrop-blur-xs">
-                                                @php
-                                                    $quickEmojis = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
-                                                    $extraEmojis = ['🎉', '👏', '🙏', '💯', '🚀', '👀'];
-                                                @endphp
-                                                @foreach ($quickEmojis as $qEmoji)
-                                                    <button type="button"
-                                                        wire:click="toggleReaction({{ $msg->id }}, '{{ $qEmoji }}')"
-                                                        class="rounded-full p-0.5 text-xs transition-transform hover:scale-125 active:scale-90 cursor-pointer"
-                                                        title="React {{ $qEmoji }}">
-                                                        {{ $qEmoji }}
-                                                    </button>
-                                                @endforeach
-
-                                                <div class="relative">
-                                                    <button type="button" @click="showExtraEmojis = !showExtraEmojis"
-                                                        class="rounded-full p-0.5 text-[10px] text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 transition cursor-pointer"
-                                                        title="More emojis">
-                                                        ➕
-                                                    </button>
-
-                                                    <div x-show="showExtraEmojis" x-transition
-                                                        @click.outside="showExtraEmojis = false"
-                                                        class="absolute bottom-full mb-1 {{ $isMe ? 'right-0' : 'left-0' }} flex items-center gap-0.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white/95 p-1 shadow-xl backdrop-blur-xs dark:bg-slate-800/95 z-30"
-                                                        style="display: none;">
-                                                        @foreach ($extraEmojis as $eEmoji)
-                                                            <button type="button"
-                                                                wire:click="toggleReaction({{ $msg->id }}, '{{ $eEmoji }}')"
-                                                                @click="showExtraEmojis = false"
-                                                                class="rounded-full p-0.5 text-xs transition-transform hover:scale-125 active:scale-90 cursor-pointer"
-                                                                title="React {{ $eEmoji }}">
-                                                                {{ $eEmoji }}
-                                                            </button>
-                                                        @endforeach
-                                                    </div>
-                                                </div>
-
-                                                <div class="h-3 w-px bg-slate-200 dark:bg-slate-700 mx-0.5"></div>
-
-                                                <!-- Reply Button -->
-                                                <button type="button" wire:click="setReply({{ $msg->id }})"
-                                                    class="rounded-full p-1 text-slate-400 hover:text-amber-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
-                                                    title="Reply to message">
-                                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 016 6v3" />
-                                                    </svg>
-                                                </button>
-
-                                                <!-- Forward Button -->
-                                                <button type="button" wire:click="openForwardModal({{ $msg->id }})"
-                                                    class="rounded-full p-1 text-slate-400 hover:text-amber-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
-                                                    title="Forward message">
-                                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l6-6m0 0l-6-6m6 6H9a6 6 0 00-6 6v3" />
-                                                    </svg>
-                                                </button>
-
-                                                <!-- Pin Message Button -->
-                                                @if ($isPinned)
-                                                    <button type="button" wire:click="unpinMessage({{ $msg->id }})"
-                                                        class="rounded-full p-1 text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-slate-700 transition cursor-pointer"
-                                                        title="Unpin message">
-                                                        <span class="text-[11px] leading-none">📌</span>
-                                                    </button>
-                                                @else
-                                                    <button type="button" wire:click="openPinMessageModal({{ $msg->id }})"
-                                                        class="rounded-full p-1 text-slate-400 hover:text-amber-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer"
-                                                        title="Pin message on top">
-                                                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                                                        </svg>
-                                                    </button>
-                                                @endif
-
-                                                <!-- Delete Message Button -->
-                                                @if ($canDelete)
-                                                    <button type="button"
-                                                        wire:confirm="Delete this message? It will be replaced with 'This message was deleted'."
-                                                        wire:click="deleteMessage({{ $msg->id }})"
-                                                        class="rounded-full p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition cursor-pointer"
-                                                        title="Delete message">
-                                                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                        </svg>
-                                                    </button>
-                                                @endif
-                                            </div>
-                                        @endif
-
                                         <!-- Reaction Summary Pills -->
                                         @if (!$msg->is_deleted)
                                             @php $reactionsSummary = $msg->getReactionsSummary(auth()->id()); @endphp
@@ -1341,6 +1385,112 @@
                                     @endif
                                 </div>
                             @endforelse
+                        </div>
+
+                        <!-- Floating Context Menu (Secondary Click on Desktop, 2s Hold on Mobile) -->
+                        <div x-show="contextMenu.show" x-cloak
+                            @click.outside="closeContextMenu()"
+                            @keydown.escape.window="closeContextMenu()"
+                            class="fixed z-50 animate-in fade-in zoom-in-95 duration-150 origin-top select-none"
+                            :style="`top: ${contextMenu.y}px; left: ${contextMenu.x}px;`"
+                            style="display: none;">
+                            <div class="w-64 overflow-hidden rounded-2xl border border-slate-200/90 bg-white/95 p-1.5 shadow-2xl backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-900/95">
+                                <!-- Quick Reaction Bar (Top Row) -->
+                                <div class="relative mb-1 flex items-center justify-between gap-1 rounded-xl bg-slate-50/90 dark:bg-slate-800/70 p-1 border border-slate-100 dark:border-slate-800">
+                                    @php
+                                        $quickEmojis = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
+                                        $extraEmojis = ['🎉', '👏', '🙏', '💯', '🚀', '👀', '✨', '⚡', '💡', '😍', '🤝', '🙌'];
+                                    @endphp
+                                    @foreach ($quickEmojis as $qEmoji)
+                                        <button type="button"
+                                            @click="$wire.toggleReaction(contextMenu.messageId, '{{ $qEmoji }}'); closeContextMenu();"
+                                            class="flex h-7 w-7 items-center justify-center rounded-lg text-base transition-transform hover:scale-130 active:scale-90 hover:bg-white dark:hover:bg-slate-700 cursor-pointer"
+                                            title="React {{ $qEmoji }}">
+                                            {{ $qEmoji }}
+                                        </button>
+                                    @endforeach
+
+                                    <!-- Expand More Emojis -->
+                                    <button type="button" @click="contextMenu.showExtraEmojis = !contextMenu.showExtraEmojis"
+                                        class="flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold text-slate-400 hover:text-amber-600 hover:bg-white dark:hover:bg-slate-700 transition cursor-pointer"
+                                        title="More reactions">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <!-- Extra Emojis Popover / Expansion -->
+                                <div x-show="contextMenu.showExtraEmojis" x-transition
+                                    class="mb-1.5 grid grid-cols-6 gap-1 rounded-xl bg-slate-100/90 dark:bg-slate-800/90 p-1.5 border border-slate-200/60 dark:border-slate-700/60">
+                                    @foreach ($extraEmojis as $eEmoji)
+                                        <button type="button"
+                                            @click="$wire.toggleReaction(contextMenu.messageId, '{{ $eEmoji }}'); closeContextMenu();"
+                                            class="flex h-7 w-7 items-center justify-center rounded-lg text-sm transition-transform hover:scale-125 active:scale-90 hover:bg-white dark:hover:bg-slate-700 cursor-pointer"
+                                            title="React {{ $eEmoji }}">
+                                            {{ $eEmoji }}
+                                        </button>
+                                    @endforeach
+                                </div>
+
+                                <!-- Action Items List -->
+                                <div class="space-y-0.5 text-xs font-medium text-slate-700 dark:text-slate-200">
+                                    <!-- Reply -->
+                                    <button type="button"
+                                        @click="$wire.setReply(contextMenu.messageId); closeContextMenu();"
+                                        class="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-1.5 text-left transition hover:bg-amber-50 hover:text-amber-700 dark:hover:bg-amber-950/40 dark:hover:text-amber-300 cursor-pointer">
+                                        <svg class="h-4 w-4 text-slate-400 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 016 6v3" />
+                                        </svg>
+                                        <span>Reply</span>
+                                    </button>
+
+                                    <!-- Forward -->
+                                    <button type="button"
+                                        @click="$wire.openForwardModal(contextMenu.messageId); closeContextMenu();"
+                                        class="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-1.5 text-left transition hover:bg-amber-50 hover:text-amber-700 dark:hover:bg-amber-950/40 dark:hover:text-amber-300 cursor-pointer">
+                                        <svg class="h-4 w-4 text-slate-400 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l6-6m0 0l-6-6m6 6H9a6 6 0 00-6 6v3" />
+                                        </svg>
+                                        <span>Forward</span>
+                                    </button>
+
+                                    <!-- Copy Text (when message has text) -->
+                                    <template x-if="contextMenu.body">
+                                        <button type="button"
+                                            @click="copyMessageText(contextMenu.body)"
+                                            class="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-1.5 text-left transition hover:bg-amber-50 hover:text-amber-700 dark:hover:bg-amber-950/40 dark:hover:text-amber-300 cursor-pointer">
+                                            <svg class="h-4 w-4 text-slate-400 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                            </svg>
+                                            <span x-text="contextMenu.copied ? 'Copied to Clipboard!' : 'Copy Text'"></span>
+                                        </button>
+                                    </template>
+
+                                    <!-- Pin / Unpin -->
+                                    <button type="button"
+                                        @click="if (contextMenu.isPinned) { $wire.unpinMessage(contextMenu.messageId); } else { $wire.openPinMessageModal(contextMenu.messageId); } closeContextMenu();"
+                                        class="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-1.5 text-left transition hover:bg-amber-50 hover:text-amber-700 dark:hover:bg-amber-950/40 dark:hover:text-amber-300 cursor-pointer">
+                                        <span class="text-sm leading-none">📌</span>
+                                        <span x-text="contextMenu.isPinned ? 'Unpin Message' : 'Pin Message'"></span>
+                                    </button>
+
+                                    <!-- Delete (when permitted) -->
+                                    <template x-if="contextMenu.canDelete">
+                                        <div>
+                                            <div class="my-1 border-t border-slate-100 dark:border-slate-800"></div>
+                                            <button type="button"
+                                                @click="if (confirm('Delete this message? It will be replaced with \'This message was deleted\'.')) { $wire.deleteMessage(contextMenu.messageId); } closeContextMenu();"
+                                                class="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-1.5 text-left text-red-600 dark:text-red-400 transition hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer font-semibold">
+                                                <svg class="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                                <span>Delete Message</span>
+                                            </button>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
                         </div>
 
                         @php $isFloatingGroup = $this->activeConversation->isGroup(); @endphp
@@ -2111,7 +2261,7 @@
                                 @php
                                     $title = $conv->getDisplayName(auth()->id());
                                     $avatar = $conv->getDisplayAvatar(auth()->id());
-                                    $unread = $conv->unreadCountFor(auth()->id());
+                                    $unread = $conv->unread_count ?? $conv->unreadCountFor(auth()->id());
                                     $latest = $conv->latestMessage;
                                     $isPinned = $conv->isPinnedFor(auth()->id());
                                     $convRecipient = $conv->isGroup() ? null : $conv->getRecipient(auth()->id());

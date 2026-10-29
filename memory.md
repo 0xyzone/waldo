@@ -344,6 +344,17 @@
   - **Morphing Action Button**: Replaced duplicate buttons with a unified dynamic action button on the far right. Displays a microphone icon when the textarea is empty, and automatically morphs into a glowing send button as soon as text is typed or an attachment is attached.
   - **De-congested Composer Row**: Removed the standalone Enter mode toggle button and left-side mic button, centering the auto-growing input with paperclip attachment and group mention controls.
 
-
-
-
+### 36. Chat Performance Acceleration, Message Pagination & Context Menu Actions (v2.8.13)
+- **Problem**:
+  - Chat was loading slowly and actions took too long because `User::unreadMessagesCount()` and conversation list ran N+1 database queries across all conversations on every page load and Livewire request.
+  - The message query fetched the complete chat history without pagination, inflating Livewire JSON payloads and DOM size.
+  - Every message bubble rendered 16+ buttons with full dropdown state in a hover pill container, causing layout jitter, high DOM node count, and accidental triggers on touch screens.
+- **Solution**:
+  - **Single SQL Query Unread Counts (`User.php`, `FloatingChatWidget.php`)**: Replaced iterative queries with a single indexed SQL join in `unreadMessagesCount()` and batch pre-computed unread counts grouped by conversation ID before rendering the conversation list.
+  - **Message Limit & Dynamic Pagination**: Limited active message feed loading to the latest 50 messages (`->latest('id')->take(50)->get()->reverse()->values()`) with an inline "Load earlier messages" action.
+  - **Secondary-Click & 2-Second Mobile Long-Press Context Menu (`floating-chat-widget.blade.php`)**:
+    - Completely removed the hover action pill from message bubbles.
+    - Added an Alpine context menu triggered via secondary mouse click (`@contextmenu.prevent="openContextMenu($event, msg)"`) on desktop or a 2-second press (`@touchstart`, `@touchend`, `@touchmove` with >8px cancel check and `navigator.vibrate(35)`) on mobile devices.
+    - Clamped menu positioning within chat bounds and included emoji reaction shortcuts, reply, forward, copy, pin, and delete options.
+  - **In-Memory Caching (`Message.php`)**: Memoized regex parsing for `@mentions` and message delivery statuses to avoid repetitive database and regex computation per message.
+  - **Self-Event Socket Filter**: Prevented redundant Livewire full-page re-renders when the current authenticated user initiates reactions or message deletions.

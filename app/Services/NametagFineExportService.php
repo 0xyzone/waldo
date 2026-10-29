@@ -67,7 +67,6 @@ class NametagFineExportService
         };
     }
 
-
     /**
      * Export fines collection to CSV or Excel streamed response.
      *

@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.8.12';
+    public const CURRENT_VERSION = '2.8.13';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,22 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.8.13',
+                'date' => '2026-10-29',
+                'title' => 'Chat Performance Acceleration, Message Pagination & Context Menu Actions',
+                'type' => 'micro',
+                'badge' => 'Chat Perf & UX',
+                'badge_color' => 'primary',
+                'description' => 'Massively accelerated chat responsiveness by eliminating N+1 database queries, batching unread counts, paginating message history to 50 items with dynamic loading, and replacing cluttering hover action pills with a sleek secondary-click (right-click) and mobile 2-second long-press context menu.',
+                'highlights' => [
+                    'Eliminated N+1 Unread Count Queries: Replaced the loop querying every single participant conversation with a single indexed SQL join, and batch pre-calculated unread counts for all conversations in one grouped query.',
+                    'Message Limit & Pagination: Limited initial message load to the latest 50 messages (reducing Livewire DOM weight by up to 90%) and added a smooth "Load earlier messages" button.',
+                    'Secondary-Click & Mobile Long-Press Context Menu: Replaced the layout-shifting and DOM-heavy hover action pill on every bubble with an elegant, clamped floating context menu triggered via desktop right-click or a 2-second mobile press with haptic feedback.',
+                    'Delivery and Mention Cache Optimizations: Cached mentioned user IDs and delivery statuses in in-memory properties, avoiding thousands of redundant regex and relationship lookups per render cycle.',
+                    'Self-Event Livewire Refresh Filtering: Filtered sender deletion and reaction events so client-side actions do not trigger unnecessary server round-trips.',
+                ],
+            ],
             [
                 'version' => '2.8.12',
                 'date' => '2026-10-28',

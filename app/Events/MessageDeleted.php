@@ -23,20 +23,23 @@ class MessageDeleted implements ShouldBroadcastNow
 
     public string $body;
 
+    public ?int $deletedBy;
+
     /**
      * @var array<int>
      */
     protected array $recipientIds = [];
 
-    public function __construct(Message $message)
+    public function __construct(Message $message, ?int $deletedBy = null)
     {
         $this->id = $message->id;
         $this->conversationId = $message->conversation_id;
         $this->isDeleted = true;
         $this->body = 'This message was deleted';
+        $this->deletedBy = $deletedBy ?? auth()->id();
 
         $this->recipientIds = ConversationParticipant::where('conversation_id', $message->conversation_id)
-            ->where('user_id', '!=', $message->sender_id)
+            ->where('user_id', '!=', $this->deletedBy)
             ->pluck('user_id')
             ->all();
     }
