@@ -280,11 +280,20 @@
                     <td class="text-center">{{ $item->perf_deduction_percent > 0 ? ($item->perf_deduction_percent + 0) . '%' : '-' }}</td>
                     <td class="text-right">{{ number_format($item->perf_deduction_amount, 0) }}</td>
                     <td class="text-right" style="color: #b91c1c;">{{ number_format($item->total_deduction_amount, 0) }}</td>
-                    <td class="text-right" style="font-weight: bold; color: #047857; font-size: 11px;">
+                    <td class="text-right" style="font-weight: bold; color: {{ $item->payout_status === 'Hold' ? '#b45309' : '#047857' }}; font-size: 11px;">
                         {{ number_format($item->final_payout, 2) }}
+                        @if($item->payout_status === 'Hold')
+                            <div style="font-size: 8.5px; color: #b91c1c; font-weight: bold; text-transform: uppercase;">[HELD]</div>
+                        @endif
                     </td>
                     <td>
-                        <span class="sig-box"></span>
+                        @if($item->payout_status === 'Hold')
+                            <div style="text-align: center; color: #991b1b; font-weight: bold; font-size: 9px; background: #fee2e2; border: 1px dashed #f87171; border-radius: 2px; padding: 2px 4px;">
+                                HELD FOR MERIT
+                            </div>
+                        @else
+                            <span class="sig-box"></span>
+                        @endif
                     </td>
                 </tr>
             @empty

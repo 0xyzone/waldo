@@ -444,5 +444,29 @@
   - **Print Layout (`royalty/print.blade.php`, `RoyaltyReportPrintController.php`)**:
     - Professional A4 landscape payout sheets with department filter, attendance/deduction columns, net payout highlights, and HR/Finance/Management signature blocks.
 
+### 43. Royalty Held Balances Ledger & Annual Merit Release (v2.9.1)
+- **Problem & Requirements**:
+  - Need to track cumulative held royalty bonus amounts for employees who were suspended or had their bonuses held across monthly reports.
+  - Requirement to view the detailed month-by-month historical list of what amount was held in what month for any employee.
+  - Ability for management to release held amounts (full release or partial release based on merit points collected during the year, typically executed in December), with justification notes and audit logging.
+  - Requirement for the attendance file upload logic in Royalty Bonus to match the exact same HRMS file uploaded in the Tips module.
+  - Requirement for a sample performance percentage deduction Excel template.
+- **Solution**:
+  - **Database Migration & Models (`RoyaltyHeldRelease.php`, `RoyaltyReportItem.php`)**:
+    - Added `payout_status` (`Release`, `Hold`) and `held_reason` to `royalty_report_items`. Suspended staff automatically default to `Hold`.
+    - Created `royalty_held_releases` table tracking disbursements with `amount`, `merit_points`, `release_date`, `notes`, and `released_by`.
+    - Added `royaltyReportItems` and `royaltyHeldReleases` relationships to `Employee`.
+  - **Royalty Held Balances Resource (`RoyaltyHeldBalanceResource.php`)**:
+    - Placed under `Royalty Bonus Management`.
+    - Lists all employees with held bonuses, displaying Total Held, Total Released, Remaining Balance, and count of held months.
+    - View page (`ViewRoyaltyHeldBalance.php`, `view-royalty-held-balance.blade.php`) shows profile banner, 4 stat cards, full month-by-month breakdown of held bonuses, and historical release transactions with revert capability.
+    - "Release Held Amount" modal action allows full or partial merit-based disbursement.
+  - **HRMS Attendance Parser Compatibility (`RoyaltyCalculationService.php`)**:
+    - Enhanced `parseAttendanceFile()` to match `TipsCalculationService::parseHrmsFile()` with two-row category/header detection, LOP/absent used balance summing, and punch counts.
+  - **Performance Upload Sample File**:
+    - Generated sample Excel template at `public/samples/royalty_performance_deduction_sample.xlsx` and dynamic download endpoint (`/royalty/samples/performance-deduction`).
+    - Added direct download link in `RoyaltyReportForm.php` helper text.
+
+
 
 

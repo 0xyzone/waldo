@@ -146,6 +146,44 @@ class ViewRoyaltyReport extends ViewRecord implements HasTable
         $this->resetTable();
     }
 
+    public function togglePayoutStatus(int $itemId): void
+    {
+        if ($this->record->isValidated()) {
+            Notification::make()
+                ->title('Report is Locked')
+                ->body('Cannot modify payout status while report is validated and locked.')
+                ->danger()
+                ->send();
+
+            return;
+        }
+
+        $item = RoyaltyReportItem::where('royalty_report_id', $this->record->id)
+            ->where('id', $itemId)
+            ->first();
+
+        if (! $item) {
+            return;
+        }
+
+        $newStatus = ($item->payout_status === 'Hold') ? 'Release' : 'Hold';
+        $reason = ($newStatus === 'Hold') ? 'Manually placed on Hold in report' : null;
+
+        $item->update([
+            'payout_status' => $newStatus,
+            'held_reason' => $reason,
+        ]);
+
+        Notification::make()
+            ->title('Payout Status Updated')
+            ->body("{$item->employee_code} payout status set to {$newStatus}.")
+            ->success()
+            ->send();
+
+        $this->record->refresh();
+        $this->resetTable();
+    }
+
     public function table(Table $table): Table
     {
         return $table
@@ -249,6 +287,14 @@ class ViewRoyaltyReport extends ViewRecord implements HasTable
                     ->color('success')
                     ->sortable(),
 
+                TextColumn::make('payout_status')
+                    ->label('Payout Status')
+                    ->badge()
+                    ->color(fn ($state) => $state === 'Hold' ? 'danger' : 'success')
+                    ->icon(fn ($state) => $state === 'Hold' ? 'heroicon-m-lock-closed' : 'heroicon-m-check-circle')
+                    ->action(fn (RoyaltyReportItem $record) => $this->togglePayoutStatus($record->id))
+                    ->tooltip(fn () => $this->record->isValidated() ? 'Report is locked' : 'Click to toggle Hold/Release'),
+
                 IconColumn::make('is_exempt')
                     ->label('Exempt')
                     ->boolean()
@@ -264,6 +310,13 @@ class ViewRoyaltyReport extends ViewRecord implements HasTable
                     ->label('Department')
                     ->options(fn () => RoyaltyReportItem::where('royalty_report_id', $this->record->id)->distinct()->pluck('department_name', 'department_name')->toArray())
                     ->visible(fn () => $this->activeDepartment === 'All'),
+
+                SelectFilter::make('payout_status')
+                    ->label('Payout Status')
+                    ->options([
+                        'Release' => 'Release (Disbursed)',
+                        'Hold' => 'Hold (Withheld)',
+                    ]),
 
                 TernaryFilter::make('is_exempt')
                     ->label('Exemption')

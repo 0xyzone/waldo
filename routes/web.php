@@ -107,6 +107,9 @@ Route::prefix('/royalty/reports/{report}')->middleware('auth')->group(function (
     Route::get('/print/{department}', [RoyaltyReportPrintController::class, 'printReport'])->name('royalty.reports.print-dept');
     Route::get('/export', [RoyaltyReportPrintController::class, 'exportExcel'])->name('royalty.reports.export');
 });
+Route::get('/royalty/samples/performance-deduction', [RoyaltyReportPrintController::class, 'downloadPerformanceSample'])
+    ->name('royalty.samples.performance-deduction')
+    ->middleware('auth');
 
 // EOM / GOM Monthly Report & HRMS Wish Card
 Route::prefix('/tips/eom-gom-reports/{report}')->middleware('auth')->group(function () {

@@ -28,6 +28,8 @@ class RoyaltyReportItem extends Model
         'attendance_deduction_amount',
         'total_deduction_amount',
         'final_payout',
+        'payout_status',
+        'held_reason',
         'remarks',
     ];
 

@@ -14,6 +14,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\HtmlString;
 
 class RoyaltyReportForm
 {
@@ -118,7 +119,7 @@ class RoyaltyReportForm
                                     'text/csv',
                                     'text/plain',
                                 ])
-                                ->helperText('Excel containing Employee Code, Absent Days, Late In / Early Out, and Missing Thumb counts.')
+                                ->helperText('Upload standard HRMS attendance report (identical format to Tips generation).')
                                 ->maxSize(20480),
 
                             FileUpload::make('performance_file_path')
@@ -131,7 +132,7 @@ class RoyaltyReportForm
                                     'text/csv',
                                     'text/plain',
                                 ])
-                                ->helperText('Excel containing Employee Code and Performance Deduction % (e.g., 10%, 25%).')
+                                ->helperText(new HtmlString('Upload Excel containing Employee Code & Deduction %. <a href="/royalty/samples/performance-deduction" class="text-primary-600 dark:text-primary-400 font-bold underline" target="_blank">📥 Download Sample Excel Template</a>'))
                                 ->maxSize(20480),
                         ]),
                     ]),

@@ -99,6 +99,10 @@ class RoyaltyCalculationService
                     settings: $settings
                 );
 
+                $isHold = ($employee->employee_status === 'Suspended') || strtoupper(trim((string) ($employee->tips_status ?? ''))) === 'HOLD';
+                $payoutStatus = $isHold ? 'Hold' : 'Release';
+                $heldReason = $isHold ? ($employee->employee_status === 'Suspended' ? 'Staff suspended' : 'Staff on hold') : null;
+
                 RoyaltyReportItem::create([
                     'royalty_report_id' => $report->id,
                     'employee_code' => $employee->employee_code,
@@ -120,6 +124,8 @@ class RoyaltyCalculationService
                     'attendance_deduction_amount' => $calc['attendance_deduction_amount'],
                     'total_deduction_amount' => $calc['total_deduction_amount'],
                     'final_payout' => $calc['final_payout'],
+                    'payout_status' => $payoutStatus,
+                    'held_reason' => $heldReason,
                     'remarks' => $isExempt ? 'Exempt from deductions (Always Max Payout)' : null,
                 ]);
             }
@@ -274,20 +280,30 @@ class RoyaltyCalculationService
             return [];
         }
 
-        // Find header row containing identifier columns
+        // 1. Locate header row containing 'username' or ('full name' and 'id') or 'employee code'
         $headerRowIdx = null;
+        $categoryRowIdx = null;
+
         for ($i = 0; $i < min(15, count($rows)); $i++) {
             $normalized = array_map(fn ($c) => strtolower(trim((string) $c)), $rows[$i]);
             if (
                 in_array('username', $normalized) ||
+                (in_array('full name', $normalized) && in_array('id', $normalized)) ||
                 in_array('employee code', $normalized) ||
                 in_array('employee_code', $normalized) ||
                 in_array('staff id', $normalized) ||
                 in_array('staff_id', $normalized) ||
-                in_array('biometric id', $normalized) ||
-                (in_array('id', $normalized) && in_array('full name', $normalized))
+                in_array('biometric id', $normalized)
             ) {
                 $headerRowIdx = $i;
+                // Find nearest non-empty row above headerRowIdx as categoryRow
+                for ($k = $i - 1; $k >= 0; $k--) {
+                    $nonEmpty = array_filter($rows[$k], fn ($c) => trim((string) $c) !== '');
+                    if (! empty($nonEmpty)) {
+                        $categoryRowIdx = $k;
+                        break;
+                    }
+                }
                 break;
             }
         }
@@ -297,74 +313,103 @@ class RoyaltyCalculationService
         }
 
         $headerRow = $rows[$headerRowIdx];
-        $codeCol = null;
-        $absentCol = null;
+        $categoryRow = $categoryRowIdx !== null ? $rows[$categoryRowIdx] : [];
+
+        $usernameCol = null;
         $lateInCol = null;
         $earlyOutCol = null;
-        $missingThumbCol = null;
+        $missingPunchInCol = null;
+        $absentDaysCol = null;
+        $absentCols = [];
 
         foreach ($headerRow as $idx => $cell) {
             $norm = strtolower(trim((string) $cell));
+            $catNorm = isset($categoryRow[$idx]) ? strtolower(trim((string) $categoryRow[$idx])) : '';
 
-            if (in_array($norm, ['username', 'employee code', 'employee_code', 'staff id', 'staff_id', 'biometric id', 'code', 'id'])) {
-                if ($codeCol === null || $norm === 'username' || $norm === 'employee code' || $norm === 'employee_code') {
-                    $codeCol = $idx;
+            if (in_array($norm, ['username', 'employee code', 'employee_code', 'staff id', 'staff_id', 'biometric id', 'code', 'id']) || in_array($catNorm, ['username', 'employee code'])) {
+                if ($usernameCol === null || $norm === 'username' || $norm === 'employee code' || $norm === 'employee_code') {
+                    $usernameCol = $idx;
                 }
             }
 
-            if (in_array($norm, ['absent days', 'absent_days', 'absent', 'lop days', 'lop'])) {
-                $absentCol = $idx;
+            if (in_array($norm, ['absent days', 'absent_days', 'absent', 'lop days', 'lop']) || in_array($catNorm, ['absent days', 'absent_days', 'absent'])) {
+                $absentDaysCol = $idx;
             }
 
-            if (in_array($norm, ['late in', 'late_in', 'late in count', 'late_in_count', 'late count', 'late'])) {
+            // Late in / Early out check on either headerRow or categoryRow
+            if (in_array($norm, ['late in count', 'late in', 'late_in_count', 'late count', 'late']) || in_array($catNorm, ['late in count', 'late in', 'late_in_count'])) {
                 $lateInCol = $idx;
             }
 
-            if (in_array($norm, ['early out', 'early_out', 'early out count', 'early_out_count', 'early count', 'early'])) {
+            if (in_array($norm, ['early out count', 'early out', 'early_out_count', 'early count', 'early']) || in_array($catNorm, ['early out count', 'early out', 'early_out_count'])) {
                 $earlyOutCol = $idx;
             }
 
-            if (in_array($norm, ['missing punch in', 'missing thumb', 'missing_thumb', 'missing punch', 'missing_punch_in_count', 'missing thumbs'])) {
-                $missingThumbCol = $idx;
+            // Missing Punch In / Missing Thumb Count check on either headerRow or categoryRow
+            if (
+                in_array($norm, ['missing punch in count', 'missing punch in', 'missing_punch_in_count', 'missing punch', 'missing_punch', 'missing thumb', 'missing_thumb', 'missing thumbs'])
+                || in_array($catNorm, ['missing punch in count', 'missing punch in', 'missing_punch_in_count', 'missing punch', 'missing thumb', 'missing_thumb'])
+            ) {
+                $missingPunchInCol = $idx;
+            }
+
+            // Check for Used Balance columns in HRMS Leave report
+            if ($norm === 'used balance' || $norm === 'used') {
+                $cat = trim((string) ($categoryRow[$idx] ?? ''));
+                if ($cat === '' && $idx > 0) {
+                    $cat = trim((string) ($categoryRow[$idx - 1] ?? ''));
+                }
+                $catLower = strtolower($cat);
+                if (str_contains($catLower, 'lop') || str_contains($catLower, 'loss of pay') || str_contains($catLower, 'absent')) {
+                    $absentCols[$idx] = $cat;
+                }
             }
         }
 
-        if ($codeCol === null) {
+        if ($usernameCol === null) {
             return [];
         }
 
         $results = [];
-        for ($i = $headerRowIdx + 1; $i < count($rows); $i++) {
-            $cells = $rows[$i];
-            $code = strtoupper(trim((string) ($cells[$codeCol] ?? '')));
-            if ($code === '') {
+
+        for ($r = $headerRowIdx + 1; $r < count($rows); $r++) {
+            $cells = $rows[$r];
+            $username = trim((string) ($cells[$usernameCol] ?? ''));
+            if ($username === '') {
                 continue;
             }
 
-            $absent = 0.0;
-            if ($absentCol !== null && is_numeric($cells[$absentCol] ?? null)) {
-                $absent = max(0.0, (float) $cells[$absentCol]);
+            // Absent days: strictly use explicit absent days column if present; otherwise fallback to summing LOP/Absent used balances
+            $absentDays = 0.0;
+            if ($absentDaysCol !== null) {
+                $val = $cells[$absentDaysCol] ?? null;
+                $absentDays = ($val !== '-' && is_numeric($val)) ? (float) $val : 0.0;
+            } elseif (! empty($absentCols)) {
+                foreach ($absentCols as $cIdx => $name) {
+                    $v = $cells[$cIdx] ?? 0;
+                    if ($v !== '-' && is_numeric($v) && (float) $v > 0) {
+                        $absentDays += (float) $v;
+                    }
+                }
             }
 
-            $lateIn = 0;
-            if ($lateInCol !== null && is_numeric($cells[$lateInCol] ?? null)) {
-                $lateIn = max(0, (int) $cells[$lateInCol]);
-            }
+            $lateIn = $lateInCol !== null && is_numeric($cells[$lateInCol] ?? null)
+                ? (int) $cells[$lateInCol]
+                : 0;
 
-            $earlyOut = 0;
-            if ($earlyOutCol !== null && is_numeric($cells[$earlyOutCol] ?? null)) {
-                $earlyOut = max(0, (int) $cells[$earlyOutCol]);
-            }
+            $earlyOut = $earlyOutCol !== null && is_numeric($cells[$earlyOutCol] ?? null)
+                ? (int) $cells[$earlyOutCol]
+                : 0;
 
-            $missingThumb = 0;
-            if ($missingThumbCol !== null && is_numeric($cells[$missingThumbCol] ?? null)) {
-                $missingThumb = max(0, (int) $cells[$missingThumbCol]);
-            }
+            $missingPunchIn = $missingPunchInCol !== null && is_numeric($cells[$missingPunchInCol] ?? null)
+                ? (int) $cells[$missingPunchInCol]
+                : 0;
 
+            $code = strtoupper(trim($username));
             $results[$code] = [
-                'absent_days' => $absent,
-                'late_early_count' => $lateIn + $earlyOut,
-                'missing_thumb_count' => $missingThumb,
+                'absent_days' => max(0.0, $absentDays),
+                'late_early_count' => max(0, $lateIn + $earlyOut),
+                'missing_thumb_count' => max(0, $missingPunchIn),
             ];
         }
 
@@ -416,7 +461,12 @@ class RoyaltyCalculationService
                 }
             }
 
-            if (in_array($norm, ['deduction', 'performance deduction', 'performance_deduction', 'deduction %', 'deduction percent', 'deduction_percent', 'percent', 'percentage', 'deduction_rate'])) {
+            if (in_array($norm, [
+                'deduction', 'performance deduction', 'performance_deduction', 'deduction %', 'deduction percent',
+                'deduction_percent', 'percent', 'percentage', 'deduction_rate', 'performance deduction %',
+                'performance deduction percent', 'performance %', 'perf %', 'perf deduction %', 'perf deduction',
+                'performance', 'deduction percentage',
+            ])) {
                 $deductionCol = $idx;
             }
         }
@@ -537,6 +587,8 @@ class RoyaltyCalculationService
                 'Attendance Deduction (Rs.)',
                 'Total Deduction (Rs.)',
                 'Final Net Payout (Rs.)',
+                'Payout Status',
+                'Hold Reason / Remarks',
             ];
 
             $writer->addRow(Row::fromValues($headers, $headerStyle));
@@ -567,6 +619,8 @@ class RoyaltyCalculationService
                     (float) $item->attendance_deduction_amount,
                     (float) $item->total_deduction_amount,
                     (float) $item->final_payout,
+                    $item->payout_status ?? 'Release',
+                    $item->held_reason ?: ($item->remarks ?: '-'),
                 ];
 
                 $writer->addRow(Row::fromValues($rowValues));
@@ -598,6 +652,50 @@ class RoyaltyCalculationService
                 (float) $items->sum('final_payout'),
             ];
             $writer->addRow(Row::fromValues($totalRow, $summaryStyle));
+
+            $writer->close();
+        }, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
+    /**
+     * Download sample Excel template for Performance Deduction upload.
+     */
+    public function downloadPerformanceSample(): StreamedResponse
+    {
+        $fileName = 'Royalty_Performance_Deduction_Sample.xlsx';
+
+        return response()->streamDownload(function () {
+            $writer = new XlsxWriter;
+            $writer->openToFile('php://output');
+
+            $headerStyle = (new Style)
+                ->setFontBold()
+                ->setFontColor('FFFFFF')
+                ->setBackgroundColor('1E293B');
+
+            $headers = [
+                'Employee Code',
+                'Employee Name',
+                'Department',
+                'Designation',
+                'Performance Deduction %',
+                'Remarks / Reason',
+            ];
+            $writer->addRow(Row::fromValues($headers, $headerStyle));
+
+            $sampleRows = [
+                ['EMP001', 'John Doe', 'Gaming', 'Dealer', '0%', 'Met all monthly KPIs'],
+                ['EMP002', 'Jane Smith', 'Food & Beverage', 'Waiter', '10%', 'Monthly KPI shortfall (-10%)'],
+                ['EMP003', 'Ram Bahadur', 'Housekeeping', 'Attendant', '25%', 'Service quality escalation (-25%)'],
+                ['EMP004', 'Sita Sharma', 'Surveillance', 'Operator', '15%', 'SOP compliance penalty (-15%)'],
+                ['EMP005', 'Hari Thapa', 'Security', 'Security Guard', '0%', 'Clean performance record'],
+            ];
+
+            foreach ($sampleRows as $row) {
+                $writer->addRow(Row::fromValues($row));
+            }
 
             $writer->close();
         }, $fileName, [

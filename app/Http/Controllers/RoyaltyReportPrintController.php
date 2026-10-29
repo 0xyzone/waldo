@@ -48,4 +48,12 @@ class RoyaltyReportPrintController extends Controller
     {
         return app(RoyaltyCalculationService::class)->exportExcel($report);
     }
+
+    /**
+     * Download sample Excel template for Performance Deduction upload.
+     */
+    public function downloadPerformanceSample(): StreamedResponse
+    {
+        return app(RoyaltyCalculationService::class)->downloadPerformanceSample();
+    }
 }

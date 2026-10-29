@@ -298,4 +298,14 @@ class Employee extends Model
 
         return Carbon::parse($this->dob_ad)->age;
     }
+
+    public function royaltyReportItems(): HasMany
+    {
+        return $this->hasMany(RoyaltyReportItem::class, 'employee_code', 'employee_code');
+    }
+
+    public function royaltyHeldReleases(): HasMany
+    {
+        return $this->hasMany(RoyaltyHeldRelease::class, 'employee_code', 'employee_code');
+    }
 }

@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.0';
+    public const CURRENT_VERSION = '2.9.1';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,21 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.1',
+                'date' => '2026-10-29',
+                'title' => 'Royalty Held Balances Ledger, Annual Merit Release & Performance Sample Template',
+                'type' => 'micro',
+                'badge' => 'Enhancement',
+                'badge_color' => 'success',
+                'description' => 'Introduced Royalty Held Balances management resource for tracking accumulated withheld bonuses, full or partial annual merit-based disbursements, attendance parser compatibility with Tips HRMS sheets, and downloadable sample performance deduction Excel templates.',
+                'highlights' => [
+                    'Royalty Held Balances Resource: Dedicated resource under Royalty Bonus Management tracking employee cumulative held amounts, released disbursements, and net remaining balances with full monthly breakdowns.',
+                    'Annual Merit Release Action: Interactive modal permitting full or partial held bonus release based on management-evaluated annual merit points with justification notes and audit logging.',
+                    'HRMS Attendance Format Compatibility: Standardized royalty attendance parser to support multi-row category headers, LOP/absent used balance summing, and punch counts identical to the Tips calculation engine.',
+                    'Downloadable Performance Sample Template: Built-in Excel sample template generator and download link on the upload form with support for Employee Code, Name, Deduction %, and Remarks.',
+                ],
+            ],
             [
                 'version' => '2.9.0',
                 'date' => '2026-10-29',

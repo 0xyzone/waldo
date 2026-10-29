@@ -4,6 +4,18 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.1] - 2026-10-29
+
+### Added & Enhanced
+- **Royalty Held Balances Ledger & Annual Merit Release**:
+  - **Royalty Held Balances Resource**: Added a dedicated management resource (`RoyaltyHeldBalanceResource`) under the Royalty Bonus Management group. Tracks each employee's total accumulated held bonuses across monthly reports, total releases disbursed, and current remaining held balance.
+  - **Annual Merit Release Action**: Interactive release modal enabling management to disburse held funds in full or partially based on merit points collected during the year, recording justification notes and audit metadata.
+  - **View Details Page**: Comprehensive view featuring employee profile, stat overview cards, month-by-month historical breakdown of held bonuses with deduction details, and release ledger with revert capability.
+  - **HRMS Attendance Format Standardization**: Updated `RoyaltyCalculationService::parseAttendanceFile` to fully mirror the Tips HRMS attendance parser, supporting two-row category headers, LOP/absent used balance summing, and biometric punch count mapping.
+  - **Performance Deduction Sample Excel**: Added pre-formatted sample Excel template at `public/samples/royalty_performance_deduction_sample.xlsx` and dynamic download endpoint (`/royalty/samples/performance-deduction`) linked directly from the report upload form.
+
+---
+
 ## [2.9.0] - 2026-10-29
 
 ### Added
