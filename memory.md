@@ -484,3 +484,22 @@
     - Deduced remarks from the uploaded file are saved directly into `royalty_report_items.remarks` and displayed in the Filament table with hover tooltips.
   - **Database Attribute Harmonization**:
     - Updated report viewing and print export queries to match exact database column names (`department`, `designation`, `performance_deduction_percent`, `performance_deduction_amount`) and added backward-compatible accessors to `RoyaltyReportItem`.
+
+### 45. Designation Royalty Bonus Calculation Toggle & Settings Page Manager (v2.9.3)
+- **Problem & Requirements**:
+  - Need for a toggle option on designations to determine whether that designation is to be calculated in Royalty Bonus management.
+  - Ability to manage this designation eligibility both directly from the Designations table and from the Royalty Bonus Settings page.
+  - Report calculation engine must only include employees whose designations have this toggle enabled.
+- **Solution**:
+  - **Database & Model (`designations.is_royalty_eligible`, `Designation.php`)**:
+    - Created migration `2026_10_29_171500_add_is_royalty_eligible_to_designations_table.php` adding boolean column `is_royalty_eligible` (default `false`).
+    - Added `is_royalty_eligible` to `$fillable`, boolean cast, and query scope `scopeRoyaltyEligible()`.
+  - **Designations Table & Form Integration (`DesignationsTable.php`, `DesignationForm.php`)**:
+    - Added `ToggleColumn::make('is_royalty_eligible')` labeled "Royalty Bonus" with sorting and alignment, plus `TernaryFilter` for quick status filtering.
+    - Added "Include in Royalty Bonus Calculation" toggle to `DesignationForm` under the Royalty Bonus Configuration section.
+  - **Royalty Settings Designation Manager (`ManageRoyaltyBonusSettings.php`, `manage-royalty-bonus-settings.blade.php`)**:
+    - Added interactive designation manager with search bar, department dropdown filter, status filter (All, Eligible, Excluded), and bulk enable/disable actions.
+    - Integrated real-time Livewire toggle switches (`toggleDesignation()`) for 1-click status updating with instant toast notifications.
+    - Added summary stats displaying total eligible designations and cumulative monthly max budget.
+  - **Calculation Engine Filtering (`RoyaltyCalculationService.php`)**:
+    - Updated `generate()` to filter employees with `whereHas('designation', fn ($q) => $q->where('is_royalty_eligible', true))`, ensuring only staff with eligible designations are calculated in royalty bonus monthly reports.

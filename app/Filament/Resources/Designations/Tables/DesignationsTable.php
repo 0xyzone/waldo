@@ -18,6 +18,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
@@ -68,6 +69,11 @@ class DesignationsTable
                     ->sortable()
                     ->alignEnd()
                     ->toggleable(),
+                ToggleColumn::make('is_royalty_eligible')
+                    ->label('Royalty Bonus')
+                    ->sortable()
+                    ->alignCenter()
+                    ->toggleable(),
                 IconColumn::make('is_active')
                     ->label('Active')
                     ->boolean()
@@ -95,6 +101,11 @@ class DesignationsTable
                     ->options(Department::where('is_active', true)->orderBy('rank')->pluck('name', 'id'))
                     ->searchable()
                     ->placeholder('All Departments'),
+                TernaryFilter::make('is_royalty_eligible')
+                    ->label('Royalty Bonus')
+                    ->placeholder('All Designations')
+                    ->trueLabel('Royalty Eligible Only')
+                    ->falseLabel('Non-Royalty Only'),
                 TernaryFilter::make('is_active')
                     ->label('Status')
                     ->placeholder('All Designations')

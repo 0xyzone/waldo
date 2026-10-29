@@ -4,6 +4,18 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.3] - 2026-10-29
+
+### Added & Enhanced
+- **Designation Royalty Bonus Calculation Toggle & Settings Page Manager**:
+  - **Designation Schema Toggle (`is_royalty_eligible`)**: Added `is_royalty_eligible` boolean flag to designations table with model casts and scope `scopeRoyaltyEligible()`.
+  - **Inline Table Toggle & Filter**: Added interactive `ToggleColumn` and `TernaryFilter` in `DesignationsTable` allowing direct one-click inclusion/exclusion of designations from Royalty Bonus calculation.
+  - **Form Configuration**: Added "Include in Royalty Bonus Calculation" toggle to `DesignationForm` under the Royalty Bonus Configuration section.
+  - **Royalty Settings Designation Manager**: Added comprehensive real-time management section in `ManageRoyaltyBonusSettings` with instant Livewire toggle switches, search filtering, department selector, and bulk enable/disable actions.
+  - **Calculation Engine Filtering**: Updated `RoyaltyCalculationService::generate()` to strictly include employees holding designations with `is_royalty_eligible` enabled.
+
+---
+
 ## [2.9.2] - 2026-10-29
 
 ### Enhanced & Streamlined

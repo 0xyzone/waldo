@@ -4,6 +4,8 @@ namespace App\Filament\Pages;
 
 use Agroezinger\FilamentShieldEnhanced\Traits\HasPageShield;
 use App\Models\AppSetting;
+use App\Models\Department;
+use App\Models\Designation;
 use BackedEnum;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -14,6 +16,7 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Collection;
 use UnitEnum;
 
 class ManageRoyaltyBonusSettings extends Page
@@ -56,6 +59,15 @@ class ManageRoyaltyBonusSettings extends Page
     public ?string $royalty_missing_thumb_penalty = '100.00';
 
     public bool $royalty_enforce_min_floor = true;
+
+    /**
+     * Designation management interactive properties.
+     */
+    public string $selectedDepartment = 'all';
+
+    public string $searchDesignation = '';
+
+    public string $royaltyFilter = 'all'; // 'all', 'eligible', 'ineligible'
 
     public static function getShieldPagePermissions(): array
     {
@@ -191,5 +203,93 @@ class ManageRoyaltyBonusSettings extends Page
             ->body('Royalty bonus calculation and deduction rules have been updated.')
             ->success()
             ->send();
+    }
+
+    public function getDepartmentsProperty(): Collection
+    {
+        return Department::where('is_active', true)
+            ->orderBy('rank')
+            ->orderBy('name')
+            ->get();
+    }
+
+    public function getFilteredDesignationsProperty(): Collection
+    {
+        $query = Designation::query()
+            ->with('department')
+            ->orderBy('department_id')
+            ->orderBy('name');
+
+        if ($this->selectedDepartment !== 'all') {
+            $query->where('department_id', $this->selectedDepartment);
+        }
+
+        if ($this->royaltyFilter === 'eligible') {
+            $query->where('is_royalty_eligible', true);
+        } elseif ($this->royaltyFilter === 'ineligible') {
+            $query->where('is_royalty_eligible', false);
+        }
+
+        if (trim($this->searchDesignation) !== '') {
+            $term = trim($this->searchDesignation);
+            $query->where('name', 'like', "%{$term}%");
+        }
+
+        return $query->get();
+    }
+
+    public function getTotalDesignationsCountProperty(): int
+    {
+        return Designation::count();
+    }
+
+    public function getEligibleDesignationsCountProperty(): int
+    {
+        return Designation::where('is_royalty_eligible', true)->count();
+    }
+
+    public function getTotalMonthlyMaxBudgetProperty(): float
+    {
+        return (float) Designation::where('is_royalty_eligible', true)->sum('royalty_monthly_max');
+    }
+
+    public function toggleDesignation(int $id): void
+    {
+        $designation = Designation::find($id);
+        if ($designation) {
+            $designation->is_royalty_eligible = ! $designation->is_royalty_eligible;
+            $designation->save();
+
+            $status = $designation->is_royalty_eligible ? 'included in' : 'excluded from';
+            Notification::make()
+                ->title('Designation Eligibility Updated')
+                ->body("{$designation->name} is now {$status} Royalty Bonus calculations.")
+                ->success()
+                ->send();
+        }
+    }
+
+    public function setDepartment(string $deptId): void
+    {
+        $this->selectedDepartment = $deptId;
+    }
+
+    public function setRoyaltyFilter(string $filter): void
+    {
+        $this->royaltyFilter = $filter;
+    }
+
+    public function bulkSetEligibility(bool $status): void
+    {
+        $ids = $this->filteredDesignations->pluck('id');
+        if ($ids->isNotEmpty()) {
+            Designation::whereIn('id', $ids)->update(['is_royalty_eligible' => $status]);
+            $action = $status ? 'included in' : 'excluded from';
+            Notification::make()
+                ->title('Bulk Update Complete')
+                ->body(count($ids).' designation(s) have been '.$action.' Royalty Bonus calculations.')
+                ->success()
+                ->send();
+        }
     }
 }

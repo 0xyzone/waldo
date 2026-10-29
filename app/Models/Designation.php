@@ -26,6 +26,7 @@ class Designation extends Model
         'royalty_annual_budget',
         'royalty_monthly_max',
         'royalty_monthly_min',
+        'is_royalty_eligible',
         'is_active',
     ];
 
@@ -40,6 +41,7 @@ class Designation extends Model
         'royalty_annual_budget' => 'decimal:2',
         'royalty_monthly_max' => 'decimal:2',
         'royalty_monthly_min' => 'decimal:2',
+        'is_royalty_eligible' => 'boolean',
         'is_active' => 'boolean',
     ];
 
@@ -80,6 +82,14 @@ class Designation extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope a query to only include designations eligible for royalty bonus calculation.
+     */
+    public function scopeRoyaltyEligible($query)
+    {
+        return $query->where('is_royalty_eligible', true);
     }
 
     /**

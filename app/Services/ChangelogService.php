@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.2';
+    public const CURRENT_VERSION = '2.9.3';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,21 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.3',
+                'date' => '2026-10-29',
+                'title' => 'Designation Royalty Bonus Calculation Toggle & Settings Page Manager',
+                'type' => 'micro',
+                'badge' => 'Enhancement',
+                'badge_color' => 'success',
+                'description' => 'Added a toggle option on designations to determine whether a designation is included in Royalty Bonus calculations, with direct management in both the Designations table and the Royalty Settings page.',
+                'highlights' => [
+                    'Designations Table Toggle Column: Added interactive "Royalty Bonus" toggle column and ternary filter to DesignationsTable for inline eligibility toggling.',
+                    'Designation Form Toggle: Added "Include in Royalty Bonus Calculation" toggle to DesignationForm under Royalty Bonus Configuration.',
+                    'Royalty Settings Designation Manager: Interactive panel in Royalty Bonus Settings featuring quick search, department filter, bulk enable/disable actions, and real-time Livewire toggle switches.',
+                    'Calculation Engine Filtering: Updated RoyaltyCalculationService to strictly process employees whose designations have is_royalty_eligible enabled.',
+                ],
+            ],
             [
                 'version' => '2.9.2',
                 'date' => '2026-10-29',

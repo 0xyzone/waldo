@@ -128,6 +128,12 @@ class DesignationForm
                             ->dehydrated()
                             ->helperText('Max payout / 2.')
                             ->columnSpan(1),
+
+                        Toggle::make('is_royalty_eligible')
+                            ->label('Include in Royalty Bonus Calculation')
+                            ->helperText('When enabled, active employees with this designation will be calculated in monthly royalty bonus reports.')
+                            ->default(false)
+                            ->columnSpanFull(),
                     ]),
 
                 ActionLogSection::make(),

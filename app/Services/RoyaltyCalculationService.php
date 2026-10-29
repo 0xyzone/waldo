@@ -37,10 +37,13 @@ class RoyaltyCalculationService
                 ->flip()
                 ->toArray();
 
-            // 3. Query all eligible employees (Active, Resigning This Month, Suspended)
+            // 3. Query all eligible employees (Active, Resigning This Month, Suspended) with royalty-eligible designations
             $employees = Employee::query()
                 ->with(['department', 'designation'])
                 ->whereIn('employee_status', ['Active', 'Resigning This Month', 'Suspended'])
+                ->whereHas('designation', function ($q) {
+                    $q->where('is_royalty_eligible', true);
+                })
                 ->orderBy('employee_code')
                 ->get();
 
