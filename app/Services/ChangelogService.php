@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.8.15';
+    public const CURRENT_VERSION = '2.8.16';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,20 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.8.16',
+                'date' => '2026-10-29',
+                'title' => 'Topbar Chat Drawer Toggle Binding, Livewire Single-Root Fix & Gesture Aria-Hidden Removal',
+                'type' => 'micro',
+                'badge' => 'Bug Fix',
+                'badge_color' => 'success',
+                'description' => 'Fixed topbar chat icon not opening the chat drawer by moving script tags inside the single root Livewire element, adding Livewire #[On(\'toggle-floating-chat\')] listeners to FloatingChatWidget, dual-dispatching events from topbar buttons, and removing blocked aria-hidden on mobile gesture container to resolve browser console warnings.',
+                'highlights' => [
+                    'Topbar Chat Launcher Binding: Added Livewire #[On("toggle-floating-chat")], #[On("open-floating-chat")], and #[On("close-floating-chat")] attributes to FloatingChatWidget and dual-dispatched through both native window CustomEvents and Livewire client event bus from chat-topbar-button.',
+                    'Livewire 3 Single Root Element Enforced: Moved component scripts inside a single root <div> element in floating-chat-widget.blade.php, eliminating multi-root DOM diffing failure that severed $wire communication.',
+                    'Blocked aria-hidden Console Warning Removed: Removed aria-hidden="true" from #mobile-sidebar-gesture-root which was conflicting with the focusable #mobile-edge-handle button and causing browser console accessibility warnings.',
+                ],
+            ],
             [
                 'version' => '2.8.15',
                 'date' => '2026-10-29',

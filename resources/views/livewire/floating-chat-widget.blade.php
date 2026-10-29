@@ -1,3 +1,4 @@
+<div>
 <script>
     if (!window.voicePlayer) {
         window.voicePlayer = function(url, seedId = 1) {
@@ -233,7 +234,6 @@
         };
     }
 </script>
-<div>
     <div x-data="{
         isOpen: @entangle('isOpen'),
         activeConversationId: @entangle('activeConversationId'),

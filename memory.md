@@ -389,3 +389,16 @@
     - Seeded deterministic, natural human-speech waveform bar visualization based on message ID, supplemented by `AudioContext` PCM decode analysis.
     - Implemented interactive waveform seeking (`@click.stop="handleBarClick($event)"`), synchronized elapsed/duration time display, and speed cycling (`1x`, `1.5x`, `2x`).
   - **Changelog TypeError Guard (`changelog.blade.php`)**: Updated the changelog Blade view to safely check whether `$release['highlights']` is a string or array, rendering release descriptions and formatting array highlights with clean bullet points.
+
+### 39. Topbar Chat Drawer Toggle Binding, Livewire Single-Root Fix & Gesture Aria-Hidden Removal (v2.8.16)
+- **Problem**:
+  - Clicking the chat icon in the topbar did nothing; the slide-over chat modal failed to open.
+  - In `floating-chat-widget.blade.php`, `<script>` tags were positioned before the root `<div>`, creating multiple root elements in Livewire 3 and breaking `$wire` method bindings.
+  - `FloatingChatWidget` lacked Livewire `#[On]` event listener attributes for `toggle-floating-chat`, `open-floating-chat`, and `close-floating-chat`.
+  - The browser console reported an accessibility warning: `Blocked aria-hidden on an element because its descendant retained focus` due to `aria-hidden="true"` on `#mobile-sidebar-gesture-root` containing the focusable `#mobile-edge-handle` button.
+- **Solution**:
+  - **Livewire 3 Single-Root Structure (`floating-chat-widget.blade.php`)**: Moved `<script>` tags inside the component's single root `<div>`, restoring `$wire` reactivity and Livewire DOM reconciliation.
+  - **Livewire Event Listeners (`FloatingChatWidget.php`, `chat-topbar-button.blade.php`)**:
+    - Added `#[On('toggle-floating-chat')]` to `toggleWidget()`, `#[On('open-floating-chat')]` to `openWidget()`, and `#[On('close-floating-chat')]` to `closeWidget()`.
+    - Enhanced topbar chat button to dual-dispatch to both the native window event and the Livewire client event bus (`window.Livewire.dispatch('toggle-floating-chat')`).
+  - **Resolved Console Accessibility Warning (`mobile-sidebar-gestures.blade.php`)**: Removed `aria-hidden="true"` from `#mobile-sidebar-gesture-root`.

@@ -4,6 +4,16 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.16] - 2026-10-29
+
+### Fixed
+- **Topbar Chat Drawer Toggle Binding, Livewire Single-Root Fix & Gesture Aria-Hidden Removal**:
+  - **Topbar Chat Launcher Binding**: Added Livewire `#[On('toggle-floating-chat')]`, `#[On('open-floating-chat')]`, and `#[On('close-floating-chat')]` attributes to `FloatingChatWidget`, and enhanced `chat-topbar-button.blade.php` to dual-dispatch events to both native DOM and the Livewire event bus.
+  - **Livewire 3 Single Root Element Enforced**: Moved top `<script>` definitions inside the single root `<div>` element in `floating-chat-widget.blade.php`, fixing multi-root DOM diffing issues that broke Livewire `$wire` binding.
+  - **Blocked aria-hidden Console Warning Removed**: Removed `aria-hidden="true"` from `#mobile-sidebar-gesture-root` which was conflicting with the focusable `#mobile-edge-handle` button and causing browser console accessibility warnings.
+
+---
+
 ## [2.8.15] - 2026-10-29
 
 ### Fixed & Enhanced

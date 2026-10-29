@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -116,6 +117,7 @@ class FloatingChatWidget extends Component
         $this->markPendingConversationsDelivered();
     }
 
+    #[On('toggle-floating-chat')]
     public function toggleWidget(): void
     {
         $this->isOpen = ! $this->isOpen;
@@ -135,6 +137,15 @@ class FloatingChatWidget extends Component
         $this->dispatch('chat-unread-updated', count: auth()->user()?->unreadMessagesCount() ?? 0);
     }
 
+    #[On('open-floating-chat')]
+    public function openWidget(): void
+    {
+        $this->isOpen = true;
+        $this->markPendingConversationsDelivered();
+        $this->dispatch('chat-unread-updated', count: auth()->user()?->unreadMessagesCount() ?? 0);
+    }
+
+    #[On('close-floating-chat')]
     public function closeWidget(): void
     {
         $this->isOpen = false;

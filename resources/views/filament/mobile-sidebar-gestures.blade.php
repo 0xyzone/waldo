@@ -1,5 +1,5 @@
 {{-- Mobile Screen Gestures for Filament Sidebar Navigation --}}
-<div id="mobile-sidebar-gesture-root" class="fixed inset-0 z-40 overflow-hidden pointer-events-none lg:hidden" aria-hidden="true">
+<div id="mobile-sidebar-gesture-root" class="fixed inset-0 z-40 overflow-hidden pointer-events-none lg:hidden">
     {{-- Tactile edge pull tab: gives an immediate visual affordance and easy touch target --}}
     <button id="mobile-edge-handle"
             type="button"
