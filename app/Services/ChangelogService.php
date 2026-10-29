@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.3';
+    public const CURRENT_VERSION = '2.9.4';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,23 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.4',
+                'date' => '2026-10-29',
+                'title' => 'Sticky Sidebar Resource Menu Search with Real-Time Filtering',
+                'type' => 'micro',
+                'badge' => 'Feature',
+                'badge_color' => 'success',
+                'description' => 'Added a sticky search bar in the admin sidebar navigation to filter resource menus in real-time, with auto-expansion of matching groups, keyboard shortcuts, and empty-state messaging.',
+                'highlights' => [
+                    'Sticky Top Search Bar: Pinned directly at the top of the sidebar navigation during vertical scrolling using PanelsRenderHook::SIDEBAR_NAV_START with glassmorphism backdrop blur.',
+                    'Real-Time Client-Side Filtering: Pure Alpine.js reactive filtering matching menu item labels and group headings without server roundtrips.',
+                    'Smart Group State Management: Automatically reveals and temporarily uncollapses navigation groups containing matching resources, restoring original collapsed/expanded states upon clearing.',
+                    'Empty State Feedback: Displays a clean "No resource menu is available" notification with a 1-click "Clear search" button when no items match.',
+                    'Keyboard Navigation & Shortcuts: Supports Ctrl+K / ⌘K to instantly focus the search input, Esc to clear, and Enter to navigate to the first matching resource.',
+                    'Collapsed Desktop Sidebar Support: Renders a compact search icon button when the sidebar is collapsed that expands the sidebar and focuses the search input.',
+                ],
+            ],
             [
                 'version' => '2.9.3',
                 'date' => '2026-10-29',

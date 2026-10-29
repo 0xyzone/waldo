@@ -503,3 +503,27 @@
     - Added summary stats displaying total eligible designations and cumulative monthly max budget.
   - **Calculation Engine Filtering (`RoyaltyCalculationService.php`)**:
     - Updated `generate()` to filter employees with `whereHas('designation', fn ($q) => $q->where('is_royalty_eligible', true))`, ensuring only staff with eligible designations are calculated in royalty bonus monthly reports.
+
+### 46. Sticky Sidebar Resource Menu Search with Real-Time Filtering (v2.9.4)
+- **Problem & Requirements**:
+  - The application has accumulated dozens of resource modules and menu groups, making manual navigation slow and tedious.
+  - User requested a sticky search bar at the top of the sidebar navigation to quickly filter resource menus.
+  - The search bar must stick to the top when scrolling down the sidebar.
+  - When typing, menu items and groups in the sidebar must filter in real time to show only matching results.
+  - If no matching resource menu is found, an empty-state message indicating no resource menu is available must be displayed.
+- **Solution**:
+  - **Render Hook Integration (`app/Providers/Filament/KamkajPanelProvider.php`)**:
+    - Registered `PanelsRenderHook::SIDEBAR_NAV_START` to render `filament.components.sidebar-search`.
+  - **Sticky Component UI (`resources/views/filament/components/sidebar-search.blade.php`)**:
+    - Placed directly inside `.fi-sidebar-nav` right above navigation groups.
+    - Uses `sticky -top-8 z-20 -mx-2 px-2 pb-2.5 pt-1.5 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200/70 dark:border-white/10` to remain pinned to the top as users scroll through lengthy menus.
+  - **Zero-Latency Client-Side DOM Filtering (`Alpine.js - sidebarMenuSearch`)**:
+    - Scans `.fi-sidebar-item` labels and `.fi-sidebar-group` headers on input.
+    - Hides non-matching items and empty groups while preserving parent groups that contain at least one match.
+    - Temporarily auto-expands collapsed parent groups when a child item matches, restoring their original state when search is cleared.
+  - **Empty-State Feedback & Reset**:
+    - Renders an interactive empty state card when 0 results match: `No resource menu found for "<query>"` with an instant "Clear search" button.
+  - **Keyboard Shortcuts & Collapsed Sidebar Mode**:
+    - Added global shortcut `Ctrl+K` / `⌘K` to focus the search bar from anywhere in the panel, `Esc` to clear, and `Enter` to navigate directly to the first visible result.
+    - When the desktop sidebar is collapsed (`$store.sidebar.isOpen === false`), displays a compact search icon button that expands the sidebar and focuses the input.
+

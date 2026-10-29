@@ -4,6 +4,19 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.4] - 2026-10-29
+
+### Added & Enhanced
+- **Sticky Sidebar Resource Menu Search with Real-Time Filtering**:
+  - **Sticky Top Search Input**: Embedded at the very top of `.fi-sidebar-nav` using `PanelsRenderHook::SIDEBAR_NAV_START` with glassmorphic backdrop blur and pinned sticky positioning (`sticky -top-8 z-20`) so it remains readily accessible while scrolling through lengthy menu structures.
+  - **Zero-Latency Client-Side Filtering**: High-performance Alpine.js component (`sidebarMenuSearch`) that scans and matches menu item labels and group headers on every keystroke, hiding non-matching elements instantaneously without server roundtrips.
+  - **Auto-Expansion of Matching Groups**: Automatically uncollapses and reveals parent navigation groups containing matching resources, and restores their previous collapsed/open state seamlessly when the search is cleared.
+  - **Empty-State Messaging**: When no resource menus match the search query, displays a clean feedback card ("No resource menu is available for '<query>'") along with a 1-click "Clear search" action.
+  - **Keyboard Shortcuts & Power Navigation**: Full keyboard control including `Ctrl+K` / `⌘K` to focus the search bar from anywhere on the page, `Esc` to clear and reset the sidebar, and `Enter` to navigate directly to the first visible matching resource.
+  - **Collapsed Desktop Sidebar Compatibility**: Gracefully transitions to a compact search icon button when the desktop sidebar is collapsed, clicking which smoothly expands the sidebar and focuses the search input.
+
+---
+
 ## [2.9.3] - 2026-10-29
 
 ### Added & Enhanced
