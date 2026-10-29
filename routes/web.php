@@ -11,6 +11,7 @@ use App\Http\Controllers\LetterController;
 use App\Http\Controllers\LetterGlobalVariableController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\RoyaltyReportPrintController;
 use App\Http\Controllers\SalaryCalculatorController;
 use App\Http\Controllers\SalaryIncrementRequestPrintController;
 use App\Http\Controllers\TipsEomGomReportPrintController;
@@ -99,6 +100,13 @@ Route::get('/tips-reports/{report}/print-totals', [TipsReportPrintController::cl
 Route::get('/tips-reports/{report}/print-adjustments-errors', [TipsReportPrintController::class, 'printAdjustmentsErrors'])
     ->name('tips.reports.print-adjustments-errors')
     ->middleware('auth');
+
+// Royalty Bonus Reports Print & Export
+Route::prefix('/royalty/reports/{report}')->middleware('auth')->group(function () {
+    Route::get('/print', [RoyaltyReportPrintController::class, 'printReport'])->name('royalty.reports.print');
+    Route::get('/print/{department}', [RoyaltyReportPrintController::class, 'printReport'])->name('royalty.reports.print-dept');
+    Route::get('/export', [RoyaltyReportPrintController::class, 'exportExcel'])->name('royalty.reports.export');
+});
 
 // EOM / GOM Monthly Report & HRMS Wish Card
 Route::prefix('/tips/eom-gom-reports/{report}')->middleware('auth')->group(function () {

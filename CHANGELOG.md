@@ -4,6 +4,20 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.0] - 2026-10-29
+
+### Added
+- **Royalty Bonus Management Module**:
+  - **Designation Royalty Budget Configuration**: Added `royalty_annual_budget`, `royalty_monthly_max`, and `royalty_monthly_min` to the designations schema. Inputting annual budget automatically calculates monthly max (`ceil((annual_budget / 12) / 100) * 100`) and monthly minimum (`monthly_max / 2`) with real-time reactive calculations.
+  - **Royalty Reports**: Implemented monthly generation of royalty bonus distribution reports for eligible staff (`Active`, `Resigning This Month`, `Suspended`), skipping resigned and terminated staff.
+  - **Excel File Parsers**: Support for uploading biometric attendance reports (Absent Days, Late In / Early Out, Missing Thumbs) and performance appraisal percentage deduction files.
+  - **Global Royalty Rules & Settings**: Dedicated settings page under Royalty Bonus Management to configure absent bulk vs. per-day penalties, tardiness grace thresholds, missing thumb penalties, and minimum payout floor protection.
+  - **Royalty Exempt Staff**: Master exemption resource and interactive per-report toggle enabling employees to receive 100% max payout regardless of attendance metrics.
+  - **Validation & Locking**: Audit-compliant validation workflow that locks reports and enables controlled unlocking.
+  - **Spreadsheet Export & Landscape Printing**: OpenSpout Excel export streaming and A4 landscape printable payout sheets with signatures matching Tips styling.
+
+---
+
 ## [2.8.18] - 2026-10-29
 
 ### Fixed

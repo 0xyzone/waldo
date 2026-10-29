@@ -8,6 +8,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 
 class DesignationForm
@@ -81,6 +82,54 @@ class DesignationForm
                             ->inline(false)
                             ->columnSpanFull(),
                     ]),
+
+                Section::make('Royalty Bonus Configuration')
+                    ->description('Set annual budget for royalty bonus. Monthly maximum and minimum payouts are automatically calculated.')
+                    ->icon('heroicon-o-banknotes')
+                    ->columns(3)
+                    ->columnSpanFull()
+                    ->schema([
+                        TextInput::make('royalty_annual_budget')
+                            ->label('Total Annual Budget')
+                            ->numeric()
+                            ->prefix('Rs.')
+                            ->placeholder('0.00')
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function (Set $set, ?string $state) {
+                                $val = (float) ($state ?? 0);
+                                if ($val > 0) {
+                                    $monthlyRaw = $val / 12;
+                                    $max = ceil($monthlyRaw / 100) * 100;
+                                    $min = round($max / 2, 2);
+                                    $set('royalty_monthly_max', number_format($max, 2, '.', ''));
+                                    $set('royalty_monthly_min', number_format($min, 2, '.', ''));
+                                } else {
+                                    $set('royalty_monthly_max', '0.00');
+                                    $set('royalty_monthly_min', '0.00');
+                                }
+                            })
+                            ->helperText('Total yearly budget allocated for this designation.')
+                            ->columnSpan(1),
+
+                        TextInput::make('royalty_monthly_max')
+                            ->label('Monthly Max Payout')
+                            ->numeric()
+                            ->prefix('Rs.')
+                            ->disabled()
+                            ->dehydrated()
+                            ->helperText('Budget/12, rounded up to nearest 100.')
+                            ->columnSpan(1),
+
+                        TextInput::make('royalty_monthly_min')
+                            ->label('Monthly Min Payout')
+                            ->numeric()
+                            ->prefix('Rs.')
+                            ->disabled()
+                            ->dehydrated()
+                            ->helperText('Max payout / 2.')
+                            ->columnSpan(1),
+                    ]),
+
                 ActionLogSection::make(),
             ]);
     }

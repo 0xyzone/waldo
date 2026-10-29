@@ -62,6 +62,12 @@ class DesignationsTable
                     ->formatStateUsing(fn ($state) => $state !== null ? '₹'.($state == (int) $state ? number_format($state, 0) : number_format($state, 2)) : '-')
                     ->sortable()
                     ->alignEnd(),
+                TextColumn::make('royalty_monthly_max')
+                    ->label('Royalty Max')
+                    ->formatStateUsing(fn ($state) => $state ? 'Rs. '.number_format($state, 2) : '-')
+                    ->sortable()
+                    ->alignEnd()
+                    ->toggleable(),
                 IconColumn::make('is_active')
                     ->label('Active')
                     ->boolean()

@@ -111,6 +111,7 @@ class KamkajPanelProvider extends PanelProvider
                 'IT',
                 'Finance',
                 'Tips',
+                'Royalty Bonus Management',
                 'Purchase & Store',
                 'Filament Shield',
                 'System Settings',

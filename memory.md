@@ -413,13 +413,36 @@
   - **Eliminated Dispatch Race Condition (`chat-topbar-button.blade.php`)**: Kept clean single-dispatch `window.dispatchEvent(new CustomEvent('toggle-floating-chat'))` on the topbar button, allowing Alpine to toggle `isOpen` instantly with 0ms latency and notify Livewire via `$wire.openWidget()` / `$wire.closeWidget()`.
   - **Synchronized Livewire State (`FloatingChatWidget.php`)**: Removed redundant `#[On('toggle-floating-chat')]` from `toggleWidget()` to prevent double-execution, while maintaining clean `#[On('open-floating-chat')]` and `#[On('close-floating-chat')]` handlers and resetting modal states reliably.
 
-### 41. Chat Conversation Flex Layout & Unclosed Message DOM Tag Fix (v2.8.18)
-- **Problem**:
-  - The conversation view inside the slide-over chat drawer rendered with broken styling: message bubbles appeared squeezed horizontally side-by-side instead of vertically stacked.
-  - The capsule message composer input bar floated to the top right beside the messages instead of staying pinned at the bottom.
-  - Root cause was a missing closing `</div>` on individual message wrappers (`<div id="float-msg-{{ $msg->id }}">`) inside the `@foreach($groupMessages as $msg)` loop, which caused subsequent messages to be nested inside the previous message's horizontal flex container (`display: flex`).
+### 42. Royalty Bonus Management Module (v2.9.0)
+- **Problem & Requirements**:
+  - Need for monthly royalty bonus calculation and distribution sheets based on employee designations, attendance records, and performance appraisal percentage deductions.
+  - Eligible employees include `Active`, `Resigning This Month`, and `Suspended` employees. Resigned, terminated, and inactive staff must be excluded.
+  - Designation royalty bonus configuration: User specifies `royalty_annual_budget`. The system must automatically determine:
+    - Monthly Max Payout = `ceil((annual_budget / 12) / 100) * 100` (e.g., 8333.33 -> 8400).
+    - Monthly Min Payout = `monthly_max_payout / 2`.
+  - Excel file uploads when generating reports: Attendance summary (Absent Days, Late In / Early Out, Missing Thumbs) and Performance Deduction % report.
+  - Deduction rules: Performance deduction applied to baseline max payout first, followed by attendance deductions (absent flat/per-day penalties, grace thresholds for late/early and missing biometric thumbs).
+  - Payout floor: Net payout floored at Monthly Min Payout unless disabled in settings.
+  - Dedicated Exempt Staff master list and interactive per-report toggle granting 100% max payout without deductions.
+  - Audit validation & lock with one-click unlock capability.
+  - OpenSpout Excel export and A4 landscape printable payout sheets with signatures matching Tips styling.
 - **Solution**:
-  - **Closed `float-msg` Container (`floating-chat-widget.blade.php`)**: Added the missing closing `</div>` before `@endforeach` to properly close each individual message bubble wrapper.
-  - **Restored Normal Document Flow**: With valid DOM nesting, the message feed container (`x-ref="floatingFeed"`) occupies `flex-1` with proper vertical scrolling and sticky date headers, and the composer bar stays pinned across the bottom.
+  - **Database Migrations & Models**:
+    - `designations`: Added `royalty_annual_budget`, `royalty_monthly_max`, and `royalty_monthly_min` with automatic lifecycle calculation.
+    - `royalty_exempt_employees`: Master list of exempt employees referencing `employees.employee_code`.
+    - `royalty_reports`: Stores report period, cutoff date, uploaded file paths, status (`draft`, `generated`, `validated`), totals, and validator timestamps.
+    - `royalty_report_items`: Stores per-employee payout breakdown, attendance counts, performance %, total deductions, and net payout.
+  - **Calculation Engine (`RoyaltyCalculationService.php`)**:
+    - High-performance Excel/CSV readers for attendance and performance files with flexible column header matching.
+    - Full deduction pipeline with minimum floor enforcement and fast recalculation.
+    - OpenSpout streaming Excel export (`exportExcel()`).
+  - **Filament Resources & Pages**:
+    - `RoyaltyReportResource` (`ListRoyaltyReports`, `CreateRoyaltyReport`, `EditRoyaltyReport`, `ViewRoyaltyReport`).
+    - `ViewRoyaltyReport`: Summary stats cards, department tabs, interactive table with instant exemption toggle, and header actions (Validate & Lock, Unlock, Recalculate, Download Excel, Print).
+    - `RoyaltyExemptEmployeeResource`: Manage exempt employees master list.
+    - `ManageRoyaltyBonusSettings`: Global settings page for absent, late/early, missing thumb rules, and floor protection.
+  - **Print Layout (`royalty/print.blade.php`, `RoyaltyReportPrintController.php`)**:
+    - Professional A4 landscape payout sheets with department filter, attendance/deduction columns, net payout highlights, and HR/Finance/Management signature blocks.
+
 
 

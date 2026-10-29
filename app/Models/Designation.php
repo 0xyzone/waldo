@@ -23,6 +23,9 @@ class Designation extends Model
         'job_description',
         'rank',
         'default_tips_amount',
+        'royalty_annual_budget',
+        'royalty_monthly_max',
+        'royalty_monthly_min',
         'is_active',
     ];
 
@@ -34,8 +37,26 @@ class Designation extends Model
     protected $casts = [
         'rank' => 'integer',
         'default_tips_amount' => 'decimal:2',
+        'royalty_annual_budget' => 'decimal:2',
+        'royalty_monthly_max' => 'decimal:2',
+        'royalty_monthly_min' => 'decimal:2',
         'is_active' => 'boolean',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $designation) {
+            $budget = (float) ($designation->royalty_annual_budget ?? 0);
+            if ($budget > 0) {
+                $monthlyRaw = $budget / 12;
+                $designation->royalty_monthly_max = ceil($monthlyRaw / 100) * 100;
+                $designation->royalty_monthly_min = round($designation->royalty_monthly_max / 2, 2);
+            } else {
+                $designation->royalty_monthly_max = 0;
+                $designation->royalty_monthly_min = 0;
+            }
+        });
+    }
 
     /**
      * Get the department that owns the designation.

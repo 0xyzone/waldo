@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.8.18';
+    public const CURRENT_VERSION = '2.9.0';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,23 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.0',
+                'date' => '2026-10-29',
+                'title' => 'Royalty Bonus Management Module',
+                'type' => 'minor',
+                'badge' => 'New Feature',
+                'badge_color' => 'success',
+                'description' => 'Introduced full-featured Royalty Bonus Management module with designation annual budget formulas, attendance and performance deductions, global rules configuration, exempt staff master list, report validation and locking, OpenSpout Excel report exports, and A4 landscape printable payout sheets.',
+                'highlights' => [
+                    'Designation Royalty Formula & Setup: Integrated royalty_annual_budget with automatic calculation of monthly max payout (ceil((budget/12)/100)*100) and monthly min payout (monthly max / 2) with reactive Filament inputs.',
+                    'Royalty Reports & Excel Parsers: Multi-file Excel/CSV parser processing biometric attendance (absents, late/early, missing thumbs) and performance appraisal percentage deductions.',
+                    'Deduction Engine & Protection Floor: Configurable global rules for absent bulk/per-day penalties, grace thresholds for late arrivals and missing biometric thumbs, and automatic monthly minimum payout guarantee.',
+                    'Validation & Locking: Audited report validation and lock mechanism with one-click unlock capability.',
+                    'Exempt Staff Management: Dedicated Royalty Exempt Staff resource and interactive per-report toggle allowing guaranteed 100% max payout for designated staff.',
+                    'Excel Export & Print Sheets: High-performance OpenSpout spreadsheet exports and A4 landscape printable department payout sheets with HR/Finance/Management signatures matching Tips styling.',
+                ],
+            ],
             [
                 'version' => '2.8.18',
                 'date' => '2026-10-29',
