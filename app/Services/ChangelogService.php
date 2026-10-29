@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.8.16';
+    public const CURRENT_VERSION = '2.8.18';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,33 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.8.18',
+                'date' => '2026-10-29',
+                'title' => 'Chat Conversation Flex Layout & Unclosed Message DOM Tag Fix',
+                'type' => 'micro',
+                'badge' => 'Bug Fix',
+                'badge_color' => 'success',
+                'description' => 'Fixed broken horizontal message layout and misaligned input composer by restoring a missing closing div tag on message bubbles inside the date-grouped message loop in the floating chat widget.',
+                'highlights' => [
+                    'Fixed Unclosed float-msg DOM Container: Added missing closing </div> for individual message wrappers inside the @foreach loop in floating-chat-widget.blade.php, preventing nested flex-row distortion and horizontal message grouping.',
+                    'Pinned Composer Layout Restored: Restored vertical flex orientation and full-width bottom pinning for the capsule composer input bar across all devices.',
+                ],
+            ],
+            [
+                'version' => '2.8.17',
+                'date' => '2026-10-29',
+                'title' => 'Topbar Chat Drawer Instant Slideover & Alpine Event Race Fix',
+                'type' => 'micro',
+                'badge' => 'Bug Fix',
+                'badge_color' => 'success',
+                'description' => 'Fixed the topbar chat drawer not opening by removing conflicting inline style="display: none;" on the drawer container, eliminating double-dispatch event race conditions between Livewire and Alpine, and ensuring instant client-side modal transitions.',
+                'highlights' => [
+                    'Slide-over Inline Style Override Removed: Removed hardcoded style="display: none;" on the drawer root container so Alpine\'s x-show and x-cloak handle transitions smoothly without being locked hidden.',
+                    'Event Race Condition Eliminated: Streamlined topbar chat launcher event dispatching to eliminate race condition where dual-dispatching Livewire and native DOM events caused back-to-back open and toggleWidget calls that immediately re-closed the modal.',
+                    'Modal State Synchronization: Updated toggleWidget, openWidget, and closeWidget in FloatingChatWidget to reliably sync state with Alpine and mark pending messages delivered without race condition regressions.',
+                ],
+            ],
             [
                 'version' => '2.8.16',
                 'date' => '2026-10-29',

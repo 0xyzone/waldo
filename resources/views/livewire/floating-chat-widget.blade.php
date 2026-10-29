@@ -1051,10 +1051,9 @@
             const secs = seconds % 60;
             return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
         }
-    }" x-on:toggle-floating-chat.window="$wire.toggleWidget()" class="font-sans">
-        @if ($isOpen)
+    }" x-on:toggle-floating-chat.window="isOpen = !isOpen; if (isOpen) { $wire.openWidget(); } else { $wire.closeWidget(); }" x-on:open-floating-chat.window="isOpen = true; $wire.openWidget()" x-on:close-floating-chat.window="isOpen = false; $wire.closeWidget()" class="font-sans">
         <!-- Slide-over Drawer (Backdrop & Panel) -->
-        <div x-show="isOpen" x-cloak class="fixed inset-0 z-50 overflow-hidden" style="display: none;"
+        <div x-show="isOpen" x-cloak class="fixed inset-0 z-50 overflow-hidden"
             @keydown.escape.window="if (isOpen) { isOpen = false; $wire.closeWidget(); }">
             <!-- Backdrop Overlay -->
             <div x-show="isOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
@@ -1647,10 +1646,11 @@
                                         @endif
                                     </div>
                                 </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @empty
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @empty
                                 <div
                                     class="flex h-full items-center justify-center text-center p-4 text-gray-400 text-xs">
                                     @if (filled($messageSearch))
@@ -3386,6 +3386,5 @@
             </div>
         </div>
     </div>
-        @endif
 </div>
 </div>

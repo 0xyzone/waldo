@@ -117,24 +117,13 @@ class FloatingChatWidget extends Component
         $this->markPendingConversationsDelivered();
     }
 
-    #[On('toggle-floating-chat')]
     public function toggleWidget(): void
     {
-        $this->isOpen = ! $this->isOpen;
-
         if ($this->isOpen) {
-            $this->markPendingConversationsDelivered();
-            $this->activeConversationId = null;
-            $this->showNewChatModal = false;
-            $this->showGroupSettingsModal = false;
-            $this->showPinnedMessagesModal = false;
-            $this->attachment = null;
-            $this->voiceNote = null;
-            $this->messageSearch = '';
-            $this->showMessageSearch = false;
+            $this->closeWidget();
+        } else {
+            $this->openWidget();
         }
-
-        $this->dispatch('chat-unread-updated', count: auth()->user()?->unreadMessagesCount() ?? 0);
     }
 
     #[On('open-floating-chat')]
@@ -142,6 +131,13 @@ class FloatingChatWidget extends Component
     {
         $this->isOpen = true;
         $this->markPendingConversationsDelivered();
+        $this->showNewChatModal = false;
+        $this->showGroupSettingsModal = false;
+        $this->showPinnedMessagesModal = false;
+        $this->attachment = null;
+        $this->voiceNote = null;
+        $this->messageSearch = '';
+        $this->showMessageSearch = false;
         $this->dispatch('chat-unread-updated', count: auth()->user()?->unreadMessagesCount() ?? 0);
     }
 

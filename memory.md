@@ -402,3 +402,24 @@
     - Added `#[On('toggle-floating-chat')]` to `toggleWidget()`, `#[On('open-floating-chat')]` to `openWidget()`, and `#[On('close-floating-chat')]` to `closeWidget()`.
     - Enhanced topbar chat button to dual-dispatch to both the native window event and the Livewire client event bus (`window.Livewire.dispatch('toggle-floating-chat')`).
   - **Resolved Console Accessibility Warning (`mobile-sidebar-gestures.blade.php`)**: Removed `aria-hidden="true"` from `#mobile-sidebar-gesture-root`.
+
+### 40. Topbar Chat Drawer Instant Slideover & Alpine Event Race Fix (v2.8.17)
+- **Problem**:
+  - Clicking the chat icon in the topbar still failed to open the slide-over chat modal.
+  - The drawer root container had a hardcoded inline `style="display: none;"` in `floating-chat-widget.blade.php`, which prevented Alpine's `x-show="isOpen"` transition from displaying the drawer.
+  - A race condition existed where dual-dispatching both `window.dispatchEvent` and `window.Livewire.dispatch('toggle-floating-chat')` caused Livewire to invoke both `openWidget()` and `toggleWidget()` in the same request batch, immediately toggling `isOpen` back to `false` and closing the drawer.
+- **Solution**:
+  - **Removed Hardcoded Inline Style (`floating-chat-widget.blade.php`)**: Removed `style="display: none;"` from the drawer container, allowing Alpine's `x-show="isOpen"` and `x-cloak` to control visibility smoothly without inline style overrides.
+  - **Eliminated Dispatch Race Condition (`chat-topbar-button.blade.php`)**: Kept clean single-dispatch `window.dispatchEvent(new CustomEvent('toggle-floating-chat'))` on the topbar button, allowing Alpine to toggle `isOpen` instantly with 0ms latency and notify Livewire via `$wire.openWidget()` / `$wire.closeWidget()`.
+  - **Synchronized Livewire State (`FloatingChatWidget.php`)**: Removed redundant `#[On('toggle-floating-chat')]` from `toggleWidget()` to prevent double-execution, while maintaining clean `#[On('open-floating-chat')]` and `#[On('close-floating-chat')]` handlers and resetting modal states reliably.
+
+### 41. Chat Conversation Flex Layout & Unclosed Message DOM Tag Fix (v2.8.18)
+- **Problem**:
+  - The conversation view inside the slide-over chat drawer rendered with broken styling: message bubbles appeared squeezed horizontally side-by-side instead of vertically stacked.
+  - The capsule message composer input bar floated to the top right beside the messages instead of staying pinned at the bottom.
+  - Root cause was a missing closing `</div>` on individual message wrappers (`<div id="float-msg-{{ $msg->id }}">`) inside the `@foreach($groupMessages as $msg)` loop, which caused subsequent messages to be nested inside the previous message's horizontal flex container (`display: flex`).
+- **Solution**:
+  - **Closed `float-msg` Container (`floating-chat-widget.blade.php`)**: Added the missing closing `</div>` before `@endforeach` to properly close each individual message bubble wrapper.
+  - **Restored Normal Document Flow**: With valid DOM nesting, the message feed container (`x-ref="floatingFeed"`) occupies `flex-1` with proper vertical scrolling and sticky date headers, and the composer bar stays pinned across the bottom.
+
+

@@ -21,7 +21,7 @@
 >
     <button
         type="button"
-        @click="window.dispatchEvent(new CustomEvent('toggle-floating-chat')); if (window.Livewire) { window.Livewire.dispatch('toggle-floating-chat'); }"
+        @click="window.dispatchEvent(new CustomEvent('toggle-floating-chat'))"
         class="relative inline-flex items-center justify-center w-9 h-9 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors focus:outline-hidden cursor-pointer"
         title="Open Chat (Slide-over)"
     >

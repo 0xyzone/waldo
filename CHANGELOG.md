@@ -4,6 +4,25 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.18] - 2026-10-29
+
+### Fixed
+- **Chat Conversation Flex Layout & Unclosed Message DOM Tag Fix**:
+  - **Fixed Unclosed float-msg DOM Container**: Added missing closing `</div>` for individual message wrappers inside the `@foreach` loop in `floating-chat-widget.blade.php`, eliminating nested flex-row distortion that caused messages to render horizontally side-by-side.
+  - **Pinned Composer Layout Restored**: Restored proper vertical flex layout and full-width bottom pinning for the capsule composer input bar across all devices.
+
+---
+
+## [2.8.17] - 2026-10-29
+
+### Fixed
+- **Topbar Chat Drawer Instant Slideover & Alpine Event Race Fix**:
+  - **Slide-over Inline Style Override Removed**: Removed hardcoded `style="display: none;"` on the drawer root container in `floating-chat-widget.blade.php` so Alpine's `x-show` and `x-cloak` handle transitions smoothly without being locked hidden.
+  - **Event Race Condition Eliminated**: Streamlined topbar chat launcher event dispatching to eliminate race condition where dual-dispatching Livewire and native DOM events caused back-to-back open and `toggleWidget` calls that immediately re-closed the modal.
+  - **Modal State Synchronization**: Updated `toggleWidget`, `openWidget`, and `closeWidget` in `FloatingChatWidget` to reliably sync state with Alpine and mark pending messages delivered without race condition regressions.
+
+---
+
 ## [2.8.16] - 2026-10-29
 
 ### Fixed
