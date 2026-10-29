@@ -692,6 +692,10 @@ class FloatingChatWidget extends Component
 
     public function getConversations()
     {
+        if (! $this->isOpen) {
+            return collect();
+        }
+
         $userId = auth()->id();
 
         if (! $userId) {
@@ -775,7 +779,7 @@ class FloatingChatWidget extends Component
 
     public function getTotalMessagesCountProperty(): int
     {
-        if (! $this->activeConversationId) {
+        if (! $this->isOpen || ! $this->activeConversationId) {
             return 0;
         }
 
@@ -784,7 +788,7 @@ class FloatingChatWidget extends Component
 
     public function getMessagesProperty(): Collection
     {
-        if (! $this->activeConversationId) {
+        if (! $this->isOpen || ! $this->activeConversationId) {
             return new Collection;
         }
 

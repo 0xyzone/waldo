@@ -4,6 +4,17 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.14] - 2026-10-29
+
+### Fixed & Enhanced
+- **App-Wide Page Load Acceleration, Socket Timeout Elimination & Desktop Context Menu Fix**:
+  - **Eliminated 1.6s Blocking Socket Timeout**: Fixed `WebsocketStatusIndicator` which probed port 8080 with dual 0.8s blocking connection timeouts on every single HTTP request across the application, adding a 30s cache layer and reducing the loopback probe to 0.1s.
+  - **Lazy-Loaded Chat Drawer**: Wrapped the 3,400-line chat drawer in an `@if ($isOpen)` guard and added open-state checks to `getConversations()` and `getMessagesProperty()`, ensuring closed chat consumes 0 database queries and 0 DOM nodes on all app pages.
+  - **Desktop Secondary-Click Context Menu Fix**: Fixed context menu coordinates being calculated in viewport space while inside a CSS transformed container (`translate-x-0`), which previously displaced the menu 1500px offscreen to the right on desktop displays. Coordinates are now accurately anchored relative to the drawer panel with boundary clamping.
+  - **Clean Context Menu Directives**: Removed inline `@js`-generated double quotes from HTML event attributes to eliminate JavaScript syntax parsing errors on text messages.
+
+---
+
 ## [2.8.13] - 2026-10-29
 
 ### Added & Enhanced

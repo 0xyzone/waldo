@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.8.13';
+    public const CURRENT_VERSION = '2.8.14';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,21 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.8.14',
+                'date' => '2026-10-29',
+                'title' => 'App-Wide Page Load Acceleration, Socket Timeout Elimination & Desktop Context Menu Fix',
+                'type' => 'micro',
+                'badge' => 'Perf & Bug Fix',
+                'badge_color' => 'success',
+                'description' => 'Eliminated a 1.6-second blocking network socket stall on every page load across the entire application, lazy-rendered the chat drawer so closed chat consumes 0 queries and 0 DOM nodes, and fixed desktop secondary-click context menu positioning and syntax errors.',
+                'highlights' => [
+                    'Eliminated 1.6s Blocking Socket Timeout: Fixed WebsocketStatusIndicator probing port 8080 with dual 0.8s blocking connection timeouts on every single HTTP request by caching status for 30s and using a 0.1s socket check.',
+                    'Lazy-Loaded Chat Drawer: Wrapped the 3,400-line chat drawer in an @if ($isOpen) guard and added open-state checks to getConversations() and getMessagesProperty(), ensuring closed chat consumes 0 database queries and 0 DOM nodes on app pages.',
+                    'Desktop Secondary-Click Context Menu Fix: Fixed context menu coordinates being calculated in viewport space while inside a CSS transformed container (which displaced the menu 1500px offscreen on desktop), anchoring it relative to the drawer panel with automatic boundary clamping.',
+                    'Eliminated Attribute Escaping Errors: Replaced inline @js-generated double quotes in context menu directives with clean scalar parameters and DOM-based text extraction.',
+                ],
+            ],
             [
                 'version' => '2.8.13',
                 'date' => '2026-10-29',

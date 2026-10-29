@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 
 class WebsocketStatusIndicator extends Component
@@ -27,22 +28,22 @@ class WebsocketStatusIndicator extends Component
         $this->checkStatus();
     }
 
-    public function checkStatus(): void
+    public function checkStatus(bool $forceFresh = false): void
     {
-        $fp = @fsockopen($this->host, $this->port, $errno, $errstr, 0.8);
-
-        if ($fp) {
-            $this->isRunning = true;
-            fclose($fp);
-        } else {
-            $stream = @stream_socket_client("tcp://{$this->host}:{$this->port}", $errno, $errstr, 0.8);
-            if ($stream) {
-                $this->isRunning = true;
-                fclose($stream);
-            } else {
-                $this->isRunning = false;
-            }
+        if ($forceFresh) {
+            Cache::forget('reverb_status_check');
         }
+
+        $this->isRunning = Cache::remember('reverb_status_check', 30, function () {
+            $fp = @fsockopen($this->host, $this->port, $errno, $errstr, 0.1);
+            if ($fp) {
+                fclose($fp);
+
+                return true;
+            }
+
+            return false;
+        });
 
         $this->lastCheckedAt = now()->format('H:i:s');
     }
@@ -70,7 +71,7 @@ class WebsocketStatusIndicator extends Component
 
         // Wait briefly for server to bind port
         usleep(1200000);
-        $this->checkStatus();
+        $this->checkStatus(true);
 
         if ($this->isRunning) {
             Notification::make()
@@ -89,7 +90,7 @@ class WebsocketStatusIndicator extends Component
 
     public function toggleModal(): void
     {
-        $this->checkStatus();
+        $this->checkStatus(true);
         $this->showInfoModal = ! $this->showInfoModal;
     }
 

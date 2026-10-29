@@ -39,7 +39,7 @@
             isMe: false,
             canDelete: false,
             isPinned: false,
-            body: '',
+            hasText: false,
             showExtraEmojis: false,
             copied: false,
         },
@@ -51,7 +51,6 @@
         activeHoldMsgId: null,
 
         startLongPress(e, msg) {
-            if (msg.isDeleted) return;
             this.cancelLongPress();
             if (!e.touches || !e.touches[0]) return;
             const touch = e.touches[0];
@@ -93,11 +92,14 @@
         },
 
         openContextMenu(e, msg) {
-            if (msg.isDeleted) return;
             this.cancelLongPress();
-            e.preventDefault();
-            e.stopPropagation();
-            this.openContextMenuAt(e.clientX, e.clientY, msg);
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            const clientX = e ? e.clientX : this.longPressStartX;
+            const clientY = e ? e.clientY : this.longPressStartY;
+            this.openContextMenuAt(clientX, clientY, msg);
         },
 
         openContextMenuAt(clientX, clientY, msg) {
@@ -108,30 +110,30 @@
             this.contextMenu.isMe = msg.isMe;
             this.contextMenu.canDelete = msg.canDelete;
             this.contextMenu.isPinned = msg.isPinned;
-            this.contextMenu.body = msg.body || '';
+            this.contextMenu.hasText = !!document.getElementById('float-msg-text-' + msg.id);
 
             this.$nextTick(() => {
-                const feed = this.$refs.floatingFeed;
-                const feedRect = feed ? feed.getBoundingClientRect() : { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight, width: window.innerWidth, height: window.innerHeight };
+                const panel = this.$refs.drawerPanel || (this.$refs.floatingFeed ? this.$refs.floatingFeed.closest('.pointer-events-auto') : null);
+                const panelRect = panel ? panel.getBoundingClientRect() : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
 
                 const menuWidth = 265;
                 const menuHeight = this.contextMenu.canDelete ? 260 : 210;
 
-                let posX = clientX;
-                let posY = clientY;
+                let posX = clientX - panelRect.left;
+                let posY = clientY - panelRect.top;
 
-                if (posX + menuWidth > feedRect.right - 10) {
-                    posX = feedRect.right - menuWidth - 10;
+                if (posX + menuWidth > panelRect.width - 12) {
+                    posX = panelRect.width - menuWidth - 12;
                 }
-                if (posX < feedRect.left + 10) {
-                    posX = feedRect.left + 10;
+                if (posX < 12) {
+                    posX = 12;
                 }
 
-                if (posY + menuHeight > feedRect.bottom - 10) {
-                    posY = Math.max(feedRect.top + 10, posY - menuHeight);
+                if (posY + menuHeight > panelRect.height - 12) {
+                    posY = Math.max(12, posY - menuHeight);
                 }
-                if (posY < feedRect.top + 10) {
-                    posY = feedRect.top + 10;
+                if (posY < 12) {
+                    posY = 12;
                 }
 
                 this.contextMenu.x = Math.round(posX);
@@ -145,7 +147,9 @@
             this.contextMenu.showExtraEmojis = false;
         },
 
-        copyMessageText(text) {
+        copyMessageText() {
+            const el = document.getElementById('float-msg-text-' + this.contextMenu.messageId);
+            const text = el ? (el.innerText || el.textContent || '').trim() : '';
             if (!text) return;
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(text);
@@ -162,7 +166,7 @@
             this.contextMenu.copied = true;
             setTimeout(() => {
                 this.closeContextMenu();
-            }, 500);
+            }, 600);
         },
     
         canViewUserOnline(userId) {
@@ -787,6 +791,7 @@
             return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
         }
     }" x-on:toggle-floating-chat.window="$wire.toggleWidget()" class="font-sans">
+        @if ($isOpen)
         <!-- Slide-over Drawer (Backdrop & Panel) -->
         <div x-show="isOpen" x-cloak class="fixed inset-0 z-50 overflow-hidden" style="display: none;"
             @keydown.escape.window="if (isOpen) { isOpen = false; $wire.closeWidget(); }">
@@ -799,11 +804,11 @@
 
             <!-- Slide-over Drawer Panel -->
             <div class="fixed inset-y-0 right-0 flex max-w-full pl-6 sm:pl-10 pointer-events-none">
-                <div x-show="isOpen" x-transition:enter="transition-all ease-out duration-300"
+                <div x-ref="drawerPanel" x-show="isOpen" x-transition:enter="transition-all ease-out duration-300"
                     x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
                     x-transition:leave="transition-all ease-in duration-200" x-transition:leave-start="translate-x-0"
                     x-transition:leave-end="translate-x-full"
-                    class="pointer-events-auto flex h-full w-screen max-w-md sm:max-w-lg flex-col overflow-hidden border-l border-gray-200/90 bg-white shadow-2xl backdrop-blur-xl dark:border-gray-800 dark:bg-gray-900">
+                    class="relative pointer-events-auto flex h-full w-screen max-w-md sm:max-w-lg flex-col overflow-hidden border-l border-gray-200/90 bg-white shadow-2xl backdrop-blur-xl dark:border-gray-800 dark:bg-gray-900">
                     <!-- Window Top Bar -->
                     <div
                         class="flex items-center justify-between border-b border-gray-100 bg-gray-50/90 px-3.5 py-2.5 dark:border-gray-800/80 dark:bg-gray-800/80">
@@ -1113,6 +1118,9 @@
                                 @endif
 
                                 <div id="float-msg-{{ $msg->id }}" wire:key="float-msg-{{ $msg->id }}"
+                                    @if (!$msg->is_deleted)
+                                        @contextmenu.prevent.stop="openContextMenu($event, { id: {{ $msg->id }}, isMe: {{ $isMe ? 'true' : 'false' }}, canDelete: {{ $canDelete ? 'true' : 'false' }}, isPinned: {{ $isPinned ? 'true' : 'false' }} })"
+                                    @endif
                                     class="group relative flex w-full {{ $isMe ? 'justify-end' : 'justify-start' }} py-0.5">
                                     <div
                                         class="flex items-end gap-1.5 max-w-[84%] sm:max-w-[76%] {{ $isMe ? 'flex-row-reverse' : 'flex-row' }}">
@@ -1132,8 +1140,8 @@
 
                                         <div class="relative w-fit"
                                             @if (!$msg->is_deleted)
-                                                @contextmenu.prevent="openContextMenu($event, { id: {{ $msg->id }}, isMe: {{ $isMe ? 'true' : 'false' }}, canDelete: {{ $canDelete ? 'true' : 'false' }}, isPinned: {{ $isPinned ? 'true' : 'false' }}, body: @js($msg->body ?? ''), isDeleted: false })"
-                                                @touchstart="startLongPress($event, { id: {{ $msg->id }}, isMe: {{ $isMe ? 'true' : 'false' }}, canDelete: {{ $canDelete ? 'true' : 'false' }}, isPinned: {{ $isPinned ? 'true' : 'false' }}, body: @js($msg->body ?? ''), isDeleted: false })"
+                                                @contextmenu.prevent.stop="openContextMenu($event, { id: {{ $msg->id }}, isMe: {{ $isMe ? 'true' : 'false' }}, canDelete: {{ $canDelete ? 'true' : 'false' }}, isPinned: {{ $isPinned ? 'true' : 'false' }} })"
+                                                @touchstart="startLongPress($event, { id: {{ $msg->id }}, isMe: {{ $isMe ? 'true' : 'false' }}, canDelete: {{ $canDelete ? 'true' : 'false' }}, isPinned: {{ $isPinned ? 'true' : 'false' }} })"
                                                 @touchmove="moveLongPress($event)"
                                                 @touchend="cancelLongPress()"
                                                 @touchcancel="cancelLongPress()"
@@ -1294,7 +1302,7 @@
 
                                                 @if ($hasTextBody)
                                                     <div class="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 max-w-full select-text leading-snug">
-                                                        <span class="break-words select-text">{!! $msg->getFormattedBodyHtml($isMe) !!}</span>
+                                                        <span id="float-msg-text-{{ $msg->id }}" class="break-words select-text">{!! $msg->getFormattedBodyHtml($isMe) !!}</span>
                                                         <span class="inline-flex items-center gap-1 text-[9px] font-medium leading-none select-none opacity-80 whitespace-nowrap self-end pb-0.5 ml-auto {{ $isMe ? 'text-amber-100/90' : 'text-slate-400 dark:text-slate-500' }}">
                                                             <span>{{ $msg->created_at?->format('h:i A') }}</span>
                                                             @if ($isMe)
@@ -1390,8 +1398,9 @@
                         <!-- Floating Context Menu (Secondary Click on Desktop, 2s Hold on Mobile) -->
                         <div x-show="contextMenu.show" x-cloak
                             @click.outside="closeContextMenu()"
+                            @contextmenu.outside="closeContextMenu()"
                             @keydown.escape.window="closeContextMenu()"
-                            class="fixed z-50 animate-in fade-in zoom-in-95 duration-150 origin-top select-none"
+                            class="absolute z-50 animate-in fade-in zoom-in-95 duration-150 origin-top select-none"
                             :style="`top: ${contextMenu.y}px; left: ${contextMenu.x}px;`"
                             style="display: none;">
                             <div class="w-64 overflow-hidden rounded-2xl border border-slate-200/90 bg-white/95 p-1.5 shadow-2xl backdrop-blur-xl dark:border-slate-700/80 dark:bg-slate-900/95">
@@ -1456,9 +1465,9 @@
                                     </button>
 
                                     <!-- Copy Text (when message has text) -->
-                                    <template x-if="contextMenu.body">
+                                    <template x-if="contextMenu.hasText">
                                         <button type="button"
-                                            @click="copyMessageText(contextMenu.body)"
+                                            @click="copyMessageText()"
                                             class="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-1.5 text-left transition hover:bg-amber-50 hover:text-amber-700 dark:hover:bg-amber-950/40 dark:hover:text-amber-300 cursor-pointer">
                                             <svg class="h-4 w-4 text-slate-400 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -3391,5 +3400,6 @@
             </div>
         </div>
     </div>
+        @endif
 </div>
 </div>

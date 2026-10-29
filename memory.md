@@ -358,3 +358,18 @@
     - Clamped menu positioning within chat bounds and included emoji reaction shortcuts, reply, forward, copy, pin, and delete options.
   - **In-Memory Caching (`Message.php`)**: Memoized regex parsing for `@mentions` and message delivery statuses to avoid repetitive database and regex computation per message.
   - **Self-Event Socket Filter**: Prevented redundant Livewire full-page re-renders when the current authenticated user initiates reactions or message deletions.
+
+### 37. App-Wide Page Load Acceleration, Socket Timeout Elimination & Desktop Context Menu Fix (v2.8.14)
+- **Problem**:
+  - Entire application rendered sluggishly on every page transition. `WebsocketStatusIndicator` performed synchronous network socket checks to `127.0.0.1:8080` with dual 0.8s blocking connection timeouts whenever Reverb was not running, introducing a forced 1.6-second delay on every HTTP request.
+  - `FloatingChatWidget` was rendered in full (all 3,400 lines of Blade HTML and all conversation queries) on every page load even when the chat drawer was closed (`isOpen === false`).
+  - The chat context menu was not triggering on desktop right-click:
+    - CSS `transform: translate-x-0` on the drawer panel caused `position: fixed` elements to be positioned relative to the drawer panel rather than the window, pushing the context menu ~1500px offscreen to the right on desktop monitors.
+    - Blade `@js()` inside HTML event attributes generated unescaped double quotes, corrupting the attribute string and causing Alpine JavaScript syntax errors.
+- **Solution**:
+  - **Socket Check Optimization (`WebsocketStatusIndicator.php`)**: Cached Reverb socket status for 30s (`Cache::remember('reverb_status_check', 30, ...)`) and reduced probe timeout to 0.1s, immediately cutting 1.6+ seconds of latency off every page load in the app.
+  - **Lazy-Loaded Chat Drawer (`FloatingChatWidget.php`, `floating-chat-widget.blade.php`)**: Added `@if ($isOpen)` around drawer markup and short-circuited `getConversations()` and `getMessagesProperty()` when closed. Closed chat now executes 0 queries and outputs 0 DOM nodes.
+  - **Desktop Context Menu Coordinates & Anchoring**:
+    - Anchored context menu with `absolute` positioning relative to `drawerPanel` (`clientX - panelRect.left`, `clientY - panelRect.top`), with boundary clamping ensuring it opens right under the cursor on all screen sizes.
+    - Eliminated inline `@js()` double-quote syntax conflicts by passing scalar IDs and extracting text via DOM lookup on copy.
+
