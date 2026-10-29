@@ -4,6 +4,19 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.6] - 2026-10-29
+
+### Added & Enhanced
+- **Full-Screen Split Studio Layout, Policy Presets & Zero-Scroll UX for Royalty Settings**:
+  - **Full-Screen Canvas Expansion**: Eliminated artificial width constraints (`max-w-5xl`) and configured `getMaxContentWidth(): ?string { return 'full'; }` so the settings workspace stretches across the full display.
+  - **Side-by-Side Split Studio**: Restructured the layout into an ergonomic 2-column studio: Deduction Policy Console on the left (col-span-5) and Designation Eligibility Matrix on the right (col-span-7). Both consoles fit comfortably above the fold, completely eliminating the need to scroll down to configure job role eligibility.
+  - **Segmented View Mode Switcher**: Added responsive layout toggle buttons in the studio header supporting **Split Studio** (side-by-side), **Designations Only** (expands matrix to 100% full width), and **Rules Only** (presents deduction cards in a 2x2 grid).
+  - **1-Click Policy Presets**: Added instant preset triggers (`Standard`, `Strict`, `Lenient`) to apply balanced, pre-configured deduction rates, grace thresholds, and floor rules with 1 click.
+  - **Executive KPI Dashboard**: Added 4 real-time stat cards to the top banner displaying Total Roles, Participating Active Roles with percentage badges, Monthly Max Pool Cap, and Guaranteed Payout Floor status.
+  - **Ergonomic Refinements**: Added sticky "Save Rules" triggers at the top of the policy console, aligned currency prefixes, and streamlined Livewire toggle switches.
+
+---
+
 ## [2.9.5] - 2026-10-29
 
 ### Added & Enhanced

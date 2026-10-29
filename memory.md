@@ -553,4 +553,25 @@
     - Added `Join Date`, `Tenure Period`, and `Remaining Budget` columns to `ViewRoyaltyReport`.
     - Added "Balance Overview" header action button linking directly to the Balance Overview page.
 
+### 48. Full-Screen Split Studio Layout & Zero-Scroll UX for Royalty Settings (v2.9.6)
+- **Problem & Requirements**:
+  - The Royalty Bonus Settings page had artificial width limits (`max-w-5xl`) and vertically stacked deduction form cards, forcing users to scroll past ~1500px of content just to access the designations table and save button.
+  - User requested the settings page be full screen, the layout be much more convenient to eliminate excessive vertical scrolling, and the UI be more interesting, modern, and engaging.
+- **Solution**:
+  - **Full-Screen Width Studio (`ManageRoyaltyBonusSettings.php`, `manage-royalty-bonus-settings.blade.php`)**:
+    - Added `getMaxContentWidth(): ?string { return 'full'; }` to the page class and replaced the narrow centered container with `w-full space-y-5`, taking full advantage of widescreen monitors.
+  - **Side-by-Side Split Studio**:
+    - Structured the page into a 2-column layout:
+      - **Left Console (col-span-5)**: Compact Deduction Policy console containing Absent Days, Late In & Early Out, Missing Biometrics (Thumb), and Guaranteed Minimum Floor Protection, with an independent scroll container and sticky "Save Rules" triggers.
+      - **Right Console (col-span-7)**: Designation Participation Matrix featuring live search, department selector, status tabs (`All`, `Eligible`, `Excluded`), bulk enable/disable actions, and a table with sticky headers and internal scroll container (`max-h-[580px]`).
+    - Both consoles sit side-by-side above the fold, completely eliminating vertical page scrolling.
+  - **Segmented View Mode Switcher**:
+    - Added view tabs (`Split Studio`, `Designations Only`, `Rules Only`) controlled by Livewire property `public string $viewMode = 'split'`. Allows users to expand the designation table or deduction cards to 100% full width on demand.
+  - **1-Click Policy Presets**:
+    - Added `applyPreset(string $preset)` with `⚡ Standard`, `🛡️ Strict`, and `🌿 Lenient` triggers that populate balanced deductions, grace thresholds, and floor rules in 1 click.
+  - **Executive KPI Dashboard**:
+    - Added 4 real-time stat cards in the header strip: Total Roles, Eligible Roles with live percentage pill, Monthly Max Pool Cap, and Guaranteed Floor status.
+  - **Refined Aesthetics & Ergonomics**:
+    - Cleaned up currency prefixes (`Rs.`) to avoid overlaps, polished icon avatars, and added animated Livewire toggle switches.
+
 

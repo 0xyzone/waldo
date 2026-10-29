@@ -17,6 +17,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
+use Livewire\Attributes\Url;
 use UnitEnum;
 
 class ManageRoyaltyBonusSettings extends Page
@@ -38,6 +39,14 @@ class ManageRoyaltyBonusSettings extends Page
     protected static ?int $navigationSort = 3;
 
     protected string $view = 'filament.pages.manage-royalty-bonus-settings';
+
+    public function getMaxContentWidth(): ?string
+    {
+        return 'full';
+    }
+
+    #[Url(as: 'view')]
+    public string $viewMode = 'split'; // 'split', 'designations', 'rules'
 
     /**
      * Form state properties.
@@ -63,10 +72,13 @@ class ManageRoyaltyBonusSettings extends Page
     /**
      * Designation management interactive properties.
      */
+    #[Url(as: 'department')]
     public string $selectedDepartment = 'all';
 
+    #[Url(as: 'search')]
     public string $searchDesignation = '';
 
+    #[Url(as: 'filter')]
     public string $royaltyFilter = 'all'; // 'all', 'eligible', 'ineligible'
 
     public static function getShieldPagePermissions(): array
@@ -184,19 +196,68 @@ class ManageRoyaltyBonusSettings extends Page
             ]);
     }
 
+    public function setViewMode(string $mode): void
+    {
+        $this->viewMode = $mode;
+    }
+
+    public function applyPreset(string $preset): void
+    {
+        match ($preset) {
+            'standard' => [
+                $this->royalty_absent_mode = 'boolean',
+                $this->royalty_absent_amount = '500.00',
+                $this->royalty_late_early_mode = 'countable',
+                $this->royalty_late_early_threshold = '3',
+                $this->royalty_late_early_penalty = '100.00',
+                $this->royalty_missing_thumb_mode = 'countable',
+                $this->royalty_missing_thumb_threshold = '2',
+                $this->royalty_missing_thumb_penalty = '100.00',
+                $this->royalty_enforce_min_floor = true,
+            ],
+            'strict' => [
+                $this->royalty_absent_mode = 'countable',
+                $this->royalty_absent_amount = '750.00',
+                $this->royalty_late_early_mode = 'countable',
+                $this->royalty_late_early_threshold = '2',
+                $this->royalty_late_early_penalty = '150.00',
+                $this->royalty_missing_thumb_mode = 'countable',
+                $this->royalty_missing_thumb_threshold = '1',
+                $this->royalty_missing_thumb_penalty = '150.00',
+                $this->royalty_enforce_min_floor = true,
+            ],
+            'lenient' => [
+                $this->royalty_absent_mode = 'boolean',
+                $this->royalty_absent_amount = '300.00',
+                $this->royalty_late_early_mode = 'boolean',
+                $this->royalty_late_early_threshold = '4',
+                $this->royalty_late_early_penalty = '200.00',
+                $this->royalty_missing_thumb_mode = 'boolean',
+                $this->royalty_missing_thumb_threshold = '3',
+                $this->royalty_missing_thumb_penalty = '200.00',
+                $this->royalty_enforce_min_floor = true,
+            ],
+            default => null,
+        };
+
+        Notification::make()
+            ->title('Policy Preset Applied: '.ucfirst($preset))
+            ->body('Rule parameters updated. Click "Save Deduction Rules" to commit changes.')
+            ->info()
+            ->send();
+    }
+
     public function save(): void
     {
-        $data = $this->form->getState();
-
-        AppSetting::set('royalty_absent_mode', (string) ($data['royalty_absent_mode'] ?? 'boolean'));
-        AppSetting::set('royalty_absent_amount', (string) ($data['royalty_absent_amount'] ?? '500.00'));
-        AppSetting::set('royalty_late_early_mode', (string) ($data['royalty_late_early_mode'] ?? 'countable'));
-        AppSetting::set('royalty_late_early_threshold', (string) ($data['royalty_late_early_threshold'] ?? '3'));
-        AppSetting::set('royalty_late_early_penalty', (string) ($data['royalty_late_early_penalty'] ?? '100.00'));
-        AppSetting::set('royalty_missing_thumb_mode', (string) ($data['royalty_missing_thumb_mode'] ?? 'countable'));
-        AppSetting::set('royalty_missing_thumb_threshold', (string) ($data['royalty_missing_thumb_threshold'] ?? '2'));
-        AppSetting::set('royalty_missing_thumb_penalty', (string) ($data['royalty_missing_thumb_penalty'] ?? '100.00'));
-        AppSetting::set('royalty_enforce_min_floor', ! empty($data['royalty_enforce_min_floor']) ? '1' : '0');
+        AppSetting::set('royalty_absent_mode', (string) ($this->royalty_absent_mode ?? 'boolean'));
+        AppSetting::set('royalty_absent_amount', (string) ($this->royalty_absent_amount ?? '500.00'));
+        AppSetting::set('royalty_late_early_mode', (string) ($this->royalty_late_early_mode ?? 'countable'));
+        AppSetting::set('royalty_late_early_threshold', (string) ($this->royalty_late_early_threshold ?? '3'));
+        AppSetting::set('royalty_late_early_penalty', (string) ($this->royalty_late_early_penalty ?? '100.00'));
+        AppSetting::set('royalty_missing_thumb_mode', (string) ($this->royalty_missing_thumb_mode ?? 'countable'));
+        AppSetting::set('royalty_missing_thumb_threshold', (string) ($this->royalty_missing_thumb_threshold ?? '2'));
+        AppSetting::set('royalty_missing_thumb_penalty', (string) ($this->royalty_missing_thumb_penalty ?? '100.00'));
+        AppSetting::set('royalty_enforce_min_floor', $this->royalty_enforce_min_floor ? '1' : '0');
 
         Notification::make()
             ->title('Settings Saved Successfully')
@@ -248,9 +309,21 @@ class ManageRoyaltyBonusSettings extends Page
         return Designation::where('is_royalty_eligible', true)->count();
     }
 
+    public function getEligiblePercentageProperty(): int
+    {
+        $total = $this->totalDesignationsCount;
+
+        return $total > 0 ? (int) round(($this->eligibleDesignationsCount / $total) * 100) : 0;
+    }
+
     public function getTotalMonthlyMaxBudgetProperty(): float
     {
         return (float) Designation::where('is_royalty_eligible', true)->sum('royalty_monthly_max');
+    }
+
+    public function toggleFloorProtection(): void
+    {
+        $this->royalty_enforce_min_floor = ! $this->royalty_enforce_min_floor;
     }
 
     public function toggleDesignation(int $id): void

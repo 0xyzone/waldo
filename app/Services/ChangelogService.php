@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.5';
+    public const CURRENT_VERSION = '2.9.6';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,23 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.6',
+                'date' => '2026-10-29',
+                'title' => 'Full-Screen Split Studio Layout, Policy Presets & Zero-Scroll UX for Royalty Settings',
+                'type' => 'micro',
+                'badge' => 'Enhancement',
+                'badge_color' => 'success',
+                'description' => 'Redesigned the Royalty Bonus Settings page into a full-screen, responsive Split Studio layout that eliminates excessive vertical scrolling, introduces 1-click policy presets, view switching, and an executive KPI dashboard.',
+                'highlights' => [
+                    'Full-Screen Width Studio: Removed narrow container width constraints and expanded the settings page to span full display width, taking advantage of modern widescreen resolutions.',
+                    'Side-by-Side Split Studio: Positioned the Deduction Policy console on the left and the Designation Eligibility Matrix on the right, keeping all settings and role toggles above the fold without page scrolling.',
+                    'View Mode Switcher: Added segmented view toggle allowing instant switching between Split Studio, Designations Only (full-width 12-column table), and Rules Only (2x2 grid).',
+                    '1-Click Policy Presets: Introduced quick preset buttons (Standard, Strict, Lenient) to automatically configure balanced attendance penalties and grace limits in a single click.',
+                    'Executive KPI Summary: Added 4 live summary cards tracking Total Roles, Eligible Participating Roles with percentage badges, Monthly Max Pool Cap, and Guaranteed Floor status.',
+                    'Enhanced Control Ergonomics: Added sticky Save Rules action, aligned currency prefixes, and smooth iOS-style eligibility toggle switches.',
+                ],
+            ],
             [
                 'version' => '2.9.5',
                 'date' => '2026-10-29',
