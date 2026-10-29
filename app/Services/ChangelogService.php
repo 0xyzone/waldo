@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.4';
+    public const CURRENT_VERSION = '2.9.5';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,22 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.5',
+                'date' => '2026-10-29',
+                'title' => 'Search Icon Alignment Fix, 12-Month Join Date Tenure Budget & Royalty Balance Overview',
+                'type' => 'micro',
+                'badge' => 'Feature',
+                'badge_color' => 'success',
+                'description' => 'Fixed search icon visibility and alignment in sidebar and settings pages, integrated joining date tenure cycles for annual royalty budget capping, and introduced a dedicated Royalty Budget Balance Overview resource.',
+                'highlights' => [
+                    'Search Icon Realignment: Fixed search icon z-index and flex vertical centering in the sidebar search bar, royalty settings designations filter, and balance overview toolbar.',
+                    '12-Month Join Date Tenure Engine: Implemented calculateTenureCycle() mapping each employee\'s annual budget to their personal 12-month tenure starting from their joining date.',
+                    'Tenure Budget Capping: Enforced that monthly royalty payouts across reports in a tenure cycle cannot exceed the remaining annual budget, with auto-deduction notices and balance tracking.',
+                    'Royalty Balance Overview Module: Added dedicated management page with 4 KPI stat cards, multi-scope report filtering, department selectors, budget health status pills, and slide-over tenure payout history.',
+                    'Report Table & Print Enhancements: Added Join Date, Tenure Period, and Remaining Budget columns to ViewRoyaltyReport and OpenSpout Excel exports with direct Balance Overview access.',
+                ],
+            ],
             [
                 'version' => '2.9.4',
                 'date' => '2026-10-29',

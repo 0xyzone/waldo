@@ -1,7 +1,7 @@
 <div
     x-data="sidebarMenuSearch()"
     x-init="init()"
-    class="sidebar-search-container -mx-2 px-2 -mt-4 mb-3 sticky -top-8 z-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200/60 dark:border-gray-800/80 pb-2.5 pt-1.5 transition-all duration-200"
+    class="sidebar-search-container -mx-2 px-2 -mt-4 mb-3 sticky -top-8 z-20 pb-2.5 pt-1.5 transition-all duration-200"
     data-sidebar-search-root
 >
     {{-- Expanded Search Bar (when sidebar is open) --}}
@@ -12,8 +12,8 @@
     >
         <div class="relative flex items-center">
             {{-- Search Icon / Spinner --}}
-            <div class="absolute left-3 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
-                <x-heroicon-m-magnifying-glass class="w-4 h-4" />
+            <div class="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-3 text-gray-400 dark:text-gray-500">
+                <x-heroicon-m-magnifying-glass class="w-4 h-4 shrink-0" />
             </div>
 
             {{-- Input Field --}}
@@ -31,7 +31,7 @@
             />
 
             {{-- Right Badges / Actions --}}
-            <div class="absolute right-2.5 flex items-center gap-1">
+            <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 gap-1">
                 {{-- Clear Button when query has text --}}
                 <button
                     type="button"

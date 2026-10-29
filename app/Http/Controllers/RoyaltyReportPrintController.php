@@ -56,4 +56,15 @@ class RoyaltyReportPrintController extends Controller
     {
         return app(RoyaltyCalculationService::class)->downloadPerformanceSample();
     }
+
+    /**
+     * Download Excel Report for Royalty Budget Balance Overview.
+     */
+    public function exportBalanceOverview(Request $request): StreamedResponse
+    {
+        $reportId = $request->query('report') ? (int) $request->query('report') : null;
+        $department = $request->query('department');
+
+        return app(RoyaltyCalculationService::class)->exportBalanceOverviewExcel($reportId, $department);
+    }
 }

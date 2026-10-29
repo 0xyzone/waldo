@@ -16,6 +16,12 @@ class RoyaltyReportItem extends Model
         'designation',
         'designation_id',
         'employee_status',
+        'join_date',
+        'tenure_year',
+        'tenure_start',
+        'tenure_end',
+        'tenure_month',
+        'starting_tenure_budget',
         'annual_budget',
         'monthly_max_payout',
         'monthly_min_payout',
@@ -28,6 +34,8 @@ class RoyaltyReportItem extends Model
         'attendance_deduction_amount',
         'total_deduction_amount',
         'final_payout',
+        'consumed_tenure_budget',
+        'remaining_budget',
         'payout_status',
         'held_reason',
         'remarks',
@@ -36,6 +44,11 @@ class RoyaltyReportItem extends Model
     protected function casts(): array
     {
         return [
+            'tenure_start' => 'date',
+            'tenure_end' => 'date',
+            'tenure_year' => 'integer',
+            'tenure_month' => 'integer',
+            'starting_tenure_budget' => 'decimal:2',
             'annual_budget' => 'decimal:2',
             'monthly_max_payout' => 'decimal:2',
             'monthly_min_payout' => 'decimal:2',
@@ -48,6 +61,8 @@ class RoyaltyReportItem extends Model
             'attendance_deduction_amount' => 'decimal:2',
             'total_deduction_amount' => 'decimal:2',
             'final_payout' => 'decimal:2',
+            'consumed_tenure_budget' => 'decimal:2',
+            'remaining_budget' => 'decimal:2',
         ];
     }
 

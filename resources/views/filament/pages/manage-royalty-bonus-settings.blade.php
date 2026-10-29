@@ -50,7 +50,9 @@
                 <div class="flex flex-wrap items-center gap-2.5 flex-1">
                     {{-- Search Input --}}
                     <div class="relative w-full sm:w-64">
-                        <x-heroicon-m-magnifying-glass class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <div class="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-3 text-gray-400 dark:text-gray-500">
+                            <x-heroicon-m-magnifying-glass class="w-4 h-4 shrink-0" />
+                        </div>
                         <input
                             type="text"
                             wire:model.live.debounce.250ms="searchDesignation"

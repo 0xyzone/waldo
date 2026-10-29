@@ -527,3 +527,30 @@
     - Added global shortcut `Ctrl+K` / `⌘K` to focus the search bar from anywhere in the panel, `Esc` to clear, and `Enter` to navigate directly to the first visible result.
     - When the desktop sidebar is collapsed (`$store.sidebar.isOpen === false`), displays a compact search icon button that expands the sidebar and focuses the input.
 
+### 47. Search Icon Alignment Fix, 12-Month Join Date Tenure Budget & Royalty Balance Overview (v2.9.5)
+- **Problem & Requirements**:
+  - The search icon in both the sidebar search bar and the royalty bonus settings page was not properly aligned (hidden under input background due to missing z-index and DOM position).
+  - In Royalty Bonus, each employee's join date determines their total budget for a 12-month tenure starting from their joining date.
+  - A Balance Overview page was needed for the generated data to see how much budget is remaining after the calculations.
+- **Solution**:
+  - **Search Icon Realignment (`sidebar-search.blade.php`, `manage-royalty-bonus-settings.blade.php`, `royalty-balance-overview.blade.php`)**:
+    - Wrapped magnifying glass SVG in `pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-3 text-gray-400 dark:text-gray-500`, guaranteeing perfect vertical centering and elevation above input backgrounds.
+  - **12-Month Join Date Tenure Calculation Engine (`RoyaltyCalculationService.php`)**:
+    - Created `calculateTenureCycle(?string $rawJoinDate, ?Carbon $referenceDate = null)` to map any reference date to the employee's personal 12-month tenure cycle (Tenure Year, Start Date, End Date, and Tenure Month 1-12) calculated from `join_date_formatted`.
+  - **Database & Model Fields (`add_tenure_and_budget_balance_to_royalty_report_items_table.php`, `RoyaltyReportItem.php`)**:
+    - Added columns: `join_date`, `tenure_year`, `tenure_start`, `tenure_end`, `tenure_month`, `starting_tenure_budget`, `consumed_tenure_budget`, and `remaining_budget`.
+  - **Tenure Budget Capping (`generate()`, `recalculateItem()`)**:
+    - Queries previous payouts in the same 12-month tenure cycle.
+    - Caps proposed monthly payouts so the employee never exceeds their total 12-month tenure budget, updating `consumed_tenure_budget` and `remaining_budget` with automated audit remarks.
+  - **Royalty Budget Balance Overview Module (`RoyaltyBalanceOverview.php`, `royalty-balance-overview.blade.php`)**:
+    - Dedicated management page under `Royalty Bonus Management` (slug: `/royalty-bonus/balance-overview`, icon: `Heroicon::Scale`).
+    - 4 KPI Stat Summary Cards: Total 12-Mo Budget, Total Utilized, Total Remaining Budget, and Overall Utilization %.
+    - Multi-filter bar: Search input with aligned icon, Report scope selector (Cumulative 12-Month Balances vs. individual reports), Department filter, and Budget status pill toggles (`All`, `Healthy`, `Low Budget <20%`, `Exhausted`).
+    - Interactive data table showing Join Date, 12-Mo Tenure Cycle, 12-Mo Budget, Utilized, Remaining Budget, visual usage progress bar, and status badge.
+    - Interactive slide-over modal detailing the employee's month-by-month calculation breakdown across reports in the current 12-month tenure cycle.
+    - Export to Excel feature via `RoyaltyReportPrintController::exportBalanceOverview()`.
+  - **Report Table & Print Enhancements (`ViewRoyaltyReport.php`, `print.blade.php`)**:
+    - Added `Join Date`, `Tenure Period`, and `Remaining Budget` columns to `ViewRoyaltyReport`.
+    - Added "Balance Overview" header action button linking directly to the Balance Overview page.
+
+

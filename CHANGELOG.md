@@ -4,6 +4,18 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.5] - 2026-10-29
+
+### Added & Enhanced
+- **Search Icon Alignment Fix, 12-Month Join Date Tenure Budget & Royalty Balance Overview**:
+  - **Search Icon Centering & Z-Index Realignment**: Fixed search icon positioning in `sidebar-search.blade.php`, `manage-royalty-bonus-settings.blade.php`, and `royalty-balance-overview.blade.php` using `pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-3` so icons are always vertically centered and visible above input backgrounds.
+  - **12-Month Join Date Tenure Engine**: Integrated `calculateTenureCycle()` in `RoyaltyCalculationService` to compute personal 12-month tenure cycles (Year 1, 2, ..., Month 1-12) calculated from each employee's exact joining date (`join_date_formatted`).
+  - **Tenure Budget Capping & Audit Balance Tracking**: Added migration `add_tenure_and_budget_balance_to_royalty_report_items_table` capturing `join_date`, `tenure_year`, `tenure_start`, `tenure_end`, `tenure_month`, `starting_tenure_budget`, `consumed_tenure_budget`, and `remaining_budget`. Payouts in `generate()` and `recalculateItem()` are automatically capped at the available 12-month tenure balance.
+  - **Royalty Budget Balance Overview Module**: Created a dedicated overview page (`/kamkaj/royalty-bonus/balance-overview`) featuring 4 KPI stat cards, multi-scope report filtering, department selectors, health status pill toggles (`Healthy`, `Low Budget <20%`, `Exhausted`), and an interactive slide-over modal detailing month-by-month historical payouts in the current 12-month tenure.
+  - **View Royalty Report & Excel Export Updates**: Added `Join Date`, `Tenure Period`, and `Remaining Budget` columns to `ViewRoyaltyReport` and OpenSpout Excel exports, with a direct "Balance Overview" header action.
+
+---
+
 ## [2.9.4] - 2026-10-29
 
 ### Added & Enhanced

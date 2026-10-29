@@ -7,6 +7,7 @@ use App\Models\Employee;
 use App\Models\RoyaltyExemptEmployee;
 use App\Models\RoyaltyReport;
 use App\Models\RoyaltyReportItem;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use OpenSpout\Common\Entity\Row;
@@ -66,6 +67,10 @@ class RoyaltyCalculationService
             }
 
             // 6. Calculate for each employee and create Report Item
+            $reportRefDate = $report->cutoff_date
+                ? Carbon::parse($report->cutoff_date)
+                : Carbon::parse("{$report->month} 1, {$report->year}");
+
             foreach ($employees as $employee) {
                 $code = strtoupper(trim((string) $employee->employee_code));
                 $designation = $employee->designation;
@@ -92,7 +97,23 @@ class RoyaltyCalculationService
                 $perfDeductionPercent = $perfInfo ? (float) ($perfInfo['percent'] ?? 0.0) : 0.0;
                 $perfRemarks = $perfInfo ? trim((string) ($perfInfo['remarks'] ?? '')) : null;
 
-                // Calculate deductions and payout
+                // Calculate 12-month tenure cycle based on joining date
+                $tenure = $this->calculateTenureCycle($employee->join_date_formatted, $reportRefDate);
+                $tenureStartStr = $tenure['tenure_start']->format('Y-m-d');
+                $tenureEndStr = $tenure['tenure_end']->format('Y-m-d');
+
+                // Sum previously calculated payouts for this employee in other reports within the same 12-month tenure
+                $previouslyConsumed = (float) RoyaltyReportItem::query()
+                    ->where('employee_code', $employee->employee_code)
+                    ->where('royalty_report_id', '!=', $report->id)
+                    ->whereHas('report', function ($q) use ($tenureStartStr, $tenureEndStr) {
+                        $q->whereBetween('cutoff_date', [$tenureStartStr, $tenureEndStr]);
+                    })
+                    ->sum('final_payout');
+
+                $availableBudget = $annualBudget > 0 ? max(0, $annualBudget - $previouslyConsumed) : 0;
+
+                // Calculate deductions and proposed payout
                 $calc = $this->computePayout(
                     monthlyMax: $monthlyMax,
                     monthlyMin: $monthlyMin,
@@ -103,6 +124,18 @@ class RoyaltyCalculationService
                     missingThumbCount: (int) $att['missing_thumb_count'],
                     settings: $settings
                 );
+
+                $proposedPayout = (float) $calc['final_payout'];
+
+                // Cap payout at remaining 12-month tenure budget if budget is configured
+                if ($annualBudget > 0) {
+                    $finalPayout = min($proposedPayout, $availableBudget);
+                } else {
+                    $finalPayout = $proposedPayout;
+                }
+
+                $consumedTenureBudget = $previouslyConsumed + $finalPayout;
+                $remainingBudget = $annualBudget > 0 ? max(0, $annualBudget - $consumedTenureBudget) : 0;
 
                 $isHold = ($employee->employee_status === 'Suspended') || strtoupper(trim((string) ($employee->tips_status ?? ''))) === 'HOLD';
                 $payoutStatus = $isHold ? 'Hold' : 'Release';
@@ -115,6 +148,11 @@ class RoyaltyCalculationService
                     $itemRemarks = $perfRemarks;
                 }
 
+                if ($annualBudget > 0 && $proposedPayout > $finalPayout) {
+                    $capNote = 'Payout capped from Rs. '.number_format($proposedPayout, 2).' to Rs. '.number_format($finalPayout, 2).' due to 12-month tenure budget limit (Rs. '.number_format($annualBudget, 2).').';
+                    $itemRemarks = $itemRemarks ? "{$itemRemarks} | {$capNote}" : $capNote;
+                }
+
                 RoyaltyReportItem::create([
                     'royalty_report_id' => $report->id,
                     'employee_code' => $employee->employee_code,
@@ -124,6 +162,12 @@ class RoyaltyCalculationService
                     'designation' => $designation?->name ?? 'General',
                     'designation_id' => $employee->designation_id,
                     'employee_status' => $employee->employee_status ?? 'Active',
+                    'join_date' => $employee->join_date_formatted,
+                    'tenure_year' => $tenure['tenure_year'],
+                    'tenure_start' => $tenure['tenure_start']->format('Y-m-d'),
+                    'tenure_end' => $tenure['tenure_end']->format('Y-m-d'),
+                    'tenure_month' => $tenure['tenure_month'],
+                    'starting_tenure_budget' => $annualBudget,
                     'annual_budget' => $annualBudget,
                     'monthly_max_payout' => $monthlyMax,
                     'monthly_min_payout' => $monthlyMin,
@@ -135,7 +179,9 @@ class RoyaltyCalculationService
                     'performance_deduction_amount' => $calc['perf_deduction_amount'],
                     'attendance_deduction_amount' => $calc['attendance_deduction_amount'],
                     'total_deduction_amount' => $calc['total_deduction_amount'],
-                    'final_payout' => $calc['final_payout'],
+                    'final_payout' => $finalPayout,
+                    'consumed_tenure_budget' => $consumedTenureBudget,
+                    'remaining_budget' => $remainingBudget,
                     'payout_status' => $payoutStatus,
                     'held_reason' => $heldReason,
                     'remarks' => $itemRemarks,
@@ -150,6 +196,25 @@ class RoyaltyCalculationService
     public function recalculateItem(RoyaltyReportItem $item): void
     {
         $settings = $this->getSettings();
+        $report = $item->report;
+        $reportRefDate = $report && $report->cutoff_date
+            ? Carbon::parse($report->cutoff_date)
+            : Carbon::parse(($report->month ?? 'now').' 1, '.($report->year ?? date('Y')));
+
+        $tenure = $this->calculateTenureCycle($item->join_date, $reportRefDate);
+        $annualBudget = (float) $item->annual_budget;
+        $tenureStartStr = $tenure['tenure_start']->format('Y-m-d');
+        $tenureEndStr = $tenure['tenure_end']->format('Y-m-d');
+
+        $previouslyConsumed = (float) RoyaltyReportItem::query()
+            ->where('employee_code', $item->employee_code)
+            ->where('id', '!=', $item->id)
+            ->whereHas('report', function ($q) use ($tenureStartStr, $tenureEndStr) {
+                $q->whereBetween('cutoff_date', [$tenureStartStr, $tenureEndStr]);
+            })
+            ->sum('final_payout');
+
+        $availableBudget = $annualBudget > 0 ? max(0, $annualBudget - $previouslyConsumed) : 0;
 
         $calc = $this->computePayout(
             monthlyMax: (float) $item->monthly_max_payout,
@@ -162,13 +227,114 @@ class RoyaltyCalculationService
             settings: $settings
         );
 
+        $proposedPayout = (float) $calc['final_payout'];
+        if ($annualBudget > 0) {
+            $finalPayout = min($proposedPayout, $availableBudget);
+        } else {
+            $finalPayout = $proposedPayout;
+        }
+
+        $consumedTenureBudget = $previouslyConsumed + $finalPayout;
+        $remainingBudget = $annualBudget > 0 ? max(0, $annualBudget - $consumedTenureBudget) : 0;
+
         $item->update([
+            'tenure_year' => $tenure['tenure_year'],
+            'tenure_start' => $tenure['tenure_start']->format('Y-m-d'),
+            'tenure_end' => $tenure['tenure_end']->format('Y-m-d'),
+            'tenure_month' => $tenure['tenure_month'],
+            'starting_tenure_budget' => $annualBudget,
             'performance_deduction_amount' => $calc['perf_deduction_amount'],
             'attendance_deduction_amount' => $calc['attendance_deduction_amount'],
             'total_deduction_amount' => $calc['total_deduction_amount'],
-            'final_payout' => $calc['final_payout'],
-            'remarks' => $item->is_exempt ? 'Exempt from deductions (Always Max Payout)' : null,
+            'final_payout' => $finalPayout,
+            'consumed_tenure_budget' => $consumedTenureBudget,
+            'remaining_budget' => $remainingBudget,
+            'remarks' => $item->is_exempt ? 'Exempt from deductions (Always Max Payout)' : $item->remarks,
         ]);
+    }
+
+    /**
+     * Calculate 12-month tenure cycle for an employee relative to a reference date.
+     *
+     * @return array{
+     *     join_date_raw: ?string,
+     *     join_date: ?Carbon,
+     *     tenure_year: int,
+     *     tenure_start: Carbon,
+     *     tenure_end: Carbon,
+     *     tenure_month: int,
+     *     label: string
+     * }
+     */
+    public function calculateTenureCycle(?string $rawJoinDate, ?Carbon $referenceDate = null): array
+    {
+        $ref = ($referenceDate ? $referenceDate->copy() : now())->startOfDay();
+        $joinDate = null;
+
+        if (! empty($rawJoinDate)) {
+            try {
+                $cleaned = str_replace(',', '', trim($rawJoinDate));
+                $joinDate = Carbon::parse($cleaned)->startOfDay();
+            } catch (\Throwable) {
+                $joinDate = null;
+            }
+        }
+
+        if (! $joinDate) {
+            $start = $ref->copy()->startOfYear();
+            $end = $ref->copy()->endOfYear();
+
+            return [
+                'join_date_raw' => $rawJoinDate,
+                'join_date' => null,
+                'tenure_year' => 1,
+                'tenure_start' => $start,
+                'tenure_end' => $end,
+                'tenure_month' => (int) $ref->month,
+                'label' => $start->format('d M Y').' - '.$end->format('d M Y').' (Year 1, Month '.$ref->month.'/12)',
+            ];
+        }
+
+        if ($ref->lt($joinDate)) {
+            $start = $joinDate->copy();
+            $end = $start->copy()->addYear()->subDay();
+
+            return [
+                'join_date_raw' => $rawJoinDate,
+                'join_date' => $joinDate,
+                'tenure_year' => 1,
+                'tenure_start' => $start,
+                'tenure_end' => $end,
+                'tenure_month' => 1,
+                'label' => $start->format('d M Y').' - '.$end->format('d M Y').' (Year 1, Month 1/12)',
+            ];
+        }
+
+        $yearsDiff = (int) $joinDate->diffInYears($ref);
+        $anniversary = $joinDate->copy()->addYears($yearsDiff);
+
+        if ($ref->lt($anniversary)) {
+            $start = $joinDate->copy()->addYears($yearsDiff - 1);
+            $end = $start->copy()->addYear()->subDay();
+            $tenureYear = max(1, $yearsDiff);
+        } else {
+            $start = $anniversary;
+            $end = $start->copy()->addYear()->subDay();
+            $tenureYear = $yearsDiff + 1;
+        }
+
+        $monthsPassed = (int) $start->diffInMonths($ref);
+        $tenureMonth = min(12, max(1, $monthsPassed + 1));
+
+        return [
+            'join_date_raw' => $rawJoinDate,
+            'join_date' => $joinDate,
+            'tenure_year' => $tenureYear,
+            'tenure_start' => $start,
+            'tenure_end' => $end,
+            'tenure_month' => $tenureMonth,
+            'label' => $start->format('d M Y').' - '.$end->format('d M Y').' (Year '.$tenureYear.', Month '.$tenureMonth.'/12)',
+        ];
     }
 
     /**
@@ -610,6 +776,9 @@ class RoyaltyCalculationService
                 'Department',
                 'Designation',
                 'Status',
+                'Join Date',
+                'Tenure Period',
+                'Tenure Month',
                 'Annual Budget (Rs.)',
                 'Monthly Max Payout (Rs.)',
                 'Monthly Min Payout (Rs.)',
@@ -622,6 +791,7 @@ class RoyaltyCalculationService
                 'Attendance Deduction (Rs.)',
                 'Total Deduction (Rs.)',
                 'Final Net Payout (Rs.)',
+                'Remaining Budget (Rs.)',
                 'Payout Status',
                 'Hold Reason / Remarks',
             ];
@@ -635,6 +805,10 @@ class RoyaltyCalculationService
 
             $index = 1;
             foreach ($items as $item) {
+                $tenurePeriodStr = ($item->tenure_start && $item->tenure_end)
+                    ? $item->tenure_start->format('d M Y').' - '.$item->tenure_end->format('d M Y').' (Yr '.($item->tenure_year ?? 1).')'
+                    : '-';
+
                 $rowValues = [
                     $index++,
                     $item->employee_code,
@@ -642,6 +816,9 @@ class RoyaltyCalculationService
                     $item->department ?? '-',
                     $item->designation ?? '-',
                     $item->employee_status,
+                    $item->join_date ?? '-',
+                    $tenurePeriodStr,
+                    $item->tenure_month ? 'Month '.$item->tenure_month.'/12' : '-',
                     (float) $item->annual_budget,
                     (float) $item->monthly_max_payout,
                     (float) $item->monthly_min_payout,
@@ -654,6 +831,7 @@ class RoyaltyCalculationService
                     (float) $item->attendance_deduction_amount,
                     (float) $item->total_deduction_amount,
                     (float) $item->final_payout,
+                    (float) $item->remaining_budget,
                     $item->payout_status ?? 'Release',
                     $item->held_reason ?: ($item->remarks ?: '-'),
                 ];
@@ -674,6 +852,9 @@ class RoyaltyCalculationService
                 '',
                 '',
                 '',
+                '',
+                '',
+                (float) $items->sum('annual_budget'),
                 (float) $items->sum('monthly_max_payout'),
                 '',
                 '',
@@ -685,6 +866,9 @@ class RoyaltyCalculationService
                 (float) $items->sum('attendance_deduction_amount'),
                 (float) $items->sum('total_deduction_amount'),
                 (float) $items->sum('final_payout'),
+                (float) $items->sum('remaining_budget'),
+                '',
+                '',
             ];
             $writer->addRow(Row::fromValues($totalRow, $summaryStyle));
 
@@ -692,6 +876,275 @@ class RoyaltyCalculationService
         }, $fileName, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ]);
+    }
+
+    /**
+     * Export balance overview for all employees or specific report to an Excel spreadsheet.
+     */
+    public function exportBalanceOverviewExcel(?int $reportId = null, ?string $department = null): StreamedResponse
+    {
+        $fileName = 'Royalty_Budget_Balance_Overview_'.now()->format('Ymd_His').'.xlsx';
+
+        return response()->streamDownload(function () use ($reportId, $department) {
+            $writer = new XlsxWriter;
+            $writer->openToFile('php://output');
+
+            $headerStyle = (new Style)
+                ->setFontBold()
+                ->setFontColor('FFFFFF')
+                ->setBackgroundColor('047857'); // Emerald 700
+
+            $headers = [
+                'S.N.',
+                'Employee Code',
+                'Employee Name',
+                'Department',
+                'Designation',
+                'Status',
+                'Join Date',
+                'Tenure Year',
+                '12-Month Tenure Cycle',
+                'Tenure Month',
+                'Total 12-Month Budget (Rs.)',
+                'Budget Utilized (Rs.)',
+                'Remaining Budget (Rs.)',
+                'Utilization %',
+                'Budget Health',
+            ];
+
+            $writer->addRow(Row::fromValues($headers, $headerStyle));
+
+            $records = $this->getBalanceOverviewRecords($reportId, $department);
+
+            $index = 1;
+            foreach ($records as $r) {
+                $rowValues = [
+                    $index++,
+                    $r['employee_code'],
+                    $r['employee_name'],
+                    $r['department'],
+                    $r['designation'],
+                    $r['employee_status'],
+                    $r['join_date'] ?? '-',
+                    'Year '.$r['tenure_year'],
+                    $r['tenure_start'].' - '.$r['tenure_end'],
+                    'Month '.$r['tenure_month'].'/12',
+                    $r['annual_budget'],
+                    $r['consumed_budget'],
+                    $r['remaining_budget'],
+                    $r['utilization_rate'].'%',
+                    $r['status'],
+                ];
+
+                $writer->addRow(Row::fromValues($rowValues));
+            }
+
+            // Summary row
+            $summaryStyle = (new Style)
+                ->setFontBold()
+                ->setBackgroundColor('E2E8F0');
+
+            $totalBudget = array_sum(array_column($records, 'annual_budget'));
+            $totalConsumed = array_sum(array_column($records, 'consumed_budget'));
+            $totalRemaining = array_sum(array_column($records, 'remaining_budget'));
+
+            $totalRow = [
+                'TOTAL',
+                '',
+                count($records).' Employees',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                $totalBudget,
+                $totalConsumed,
+                $totalRemaining,
+                $totalBudget > 0 ? round(($totalConsumed / $totalBudget) * 100, 1).'%' : '0%',
+                '',
+            ];
+            $writer->addRow(Row::fromValues($totalRow, $summaryStyle));
+
+            $writer->close();
+        }, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
+    /**
+     * Compute array of balance overview records for the Balance Overview page or export.
+     *
+     * @return array<int, array{
+     *     employee_code: string,
+     *     employee_name: string,
+     *     department: string,
+     *     department_id: ?int,
+     *     designation: string,
+     *     designation_id: ?int,
+     *     employee_status: string,
+     *     join_date: ?string,
+     *     tenure_year: int,
+     *     tenure_start: string,
+     *     tenure_end: string,
+     *     tenure_month: int,
+     *     annual_budget: float,
+     *     consumed_budget: float,
+     *     remaining_budget: float,
+     *     utilization_rate: float,
+     *     status: string,
+     *     history: array<int, array{title: string, cutoff_date: string, payout: float, status: string, remaining: float}>
+     * }>
+     */
+    public function getBalanceOverviewRecords(?int $reportId = null, ?string $department = null): array
+    {
+        $records = [];
+
+        if ($reportId) {
+            // Fetch from specific report items
+            $query = RoyaltyReportItem::with(['report', 'departmentModel', 'designationModel'])
+                ->where('royalty_report_id', $reportId);
+
+            if ($department && $department !== 'all') {
+                $query->where('department', $department);
+            }
+
+            $items = $query->orderBy('department')->orderBy('employee_code')->get();
+
+            foreach ($items as $item) {
+                $annualBudget = (float) $item->annual_budget;
+                $consumed = (float) $item->consumed_tenure_budget;
+                $remaining = (float) $item->remaining_budget;
+                $utilRate = $annualBudget > 0 ? round(($consumed / $annualBudget) * 100, 1) : 0.0;
+
+                $status = 'Healthy';
+                if ($annualBudget > 0) {
+                    if ($remaining <= 0) {
+                        $status = 'Exhausted';
+                    } elseif ($utilRate >= 80) {
+                        $status = 'Low Budget';
+                    }
+                }
+
+                $records[] = [
+                    'employee_code' => $item->employee_code,
+                    'employee_name' => $item->employee_name,
+                    'department' => $item->department ?? 'General',
+                    'department_id' => $item->department_id,
+                    'designation' => $item->designation ?? 'General',
+                    'designation_id' => $item->designation_id,
+                    'employee_status' => $item->employee_status,
+                    'join_date' => $item->join_date,
+                    'tenure_year' => $item->tenure_year ?? 1,
+                    'tenure_start' => $item->tenure_start ? $item->tenure_start->format('d M Y') : '-',
+                    'tenure_end' => $item->tenure_end ? $item->tenure_end->format('d M Y') : '-',
+                    'tenure_month' => $item->tenure_month ?? 1,
+                    'annual_budget' => $annualBudget,
+                    'consumed_budget' => $consumed,
+                    'remaining_budget' => $remaining,
+                    'utilization_rate' => $utilRate,
+                    'status' => $status,
+                    'history' => [
+                        [
+                            'title' => $item->report?->title ?? 'Report #'.$item->royalty_report_id,
+                            'cutoff_date' => $item->report?->cutoff_date ? Carbon::parse($item->report->cutoff_date)->format('d M Y') : '-',
+                            'payout' => (float) $item->final_payout,
+                            'status' => $item->payout_status ?? 'Release',
+                            'remaining' => $remaining,
+                        ],
+                    ],
+                ];
+            }
+
+            return $records;
+        }
+
+        // Cumulative: Query all royalty-eligible active employees or employees with generated royalty data
+        $employeesQuery = Employee::query()
+            ->whereIn('employee_status', ['Active', 'Resigning This Month', 'Suspended'])
+            ->where(function ($q) {
+                $q->whereHas('royaltyReportItems')
+                    ->orWhereHas('designation', function ($dq) {
+                        $dq->where('is_royalty_eligible', true)
+                            ->orWhere('royalty_annual_budget', '>', 0);
+                    });
+            })
+            ->with(['department', 'designation']);
+
+        if ($department && $department !== 'all') {
+            $employeesQuery->whereHas('department', fn ($q) => $q->where('name', $department));
+        }
+
+        $employees = $employeesQuery->orderBy('department_id')->orderBy('employee_code')->get();
+
+        foreach ($employees as $employee) {
+            $desig = $employee->designation;
+            $annualBudget = (float) ($desig?->royalty_annual_budget ?? 0);
+            $tenure = $this->calculateTenureCycle($employee->join_date_formatted, now());
+
+            $tenureStartStr = $tenure['tenure_start']->format('Y-m-d');
+            $tenureEndStr = $tenure['tenure_end']->format('Y-m-d');
+
+            // Find all royalty report items for this employee within this tenure cycle
+            $historyItems = RoyaltyReportItem::with('report')
+                ->where('employee_code', $employee->employee_code)
+                ->whereHas('report', function ($q) use ($tenureStartStr, $tenureEndStr) {
+                    $q->whereBetween('cutoff_date', [$tenureStartStr, $tenureEndStr]);
+                })
+                ->get();
+
+            if ($annualBudget <= 0 && $historyItems->isNotEmpty()) {
+                $annualBudget = (float) ($historyItems->last()->annual_budget ?? 0);
+            }
+
+            $consumed = (float) $historyItems->sum('final_payout');
+            $remaining = $annualBudget > 0 ? max(0, $annualBudget - $consumed) : 0.0;
+            $utilRate = $annualBudget > 0 ? round(($consumed / $annualBudget) * 100, 1) : 0.0;
+
+            $status = 'Healthy';
+            if ($annualBudget > 0) {
+                if ($remaining <= 0) {
+                    $status = 'Exhausted';
+                } elseif ($utilRate >= 80) {
+                    $status = 'Low Budget';
+                }
+            }
+
+            $history = [];
+            foreach ($historyItems as $hItem) {
+                $history[] = [
+                    'title' => $hItem->report?->title ?? 'Report #'.$hItem->royalty_report_id,
+                    'cutoff_date' => $hItem->report?->cutoff_date ? Carbon::parse($hItem->report->cutoff_date)->format('d M Y') : '-',
+                    'payout' => (float) $hItem->final_payout,
+                    'status' => $hItem->payout_status ?? 'Release',
+                    'remaining' => (float) $hItem->remaining_budget,
+                ];
+            }
+
+            $records[] = [
+                'employee_code' => $employee->employee_code,
+                'employee_name' => $employee->name ?? $employee->employee_code,
+                'department' => $employee->department?->name ?? 'General',
+                'department_id' => $employee->department_id,
+                'designation' => $desig?->name ?? 'General',
+                'designation_id' => $employee->designation_id,
+                'employee_status' => $employee->employee_status ?? 'Active',
+                'join_date' => $employee->join_date_formatted,
+                'tenure_year' => $tenure['tenure_year'],
+                'tenure_start' => $tenure['tenure_start']->format('d M Y'),
+                'tenure_end' => $tenure['tenure_end']->format('d M Y'),
+                'tenure_month' => $tenure['tenure_month'],
+                'annual_budget' => $annualBudget,
+                'consumed_budget' => $consumed,
+                'remaining_budget' => $remaining,
+                'utilization_rate' => $utilRate,
+                'status' => $status,
+                'history' => $history,
+            ];
+        }
+
+        return $records;
     }
 
     /**

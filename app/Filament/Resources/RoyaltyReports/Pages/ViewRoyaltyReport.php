@@ -235,6 +235,23 @@ class ViewRoyaltyReport extends ViewRecord implements HasTable
                         default => 'gray',
                     }),
 
+                TextColumn::make('join_date')
+                    ->label('Join Date')
+                    ->placeholder('-')
+                    ->toggleable(),
+
+                TextColumn::make('tenure_cycle')
+                    ->label('Tenure Period')
+                    ->state(function (RoyaltyReportItem $record) {
+                        if (! $record->tenure_start || ! $record->tenure_end) {
+                            return '-';
+                        }
+
+                        return $record->tenure_start->format('d M Y').' - '.$record->tenure_end->format('d M Y');
+                    })
+                    ->description(fn (RoyaltyReportItem $record) => $record->tenure_year ? ('Year '.$record->tenure_year.' (Month '.($record->tenure_month ?? 1).'/12)') : null)
+                    ->toggleable(),
+
                 TextColumn::make('monthly_max_payout')
                     ->label('Max Payout')
                     ->money('NPR')
@@ -286,6 +303,13 @@ class ViewRoyaltyReport extends ViewRecord implements HasTable
                     ->money('NPR')
                     ->weight('bold')
                     ->color('success')
+                    ->sortable(),
+
+                TextColumn::make('remaining_budget')
+                    ->label('Remaining Budget')
+                    ->money('NPR')
+                    ->weight('bold')
+                    ->color(fn ($state) => $state <= 0 ? 'danger' : ($state < 10000 ? 'warning' : 'success'))
                     ->sortable(),
 
                 TextColumn::make('payout_status')
@@ -417,6 +441,12 @@ class ViewRoyaltyReport extends ViewRecord implements HasTable
                     'department' => $this->activeDepartment === 'All' ? null : $this->activeDepartment,
                 ]))
                 ->openUrlInNewTab(),
+
+            Action::make('balanceOverview')
+                ->label('Balance Overview')
+                ->icon('heroicon-m-scale')
+                ->color('success')
+                ->url(fn () => url('/kamkaj/royalty-bonus/balance-overview?report='.$this->record->id)),
         ];
     }
 }
