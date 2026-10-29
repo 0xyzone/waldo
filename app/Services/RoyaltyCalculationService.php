@@ -85,7 +85,9 @@ class RoyaltyCalculationService
                     'missing_thumb_count' => 0,
                 ];
 
-                $perfDeductionPercent = (float) ($performanceData[$code] ?? 0.0);
+                $perfInfo = $performanceData[$code] ?? null;
+                $perfDeductionPercent = $perfInfo ? (float) ($perfInfo['percent'] ?? 0.0) : 0.0;
+                $perfRemarks = $perfInfo ? trim((string) ($perfInfo['remarks'] ?? '')) : null;
 
                 // Calculate deductions and payout
                 $calc = $this->computePayout(
@@ -102,6 +104,13 @@ class RoyaltyCalculationService
                 $isHold = ($employee->employee_status === 'Suspended') || strtoupper(trim((string) ($employee->tips_status ?? ''))) === 'HOLD';
                 $payoutStatus = $isHold ? 'Hold' : 'Release';
                 $heldReason = $isHold ? ($employee->employee_status === 'Suspended' ? 'Staff suspended' : 'Staff on hold') : null;
+
+                $itemRemarks = null;
+                if ($isExempt) {
+                    $itemRemarks = 'Exempt from deductions (Always Max Payout)';
+                } elseif (! empty($perfRemarks)) {
+                    $itemRemarks = $perfRemarks;
+                }
 
                 RoyaltyReportItem::create([
                     'royalty_report_id' => $report->id,
@@ -126,7 +135,7 @@ class RoyaltyCalculationService
                     'final_payout' => $calc['final_payout'],
                     'payout_status' => $payoutStatus,
                     'held_reason' => $heldReason,
-                    'remarks' => $isExempt ? 'Exempt from deductions (Always Max Payout)' : null,
+                    'remarks' => $itemRemarks,
                 ]);
             }
         });
@@ -417,9 +426,9 @@ class RoyaltyCalculationService
     }
 
     /**
-     * Parse Performance Excel file into deduction percentage indexed by employee code.
+     * Parse Performance Excel file into deduction percentage and remarks indexed by employee code.
      *
-     * @return array<string, float>
+     * @return array<string, array{percent: float, remarks: ?string}>
      */
     public function parsePerformanceFile(string $filePath): array
     {
@@ -451,24 +460,39 @@ class RoyaltyCalculationService
         $headerRow = $rows[$headerRowIdx];
         $codeCol = null;
         $deductionCol = null;
+        $remarksCol = null;
 
         foreach ($headerRow as $idx => $cell) {
             $norm = strtolower(trim((string) $cell));
 
-            if (in_array($norm, ['username', 'employee code', 'employee_code', 'staff id', 'code', 'id', 'biometric id'])) {
-                if ($codeCol === null || $norm === 'username' || $norm === 'employee code' || $norm === 'employee_code') {
+            if (in_array($norm, ['username', 'employee code', 'employee_code', 'staff id', 'code', 'id', 'biometric id', 'emp code', 'emp_code', 'emp id', 'staff code'])) {
+                if ($codeCol === null || $norm === 'employee code' || $norm === 'employee_code' || $norm === 'code') {
                     $codeCol = $idx;
                 }
             }
 
             if (in_array($norm, [
-                'deduction', 'performance deduction', 'performance_deduction', 'deduction %', 'deduction percent',
-                'deduction_percent', 'percent', 'percentage', 'deduction_rate', 'performance deduction %',
-                'performance deduction percent', 'performance %', 'perf %', 'perf deduction %', 'perf deduction',
-                'performance', 'deduction percentage',
+                'percentage', 'percent', '%', 'deduction', 'deduction %', 'performance deduction', 'performance_deduction',
+                'deduction percent', 'deduction_percent', 'number of percentage', 'number of percent', 'deduction percentage',
+                'performance %', 'perf %', 'rate', 'deduction rate', 'performance deduction %', 'performance deduction percent',
             ])) {
                 $deductionCol = $idx;
             }
+
+            if (in_array($norm, ['remarks', 'remark', 'reason', 'reasons', 'notes', 'note', 'comment', 'comments', 'description', 'detail', 'details'])) {
+                $remarksCol = $idx;
+            }
+        }
+
+        // Positional fallbacks for a 3-column file: [0 => Employee Code, 1 => Percentage, 2 => Remarks]
+        if ($codeCol === null && isset($headerRow[0])) {
+            $codeCol = 0;
+        }
+        if ($deductionCol === null && isset($headerRow[1])) {
+            $deductionCol = 1;
+        }
+        if ($remarksCol === null && isset($headerRow[2])) {
+            $remarksCol = 2;
         }
 
         if ($codeCol === null || $deductionCol === null) {
@@ -479,7 +503,7 @@ class RoyaltyCalculationService
         for ($i = $headerRowIdx + 1; $i < count($rows); $i++) {
             $cells = $rows[$i];
             $code = strtoupper(trim((string) ($cells[$codeCol] ?? '')));
-            if ($code === '') {
+            if ($code === '' || $code === 'EMPLOYEE CODE' || $code === 'CODE') {
                 continue;
             }
 
@@ -497,7 +521,15 @@ class RoyaltyCalculationService
                 }
             }
 
-            $results[$code] = round(max(0.0, min(100.0, $percent)), 2);
+            $remarks = $remarksCol !== null ? trim((string) ($cells[$remarksCol] ?? '')) : null;
+            if ($remarks === '') {
+                $remarks = null;
+            }
+
+            $results[$code] = [
+                'percent' => round(max(0.0, min(100.0, $percent)), 2),
+                'remarks' => $remarks,
+            ];
         }
 
         return $results;
@@ -594,7 +626,7 @@ class RoyaltyCalculationService
             $writer->addRow(Row::fromValues($headers, $headerStyle));
 
             $items = $report->items()
-                ->orderBy('department_name')
+                ->orderBy('department')
                 ->orderBy('employee_code')
                 ->get();
 
@@ -604,15 +636,15 @@ class RoyaltyCalculationService
                     $index++,
                     $item->employee_code,
                     $item->employee_name,
-                    $item->department_name ?? '-',
-                    $item->designation_name ?? '-',
+                    $item->department ?? '-',
+                    $item->designation ?? '-',
                     $item->employee_status,
                     (float) $item->annual_budget,
                     (float) $item->monthly_max_payout,
                     (float) $item->monthly_min_payout,
                     $item->is_exempt ? 'YES' : 'NO',
-                    (float) $item->perf_deduction_percent.'%',
-                    (float) $item->perf_deduction_amount,
+                    (float) $item->performance_deduction_percent.'%',
+                    (float) $item->performance_deduction_amount,
                     (float) $item->absent_days,
                     (int) $item->late_early_count,
                     (int) $item->missing_thumb_count,
@@ -643,7 +675,7 @@ class RoyaltyCalculationService
                 '',
                 '',
                 '',
-                (float) $items->sum('perf_deduction_amount'),
+                (float) $items->sum('performance_deduction_amount'),
                 '',
                 '',
                 '',
@@ -660,7 +692,7 @@ class RoyaltyCalculationService
     }
 
     /**
-     * Download sample Excel template for Performance Deduction upload.
+     * Download sample Excel template for Performance Deduction upload (strictly 3 columns).
      */
     public function downloadPerformanceSample(): StreamedResponse
     {
@@ -677,20 +709,16 @@ class RoyaltyCalculationService
 
             $headers = [
                 'Employee Code',
-                'Employee Name',
-                'Department',
-                'Designation',
-                'Performance Deduction %',
-                'Remarks / Reason',
+                'Percentage',
+                'Remarks',
             ];
             $writer->addRow(Row::fromValues($headers, $headerStyle));
 
             $sampleRows = [
-                ['EMP001', 'John Doe', 'Gaming', 'Dealer', '0%', 'Met all monthly KPIs'],
-                ['EMP002', 'Jane Smith', 'Food & Beverage', 'Waiter', '10%', 'Monthly KPI shortfall (-10%)'],
-                ['EMP003', 'Ram Bahadur', 'Housekeeping', 'Attendant', '25%', 'Service quality escalation (-25%)'],
-                ['EMP004', 'Sita Sharma', 'Surveillance', 'Operator', '15%', 'SOP compliance penalty (-15%)'],
-                ['EMP005', 'Hari Thapa', 'Security', 'Security Guard', '0%', 'Clean performance record'],
+                ['EMP001', '10%', 'Late submission of monthly deliverables'],
+                ['EMP002', '15%', 'Monthly KPI shortfall (-15%)'],
+                ['EMP003', '25%', 'Service escalation penalty (-25%)'],
+                ['EMP004', '5%', 'Uniform & grooming policy non-compliance'],
             ];
 
             foreach ($sampleRows as $row) {

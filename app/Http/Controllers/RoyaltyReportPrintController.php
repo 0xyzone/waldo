@@ -19,18 +19,18 @@ class RoyaltyReportPrintController extends Controller
 
         $selectedDept = $department ?? $request->query('department');
         if ($selectedDept && strtolower($selectedDept) !== 'all') {
-            $query->where('department_name', $selectedDept);
+            $query->where('department', $selectedDept);
         }
 
-        $items = $query->orderBy('department_name')
+        $items = $query->orderBy('department')
             ->orderBy('employee_code')
             ->get();
 
         $allDepartments = $report->items()
-            ->whereNotNull('department_name')
+            ->whereNotNull('department')
             ->distinct()
-            ->orderBy('department_name')
-            ->pluck('department_name')
+            ->orderBy('department')
+            ->pluck('department')
             ->toArray();
 
         return response()->view('royalty.print', [

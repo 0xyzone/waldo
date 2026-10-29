@@ -264,8 +264,8 @@
                             <span style="display: inline-block; font-size: 8.5px; background: #e0f2fe; color: #0369a1; padding: 0 4px; border-radius: 2px; margin-left: 2px;">EXEMPT</span>
                         @endif
                     </td>
-                    <td>{{ $item->department_name ?? '-' }}</td>
-                    <td>{{ $item->designation_name ?? '-' }}</td>
+                    <td>{{ $item->department ?? '-' }}</td>
+                    <td>{{ $item->designation ?? '-' }}</td>
                     <td class="text-right">{{ number_format($item->monthly_max_payout, 0) }}</td>
                     <td class="text-center" style="{{ $item->absent_days > 0 ? 'color: #dc2626; font-weight: bold;' : '' }}">
                         {{ $item->absent_days + 0 }}
@@ -277,8 +277,8 @@
                         {{ $item->missing_thumb_count }}
                     </td>
                     <td class="text-right">{{ number_format($item->attendance_deduction_amount, 0) }}</td>
-                    <td class="text-center">{{ $item->perf_deduction_percent > 0 ? ($item->perf_deduction_percent + 0) . '%' : '-' }}</td>
-                    <td class="text-right">{{ number_format($item->perf_deduction_amount, 0) }}</td>
+                    <td class="text-center">{{ $item->performance_deduction_percent > 0 ? ($item->performance_deduction_percent + 0) . '%' : '-' }}</td>
+                    <td class="text-right">{{ number_format($item->performance_deduction_amount, 0) }}</td>
                     <td class="text-right" style="color: #b91c1c;">{{ number_format($item->total_deduction_amount, 0) }}</td>
                     <td class="text-right" style="font-weight: bold; color: {{ $item->payout_status === 'Hold' ? '#b45309' : '#047857' }}; font-size: 11px;">
                         {{ number_format($item->final_payout, 2) }}

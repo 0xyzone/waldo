@@ -46,10 +46,10 @@ class ViewRoyaltyReport extends ViewRecord implements HasTable
     public function getDepartmentsProperty(): array
     {
         return RoyaltyReportItem::where('royalty_report_id', $this->record->id)
-            ->whereNotNull('department_name')
+            ->whereNotNull('department')
             ->distinct()
-            ->orderBy('department_name')
-            ->pluck('department_name')
+            ->orderBy('department')
+            ->pluck('department')
             ->toArray();
     }
 
@@ -57,7 +57,7 @@ class ViewRoyaltyReport extends ViewRecord implements HasTable
     {
         $query = RoyaltyReportItem::where('royalty_report_id', $this->record->id);
         if ($dept !== 'All') {
-            $query->where('department_name', $dept);
+            $query->where('department', $dept);
         }
 
         return $query->count();
@@ -115,7 +115,7 @@ class ViewRoyaltyReport extends ViewRecord implements HasTable
             (float) $item->monthly_max_payout,
             (float) $item->monthly_min_payout,
             $newExempt,
-            (float) $item->perf_deduction_percent,
+            (float) $item->performance_deduction_percent,
             (float) $item->absent_days,
             (int) $item->late_early_count,
             (int) $item->missing_thumb_count,
@@ -124,7 +124,7 @@ class ViewRoyaltyReport extends ViewRecord implements HasTable
 
         $item->update([
             'is_exempt' => $newExempt,
-            'perf_deduction_amount' => $calc['perf_deduction_amount'],
+            'performance_deduction_amount' => $calc['perf_deduction_amount'],
             'attendance_deduction_amount' => $calc['attendance_deduction_amount'],
             'total_deduction_amount' => $calc['total_deduction_amount'],
             'final_payout' => $calc['final_payout'],
@@ -190,10 +190,10 @@ class ViewRoyaltyReport extends ViewRecord implements HasTable
             ->query(function (): Builder {
                 $query = RoyaltyReportItem::query()->where('royalty_report_id', $this->record->id);
                 if ($this->activeDepartment !== 'All') {
-                    $query->where('department_name', $this->activeDepartment);
+                    $query->where('department', $this->activeDepartment);
                 }
 
-                return $query->orderBy('department_name')->orderBy('employee_code');
+                return $query->orderBy('department')->orderBy('employee_code');
             })
             ->columns([
                 TextColumn::make('#')
@@ -212,13 +212,13 @@ class ViewRoyaltyReport extends ViewRecord implements HasTable
                     ->sortable()
                     ->weight('medium'),
 
-                TextColumn::make('department_name')
+                TextColumn::make('department')
                     ->label('Department')
                     ->badge()
                     ->color('info')
                     ->visible(fn () => $this->activeDepartment === 'All'),
 
-                TextColumn::make('designation_name')
+                TextColumn::make('designation')
                     ->label('Designation')
                     ->badge()
                     ->color('gray')
@@ -240,12 +240,13 @@ class ViewRoyaltyReport extends ViewRecord implements HasTable
                     ->money('NPR')
                     ->sortable(),
 
-                TextColumn::make('perf_deduction_percent')
+                TextColumn::make('performance_deduction_percent')
                     ->label('Perf %')
                     ->formatStateUsing(fn ($state) => $state > 0 ? ($state + 0).'%' : '-')
-                    ->color(fn ($state) => $state > 0 ? 'danger' : 'gray'),
+                    ->color(fn ($state) => $state > 0 ? 'danger' : 'gray')
+                    ->tooltip(fn (RoyaltyReportItem $record) => $record->remarks ?: null),
 
-                TextColumn::make('perf_deduction_amount')
+                TextColumn::make('performance_deduction_amount')
                     ->label('Perf Ded.')
                     ->money('NPR')
                     ->color(fn ($state) => $state > 0 ? 'danger' : 'gray'),
@@ -304,11 +305,18 @@ class ViewRoyaltyReport extends ViewRecord implements HasTable
                     ->falseColor('gray')
                     ->action(fn (RoyaltyReportItem $record) => $this->toggleExempt($record->id))
                     ->tooltip(fn ($record) => $this->record->isValidated() ? 'Report is locked' : ($record->is_exempt ? 'Click to re-enable deductions' : 'Click to exempt & grant max payout')),
+
+                TextColumn::make('remarks')
+                    ->label('Remarks')
+                    ->placeholder('-')
+                    ->wrap()
+                    ->limit(35)
+                    ->tooltip(fn ($state) => $state),
             ])
             ->filters([
-                SelectFilter::make('department_name')
+                SelectFilter::make('department')
                     ->label('Department')
-                    ->options(fn () => RoyaltyReportItem::where('royalty_report_id', $this->record->id)->distinct()->pluck('department_name', 'department_name')->toArray())
+                    ->options(fn () => RoyaltyReportItem::where('royalty_report_id', $this->record->id)->whereNotNull('department')->distinct()->pluck('department', 'department')->toArray())
                     ->visible(fn () => $this->activeDepartment === 'All'),
 
                 SelectFilter::make('payout_status')

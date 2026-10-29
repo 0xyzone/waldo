@@ -467,6 +467,20 @@
     - Generated sample Excel template at `public/samples/royalty_performance_deduction_sample.xlsx` and dynamic download endpoint (`/royalty/samples/performance-deduction`).
     - Added direct download link in `RoyaltyReportForm.php` helper text.
 
-
-
-
+### 44. Streamlined 3-Column Performance Deduction Upload & Deduction List Scoping (v2.9.2)
+- **Problem & Requirements**:
+  - The user requested the performance deduction upload file to strictly have only 3 columns: `Employee Code`, `Percentage` (e.g. `10%` or `10`), and `Remarks`.
+  - The deduction must strictly apply ONLY to the uploaded list. Any eligible active employee not listed in the file must receive 0% deduction.
+  - The downloadable sample Excel template must reflect this exact 3-column format.
+- **Solution**:
+  - **3-Column Sample Template Generation (`RoyaltyCalculationService.php`, `public/samples/royalty_performance_deduction_sample.xlsx`)**:
+    - Standardized `downloadPerformanceSample()` and regenerated physical sample spreadsheet with headers `['Employee Code', 'Percentage', 'Remarks']`.
+    - Updated `RoyaltyReportForm.php` helper text with direct sample download link highlighting the 3 required columns and scope behavior.
+  - **Flexible 3-Column Parser (`parsePerformanceFile()`)**:
+    - Enhanced parser to identify Employee Code, Percentage (`percentage`, `deduction`, `number of percentage`, `perf %`, etc.), and Remarks (`remarks`, `reason`, `notes`, etc.) with positional fallbacks `[0 => Code, 1 => Percentage, 2 => Remarks]`.
+    - Returns structured array `array<string, array{percent: float, remarks: ?string}>`.
+  - **Strict Deduction Scoping (`generate()`)**:
+    - Configured report generator so `$perfInfo = $performanceData[$code] ?? null`. If an employee code is not present in the uploaded performance file, their performance deduction percent strictly defaults to `0.0%` and remarks to `null`.
+    - Deduced remarks from the uploaded file are saved directly into `royalty_report_items.remarks` and displayed in the Filament table with hover tooltips.
+  - **Database Attribute Harmonization**:
+    - Updated report viewing and print export queries to match exact database column names (`department`, `designation`, `performance_deduction_percent`, `performance_deduction_amount`) and added backward-compatible accessors to `RoyaltyReportItem`.

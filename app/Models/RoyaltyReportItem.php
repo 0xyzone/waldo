@@ -70,4 +70,24 @@ class RoyaltyReportItem extends Model
     {
         return $this->belongsTo(Designation::class, 'designation_id');
     }
+
+    public function getDepartmentNameAttribute(): ?string
+    {
+        return $this->department;
+    }
+
+    public function getDesignationNameAttribute(): ?string
+    {
+        return $this->designation;
+    }
+
+    public function getPerfDeductionPercentAttribute(): float
+    {
+        return (float) ($this->performance_deduction_percent ?? 0);
+    }
+
+    public function getPerfDeductionAmountAttribute(): float
+    {
+        return (float) ($this->performance_deduction_amount ?? 0);
+    }
 }

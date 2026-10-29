@@ -132,7 +132,7 @@ class RoyaltyReportForm
                                     'text/csv',
                                     'text/plain',
                                 ])
-                                ->helperText(new HtmlString('Upload Excel containing Employee Code & Deduction %. <a href="/royalty/samples/performance-deduction" class="text-primary-600 dark:text-primary-400 font-bold underline" target="_blank">📥 Download Sample Excel Template</a>'))
+                                ->helperText(new HtmlString('Upload Excel with 3 columns: <strong>Employee Code</strong>, <strong>Percentage</strong>, and <strong>Remarks</strong> (deductions only apply to employees listed in this file). <a href="/royalty/samples/performance-deduction" class="text-primary-600 dark:text-primary-400 font-bold underline" target="_blank">📥 Download Sample Excel Template</a>'))
                                 ->maxSize(20480),
                         ]),
                     ]),

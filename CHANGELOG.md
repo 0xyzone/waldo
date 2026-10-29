@@ -4,6 +4,17 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.2] - 2026-10-29
+
+### Enhanced & Streamlined
+- **Streamlined 3-Column Performance Deduction Upload & Deduction List Scoping**:
+  - **Streamlined 3-Column Format**: Standardized performance deduction Excel template to strictly 3 columns: `Employee Code`, `Percentage`, and `Remarks`.
+  - **Strict Deduction Scoping**: Performance deductions strictly apply only to employees listed in the uploaded file; all unlisted eligible employees automatically default to 0% deduction.
+  - **Remarks Preservation & Display**: Performance remarks from the uploaded file are saved directly into the report items and displayed in the Filament report table with hover tooltips.
+  - **Sample Template Updated**: Regenerated sample Excel file and updated download endpoint and form helper text to reflect the exact 3-column format.
+
+---
+
 ## [2.9.1] - 2026-10-29
 
 ### Added & Enhanced

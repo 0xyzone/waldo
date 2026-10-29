@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.1';
+    public const CURRENT_VERSION = '2.9.2';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,21 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.2',
+                'date' => '2026-10-29',
+                'title' => 'Streamlined 3-Column Performance Deduction Upload & Deduction List Scoping',
+                'type' => 'micro',
+                'badge' => 'Enhancement',
+                'badge_color' => 'info',
+                'description' => 'Streamlined the Performance Deduction Excel upload template to strictly 3 columns (Employee Code, Percentage, Remarks) and ensured deductions strictly apply only to employees present in the uploaded file.',
+                'highlights' => [
+                    'Streamlined 3-Column Format: Standardized the performance deduction template to only contain Employee Code, Percentage, and Remarks.',
+                    'Deduction List Scoping: Configured calculation engine so performance deductions are strictly applied only to staff in the uploaded file, with all other active staff defaulting to 0% deduction.',
+                    'Remarks Preservation: Uploaded performance remarks are automatically saved into the report items and displayed directly in the Filament report table with hover tooltips.',
+                    'Updated Sample Template: Generated updated downloadable sample Excel template matching the 3-column format.',
+                ],
+            ],
             [
                 'version' => '2.9.1',
                 'date' => '2026-10-29',
