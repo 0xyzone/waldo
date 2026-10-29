@@ -373,3 +373,19 @@
     - Anchored context menu with `absolute` positioning relative to `drawerPanel` (`clientX - panelRect.left`, `clientY - panelRect.top`), with boundary clamping ensuring it opens right under the cursor on all screen sizes.
     - Eliminated inline `@js()` double-quote syntax conflicts by passing scalar IDs and extracting text via DOM lookup on copy.
 
+### 38. Instant Bottom Chat Loading, Sticky Date Headers, Waveform Voice Player & Changelog Guard (v2.8.15)
+- **Problem**:
+  - Opening a chat caused it to scroll visibly and slowly from top to bottom instead of loading instantly pinned at the bottom.
+  - Date dividers were static, scrolling off the screen rather than staying pinned to the top while reading messages in that date range.
+  - The voice note player UI was completely blank/broken, showing no media controls or seek bar, and failing to play audio.
+  - Accessing the `/kamkaj/changelog` page resulted in a fatal 500 error (`TypeError: htmlspecialchars(): Argument #1 ($string) must be of type string, array given`) due to array-formatted highlights in `ChangelogService`.
+- **Solution**:
+  - **Instant Bottom Chat Loading (`floating-chat-widget.blade.php`)**: Removed the `scroll-smooth` Tailwind utility from `floatingFeed` and updated Alpine's `scrollToBottom(smooth = false)` method and event hooks (`floating-conversation-changed`, `scroll-floating-chat`, and conversation/open watchers) to jump directly to `scrollTop = scrollHeight` without delay or visible top-down animation.
+  - **Sticky Date Range Headers (`floating-chat-widget.blade.php`)**:
+    - Grouped messages collection by date (`$messages->groupBy(...)`).
+    - Wrapped each date group into a relative `.date-group` container with a sticky `top-0 z-20` date pill. As a result, the active date remains pinned to the top of the chat view during scrolling and is naturally displaced when another date range enters the viewport.
+  - **Interactive Waveform Voice Player (`floating-chat-widget.blade.php`)**:
+    - Restored the voice player Alpine component definition with direct SVG play/pause controls (eliminating `<template x-if>` tag dropping).
+    - Seeded deterministic, natural human-speech waveform bar visualization based on message ID, supplemented by `AudioContext` PCM decode analysis.
+    - Implemented interactive waveform seeking (`@click.stop="handleBarClick($event)"`), synchronized elapsed/duration time display, and speed cycling (`1x`, `1.5x`, `2x`).
+  - **Changelog TypeError Guard (`changelog.blade.php`)**: Updated the changelog Blade view to safely check whether `$release['highlights']` is a string or array, rendering release descriptions and formatting array highlights with clean bullet points.

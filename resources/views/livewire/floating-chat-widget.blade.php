@@ -1,3 +1,238 @@
+<script>
+    if (!window.voicePlayer) {
+        window.voicePlayer = function(url, seedId = 1) {
+            const numBars = 26;
+            const defaultBars = [];
+            let s = Number(seedId) || 123;
+            for (let i = 0; i < numBars; i++) {
+                s = (s * 9301 + 49297) % 233280;
+                const rnd = s / 233280;
+                const envelope = Math.sin((i / (numBars - 1)) * Math.PI);
+                const h = Math.round(4 + (rnd * 14 + 4) * (0.35 + 0.65 * envelope));
+                defaultBars.push(Math.max(4, Math.min(22, h)));
+            }
+
+            return {
+                url: url,
+                seedId: seedId,
+                audio: null,
+                isPlaying: false,
+                currentTime: 0,
+                duration: 0,
+                progress: 0,
+                speed: 1,
+                speeds: [1, 1.5, 2],
+                bars: defaultBars,
+                animRaf: null,
+
+                init() {
+                    if (this.$el) {
+                        this.$el._voicePlayer = this;
+                        this.$el.addEventListener('play-voice-note', () => this.play());
+                    }
+
+                    window.addEventListener('voice-player-stop-all', (e) => {
+                        if (e.detail?.except !== this && this.isPlaying) {
+                            this.pause();
+                        }
+                    });
+
+                    this.audio = new Audio();
+                    this.audio.preload = 'metadata';
+                    this.audio.src = this.url;
+
+                    this.audio.addEventListener('loadedmetadata', () => {
+                        if (isFinite(this.audio.duration) && this.audio.duration > 0) {
+                            this.duration = this.audio.duration;
+                        }
+                    });
+
+                    this.audio.addEventListener('timeupdate', () => {
+                        this.syncProgress();
+                    });
+
+                    this.audio.addEventListener('play', () => {
+                        this.isPlaying = true;
+                        this.startSmoothProgress();
+                    });
+
+                    this.audio.addEventListener('pause', () => {
+                        this.isPlaying = false;
+                        this.stopSmoothProgress();
+                    });
+
+                    this.audio.addEventListener('ended', () => {
+                        this.isPlaying = false;
+                        this.stopSmoothProgress();
+                        this.currentTime = 0;
+                        this.progress = 0;
+                        this.playNextVoiceNote();
+                    });
+
+                    this.loadWaveformData();
+                },
+
+                async loadWaveformData() {
+                    try {
+                        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                        if (!AudioCtx) return;
+                        const response = await fetch(this.url, { cache: 'force-cache' });
+                        if (!response.ok) return;
+                        const arrayBuffer = await response.arrayBuffer();
+
+                        const audioCtx = new AudioCtx();
+                        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+
+                        if (audioBuffer && audioBuffer.duration && isFinite(audioBuffer.duration)) {
+                            this.duration = audioBuffer.duration;
+                        }
+
+                        const channelData = audioBuffer.getChannelData(0);
+                        const blockSize = Math.floor(channelData.length / numBars);
+                        const rawBars = [];
+                        let maxRms = 0;
+
+                        for (let i = 0; i < numBars; i++) {
+                            const start = i * blockSize;
+                            let sum = 0;
+                            let count = 0;
+                            const step = Math.max(1, Math.floor(blockSize / 30));
+                            for (let j = 0; j < blockSize; j += step) {
+                                const val = channelData[start + j] || 0;
+                                sum += val * val;
+                                count++;
+                            }
+                            const rms = Math.sqrt(sum / (count || 1));
+                            rawBars.push(rms);
+                            if (rms > maxRms) maxRms = rms;
+                        }
+
+                        if (maxRms > 0.001) {
+                            this.bars = rawBars.map(rms => {
+                                const ratio = rms / maxRms;
+                                return Math.max(4, Math.min(22, Math.round(ratio * 18 + 4)));
+                            });
+                        }
+                        audioCtx.close();
+                    } catch (err) {
+                        // Keeps natural deterministic bars
+                    }
+                },
+
+                syncProgress() {
+                    if (!this.audio) return;
+                    this.currentTime = this.audio.currentTime;
+                    let dur = this.duration;
+                    if ((!dur || !isFinite(dur) || dur <= 0) && isFinite(this.audio.duration) && this.audio.duration > 0) {
+                        dur = this.audio.duration;
+                        this.duration = dur;
+                    }
+                    if (!dur || !isFinite(dur) || dur <= 0) {
+                        dur = Math.max(this.currentTime + 1, 1);
+                    }
+                    this.progress = Math.min(100, Math.max(0, (this.currentTime / dur) * 100));
+                },
+
+                startSmoothProgress() {
+                    this.stopSmoothProgress();
+                    const step = () => {
+                        if (!this.isPlaying) return;
+                        this.syncProgress();
+                        this.animRaf = requestAnimationFrame(step);
+                    };
+                    this.animRaf = requestAnimationFrame(step);
+                },
+
+                stopSmoothProgress() {
+                    if (this.animRaf) {
+                        cancelAnimationFrame(this.animRaf);
+                        this.animRaf = null;
+                    }
+                },
+
+                play() {
+                    if (!this.audio) return;
+                    window.dispatchEvent(new CustomEvent('voice-player-stop-all', { detail: { except: this } }));
+                    this.audio.playbackRate = this.speed;
+                    this.audio.play().then(() => {
+                        this.isPlaying = true;
+                        this.startSmoothProgress();
+                    }).catch(() => {});
+                },
+
+                pause() {
+                    if (!this.audio) return;
+                    this.audio.pause();
+                    this.isPlaying = false;
+                    this.stopSmoothProgress();
+                },
+
+                togglePlay() {
+                    if (!this.audio) return;
+                    if (this.isPlaying) {
+                        this.pause();
+                    } else {
+                        this.play();
+                    }
+                },
+
+                handleBarClick(e) {
+                    if (!this.audio) return;
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const clickX = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+                    const percent = (clickX / rect.width) * 100;
+                    this.seek(percent);
+                },
+
+                seek(percent) {
+                    if (!this.audio) return;
+                    let dur = this.duration;
+                    if ((!dur || !isFinite(dur) || dur <= 0) && isFinite(this.audio.duration) && this.audio.duration > 0) {
+                        dur = this.audio.duration;
+                    }
+                    if (dur && isFinite(dur) && dur > 0) {
+                        const targetTime = (percent / 100) * dur;
+                        this.audio.currentTime = targetTime;
+                        this.currentTime = targetTime;
+                        this.progress = percent;
+                    }
+                },
+
+                cycleSpeed() {
+                    if (!this.audio) return;
+                    const curIdx = this.speeds.indexOf(this.speed);
+                    const nextIdx = (curIdx + 1) % this.speeds.length;
+                    this.speed = this.speeds[nextIdx];
+                    this.audio.playbackRate = this.speed;
+                },
+
+                formatSecs(s) {
+                    if (!s || isNaN(s) || !isFinite(s) || s < 0) return '0:00';
+                    const mins = Math.floor(s / 60);
+                    const secs = Math.floor(s % 60);
+                    return mins + ':' + String(secs).padStart(2, '0');
+                },
+
+                playNextVoiceNote() {
+                    const currentEl = this.$el;
+                    if (!currentEl) return;
+                    const feed = currentEl.closest('[x-ref="floatingFeed"]') || document;
+                    const players = Array.from(feed.querySelectorAll('[data-voice-player]'));
+                    const currentIndex = players.indexOf(currentEl);
+                    if (currentIndex !== -1 && currentIndex + 1 < players.length) {
+                        const nextPlayerEl = players[currentIndex + 1];
+                        nextPlayerEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        setTimeout(() => {
+                            if (nextPlayerEl._voicePlayer) {
+                                nextPlayerEl._voicePlayer.play();
+                            }
+                        }, 250);
+                    }
+                }
+            };
+        };
+    }
+</script>
 <div>
     <div x-data="{
         isOpen: @entangle('isOpen'),
@@ -202,12 +437,16 @@
                 }
                 this.$nextTick(() => {
                     this.subscribeToConversation(event.conversationId);
-                    this.scrollToBottom();
+                    this.scrollToBottom(false);
+                    requestAnimationFrame(() => this.scrollToBottom(false));
                 });
             });
     
             $wire.on('scroll-floating-chat', () => {
-                this.$nextTick(() => this.scrollToBottom());
+                this.$nextTick(() => {
+                    this.scrollToBottom(false);
+                    requestAnimationFrame(() => this.scrollToBottom(false));
+                });
             });
     
             $wire.on('scroll-to-message', (event) => {
@@ -219,6 +458,24 @@
                 this.$nextTick(() => {
                     this.$refs.floatMessageInput?.focus();
                 });
+            });
+
+            this.$watch('activeConversationId', (val) => {
+                if (val) {
+                    this.$nextTick(() => {
+                        this.scrollToBottom(false);
+                        requestAnimationFrame(() => this.scrollToBottom(false));
+                    });
+                }
+            });
+
+            this.$watch('isOpen', (val) => {
+                if (val && this.activeConversationId) {
+                    this.$nextTick(() => {
+                        this.scrollToBottom(false);
+                        requestAnimationFrame(() => this.scrollToBottom(false));
+                    });
+                }
             });
     
             window.addEventListener('voice-player-stop-all', () => {
@@ -329,10 +586,14 @@
                 .listen('.message.status', () => this.debouncedRefresh(180));
         },
     
-        scrollToBottom() {
+        scrollToBottom(smooth = false) {
             const feed = this.$refs.floatingFeed;
             if (feed) {
-                feed.scrollTop = feed.scrollHeight;
+                if (smooth) {
+                    feed.scrollTo({ top: feed.scrollHeight, behavior: 'smooth' });
+                } else {
+                    feed.scrollTop = feed.scrollHeight;
+                }
             }
         },
     
@@ -1076,12 +1337,14 @@
                         <!-- Active Chat Feed -->
                         <div x-ref="floatingFeed"
                             @scroll.passive="closeContextMenu()"
-                            class="flex-1 overflow-y-auto px-3.5 py-3 space-y-1.5 bg-slate-50/70 dark:bg-slate-950/50 scroll-smooth">
+                            class="flex-1 overflow-y-auto px-3.5 py-3 bg-slate-50/70 dark:bg-slate-950/50">
                             @php
                                 $messages = $this->messages;
                                 $totalMessagesCount = $this->totalMessagesCount;
                                 $isChatGroup = $this->activeConversation->isGroup();
-                                $prevMsgDate = null;
+                                $dateGroups = $messages->groupBy(function ($m) {
+                                    return $m->created_at ? $m->created_at->format('Y-m-d') : 'unknown';
+                                });
                             @endphp
                             @if ($totalMessagesCount > $this->messagesLimit && blank($messageSearch))
                                 <div class="flex justify-center my-1.5">
@@ -1094,28 +1357,34 @@
                                     </button>
                                 </div>
                             @endif
-                            @forelse($messages as $msg)
+                            @forelse($dateGroups as $dateKey => $groupMessages)
                                 @php
-                                    $isMe = $msg->sender_id === auth()->id();
-                                    $canDelete = $msg->canBeDeletedBy(auth()->id());
-                                    $isPinned = $msg->isCurrentlyPinned();
-                                    $msgDate = $msg->created_at?->format('Y-m-d');
-                                    $showDateDivider = ($prevMsgDate !== $msgDate);
-                                    $prevMsgDate = $msgDate;
+                                    $firstGroupMsg = $groupMessages->first();
+                                    $dateLabel = 'Unknown';
+                                    if ($firstGroupMsg && $firstGroupMsg->created_at) {
+                                        if ($firstGroupMsg->created_at->isToday()) {
+                                            $dateLabel = 'Today';
+                                        } elseif ($firstGroupMsg->created_at->isYesterday()) {
+                                            $dateLabel = 'Yesterday';
+                                        } else {
+                                            $dateLabel = $firstGroupMsg->created_at->format('M j, Y');
+                                        }
+                                    }
                                 @endphp
-                                @if ($showDateDivider && $msg->created_at)
-                                    <div class="flex items-center justify-center my-3 select-none">
-                                        <span class="px-3 py-0.5 text-[10px] font-semibold tracking-wide text-slate-500 dark:text-slate-400 bg-white/90 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-full shadow-2xs backdrop-blur-xs">
-                                            @if ($msg->created_at->isToday())
-                                                Today
-                                            @elseif ($msg->created_at->isYesterday())
-                                                Yesterday
-                                            @else
-                                                {{ $msg->created_at->format('M j, Y') }}
-                                            @endif
+                                <div class="relative date-group mb-2">
+                                    <!-- Sticky Date Pill (sticks to top while scrolling this date range) -->
+                                    <div class="sticky top-0 z-20 flex items-center justify-center py-1 select-none pointer-events-none">
+                                        <span class="px-3 py-0.5 text-[10px] font-semibold tracking-wide text-slate-600 dark:text-slate-300 bg-white/95 dark:bg-slate-800/95 border border-slate-200/90 dark:border-slate-700/80 rounded-full shadow-xs backdrop-blur-md">
+                                            {{ $dateLabel }}
                                         </span>
                                     </div>
-                                @endif
+                                    <div class="space-y-1.5">
+                                        @foreach($groupMessages as $msg)
+                                            @php
+                                                $isMe = $msg->sender_id === auth()->id();
+                                                $canDelete = $msg->canBeDeletedBy(auth()->id());
+                                                $isPinned = $msg->isCurrentlyPinned();
+                                            @endphp
 
                                 <div id="float-msg-{{ $msg->id }}" wire:key="float-msg-{{ $msg->id }}"
                                     @if (!$msg->is_deleted)
@@ -1223,50 +1492,46 @@
                                                             <img src="{{ $msg->getAttachmentUrl() }}"
                                                                 class="max-h-48 max-w-full rounded-lg object-cover hover:opacity-95 transition" />
                                                         </a>
-                                                    </div>
-                                                @elseif($msg->isAudio())
+                                                                                             @elseif($msg->isAudio())
                                                     <!-- Modern Waveform Voice Note Player -->
-                                                    <div x-data="voicePlayer('{{ $msg->getAttachmentUrl() }}', $el)" data-voice-player
-                                                        class="my-1 flex items-center gap-2 rounded-xl px-2.5 py-1.5 transition-all {{ $isMe ? 'bg-black/15 border border-white/10 text-white' : 'bg-slate-100/90 dark:bg-slate-700/60 border border-slate-200/60 dark:border-slate-600/40 text-slate-800 dark:text-slate-100' }} min-w-[210px] max-w-[250px] select-none">
+                                                    <div x-data="voicePlayer('{{ $msg->getAttachmentUrl() }}', {{ $msg->id }})" data-voice-player
+                                                        class="my-1 flex items-center gap-2.5 rounded-2xl px-3 py-2 transition-all {{ $isMe ? 'bg-black/20 border border-white/15 text-white' : 'bg-slate-100/90 dark:bg-slate-700/60 border border-slate-200/80 dark:border-slate-600/50 text-slate-800 dark:text-slate-100' }} min-w-[220px] max-w-[260px] select-none shadow-xs">
                                                         <!-- Play/Pause Button -->
-                                                        <button type="button" @click="togglePlay"
-                                                            class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full shadow transition-transform active:scale-95 cursor-pointer {{ $isMe ? 'bg-white text-orange-600 hover:bg-orange-50' : 'bg-amber-600 text-white hover:bg-amber-500' }}"
+                                                        <button type="button" @click.stop="togglePlay()"
+                                                            class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full shadow-md transition-all active:scale-90 hover:scale-105 cursor-pointer {{ $isMe ? 'bg-white text-orange-600 hover:bg-orange-50' : 'bg-gradient-to-tr from-amber-600 to-orange-500 text-white hover:from-amber-500 hover:to-orange-400' }}"
                                                             title="Play / Pause">
-                                                            <template x-if="!isPlaying">
-                                                                <svg class="h-3.5 w-3.5 ml-0.5" fill="currentColor"
-                                                                    viewBox="0 0 24 24">
-                                                                    <path d="M8 5v14l11-7z" />
-                                                                </svg>
-                                                            </template>
-                                                            <template x-if="isPlaying">
-                                                                <svg class="h-3.5 w-3.5" fill="currentColor"
-                                                                    viewBox="0 0 24 24">
-                                                                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-                                                                </svg>
-                                                            </template>
+                                                            <svg x-show="!isPlaying" class="h-4 w-4 ml-0.5" fill="currentColor"
+                                                                viewBox="0 0 24 24">
+                                                                <path d="M8 5v14l11-7z" />
+                                                            </svg>
+                                                            <svg x-show="isPlaying" x-cloak class="h-4 w-4" fill="currentColor"
+                                                                viewBox="0 0 24 24">
+                                                                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                                                            </svg>
                                                         </button>
 
                                                         <!-- Waveform & Info -->
-                                                        <div class="flex-1 min-w-0">
-                                                            <div class="flex items-center gap-[2px] h-5 cursor-pointer py-0.5"
-                                                                @click="handleBarClick($event)">
+                                                        <div class="flex-1 min-w-0 flex flex-col justify-center gap-1">
+                                                            <div class="flex items-center gap-[2px] h-6 cursor-pointer py-0.5 group/wave relative"
+                                                                @click.stop="handleBarClick($event)"
+                                                                title="Click to seek">
                                                                 <template x-for="(barHeight, idx) in bars"
                                                                     :key="idx">
-                                                                    <div class="w-[2.5px] rounded-full transition-all duration-75"
+                                                                    <div class="w-[3px] rounded-full transition-all duration-75 group-hover/wave:opacity-90"
                                                                         :style="`height: ${barHeight}px;`"
                                                                         :class="(idx / (bars.length - 1)) <= (progress / 100) ?
-                                                                        '{{ $isMe ? 'bg-white' : 'bg-amber-600 dark:bg-amber-400' }}' :
-                                                                        '{{ $isMe ? 'bg-white/40' : 'bg-slate-300 dark:bg-slate-500' }}'">
+                                                                        '{{ $isMe ? 'bg-white font-bold shadow-xs' : 'bg-gradient-to-t from-amber-600 to-orange-500 dark:from-amber-400 dark:to-orange-400' }}' :
+                                                                        '{{ $isMe ? 'bg-white/35' : 'bg-slate-300 dark:bg-slate-500/60' }}'">
                                                                     </div>
                                                                 </template>
                                                             </div>
 
                                                             <div
-                                                                class="flex items-center justify-between text-[9px] {{ $isMe ? 'text-amber-100/90' : 'text-slate-500 dark:text-slate-400' }} font-mono">
+                                                                class="flex items-center justify-between text-[10px] {{ $isMe ? 'text-amber-100/90' : 'text-slate-500 dark:text-slate-400' }} font-mono leading-none">
                                                                 <span
                                                                     x-text="formatSecs(isPlaying ? currentTime : (duration || currentTime))">0:00</span>
-                                                                <button type="button" @click="cycleSpeed"
-                                                                    class="rounded px-0.5 text-[8px] font-bold uppercase transition hover:bg-black/10 dark:hover:bg-white/10 cursor-pointer"
+                                                                <button type="button" @click.stop="cycleSpeed()"
+                                                                    class="rounded px-1 py-0.2 text-[9px] font-bold uppercase transition hover:bg-black/10 dark:hover:bg-white/10 cursor-pointer {{ $isMe ? 'text-white' : 'text-amber-700 dark:text-amber-300' }}"
                                                                     x-text="speed + 'x'">
                                                                     1x
                                                                 </button>
@@ -1382,7 +1647,9 @@
                                         @endif
                                     </div>
                                 </div>
-                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
                             @empty
                                 <div
                                     class="flex h-full items-center justify-center text-center p-4 text-gray-400 text-xs">
@@ -3116,287 +3383,6 @@
                         </div>
                     </div>
                 @endif
-
-
-                <script>
-                    window.voicePlayer = function(url, rootEl = null) {
-                        return {
-                            url: url,
-                            rootEl: rootEl,
-                            audio: null,
-                            isPlaying: false,
-                            currentTime: 0,
-                            duration: 0,
-                            progress: 0,
-                            speed: 1,
-                            speeds: [1, 1.5, 2],
-                            bars: Array(20).fill(4),
-                            animRaf: null,
-
-                            init() {
-                                if (!this.rootEl) {
-                                    this.rootEl = this.$el;
-                                }
-                                if (this.rootEl) {
-                                    this.rootEl._voicePlayer = this;
-                                    this.rootEl.addEventListener('play-voice-note', () => {
-                                        this.play();
-                                    });
-                                }
-
-                                // Global listener: Stop this voice note immediately if any other voice note starts playing
-                                window.addEventListener('voice-player-stop-all', (e) => {
-                                    if (e.detail?.except !== this && this.isPlaying) {
-                                        this.pause();
-                                    }
-                                });
-
-                                this.audio = new Audio();
-                                this.audio.preload = 'auto';
-                                this.audio.src = this.url;
-
-                                // Decode real audio waveform and extract exact duration
-                                this.loadWaveformData();
-
-                                this.audio.addEventListener('timeupdate', () => {
-                                    this.syncProgress();
-                                });
-
-                                this.audio.addEventListener('play', () => {
-                                    this.isPlaying = true;
-                                    this.startSmoothProgress();
-                                });
-
-                                this.audio.addEventListener('pause', () => {
-                                    this.isPlaying = false;
-                                    this.stopSmoothProgress();
-                                });
-
-                                this.audio.addEventListener('ended', () => {
-                                    this.isPlaying = false;
-                                    this.stopSmoothProgress();
-                                    this.currentTime = 0;
-                                    this.progress = 0;
-
-                                    // Continuous playback: automatically play the next voice note in thread!
-                                    this.playNextVoiceNote();
-                                });
-                            },
-
-                            async loadWaveformData() {
-                                try {
-                                    const fetchUrl = this.url + (this.url.includes('?') ? '&' : '?') + '_wf=1';
-                                    const response = await fetch(fetchUrl, {
-                                        cache: 'no-store'
-                                    });
-                                    if (!response.ok) throw new Error('Fetch audio failed');
-                                    const arrayBuffer = await response.arrayBuffer();
-
-                                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                                    if (!AudioCtx) return;
-                                    const audioCtx = new AudioCtx();
-
-                                    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-                                    if (audioBuffer && audioBuffer.duration && isFinite(audioBuffer.duration)) {
-                                        this.duration = audioBuffer.duration;
-                                    }
-
-                                    // Compute authentic waveform peaks from raw PCM audio channel data
-                                    const channelData = audioBuffer.getChannelData(0);
-                                    const numBars = 20;
-                                    const blockSize = Math.floor(channelData.length / numBars);
-                                    const rawBars = [];
-                                    let maxRms = 0;
-
-                                    for (let i = 0; i < numBars; i++) {
-                                        const start = i * blockSize;
-                                        let sum = 0;
-                                        let count = 0;
-                                        const step = Math.max(1, Math.floor(blockSize / 40));
-                                        for (let j = 0; j < blockSize; j += step) {
-                                            const val = channelData[start + j] || 0;
-                                            sum += val * val;
-                                            count++;
-                                        }
-                                        const rms = Math.sqrt(sum / (count || 1));
-                                        rawBars.push(rms);
-                                        if (rms > maxRms) maxRms = rms;
-                                    }
-
-                                    // Map RMS energy to heights: silence = 3px, voice = 6px to 22px
-                                    this.bars = rawBars.map(rms => {
-                                        if (maxRms <= 0.001 || rms < 0.01) {
-                                            return 3; // true silence
-                                        }
-                                        const ratio = rms / maxRms;
-                                        return Math.max(3, Math.min(20, Math.round(ratio * 19 + 3)));
-                                    });
-
-                                    audioCtx.close();
-                                } catch (e) {
-                                    this.fixAudioDuration();
-                                }
-                            },
-
-                            fixAudioDuration() {
-                                if (this.duration > 0) return;
-                                if (this.audio.duration && isFinite(this.audio.duration) && this.audio.duration > 0) {
-                                    this.duration = this.audio.duration;
-                                    return;
-                                }
-                                this.audio.addEventListener('loadedmetadata', () => {
-                                    if (isFinite(this.audio.duration) && this.audio.duration > 0) {
-                                        this.duration = this.audio.duration;
-                                    } else {
-                                        const onTime = () => {
-                                            this.audio.removeEventListener('timeupdate', onTime);
-                                            if (isFinite(this.audio.duration)) {
-                                                this.duration = this.audio.duration;
-                                            }
-                                            this.audio.currentTime = 0;
-                                        };
-                                        this.audio.addEventListener('timeupdate', onTime);
-                                        this.audio.currentTime = 1e101;
-                                    }
-                                }, {
-                                    once: true
-                                });
-                            },
-
-                            syncProgress() {
-                                if (!this.audio) return;
-                                this.currentTime = this.audio.currentTime;
-                                let dur = this.duration;
-                                if ((!dur || !isFinite(dur) || dur <= 0) && isFinite(this.audio.duration) && this.audio.duration >
-                                    0) {
-                                    dur = this.audio.duration;
-                                    this.duration = dur;
-                                }
-                                if (!dur || !isFinite(dur) || dur <= 0) {
-                                    dur = Math.max(this.currentTime + 1, 1);
-                                }
-                                this.progress = Math.min(100, Math.max(0, (this.currentTime / dur) * 100));
-                            },
-
-                            startSmoothProgress() {
-                                this.stopSmoothProgress();
-                                const step = () => {
-                                    if (!this.isPlaying) return;
-                                    this.syncProgress();
-                                    this.animRaf = requestAnimationFrame(step);
-                                };
-                                this.animRaf = requestAnimationFrame(step);
-                            },
-
-                            stopSmoothProgress() {
-                                if (this.animRaf) {
-                                    cancelAnimationFrame(this.animRaf);
-                                    this.animRaf = null;
-                                }
-                            },
-
-                            play() {
-                                if (!this.audio) return;
-                                // Stop any other voice note currently playing across the application
-                                window.dispatchEvent(new CustomEvent('voice-player-stop-all', {
-                                    detail: {
-                                        except: this
-                                    }
-                                }));
-
-                                this.audio.playbackRate = this.speed;
-                                this.audio.play().then(() => {
-                                    this.isPlaying = true;
-                                    this.startSmoothProgress();
-                                }).catch(() => {});
-                            },
-
-                            pause() {
-                                if (!this.audio) return;
-                                this.audio.pause();
-                                this.isPlaying = false;
-                                this.stopSmoothProgress();
-                            },
-
-                            togglePlay() {
-                                if (!this.audio) return;
-                                if (this.isPlaying) {
-                                    this.pause();
-                                } else {
-                                    this.play();
-                                }
-                            },
-
-                            playNextVoiceNote() {
-                                const currentEl = this.rootEl || this.$el;
-                                if (!currentEl) return;
-
-                                // Find the enclosing messages feed container
-                                const feed = currentEl.closest('[x-ref="messagesFeed"]') ||
-                                    currentEl.closest('.overflow-y-auto') ||
-                                    document;
-
-                                const players = Array.from(feed.querySelectorAll('[data-voice-player]'));
-                                const currentIndex = players.indexOf(currentEl);
-
-                                // If there is another voice note after this one, automatically trigger play!
-                                if (currentIndex !== -1 && currentIndex + 1 < players.length) {
-                                    const nextPlayerEl = players[currentIndex + 1];
-                                    nextPlayerEl.scrollIntoView({
-                                        behavior: 'smooth',
-                                        block: 'nearest'
-                                    });
-                                    setTimeout(() => {
-                                        if (nextPlayerEl._voicePlayer) {
-                                            nextPlayerEl._voicePlayer.play();
-                                        } else {
-                                            nextPlayerEl.dispatchEvent(new CustomEvent('play-voice-note'));
-                                        }
-                                    }, 250);
-                                }
-                                // If no next voice note, playback stops in its entirety (no-op)
-                            },
-
-                            handleBarClick(e) {
-                                if (!this.audio) return;
-                                const rect = e.currentTarget.getBoundingClientRect();
-                                const clickX = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
-                                const percent = (clickX / rect.width) * 100;
-                                this.seek(percent);
-                            },
-
-                            seek(percent) {
-                                if (!this.audio) return;
-                                let dur = this.duration;
-                                if ((!dur || !isFinite(dur) || dur <= 0) && isFinite(this.audio.duration) && this.audio.duration >
-                                    0) {
-                                    dur = this.audio.duration;
-                                }
-                                if (dur && isFinite(dur) && dur > 0) {
-                                    const targetTime = (percent / 100) * dur;
-                                    this.audio.currentTime = targetTime;
-                                    this.currentTime = targetTime;
-                                    this.progress = percent;
-                                }
-                            },
-
-                            cycleSpeed() {
-                                if (!this.audio) return;
-                                const curIdx = this.speeds.indexOf(this.speed);
-                                const nextIdx = (curIdx + 1) % this.speeds.length;
-                                this.speed = this.speeds[nextIdx];
-                                this.audio.playbackRate = this.speed;
-                            },
-
-                            formatSecs(s) {
-                                if (!s || isNaN(s) || !isFinite(s) || s < 0) return '0:00';
-                                const mins = Math.floor(s / 60);
-                                const secs = Math.floor(s % 60);
-                                return mins + ':' + String(secs).padStart(2, '0');
-                            }
-                        };
-                    };
-                </script>
             </div>
         </div>
     </div>

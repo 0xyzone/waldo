@@ -80,9 +80,26 @@
                             <h3 class="text-base md:text-lg font-bold text-slate-900 dark:text-white">
                                 {{ $release['title'] }}
                             </h3>
-                            <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/40 border-l-4 border-amber-500 px-4 py-2.5 rounded-r-xl">
-                                {{ $release['highlights'] }}
-                            </p>
+                            @if (!empty($release['description']))
+                                <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/40 border-l-4 border-amber-500 px-4 py-2.5 rounded-r-xl">
+                                    {{ $release['description'] }}
+                                </p>
+                            @elseif (!empty($release['highlights']) && is_string($release['highlights']))
+                                <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/40 border-l-4 border-amber-500 px-4 py-2.5 rounded-r-xl">
+                                    {{ $release['highlights'] }}
+                                </p>
+                            @endif
+
+                            @if (!empty($release['highlights']) && is_array($release['highlights']))
+                                <ul class="mt-3 space-y-1.5 pl-1">
+                                    @foreach ($release['highlights'] as $hl)
+                                        <li class="flex items-start gap-2.5 text-xs md:text-sm text-slate-700 dark:text-slate-300">
+                                            <span class="h-1.5 w-1.5 rounded-full bg-amber-500 mt-2 shrink-0"></span>
+                                            <span>{{ $hl }}</span>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
                         </div>
 
                         <!-- Detailed Categorized Items -->

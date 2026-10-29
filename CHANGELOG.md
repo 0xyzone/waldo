@@ -4,6 +4,17 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.8.15] - 2026-10-29
+
+### Fixed & Enhanced
+- **Instant Bottom Chat Loading, Sticky Date Headers, Interactive Waveform Voice Player & Changelog Guard**:
+  - **Instant Bottom Chat Loading**: Removed `scroll-smooth` class from the floating chat feed container and tuned `scrollToBottom(false)` in Alpine so conversations load instantly pinned at the bottom without animating from top to bottom.
+  - **Sticky Date Headers**: Grouped messages by date into `.date-group` containers with sticky `top-0` date pills, ensuring date indicators stick to the top during scrolling until pushed by another date range.
+  - **Interactive Waveform Voice Note Player**: Restored the voice player UI with direct SVG play/pause controls, deterministic seed-based waveform bar visualization, `AudioContext` PCM decoding, interactive click-to-seek, and 1x/1.5x/2x playback speed cycling.
+  - **Changelog TypeError Fix**: Resolved `TypeError: htmlspecialchars(): Argument #1 ($string) must be of type string, array given` in `resources/views/filament/pages/changelog.blade.php` by properly rendering release descriptions and formatting array highlights safely.
+
+---
+
 ## [2.8.14] - 2026-10-29
 
 ### Fixed & Enhanced

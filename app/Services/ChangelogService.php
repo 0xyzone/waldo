@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.8.14';
+    public const CURRENT_VERSION = '2.8.15';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,21 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.8.15',
+                'date' => '2026-10-29',
+                'title' => 'Instant Bottom Chat Loading, Sticky Date Headers, Interactive Waveform Voice Player & Changelog Guard',
+                'type' => 'micro',
+                'badge' => 'Chat UX & Bug Fix',
+                'badge_color' => 'primary',
+                'description' => 'Fixed chat feeds animating top-to-bottom on open by eliminating smooth-scroll and enforcing instant bottom pinning, implemented sticky date pills that stick to the top during message scrolling until the next date range, restored interactive waveform voice note players with direct SVG controls and speed cycling, and resolved a TypeError on the changelog page.',
+                'highlights' => [
+                    'Instant Bottom Chat Loading: Removed scroll-smooth class from floating chat feed and updated Alpine scrollToBottom to jump directly to the bottom without animating from top to bottom on conversation open.',
+                    'Sticky Date Headers: Grouped messages into relative date-group containers with sticky top-0 date pills, so the active date remains pinned to the top of the viewport until scrolled into a different date range.',
+                    'Interactive Waveform Voice Player: Restored the voice note player with direct SVG play/pause controls, deterministic seed-based waveform bar rendering, AudioContext PCM decoding, interactive click-to-seek, and 1x/1.5x/2x playback speed cycling.',
+                    'Changelog Page TypeError Guard: Fixed TypeError in changelog view by supporting array highlights and rendering release descriptions, resolving 500 error on /kamkaj/changelog.',
+                ],
+            ],
             [
                 'version' => '2.8.14',
                 'date' => '2026-10-29',
