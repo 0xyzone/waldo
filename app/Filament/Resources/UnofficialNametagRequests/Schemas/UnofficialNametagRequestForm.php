@@ -2,11 +2,10 @@
 
 namespace App\Filament\Resources\UnofficialNametagRequests\Schemas;
 
+use App\Filament\Components\ActionLogSection;
 use App\Models\Employee;
 use Filament\Forms\Components\Checkbox;
-use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -142,39 +141,7 @@ class UnofficialNametagRequestForm
                             ->columnSpan(['lg' => 1]),
 
                         // Full Width Action Log Section
-                        Section::make('Action Log History')
-                            ->icon('heroicon-o-clock')
-                            ->description('Automated history of status changes and actions recorded on this request.')
-                            ->schema([
-                                Repeater::make('actionLogs')
-                                    ->relationship('actionLogs')
-                                    ->schema([
-                                        Grid::make(['default' => 1, 'sm' => 4])
-                                            ->schema([
-                                                TextInput::make('user_name')
-                                                    ->label('Updated By')
-                                                    ->disabled(),
-
-                                                TextInput::make('to_status')
-                                                    ->label('Status Set')
-                                                    ->disabled(),
-
-                                                TextInput::make('action_description')
-                                                    ->label('Action Description')
-                                                    ->disabled(),
-
-                                                DateTimePicker::make('created_at')
-                                                    ->label('Timestamp')
-                                                    ->disabled(),
-                                            ]),
-                                    ])
-                                    ->addable(false)
-                                    ->deletable(false)
-                                    ->reorderable(false)
-                                    ->columnSpanFull(),
-                            ])
-                            ->hidden(fn (string $operation) => $operation === 'create')
-                            ->columnSpanFull(),
+                        ActionLogSection::make('actionLogs'),
                     ])
                     ->columnSpanFull(),
             ]);

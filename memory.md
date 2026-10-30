@@ -625,6 +625,16 @@
   - Added `updateDesignationBudget(int $id, mixed $amount)` to `ManageRoyaltyBonusSettings.php`.
   - Replaced the static Annual Budget cell in `manage-royalty-bonus-settings.blade.php` with an inline `Rs.` number input (`wire:change="updateDesignationBudget(...)"`, `x-on:keydown.enter.prevent="$el.blur()"`), which automatically triggers `Designation::saving` to recalculate `royalty_monthly_max` and `royalty_monthly_min` and refreshes the table and pool KPIs live.
 
+### 54. Collapsed-by-Default Action Log Entries with Summary Heading Rows (v2.9.12)
+- **Problem & Requirements**:
+  - Action log entries inside `ActionLogSection` had empty repeater headers and were expanded by default, taking up excessive vertical space and showing blank bars when collapsed.
+  - User requested that each action log entry have a clear summary row in its heading so it is informative even when collapsed, and that all action log entries be collapsed by default.
+- **Solution**:
+  - Updated `ActionLogSection::make()` (`app/Filament/Components/ActionLogSection.php`) with `->collapsed()`, `->truncateItemLabel(false)`, and `->itemLabel(fn (array $state, $container): HtmlString => self::formatItemLabel($state, $container?->getRecord()))`.
+  - `formatItemLabel()` renders a full-width flex row displaying a color-coded status/action badge, bold action log brief (`action_description`), field diff count pill, user attribution (`by <user_name>`), and right-aligned timestamp.
+  - Standardized `IdCardRequestForm` and `UnofficialNametagRequestForm` to use `ActionLogSection::make('actionLogs')`.
+
+
 
 
 

@@ -4,6 +4,21 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.12] - 2026-10-30
+
+### Enhanced
+- **Collapsed-by-Default Action Log Entries with Summary Heading Rows (`app/Filament/Components/ActionLogSection.php`)**:
+  - **Collapsed by Default**: Added `->collapsed()` to the `ActionLogSection` repeater so individual action log entries start collapsed by default while keeping the history compact.
+  - **Detailed Header Brief (`formatItemLabel()`)**: Configured `->itemLabel()` with `->truncateItemLabel(false)` to display a full-width summary row in each repeater item header showing:
+    - Color-coded **Status / Action Badge** (`Updated`, `Created`, `Approved`, `Rejected`, etc.)
+    - **Action Log Brief** (`action_description`, e.g., `Updated: Reference`)
+    - **Field Diff Count Pill** (e.g., `1 field diff`)
+    - **Done By** user attribution (`by Sumina Manandhar`)
+    - Right-aligned **Timestamp** (`Oct 28, 2026 06:25:49 PM`)
+  - **Unified Component Usage**: Updated `IdCardRequestForm` and `UnofficialNametagRequestForm` to use `ActionLogSection::make('actionLogs')`.
+
+---
+
 ## [2.9.11] - 2026-10-30
 
 ### Added & Enhanced

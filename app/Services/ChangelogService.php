@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.11';
+    public const CURRENT_VERSION = '2.9.12';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,20 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.12',
+                'date' => '2026-10-30',
+                'title' => 'Collapsed-by-Default Action Log Entries with Summary Heading Rows',
+                'type' => 'micro',
+                'badge' => 'Enhancement',
+                'badge_color' => 'info',
+                'description' => 'Updated the Action Log History repeater across all resources so entries are collapsed by default and display a rich summary header row (Status badge, Action Log brief, field diff count, Done By user, and Timestamp) even when collapsed.',
+                'highlights' => [
+                    'Collapsed by Default: Added ->collapsed() to the ActionLogSection repeater so lengthy action histories stay compact and clean upon page load.',
+                    'Informative Collapsed Heading Row: Added ActionLogSection::formatItemLabel() rendering a full-width header brief with a color-coded status badge, action summary, field diff count pill, user attribution, and formatted timestamp.',
+                    'Unified ActionLogSection Usage: Standardized IdCardRequestForm and UnofficialNametagRequestForm to use the shared ActionLogSection component.',
+                ],
+            ],
             [
                 'version' => '2.9.11',
                 'date' => '2026-10-30',
