@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.22';
+    public const CURRENT_VERSION = '2.9.23';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,19 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.23',
+                'date' => '2026-10-30',
+                'title' => 'Footer Total Single-Page Display & Clean Sans-Serif Typography for Print Sheets',
+                'type' => 'micro',
+                'badge' => 'UI Enhancement & Fix',
+                'badge_color' => 'success',
+                'description' => 'Configured tfoot display mode to table-row-group in print media across balance overview and held balance print sheets so totals render on the final page only, and upgraded all typography to clean, high-legibility sans-serif fonts.',
+                'highlights' => [
+                    'Footer Row Last Page Only: Changed tfoot in @media print from table-footer-group to table-row-group across print-balance-overview, print-held-balances-list, and print-held-balance.',
+                    'Clean Sans-Serif Fonts: Replaced monospace styling with clean system sans-serif typography (-apple-system, Segoe UI, Roboto) paired with font-variant-numeric: tabular-nums for aligned figures.',
+                ],
+            ],
             [
                 'version' => '2.9.22',
                 'date' => '2026-10-30',

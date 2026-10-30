@@ -16,9 +16,9 @@
         }
 
         body {
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             font-size: 10.5px;
-            color: #000;
+            color: #0f172a;
             background: #fff;
             margin: 0;
             padding: 10px;
@@ -36,29 +36,31 @@
 
         .header-title {
             font-size: 17px;
-            font-weight: bold;
+            font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin: 0 0 4px 0;
+            color: #0f172a;
         }
 
         .header-subtitle {
-            font-size: 12px;
+            font-size: 11.5px;
             font-weight: 600;
-            color: #222;
+            color: #334155;
             margin: 0;
         }
 
         .meta-box {
             margin: 10px 0 14px 0;
             padding: 8px 12px;
-            background-color: #fafafa;
-            border: 1px solid #000;
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
             border-radius: 4px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-size: 11px;
+            color: #334155;
         }
 
         table.sheet-table {
@@ -66,6 +68,7 @@
             border-collapse: collapse;
             margin-bottom: 14px;
             font-size: 10px;
+            border: 1px solid #000;
         }
 
         table.sheet-table th, table.sheet-table td {
@@ -75,33 +78,24 @@
         }
 
         table.sheet-table th {
-            background-color: #f0f0f0 !important;
-            font-weight: bold;
+            background-color: #f1f5f9 !important;
+            font-weight: 700;
             text-transform: uppercase;
             font-size: 9px;
             text-align: center;
+            letter-spacing: 0.3px;
         }
 
         table.sheet-table tfoot td {
-            font-weight: bold;
-            background-color: #f5f5f5 !important;
-            border-top: 2px solid #000;
+            font-weight: 700;
+            background-color: #f1f5f9 !important;
+            border-top: 1.5px solid #000;
             font-size: 10.5px;
         }
 
         .text-center { text-align: center; }
         .text-right { text-align: right; }
-        .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
-
-        .badge {
-            display: inline-block;
-            padding: 2px 4px;
-            border: 1px solid #000;
-            border-radius: 3px;
-            font-size: 8.5px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
+        .font-num { font-variant-numeric: tabular-nums; }
 
         .print-actions {
             margin-bottom: 12px;
@@ -109,11 +103,11 @@
         }
 
         .btn-print {
-            background: #111827;
+            background: #0f172a;
             color: #fff;
             padding: 6px 14px;
             font-size: 12px;
-            font-weight: bold;
+            font-weight: 600;
             border-radius: 4px;
             cursor: pointer;
             border: none;
@@ -128,6 +122,9 @@
             }
             thead {
                 display: table-header-group;
+            }
+            tfoot {
+                display: table-row-group !important;
             }
             tr {
                 page-break-inside: avoid;
@@ -179,14 +176,14 @@
         <tbody>
             @forelse($records as $index => $rec)
                 <tr>
-                    <td class="text-center font-mono">{{ $index + 1 }}</td>
-                    <td class="font-mono text-center">{{ $rec['employee']->employee_code }}</td>
+                    <td class="text-center font-num">{{ $index + 1 }}</td>
+                    <td class="font-num text-center">{{ $rec['employee']->employee_code }}</td>
                     <td><strong>{{ $rec['employee']->name }}</strong></td>
                     <td>{{ $rec['employee']->department?->name ?? 'N/A' }}</td>
                     <td>{{ $rec['employee']->designation?->name ?? 'N/A' }}</td>
-                    <td class="text-right font-mono">Rs. {{ number_format($rec['total_held'], 2) }}</td>
-                    <td class="text-right font-mono">Rs. {{ number_format($rec['total_released'], 2) }}</td>
-                    <td class="text-right font-mono"><strong>Rs. {{ number_format($rec['remaining_balance'], 2) }}</strong></td>
+                    <td class="text-right font-num">Rs. {{ number_format($rec['total_held'], 2) }}</td>
+                    <td class="text-right font-num">Rs. {{ number_format($rec['total_released'], 2) }}</td>
+                    <td class="text-right font-num"><strong>Rs. {{ number_format($rec['remaining_balance'], 2) }}</strong></td>
                 </tr>
             @empty
                 <tr>
@@ -197,9 +194,9 @@
         <tfoot>
             <tr>
                 <td colspan="5" class="text-right">Total:</td>
-                <td class="text-right font-mono">Rs. {{ number_format($sumHeld, 2) }}</td>
-                <td class="text-right font-mono">Rs. {{ number_format($sumReleased, 2) }}</td>
-                <td class="text-right font-mono">Rs. {{ number_format($sumRemaining, 2) }}</td>
+                <td class="text-right font-num">Rs. {{ number_format($sumHeld, 2) }}</td>
+                <td class="text-right font-num">Rs. {{ number_format($sumReleased, 2) }}</td>
+                <td class="text-right font-num">Rs. {{ number_format($sumRemaining, 2) }}</td>
             </tr>
         </tfoot>
     </table>

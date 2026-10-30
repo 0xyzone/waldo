@@ -16,9 +16,9 @@
         }
 
         body {
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             font-size: 11px;
-            color: #000;
+            color: #0f172a;
             background: #fff;
             margin: 0;
             padding: 10px;
@@ -36,24 +36,25 @@
 
         .header-title {
             font-size: 18px;
-            font-weight: bold;
+            font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin: 0 0 4px 0;
+            color: #0f172a;
         }
 
         .header-subtitle {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
-            color: #111;
+            color: #334155;
             margin: 0 0 6px 0;
         }
 
         .meta-box {
             margin: 12px 0 16px 0;
             padding: 10px 14px;
-            background-color: #fafafa;
-            border: 1px solid #000;
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
             border-radius: 4px;
         }
 
@@ -71,15 +72,16 @@
 
         .meta-label {
             font-size: 10px;
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
-            color: #555;
+            color: #64748b;
             margin-bottom: 2px;
+            letter-spacing: 0.3px;
         }
 
         .meta-val {
-            font-weight: bold;
-            color: #000;
+            font-weight: 700;
+            color: #0f172a;
         }
 
         .stats-grid {
@@ -92,7 +94,7 @@
         .stat-card {
             border: 1px solid #000;
             padding: 8px 12px;
-            background: #fdfdfd;
+            background: #f8fafc;
             border-radius: 4px;
             text-align: center;
         }
@@ -100,24 +102,27 @@
         .stat-card .stat-label {
             font-size: 10px;
             text-transform: uppercase;
-            font-weight: 600;
-            color: #444;
+            font-weight: 700;
+            color: #475569;
+            letter-spacing: 0.3px;
         }
 
         .stat-card .stat-value {
             font-size: 16px;
-            font-weight: bold;
+            font-weight: 800;
             margin-top: 3px;
-            color: #000;
+            color: #0f172a;
+            font-variant-numeric: tabular-nums;
         }
 
         .section-title {
             font-size: 12px;
-            font-weight: bold;
+            font-weight: 700;
             text-transform: uppercase;
             border-bottom: 1.5px solid #000;
             padding-bottom: 4px;
             margin: 16px 0 8px 0;
+            color: #0f172a;
         }
 
         table.sheet-table {
@@ -125,6 +130,7 @@
             border-collapse: collapse;
             margin-bottom: 14px;
             font-size: 10.5px;
+            border: 1px solid #000;
         }
 
         table.sheet-table th, table.sheet-table td {
@@ -134,32 +140,23 @@
         }
 
         table.sheet-table th {
-            background-color: #f0f0f0 !important;
-            font-weight: bold;
+            background-color: #f1f5f9 !important;
+            font-weight: 700;
             text-transform: uppercase;
             font-size: 9.5px;
             text-align: center;
+            letter-spacing: 0.3px;
         }
 
         table.sheet-table tfoot td {
-            font-weight: bold;
-            background-color: #f5f5f5 !important;
-            border-top: 2px solid #000;
+            font-weight: 700;
+            background-color: #f1f5f9 !important;
+            border-top: 1.5px solid #000;
         }
 
         .text-center { text-align: center; }
         .text-right { text-align: right; }
-        .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
-
-        .badge {
-            display: inline-block;
-            padding: 2px 5px;
-            border: 1px solid #000;
-            border-radius: 3px;
-            font-size: 9px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
+        .font-num { font-variant-numeric: tabular-nums; }
 
         .print-actions {
             margin-bottom: 12px;
@@ -167,11 +164,11 @@
         }
 
         .btn-print {
-            background: #111827;
+            background: #0f172a;
             color: #fff;
             padding: 6px 14px;
             font-size: 12px;
-            font-weight: bold;
+            font-weight: 600;
             border-radius: 4px;
             cursor: pointer;
             border: none;
@@ -183,6 +180,15 @@
             }
             body {
                 padding: 0;
+            }
+            thead {
+                display: table-header-group;
+            }
+            tfoot {
+                display: table-row-group !important;
+            }
+            tr {
+                page-break-inside: avoid;
             }
         }
     </style>
@@ -205,7 +211,7 @@
             </div>
             <div class="meta-item">
                 <span class="meta-label">Employee Code</span>
-                <span class="meta-val font-mono">{{ $employee->employee_code }}</span>
+                <span class="meta-val font-num">{{ $employee->employee_code }}</span>
             </div>
             <div class="meta-item">
                 <span class="meta-label">Department</span>
@@ -221,15 +227,15 @@
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-label">Total Amount Held / Deducted</div>
-            <div class="stat-value font-mono">Rs. {{ number_format($totalHeld, 2) }}</div>
+            <div class="stat-value font-num">Rs. {{ number_format($totalHeld, 2) }}</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Total Released to Date</div>
-            <div class="stat-value font-mono">Rs. {{ number_format($totalReleased, 2) }}</div>
+            <div class="stat-value font-num">Rs. {{ number_format($totalReleased, 2) }}</div>
         </div>
         <div class="stat-card">
             <div class="stat-label">Remaining Balance Payable</div>
-            <div class="stat-value font-mono">Rs. {{ number_format($remainingBalance, 2) }}</div>
+            <div class="stat-value font-num">Rs. {{ number_format($remainingBalance, 2) }}</div>
         </div>
     </div>
 
@@ -239,11 +245,11 @@
             <tr>
                 <th style="width: 30px;">#</th>
                 <th>Report Month / Title</th>
-                <th style="width: 80px;">Tenure Month</th>
-                <th style="width: 90px;" class="text-right">Max Payout</th>
-                <th style="width: 90px;" class="text-right">Floor Min</th>
-                <th style="width: 90px;" class="text-right">Net Payout</th>
-                <th style="width: 95px;" class="text-right">Amount Held</th>
+                <th style="width: 90px;" class="text-center">Tenure Month</th>
+                <th style="width: 95px;" class="text-right">Max Payout</th>
+                <th style="width: 95px;" class="text-right">Floor Min</th>
+                <th style="width: 95px;" class="text-right">Net Payout</th>
+                <th style="width: 100px;" class="text-right">Amount Held</th>
             </tr>
         </thead>
         <tbody>
@@ -255,16 +261,16 @@
                         : max(0, (float) $item->monthly_max_payout - (float) $item->final_payout);
                 @endphp
                 <tr>
-                    <td class="text-center font-mono">{{ $index + 1 }}</td>
+                    <td class="text-center font-num">{{ $index + 1 }}</td>
                     <td>
                         <strong>{{ $item->report?->title ?? 'Report #' . $item->royalty_report_id }}</strong>
-                        <span style="font-size: 9.5px; color: #555;">({{ ucfirst($item->report?->month ?? '') }} {{ $item->report?->year ?? '' }})</span>
+                        <span style="font-size: 9.5px; color: #475569;">({{ ucfirst($item->report?->month ?? '') }} {{ $item->report?->year ?? '' }})</span>
                     </td>
-                    <td class="text-center font-mono">M{{ $item->tenure_month_number }}/12</td>
-                    <td class="text-right font-mono">Rs. {{ number_format($item->monthly_max_payout, 2) }}</td>
-                    <td class="text-right font-mono">Rs. {{ number_format($item->monthly_min_payout, 2) }}</td>
-                    <td class="text-right font-mono">Rs. {{ number_format($item->final_payout, 2) }}</td>
-                    <td class="text-right font-mono"><strong>Rs. {{ number_format($amtHeld, 2) }}</strong></td>
+                    <td class="text-center font-num">M{{ $item->tenure_month_number }}/12</td>
+                    <td class="text-right font-num">Rs. {{ number_format($item->monthly_max_payout, 2) }}</td>
+                    <td class="text-right font-num">Rs. {{ number_format($item->monthly_min_payout, 2) }}</td>
+                    <td class="text-right font-num">Rs. {{ number_format($item->final_payout, 2) }}</td>
+                    <td class="text-right font-num"><strong>Rs. {{ number_format($amtHeld, 2) }}</strong></td>
                 </tr>
             @empty
                 <tr>
@@ -275,7 +281,7 @@
         <tfoot>
             <tr>
                 <td colspan="6" class="text-right">Total Held:</td>
-                <td class="text-right font-mono">Rs. {{ number_format($totalHeld, 2) }}</td>
+                <td class="text-right font-num">Rs. {{ number_format($totalHeld, 2) }}</td>
             </tr>
         </tfoot>
     </table>
@@ -285,18 +291,18 @@
         <thead>
             <tr>
                 <th style="width: 30px;">#</th>
-                <th style="width: 90px;" class="text-center">Release Date</th>
-                <th style="width: 100px;" class="text-right">Amount Released</th>
+                <th style="width: 95px;" class="text-center">Release Date</th>
+                <th style="width: 110px;" class="text-right">Amount Released</th>
                 <th>Remarks / Reason</th>
-                <th style="width: 110px;" class="text-center">Released By</th>
+                <th style="width: 120px;" class="text-center">Released By</th>
             </tr>
         </thead>
         <tbody>
             @forelse($employee->royaltyReleases as $rIndex => $rel)
                 <tr>
-                    <td class="text-center font-mono">{{ $rIndex + 1 }}</td>
-                    <td class="text-center font-mono">{{ $rel->released_date?->format('d M Y') ?? 'N/A' }}</td>
-                    <td class="text-right font-mono"><strong>Rs. {{ number_format($rel->amount, 2) }}</strong></td>
+                    <td class="text-center font-num">{{ $rIndex + 1 }}</td>
+                    <td class="text-center font-num">{{ $rel->released_date?->format('d M Y') ?? 'N/A' }}</td>
+                    <td class="text-right font-num"><strong>Rs. {{ number_format($rel->amount, 2) }}</strong></td>
                     <td>{{ $rel->remarks ?: '-' }}</td>
                     <td class="text-center">{{ $rel->creator?->name ?? 'System' }}</td>
                 </tr>
@@ -309,7 +315,7 @@
         <tfoot>
             <tr>
                 <td colspan="2" class="text-right">Total Released:</td>
-                <td class="text-right font-mono">Rs. {{ number_format($totalReleased, 2) }}</td>
+                <td class="text-right font-num">Rs. {{ number_format($totalReleased, 2) }}</td>
                 <td colspan="2"></td>
             </tr>
         </tfoot>

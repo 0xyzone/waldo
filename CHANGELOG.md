@@ -4,6 +4,15 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.23] - 2026-10-30
+
+### Fixed & Enhanced
+- **Single-Page Footer Totals & Clean Sans-Serif Typography for Royalty Print Sheets**:
+  - **Footer Row on Final Page Only (`print-balance-overview.blade.php`, `print-held-balances-list.blade.php`, `print-held-balance.blade.php`)**: Applied `tfoot { display: table-row-group !important; }` in `@media print` across the Royalty Budget Balance Overview and Held Balances print sheets, stopping the footer totals from repeating across every printed page.
+  - **Clean Sans-Serif Typography**: Modernized typography to clean, highly-readable system sans-serif font stack (`-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`) with `font-variant-numeric: tabular-nums` for crisp number alignments, replacing the monospace font styling.
+
+---
+
 ## [2.9.22] - 2026-10-30
 
 ### Removed & Cleaned
