@@ -6,32 +6,36 @@
     <style>
         *, *::before, *::after {
             box-sizing: border-box;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
 
         @page {
             size: A4 landscape;
-            margin: 8mm 8mm;
+            margin: 6mm 6mm;
         }
 
         body {
             font-family: Arial, Helvetica, sans-serif;
-            font-size: 11px;
+            font-size: 10px;
             color: #000;
             background: #fff;
             margin: 0;
-            padding: 12px;
+            padding: 8px;
             width: 100%;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
 
         .header-container {
             text-align: center;
-            margin-bottom: 12px;
-            border-bottom: 2px solid #222;
-            padding-bottom: 8px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 6px;
         }
 
         .header-title {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -39,17 +43,17 @@
         }
 
         .header-subtitle {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             color: #111;
-            margin: 0 0 6px 0;
+            margin: 0 0 5px 0;
         }
 
         .header-meta-box {
-            margin-top: 10px;
-            padding: 8px 14px;
+            margin-top: 8px;
+            padding: 6px 12px;
             background-color: #fafafa;
-            border: 1px solid #d4d4d8;
+            border: 1px solid #000;
             border-radius: 4px;
         }
 
@@ -58,7 +62,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 2px 0;
-            font-size: 11.5px;
+            font-size: 11px;
         }
 
         .meta-col {
@@ -82,7 +86,7 @@
         }
 
         .font-payout {
-            font-size: 13px;
+            font-size: 12px;
             color: #047857;
             font-weight: 800;
         }
@@ -92,26 +96,32 @@
             max-width: 100%;
             table-layout: fixed;
             border-collapse: collapse;
+            border-spacing: 0;
+            border: 1.5px solid #000 !important;
             margin-bottom: 20px;
         }
 
         table.sheet-table th,
         table.sheet-table td {
-            border: 1px solid #333;
-            padding: 4px 5px;
+            border: 1px solid #000 !important;
+            padding: 3px 3px;
             text-align: left;
             vertical-align: middle;
             word-wrap: break-word;
             overflow-wrap: break-word;
-            font-size: 10.5px;
+            word-break: break-word;
+            font-size: 9.5px;
+            line-height: 1.2;
         }
 
         table.sheet-table th {
-            background-color: #f1f5f9;
+            background-color: #f1f5f9 !important;
             font-weight: bold;
-            font-size: 10px;
+            font-size: 9px;
             text-align: center;
             text-transform: uppercase;
+            padding: 4px 2px;
+            border: 1px solid #000 !important;
         }
 
         table.sheet-table td.text-center {
@@ -124,7 +134,7 @@
 
         .sig-box {
             width: 100%;
-            min-height: 28px;
+            min-height: 22px;
             display: block;
         }
 
@@ -164,12 +174,14 @@
         @media print {
             @page {
                 size: A4 landscape;
-                margin: 8mm 8mm;
+                margin: 6mm 6mm;
             }
             html, body {
                 margin: 0 !important;
                 padding: 0 !important;
                 width: 100% !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
             .no-print {
                 display: none !important;
@@ -178,6 +190,12 @@
                 width: 100% !important;
                 max-width: 100% !important;
                 page-break-inside: auto;
+                border-collapse: collapse !important;
+                border: 1.5px solid #000 !important;
+            }
+            table.sheet-table th,
+            table.sheet-table td {
+                border: 1px solid #000 !important;
             }
             table.sheet-table tr {
                 page-break-inside: avoid;
@@ -239,22 +257,22 @@
     <table class="sheet-table">
         <thead>
             <tr>
-                <th style="width: 3%;">#</th>
-                <th style="width: 7%;">Code</th>
+                <th style="width: 2.5%;">#</th>
+                <th style="width: 6.5%;">Code</th>
                 <th style="width: 14%;">Employee Name</th>
-                <th style="width: 10%;">Department</th>
-                <th style="width: 11%;">Designation</th>
-                <th style="width: 8%;">Max Payout</th>
-                <th style="width: 4.5%;">Absent</th>
+                <th style="width: 9.5%;">Department</th>
+                <th style="width: 10.5%;">Designation</th>
+                <th style="width: 7.5%;">Max Payout</th>
+                <th style="width: 4%;">Absent</th>
                 <th style="width: 4.5%;">Late/Early</th>
-                <th style="width: 4.5%;">Thumb</th>
-                <th style="width: 6%;">Attn Ded.</th>
+                <th style="width: 4%;">Thumb</th>
+                <th style="width: 5.5%;">Attn Ded.</th>
                 <th style="width: 5.5%;">Susp. Ded.</th>
                 <th style="width: 4.5%;">Perf %</th>
                 <th style="width: 5.5%;">Perf Ded.</th>
-                <th style="width: 6%;">Total Ded.</th>
-                <th style="width: 8%;">Net Payout</th>
-                <th style="width: 11%;">Signature</th>
+                <th style="width: 5.5%;">Total Ded.</th>
+                <th style="width: 7.5%;">Net Payout</th>
+                <th style="width: 9%;">Signature</th>
             </tr>
         </thead>
         <tbody>

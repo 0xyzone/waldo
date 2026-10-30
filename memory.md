@@ -657,6 +657,17 @@
   - **Settings Studio (`ManageRoyaltyBonusSettings.php`, `manage-royalty-bonus-settings.blade.php`)**: Added `royalty_suspension_amount` (`AppSetting` key `royalty_suspension_amount`, default `'1000.00'`) and an **Employee Suspension Policy** card in the Deduction Rules console.
   - **Calculation Engine (`RoyaltyCalculationService.php`)**: Preloads `EmployeeSuspension` records (`status != 'cancelled'`) with `start_date` between the start and end of the report's Billing Month & Year, applies the fixed `suspension_amount` deduction once when `suspension_count > 0`, and displays `Susp. Ded.` across `ViewRoyaltyReport`, `resources/views/royalty/print.blade.php`, and Excel exports.
 
+### 58. Print Layout Formatting & High-Contrast Table Borders for Royalty Payout Sheet (v2.9.16)
+- **Problem & Requirements**:
+  - When printing the Royalty Bonus payout sheet, the rightmost columns (such as Signature and Net Payout) were getting cut off or not printing properly, and table border lines were either faint or completely omitted by browsers.
+- **Solution**:
+  - In `resources/views/royalty/print.blade.php`:
+    - Set `@page { size: A4 landscape; margin: 6mm 6mm; }` to maximize horizontal printable area.
+    - Added `-webkit-print-color-adjust: exact !important` and `print-color-adjust: exact !important` across `*`, `body`, and `@media print`.
+    - Enforced explicit solid black borders (`border: 1px solid #000 !important; border-collapse: collapse !important;`) on table elements.
+    - Tuned column width percentages so all 16 columns sum to 100% and fit cleanly with compact 9.5px font and 3px padding.
+
+
 
 
 

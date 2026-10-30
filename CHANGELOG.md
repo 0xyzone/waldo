@@ -4,6 +4,15 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.16] - 2026-10-30
+
+### Fixed
+- **Print Layout Formatting & High-Contrast Table Borders for Royalty Payout Sheet (`resources/views/royalty/print.blade.php`)**:
+  - **Fixed Right-Side Clipping**: Streamlined landscape print margins (`margin: 6mm 6mm`), tightened cell padding (`padding: 3px 3px`), adjusted base font to 9.5px, and precisely reallocated table column percentages (totaling 100%) so all 16 columns (including Net Payout and Signature) fit within the printable area without overflowing or getting cut off.
+  - **High-Contrast Print Borders**: Added `-webkit-print-color-adjust: exact !important` and `print-color-adjust: exact !important` alongside high-contrast solid black table borders (`border: 1px solid #000 !important; border-collapse: collapse !important;`) so borders are rendered crisp and clear on all printers and PDF exports.
+
+---
+
 ## [2.9.15] - 2026-10-30
 
 ### Added & Enhanced

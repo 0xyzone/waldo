@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.15';
+    public const CURRENT_VERSION = '2.9.16';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,20 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.16',
+                'date' => '2026-10-30',
+                'title' => 'Print Layout Formatting & High-Contrast Table Borders for Royalty Payout Sheet',
+                'type' => 'micro',
+                'badge' => 'Fix',
+                'badge_color' => 'success',
+                'description' => 'Fixed print clipping of the rightmost table columns and restored clear, crisp high-contrast cell borders in the Royalty Bonus printable payout sheet.',
+                'highlights' => [
+                    'Print Color & Border Preservation: Enforced print-color-adjust: exact with solid black borders (#000) so browsers do not drop or fade cell lines during print/PDF generation.',
+                    'Optimized Landscape Margins & Columns: Adjusted @page margins from 8mm to 6mm and rebalanced percentage column widths to fit all 16 columns cleanly without horizontal cut-off.',
+                    'Typography & Padding Tuning: Compacted font sizing to 9.5px and cell padding to 3px to maximize printable area and guarantee complete signature and net payout display.',
+                ],
+            ],
             [
                 'version' => '2.9.15',
                 'date' => '2026-10-30',
