@@ -16,6 +16,7 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Url;
 use UnitEnum;
@@ -274,7 +275,7 @@ class ManageRoyaltyBonusSettings extends Page
             ->get();
     }
 
-    public function getFilteredDesignationsProperty(): Collection
+    protected function getBaseScopedQuery(): Builder
     {
         $query = Designation::query()
             ->with('department')
@@ -285,18 +286,40 @@ class ManageRoyaltyBonusSettings extends Page
             $query->where('department_id', $this->selectedDepartment);
         }
 
+        if (trim($this->searchDesignation) !== '') {
+            $term = trim($this->searchDesignation);
+            $query->where('name', 'like', "%{$term}%");
+        }
+
+        return $query;
+    }
+
+    public function getFilteredDesignationsProperty(): Collection
+    {
+        $query = $this->getBaseScopedQuery();
+
         if ($this->royaltyFilter === 'eligible') {
             $query->where('is_royalty_eligible', true);
         } elseif ($this->royaltyFilter === 'ineligible') {
             $query->where('is_royalty_eligible', false);
         }
 
-        if (trim($this->searchDesignation) !== '') {
-            $term = trim($this->searchDesignation);
-            $query->where('name', 'like', "%{$term}%");
-        }
-
         return $query->get();
+    }
+
+    public function getScopedAllCountProperty(): int
+    {
+        return (clone $this->getBaseScopedQuery())->count();
+    }
+
+    public function getScopedEligibleCountProperty(): int
+    {
+        return (clone $this->getBaseScopedQuery())->where('is_royalty_eligible', true)->count();
+    }
+
+    public function getScopedExcludedCountProperty(): int
+    {
+        return (clone $this->getBaseScopedQuery())->where('is_royalty_eligible', false)->count();
     }
 
     public function getTotalDesignationsCountProperty(): int
@@ -309,11 +332,23 @@ class ManageRoyaltyBonusSettings extends Page
         return Designation::where('is_royalty_eligible', true)->count();
     }
 
+    public function getExcludedDesignationsCountProperty(): int
+    {
+        return Designation::where('is_royalty_eligible', false)->count();
+    }
+
     public function getEligiblePercentageProperty(): int
     {
         $total = $this->totalDesignationsCount;
 
         return $total > 0 ? (int) round(($this->eligibleDesignationsCount / $total) * 100) : 0;
+    }
+
+    public function getExcludedPercentageProperty(): int
+    {
+        $total = $this->totalDesignationsCount;
+
+        return $total > 0 ? (int) round(($this->excludedDesignationsCount / $total) * 100) : 0;
     }
 
     public function getTotalMonthlyMaxBudgetProperty(): float

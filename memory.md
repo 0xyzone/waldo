@@ -574,4 +574,21 @@
   - **Refined Aesthetics & Ergonomics**:
     - Cleaned up currency prefixes (`Rs.`) to avoid overlaps, polished icon avatars, and added animated Livewire toggle switches.
 
+### 49. Input Icon/Prefix Padding Fix & Live Eligible/Excluded Role Counts in Royalty Settings (v2.9.7)
+- **Problem & Requirements**:
+  - Global `padding: 0.55rem 0.875rem !important;` on standalone inputs in `resources/css/filament/kamkaj/theme.css` was overriding Tailwind `pl-8` / `pl-9` classes, causing:
+    1. The magnifying glass search icon in the sidebar search bar to overlap with `"Search menus & resources..."`.
+    2. The `Rs.` symbol in the Royalty Bonus Settings penalty fields to be hidden/overlapped behind the numeric field values (`500.00`, `100.00`).
+    3. The magnifying glass search icon in `"Search designation title..."` to overlap with its placeholder.
+  - The Eligible and Excluded counts were not displayed on the Status Filter tabs (`Eligible` and `Excluded` buttons lacked counts) or in the Excluded KPI / matrix badges on the Royalty Bonus Settings page.
+- **Solution**:
+  - **Theme CSS Rule Refinement (`resources/css/filament/kamkaj/theme.css`)**:
+    - Replaced blanket `padding: 0.55rem 0.875rem !important;` on standalone inputs with directional padding rules guarded by `:not([class*="pl-"])`, `:not([class*="pr-"])`, and `:not([class*="py-"])`, and rebuilt Vite assets (`npm run build`).
+  - **Explicit Input Padding & Prefix Z-Index (`sidebar-search.blade.php`, `manage-royalty-bonus-settings.blade.php`, `royalty-balance-overview.blade.php`)**:
+    - Added explicit inline `style="padding-left: ... !important;"` alongside `!pl-9` / `!pl-10` classes on search inputs and `Rs.` penalty inputs, and added `z-10` to `Rs.` prefix spans so icons and currency prefixes always have clean visual separation from values and placeholders.
+  - **Live Eligible & Excluded Counts (`ManageRoyaltyBonusSettings.php`, `manage-royalty-bonus-settings.blade.php`)**:
+    - Added `getExcludedDesignationsCountProperty()`, `getExcludedPercentageProperty()`, `getScopedAllCountProperty()`, `getScopedEligibleCountProperty()`, and `getScopedExcludedCountProperty()`.
+    - Displayed Eligible and Excluded counts in the Status Filter Tabs (`All (92)`, `Eligible (1)`, `Excluded (91)`), Top KPI Summary strip (added dedicated `Excluded Roles` card with percentage), Designation Eligibility Matrix header badges (`X Eligible`, `Y Excluded`), and table footer summary.
+
+
 

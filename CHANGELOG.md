@@ -4,6 +4,17 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.7] - 2026-10-30
+
+### Fixed & Enhanced
+- **Input Icon/Prefix Padding Fix & Live Eligible/Excluded Role Counts in Royalty Settings**:
+  - **Theme CSS Input Padding Override Fix (`resources/css/filament/kamkaj/theme.css`)**: Scoped standalone input default padding rules with `:not([class*="pl-"])` / `:not([class*="pr-"])` so custom left and right padding classes are no longer overridden by `padding: 0.55rem 0.875rem !important`.
+  - **Sidebar & Designation Search Bar Icon Clearance**: Applied explicit left/right padding (`!pl-9`, `padding-left: 2.25rem !important`) on the sidebar menu search bar (`sidebar-search.blade.php`), designation title search input (`manage-royalty-bonus-settings.blade.php`), and balance overview search input (`royalty-balance-overview.blade.php`) so search icons never overlap with placeholder text.
+  - **Penalty Currency Prefix (`Rs.`) Alignment**: Added `z-10` elevation to the `Rs.` prefix labels and increased input left padding (`!pl-10` / `2.5rem`) on Absent Days, Late In/Early Out, and Missing Thumb penalty inputs so `Rs.` is never hidden behind numeric field values.
+  - **Live Eligible & Excluded Role Counts**: Added computed properties (`excludedDesignationsCount`, `excludedPercentage`, `scopedAllCount`, `scopedEligibleCount`, `scopedExcludedCount`) in `ManageRoyaltyBonusSettings.php` and displayed both Eligible and Excluded counts across the Status Filter Tabs (`All (X)`, `Eligible (Y)`, `Excluded (Z)`), the Top Executive KPI strip, the Designation Eligibility Matrix header badges, and the table footer summary.
+
+---
+
 ## [2.9.6] - 2026-10-29
 
 ### Added & Enhanced

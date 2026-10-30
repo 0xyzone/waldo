@@ -94,7 +94,8 @@
                             type="text"
                             wire:model.live.debounce.250ms="search"
                             placeholder="Search employee, designation..."
-                            class="w-full text-xs pl-9 pr-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none shadow-2xs"
+                            style="padding-left: 2.25rem !important;"
+                            class="w-full text-xs !pl-9 pr-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none shadow-2xs"
                         />
                     </div>
 

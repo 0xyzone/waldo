@@ -27,7 +27,8 @@
                 placeholder="Search menus & resources..."
                 autocomplete="off"
                 spellcheck="false"
-                class="w-full text-xs pl-9 pr-14 py-2 rounded-lg border border-gray-200/90 dark:border-gray-700/80 bg-gray-50/80 dark:bg-gray-800/80 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-gray-800 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition duration-150 shadow-2xs"
+                style="padding-left: 2.25rem !important; padding-right: 3.75rem !important;"
+                class="w-full text-xs !pl-9 !pr-15 py-2 rounded-lg border border-gray-200/90 dark:border-gray-700/80 bg-gray-50/80 dark:bg-gray-800/80 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:bg-white dark:focus:bg-gray-800 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition duration-150 shadow-2xs"
             />
 
             {{-- Right Badges / Actions --}}

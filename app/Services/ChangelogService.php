@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.6';
+    public const CURRENT_VERSION = '2.9.7';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,21 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.7',
+                'date' => '2026-10-30',
+                'title' => 'Input Icon/Prefix Padding Fix & Live Eligible/Excluded Role Counts in Royalty Settings',
+                'type' => 'micro',
+                'badge' => 'Fix',
+                'badge_color' => 'info',
+                'description' => 'Resolved global CSS input padding override causing search icons and Rs. currency symbols to overlap with input values/placeholders, and added live Eligible and Excluded role counts across all KPI cards, matrix headers, and status filter tabs.',
+                'highlights' => [
+                    'Global Input Padding Specificity Fix: Updated theme.css standalone input rules so custom left/right padding utilities (pl-*, pr-*, px-*) are preserved instead of being overwritten by !important.',
+                    'Sidebar Search & Designation Search Icon Spacing: Eliminated overlap between the magnifying glass search icon and placeholder text in the sidebar menu search bar, designation filter bar, and balance overview search bar.',
+                    'Currency Prefix (Rs.) Alignment & Z-Index: Elevated the Rs. prefix badge with z-10 and applied dedicated left input padding so numeric penalty values never collide with or hide the Rs. symbol.',
+                    'Live Eligible & Excluded Role Counts: Added real-time Eligible and Excluded role counts across the Status Filter tabs (All / Eligible / Excluded), the Executive KPI strip, the Designation Eligibility Matrix header badges, and the table footer.',
+                ],
+            ],
             [
                 'version' => '2.9.6',
                 'date' => '2026-10-29',

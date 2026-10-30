@@ -16,7 +16,7 @@
                     <h1 class="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2.5">
                         <span>Royalty Bonus Configuration</span>
                         <span class="text-[11px] font-mono font-medium px-2 py-0.5 rounded-md bg-gray-800 border border-gray-700 text-gray-300">
-                            v2.9.6
+                            v{{ \App\Services\ChangelogService::getCurrentVersion() }}
                         </span>
                     </h1>
                     <p class="text-xs text-gray-400 max-w-2xl leading-relaxed">
@@ -56,8 +56,8 @@
                 </div>
             </div>
 
-            {{-- 4 Executive KPI Stat Pills --}}
-            <div class="mt-5 pt-4 border-t border-gray-800/80 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+            {{-- 5 Executive KPI Stat Pills --}}
+            <div class="mt-5 pt-4 border-t border-gray-800/80 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
                 {{-- Stat 1: Total Roles --}}
                 <div class="flex items-center gap-3 p-2.5 sm:p-3 rounded-xl bg-gray-800/40 border border-gray-800/80">
                     <div class="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
@@ -69,7 +69,7 @@
                     </div>
                 </div>
 
-                {{-- Stat 2: Participating Roles --}}
+                {{-- Stat 2: Participating (Eligible) Roles --}}
                 <div class="flex items-center gap-3 p-2.5 sm:p-3 rounded-xl bg-gray-800/40 border border-gray-800/80">
                     <div class="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
                         <x-heroicon-m-check-badge class="w-4 h-4" />
@@ -85,7 +85,23 @@
                     </div>
                 </div>
 
-                {{-- Stat 3: Monthly Pool Cap --}}
+                {{-- Stat 3: Excluded Roles --}}
+                <div class="flex items-center gap-3 p-2.5 sm:p-3 rounded-xl bg-gray-800/40 border border-gray-800/80">
+                    <div class="w-9 h-9 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
+                        <x-heroicon-m-no-symbol class="w-4 h-4" />
+                    </div>
+                    <div class="min-w-0">
+                        <div class="text-[10px] uppercase tracking-wider font-semibold text-gray-400 truncate">Excluded Roles</div>
+                        <div class="text-base sm:text-lg font-black text-rose-400 flex items-center gap-1.5 truncate">
+                            <span>{{ $this->excludedDesignationsCount }} Skipped</span>
+                            <span class="text-[10px] font-semibold px-1.5 py-0.2 rounded-full bg-rose-500/20 text-rose-300">
+                                {{ $this->excludedPercentage }}%
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Stat 4: Monthly Pool Cap --}}
                 <div class="flex items-center gap-3 p-2.5 sm:p-3 rounded-xl bg-gray-800/40 border border-gray-800/80">
                     <div class="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
                         <x-heroicon-m-banknotes class="w-4 h-4" />
@@ -98,7 +114,7 @@
                     </div>
                 </div>
 
-                {{-- Stat 4: Minimum Floor Baseline --}}
+                {{-- Stat 5: Minimum Floor Baseline --}}
                 <div class="flex items-center gap-3 p-2.5 sm:p-3 rounded-xl bg-gray-800/40 border border-gray-800/80">
                     <div class="w-9 h-9 rounded-lg {{ $royalty_enforce_min_floor ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400' : 'bg-gray-800 text-gray-500' }} border flex items-center justify-center shrink-0">
                         <x-heroicon-m-shield-check class="w-4 h-4" />
@@ -212,13 +228,14 @@
                                     </div>
                                     <div>
                                         <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">Penalty Amount</label>
-                                        <div class="relative">
-                                            <span class="pointer-events-none absolute inset-y-0 left-0 pl-2.5 flex items-center text-gray-500 text-[11px] font-mono">Rs.</span>
+                                        <div class="relative flex items-center">
+                                            <span class="pointer-events-none absolute inset-y-0 left-0 z-10 pl-3 flex items-center text-gray-500 dark:text-gray-400 text-[11px] font-mono font-semibold select-none">Rs.</span>
                                             <input
                                                 type="number"
                                                 step="50"
                                                 wire:model="royalty_absent_amount"
-                                                class="w-full text-xs pl-9 pr-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-mono focus:ring-2 focus:ring-primary-500 outline-none"
+                                                style="padding-left: 2.5rem !important;"
+                                                class="w-full text-xs !pl-10 pr-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-mono focus:ring-2 focus:ring-primary-500 outline-none"
                                             />
                                         </div>
                                     </div>
@@ -263,13 +280,14 @@
                                     </div>
                                     <div>
                                         <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">Penalty</label>
-                                        <div class="relative">
-                                            <span class="pointer-events-none absolute inset-y-0 left-0 pl-2.5 flex items-center text-gray-500 text-[10px] font-mono">Rs.</span>
+                                        <div class="relative flex items-center">
+                                            <span class="pointer-events-none absolute inset-y-0 left-0 z-10 pl-2.5 flex items-center text-gray-500 dark:text-gray-400 text-[11px] font-mono font-semibold select-none">Rs.</span>
                                             <input
                                                 type="number"
                                                 step="25"
                                                 wire:model="royalty_late_early_penalty"
-                                                class="w-full text-xs pl-8 pr-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-mono focus:ring-2 focus:ring-primary-500 outline-none"
+                                                style="padding-left: 2.35rem !important;"
+                                                class="w-full text-xs !pl-9 pr-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-mono focus:ring-2 focus:ring-primary-500 outline-none"
                                             />
                                         </div>
                                     </div>
@@ -314,13 +332,14 @@
                                     </div>
                                     <div>
                                         <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">Penalty</label>
-                                        <div class="relative">
-                                            <span class="pointer-events-none absolute inset-y-0 left-0 pl-2.5 flex items-center text-gray-500 text-[10px] font-mono">Rs.</span>
+                                        <div class="relative flex items-center">
+                                            <span class="pointer-events-none absolute inset-y-0 left-0 z-10 pl-2.5 flex items-center text-gray-500 dark:text-gray-400 text-[11px] font-mono font-semibold select-none">Rs.</span>
                                             <input
                                                 type="number"
                                                 step="25"
                                                 wire:model="royalty_missing_thumb_penalty"
-                                                class="w-full text-xs pl-8 pr-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-mono focus:ring-2 focus:ring-primary-500 outline-none"
+                                                style="padding-left: 2.35rem !important;"
+                                                class="w-full text-xs !pl-9 pr-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-mono focus:ring-2 focus:ring-primary-500 outline-none"
                                             />
                                         </div>
                                     </div>
@@ -400,10 +419,13 @@
                                     <x-heroicon-m-table-cells class="w-4 h-4" />
                                 </div>
                                 <div>
-                                    <h2 class="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <h2 class="text-sm font-bold text-gray-900 dark:text-white flex flex-wrap items-center gap-2">
                                         <span>Designation Eligibility Matrix</span>
-                                        <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-primary-100 text-primary-800 dark:bg-primary-950 dark:text-primary-300">
-                                            {{ $this->eligibleDesignationsCount }} / {{ $this->totalDesignationsCount }} Eligible
+                                        <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                            {{ $this->eligibleDesignationsCount }} Eligible
+                                        </span>
+                                        <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
+                                            {{ $this->excludedDesignationsCount }} Excluded
                                         </span>
                                     </h2>
                                     <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
@@ -439,7 +461,7 @@
                         <div class="p-3 sm:p-3.5 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5">
                             <div class="flex flex-wrap items-center gap-2 flex-1">
                                 {{-- Search Input with Centered Icon --}}
-                                <div class="relative w-full sm:w-56 md:w-60">
+                                <div class="relative flex items-center w-full sm:w-56 md:w-60">
                                     <div class="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-3 text-gray-400 dark:text-gray-500">
                                         <x-heroicon-m-magnifying-glass class="w-3.5 h-3.5 shrink-0" />
                                     </div>
@@ -447,7 +469,8 @@
                                         type="text"
                                         wire:model.live.debounce.250ms="searchDesignation"
                                         placeholder="Search designation title..."
-                                        class="w-full text-xs pl-9 pr-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none shadow-xs"
+                                        style="padding-left: 2.25rem !important;"
+                                        class="w-full text-xs !pl-9 pr-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none shadow-xs"
                                     />
                                 </div>
 
@@ -469,21 +492,21 @@
                                         wire:click="setRoyaltyFilter('all')"
                                         class="px-2.5 py-1 rounded-md font-medium transition {{ $royaltyFilter === 'all' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-xs font-bold' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300' }}"
                                     >
-                                        All ({{ $this->filteredDesignations->count() }})
+                                        All ({{ $this->scopedAllCount }})
                                     </button>
                                     <button
                                         type="button"
                                         wire:click="setRoyaltyFilter('eligible')"
                                         class="px-2.5 py-1 rounded-md font-medium transition {{ $royaltyFilter === 'eligible' ? 'bg-white dark:bg-gray-700 text-emerald-700 dark:text-emerald-400 shadow-xs font-bold' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300' }}"
                                     >
-                                        Eligible
+                                        Eligible ({{ $this->scopedEligibleCount }})
                                     </button>
                                     <button
                                         type="button"
                                         wire:click="setRoyaltyFilter('ineligible')"
                                         class="px-2.5 py-1 rounded-md font-medium transition {{ $royaltyFilter === 'ineligible' ? 'bg-white dark:bg-gray-700 text-rose-700 dark:text-rose-400 shadow-xs font-bold' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300' }}"
                                     >
-                                        Excluded
+                                        Excluded ({{ $this->scopedExcludedCount }})
                                     </button>
                                 </div>
                             </div>
@@ -565,7 +588,9 @@
                         <div class="p-3 bg-gray-50 dark:bg-gray-800/40 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-xs text-gray-500">
                             <span>Showing {{ $this->filteredDesignations->count() }} of {{ $this->totalDesignationsCount }} roles</span>
                             <div class="flex items-center gap-3">
-                                <span>Active Royalty Roles: <strong class="text-emerald-600 dark:text-emerald-400">{{ $this->eligibleDesignationsCount }}</strong></span>
+                                <span>Eligible: <strong class="text-emerald-600 dark:text-emerald-400">{{ $this->eligibleDesignationsCount }}</strong></span>
+                                <span class="text-gray-300 dark:text-gray-700">|</span>
+                                <span>Excluded: <strong class="text-rose-600 dark:text-rose-400">{{ $this->excludedDesignationsCount }}</strong></span>
                                 <span class="hidden sm:inline text-gray-300 dark:text-gray-700">|</span>
                                 <span class="hidden sm:inline">Pool Max: <strong class="text-amber-500 font-mono">Rs. {{ number_format($this->totalMonthlyMaxBudget, 2) }}</strong></span>
                             </div>

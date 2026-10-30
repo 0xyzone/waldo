@@ -545,9 +545,24 @@ textarea:not(.fi-input-wrp textarea) {
     background-color: #ffffff !important;
     color: var(--text-primary) !important;
     font-size: 0.8125rem !important;
-    padding: 0.55rem 0.875rem !important;
     box-shadow: var(--shadow-soft-xs) !important;
     transition: all var(--duration-fast) var(--ease-spring) !important;
+}
+
+input:not(.fi-input-wrp input):not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([class*="py-"]):not([class*="pt-"]):not([class*="pb-"]):not([class*="p-"]),
+textarea:not(.fi-input-wrp textarea):not([class*="py-"]):not([class*="pt-"]):not([class*="pb-"]):not([class*="p-"]) {
+    padding-top: 0.55rem !important;
+    padding-bottom: 0.55rem !important;
+}
+
+input:not(.fi-input-wrp input):not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([class*="pl-"]):not([class*="px-"]):not([class*="ps-"]):not([class*="p-"]),
+textarea:not(.fi-input-wrp textarea):not([class*="pl-"]):not([class*="px-"]):not([class*="ps-"]):not([class*="p-"]) {
+    padding-left: 0.875rem !important;
+}
+
+input:not(.fi-input-wrp input):not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([class*="pr-"]):not([class*="px-"]):not([class*="pe-"]):not([class*="p-"]),
+textarea:not(.fi-input-wrp textarea):not([class*="pr-"]):not([class*="px-"]):not([class*="pe-"]):not([class*="p-"]) {
+    padding-right: 0.875rem !important;
 }
 
 :is(.dark, :root.dark) input:not(.fi-input-wrp input):not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
