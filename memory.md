@@ -590,5 +590,17 @@
     - Added `getExcludedDesignationsCountProperty()`, `getExcludedPercentageProperty()`, `getScopedAllCountProperty()`, `getScopedEligibleCountProperty()`, and `getScopedExcludedCountProperty()`.
     - Displayed Eligible and Excluded counts in the Status Filter Tabs (`All (92)`, `Eligible (1)`, `Excluded (91)`), Top KPI Summary strip (added dedicated `Excluded Roles` card with percentage), Designation Eligibility Matrix header badges (`X Eligible`, `Y Excluded`), and table footer summary.
 
+### 50. Royalty Reports Schema Fix (`notes`, `total_payout`, `total_deductions`) & Generation Sync (v2.9.8)
+- **Problem & Requirements**:
+  - Creating a Royalty Bonus report threw `SQLSTATE[42S22]: Column not found: 1054 Unknown column 'notes' in 'field list'` because `RoyaltyReportForm` included `Textarea::make('notes')` and `ViewRoyaltyReport` / `RoyaltyReportsTable` referenced `total_payout` and `total_deductions`, which were missing from the `royalty_reports` table.
+- **Solution**:
+  - **Migration (`2026_10_30_111748_add_notes_and_totals_to_royalty_reports_table.php`)**:
+    - Added `notes` (`text`, nullable), `total_payout` (`decimal(14, 2)`), and `total_deductions` (`decimal(14, 2)`) to `royalty_reports`.
+  - **Model & Calculation Service (`RoyaltyReport.php`, `RoyaltyCalculationService.php`, `ViewRoyaltyReport.php`)**:
+    - Added `notes`, `total_payout`, and `total_deductions` to `RoyaltyReport::$fillable` and `casts()`.
+    - Updated `RoyaltyCalculationService::generate()` to persist `status = 'generated'`, `total_payout`, and `total_deductions` on the `RoyaltyReport` record after generating items.
+    - Updated `ViewRoyaltyReport::toggleExempt()` to call `recalculateItem()` so 12-month tenure balances and report totals remain in sync.
+
+
 
 

@@ -314,7 +314,7 @@
                     <td class="text-center">{{ $items->sum('missing_thumb_count') }}</td>
                     <td class="text-right">{{ number_format($items->sum('attendance_deduction_amount'), 0) }}</td>
                     <td class="text-center">-</td>
-                    <td class="text-right">{{ number_format($items->sum('perf_deduction_amount'), 0) }}</td>
+                    <td class="text-right">{{ number_format($items->sum('performance_deduction_amount'), 0) }}</td>
                     <td class="text-right" style="color: #b91c1c;">{{ number_format($items->sum('total_deduction_amount'), 0) }}</td>
                     <td class="text-right" style="color: #047857; font-size: 11.5px; font-weight: 800;">
                         Rs. {{ number_format($items->sum('final_payout'), 2) }}

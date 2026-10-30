@@ -16,9 +16,12 @@ class RoyaltyReport extends Model
         'month',
         'year',
         'cutoff_date',
+        'notes',
         'attendance_file_path',
         'performance_file_path',
         'status',
+        'total_payout',
+        'total_deductions',
         'validated_at',
         'validated_by',
         'created_by',
@@ -30,6 +33,8 @@ class RoyaltyReport extends Model
             'cutoff_date' => 'date',
             'validated_at' => 'datetime',
             'year' => 'integer',
+            'total_payout' => 'decimal:2',
+            'total_deductions' => 'decimal:2',
         ];
     }
 

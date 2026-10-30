@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.7';
+    public const CURRENT_VERSION = '2.9.8';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,21 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.8',
+                'date' => '2026-10-30',
+                'title' => 'Royalty Reports Schema Fix (Notes & Totals Columns) & Generation Status Sync',
+                'type' => 'micro',
+                'badge' => 'Fix',
+                'badge_color' => 'danger',
+                'description' => 'Resolved SQLSTATE[42S22] Unknown column notes in royalty_reports during report creation by adding the notes, total_payout, and total_deductions columns to the royalty_reports table and automatically syncing totals upon report generation.',
+                'highlights' => [
+                    'Royalty Reports Schema Migration: Added notes, total_payout, and total_deductions columns to the royalty_reports table via migration 2026_10_30_111748_add_notes_and_totals_to_royalty_reports_table.',
+                    'Model Fillable & Casts: Added notes, total_payout, and total_deductions to RoyaltyReport fillable and casts.',
+                    'Automatic Totals & Status Sync: Updated RoyaltyCalculationService::generate() to persist status as generated along with total_payout and total_deductions on the report record.',
+                    'Exemption Toggle Tenure Recalculation: Updated ViewRoyaltyReport::toggleExempt() to invoke recalculateItem() so 12-month tenure balances stay synchronized.',
+                ],
+            ],
             [
                 'version' => '2.9.7',
                 'date' => '2026-10-30',

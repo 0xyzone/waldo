@@ -4,6 +4,15 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.8] - 2026-10-30
+
+### Fixed
+- **Royalty Reports Schema Fix (`notes`, `total_payout`, `total_deductions`) & Generation Sync**:
+  - **Database Migration (`add_notes_and_totals_to_royalty_reports_table.php`)**: Added `notes` (`text()->nullable()`), `total_payout` (`decimal(14, 2)`), and `total_deductions` (`decimal(14, 2)`) columns to `royalty_reports`, resolving `SQLSTATE[42S22]: Unknown column 'notes' in 'field list'` when creating or updating a Royalty Bonus report.
+  - **Model & Calculation Sync (`RoyaltyReport.php`, `RoyaltyCalculationService.php`, `ViewRoyaltyReport.php`)**: Added `notes`, `total_payout`, and `total_deductions` to `RoyaltyReport::$fillable`, updated `RoyaltyCalculationService::generate()` to persist `status = 'generated'` and aggregate payout/deduction totals on the parent report, and updated `ViewRoyaltyReport::toggleExempt()` to recalculate 12-month tenure balances via `recalculateItem()`.
+
+---
+
 ## [2.9.7] - 2026-10-30
 
 ### Fixed & Enhanced

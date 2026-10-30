@@ -187,6 +187,12 @@ class RoyaltyCalculationService
                     'remarks' => $itemRemarks,
                 ]);
             }
+
+            $report->update([
+                'status' => $report->status === 'validated' ? 'validated' : 'generated',
+                'total_payout' => (float) $report->items()->sum('final_payout'),
+                'total_deductions' => (float) $report->items()->sum('total_deduction_amount'),
+            ]);
         });
     }
 

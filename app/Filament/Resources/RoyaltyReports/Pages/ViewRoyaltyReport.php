@@ -109,30 +109,13 @@ class ViewRoyaltyReport extends ViewRecord implements HasTable
         }
 
         $newExempt = ! $item->is_exempt;
-        $settings = app(RoyaltyCalculationService::class)->getSettings();
+        $item->update(['is_exempt' => $newExempt]);
 
-        $calc = app(RoyaltyCalculationService::class)->computePayout(
-            (float) $item->monthly_max_payout,
-            (float) $item->monthly_min_payout,
-            $newExempt,
-            (float) $item->performance_deduction_percent,
-            (float) $item->absent_days,
-            (int) $item->late_early_count,
-            (int) $item->missing_thumb_count,
-            $settings
-        );
-
-        $item->update([
-            'is_exempt' => $newExempt,
-            'performance_deduction_amount' => $calc['perf_deduction_amount'],
-            'attendance_deduction_amount' => $calc['attendance_deduction_amount'],
-            'total_deduction_amount' => $calc['total_deduction_amount'],
-            'final_payout' => $calc['final_payout'],
-        ]);
+        app(RoyaltyCalculationService::class)->recalculateItem($item);
 
         $this->record->update([
-            'total_payout' => $this->record->items()->sum('final_payout'),
-            'total_deductions' => $this->record->items()->sum('total_deduction_amount'),
+            'total_payout' => (float) $this->record->items()->sum('final_payout'),
+            'total_deductions' => (float) $this->record->items()->sum('total_deduction_amount'),
         ]);
 
         $statusText = $newExempt ? 'marked as EXEMPT (received max payout)' : 'unmarked from exempt (deductions reapplied)';
