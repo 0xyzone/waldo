@@ -643,6 +643,13 @@
   - **Employee Resource (`Employee.php`, `EmployeeForm.php`, `EmployeesTable.php`, `EmployeeExportService.php`)**: Added `royalty_status` to `$fillable`, `EmployeeForm` (`Royalty Status` select with `Release`/`Hold`), `EmployeesTable` (`Royalty` badge + `Release Royalty` / `Hold Royalty` bulk actions), and `EmployeeExportService`.
   - **Royalty Calculation & Report Toggle (`RoyaltyCalculationService.php`, `ViewRoyaltyReport.php`)**: Removed `tips_status` and `employee_status` checks from `RoyaltyCalculationService::generate()`. New report items derive their initial `payout_status` solely from `$employee->royalty_status`, existing report item statuses are preserved across recalculations, and `ViewRoyaltyReport::togglePayoutStatus()` syncs the toggled `Release`/`Hold` state back to the employee's `royalty_status`.
 
+### 56. Selected Employee Profile Summary Card in Employee Suspension Form (v2.9.14)
+- **Problem & Requirements**:
+  - User requested a brief summary of the selected employee's information to be displayed when selecting an employee on the Employee Suspension create and edit pages/modals.
+- **Solution**:
+  - Updated `EmployeeSuspensionForm::configure()` (`app/Filament/Resources/EmployeeSuspensions/Schemas/EmployeeSuspensionForm.php`) to include a reactive `Selected Employee Profile` section (`visible` when `employee_id` is filled) displaying **Employee Code**, **Full Name**, **Department**, **Designation**, **Employee Status**, **Tips Status**, **Join Date**, and **Contact Number**, and made the `employee_id` `Select` field `->live()`.
+
+
 
 
 

@@ -4,6 +4,15 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.14] - 2026-10-30
+
+### Enhanced
+- **Selected Employee Profile Summary Card in Employee Suspension Form (`app/Filament/Resources/EmployeeSuspensions/Schemas/EmployeeSuspensionForm.php`)**:
+  - Added a reactive **Selected Employee Profile** card above the suspension details form that displays a brief overview of the selected employee (**Employee Code**, **Full Name**, **Department**, **Designation**, **Employee Status**, **Tips Status**, **Join Date**, and **Contact Number**) in both create and edit views/modals.
+  - Enabled `->live()` on the `employee_id` selector and added department context (`CODE | Name [Department]`) to the dropdown option labels.
+
+---
+
 ## [2.9.13] - 2026-10-30
 
 ### Fixed & Enhanced

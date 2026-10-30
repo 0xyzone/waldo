@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.13';
+    public const CURRENT_VERSION = '2.9.14';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,19 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.14',
+                'date' => '2026-10-30',
+                'title' => 'Selected Employee Profile Summary Card in Employee Suspension Form',
+                'type' => 'micro',
+                'badge' => 'Enhancement',
+                'badge_color' => 'info',
+                'description' => 'Added a reactive Selected Employee Profile summary card to the Employee Suspension create and edit forms showing key employee details upon selecting an employee.',
+                'highlights' => [
+                    'Reactive Employee Profile Preview: Added a Selected Employee Profile section in EmployeeSuspensionForm that displays Employee Code, Full Name, Department, Designation, Employee Status, Tips Status, Join Date, and Contact Number when an employee is selected.',
+                    'Live Employee Selector: Enabled ->live() and department context in the Employee selector option labels across Employee Suspension create and edit forms.',
+                ],
+            ],
             [
                 'version' => '2.9.13',
                 'date' => '2026-10-30',
