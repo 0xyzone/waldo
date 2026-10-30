@@ -611,6 +611,14 @@
   - **UI & Tooltips (`manage-royalty-bonus-settings.blade.php`, `ViewRoyaltyReport.php`)**:
     - Updated description and column tooltip to document `Missing Thumb − Absent Days`.
 
+### 52. Royalty Print Sheet Last-Page-Only Totals Row (v2.9.10)
+- **Problem & Requirements**:
+  - In `resources/views/royalty/print.blade.php`, the `TOTAL` summary row was wrapped in `<tfoot>`, causing browsers (`display: table-footer-group`) to repeat the totals row at the bottom of every printed page.
+  - User requested that the totals row appear only on the last page.
+- **Solution**:
+  - Moved the `TOTAL` summary `<tr>` inside the end of `<tbody>` and added `table.sheet-table tfoot { display: table-row-group !important; }` inside `@media print` so the totals row renders only once at the very end of the table on the final page.
+
+
 
 
 

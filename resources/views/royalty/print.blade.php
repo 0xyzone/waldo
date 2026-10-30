@@ -182,6 +182,9 @@
             table.sheet-table tr {
                 page-break-inside: avoid;
             }
+            table.sheet-table tfoot {
+                display: table-row-group !important;
+            }
         }
     </style>
 </head>
@@ -303,10 +306,8 @@
                     </td>
                 </tr>
             @endforelse
-        </tbody>
-        @if(count($items) > 0)
-            <tfoot>
-                <tr style="background: #f8fafc; font-weight: bold;">
+            @if(count($items) > 0)
+                <tr style="background: #f8fafc; font-weight: bold; page-break-inside: avoid;">
                     <td colspan="5" style="text-align: right; padding-right: 8px;">TOTAL ({{ count($items) }} Staff):</td>
                     <td class="text-right">{{ number_format($items->sum('monthly_max_payout'), 0) }}</td>
                     <td class="text-center">{{ $items->sum('absent_days') + 0 }}</td>
@@ -321,8 +322,8 @@
                     </td>
                     <td></td>
                 </tr>
-            </tfoot>
-        @endif
+            @endif
+        </tbody>
     </table>
 
     <div class="footer-signatures">

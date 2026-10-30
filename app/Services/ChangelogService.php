@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.9';
+    public const CURRENT_VERSION = '2.9.10';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,18 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.10',
+                'date' => '2026-10-30',
+                'title' => 'Royalty Print Sheet Last-Page-Only Totals Row',
+                'type' => 'micro',
+                'badge' => 'Fix',
+                'badge_color' => 'info',
+                'description' => 'Updated the Royalty Bonus print payout sheet so the grand totals summary row renders only once at the end of the table on the final printed page instead of repeating across every page.',
+                'highlights' => [
+                    'Last-Page Totals Row: Moved the TOTAL summary row out of repeating <tfoot> into the end of <tbody> and set tfoot print display to table-row-group so browsers never duplicate the totals row on intermediate pages.',
+                ],
+            ],
             [
                 'version' => '2.9.9',
                 'date' => '2026-10-30',

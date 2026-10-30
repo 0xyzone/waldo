@@ -4,6 +4,14 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.10] - 2026-10-30
+
+### Fixed
+- **Royalty Print Sheet Last-Page-Only Totals Row (`resources/views/royalty/print.blade.php`)**:
+  - Moved the `TOTAL` summary row into the end of `<tbody>` (instead of `<tfoot>`, which browsers repeat as `table-footer-group` on every printed page) and added `display: table-row-group !important` in `@media print`, ensuring the totals row appears only on the final printed page.
+
+---
+
 ## [2.9.9] - 2026-10-30
 
 ### Fixed & Enhanced
