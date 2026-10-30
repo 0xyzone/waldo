@@ -267,6 +267,7 @@ class ViewRoyaltyReport extends ViewRecord implements HasTable
                     ->label('Thumb')
                     ->formatStateUsing(fn ($state) => $state + 0)
                     ->color(fn ($state) => $state > 0 ? 'warning' : 'gray')
+                    ->tooltip('Net Missing Thumb Count (Raw Missing Punch − Absent Days)')
                     ->sortable(),
 
                 TextColumn::make('attendance_deduction_amount')

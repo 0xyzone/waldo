@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.8';
+    public const CURRENT_VERSION = '2.9.9';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,20 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.9',
+                'date' => '2026-10-30',
+                'title' => 'Net Missing Thumb Count Formula (Missing Thumb Minus Absent Days)',
+                'type' => 'micro',
+                'badge' => 'Fix',
+                'badge_color' => 'success',
+                'description' => 'Updated the Royalty Bonus attendance parser so Missing Thumb Count subtracts Absent Days (Missing Thumb = max(0, Raw Missing Punch - Absent Days)), preventing absent days from being double-counted as missing biometric punches.',
+                'highlights' => [
+                    'Net Missing Thumb Formula: Updated RoyaltyCalculationService::parseAttendanceFile() to compute missing_thumb_count as max(0, round(missingPunchIn - absentDays)).',
+                    'Eliminated Double Deduction on Absent Days: Prevents HRMS absent days (which automatically register as missing punches in raw biometric exports) from inflating the employee\'s Missing Thumb Count.',
+                    'UI & Tooltip Clarity: Added formula notes in Royalty Bonus Settings and the View Royalty Report Thumb column tooltip.',
+                ],
+            ],
             [
                 'version' => '2.9.8',
                 'date' => '2026-10-30',

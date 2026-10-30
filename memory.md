@@ -601,6 +601,17 @@
     - Updated `RoyaltyCalculationService::generate()` to persist `status = 'generated'`, `total_payout`, and `total_deductions` on the `RoyaltyReport` record after generating items.
     - Updated `ViewRoyaltyReport::toggleExempt()` to call `recalculateItem()` so 12-month tenure balances and report totals remain in sync.
 
+### 51. Net Missing Thumb Count Formula (`Missing Thumb − Absent Days`) (v2.9.9)
+- **Problem & Requirements**:
+  - In HRMS attendance exports, absent days are also counted inside the raw `Missing Punch In Count` column, causing employees who were absent to have those absent days counted again under `Missing Thumb Count`.
+  - User requested that `missing_thumb_count` be calculated as `missing_thumb_count - absent_count`.
+- **Solution**:
+  - **Attendance File Parser (`RoyaltyCalculationService::parseAttendanceFile()`)**:
+    - Computed `$netMissingThumbCount = max(0, (int) round($missingPunchIn - $cleanAbsentDays))` so absent days are subtracted from raw missing punch counts before applying the Missing Thumb grace threshold and penalty.
+  - **UI & Tooltips (`manage-royalty-bonus-settings.blade.php`, `ViewRoyaltyReport.php`)**:
+    - Updated description and column tooltip to document `Missing Thumb − Absent Days`.
+
+
 
 
 

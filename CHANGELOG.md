@@ -4,6 +4,15 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.9] - 2026-10-30
+
+### Fixed & Enhanced
+- **Net Missing Thumb Count Formula (`Missing Thumb − Absent Days`)**:
+  - **Attendance Parser Update (`RoyaltyCalculationService.php`)**: Updated `parseAttendanceFile()` so `missing_thumb_count` is calculated as `max(0, (int) round($missingPunchIn - $cleanAbsentDays))`, subtracting absent days from the raw HRMS missing punch count since absent days are already included in raw missing punch totals.
+  - **UI & Tooltip Clarification (`manage-royalty-bonus-settings.blade.php`, `ViewRoyaltyReport.php`)**: Updated the Missing Thumb Punches policy card description and report table tooltip to reflect `Net Missing Thumb Count = Raw Missing Punch − Absent Days`.
+
+---
+
 ## [2.9.8] - 2026-10-30
 
 ### Fixed

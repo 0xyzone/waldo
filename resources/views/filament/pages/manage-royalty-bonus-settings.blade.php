@@ -303,7 +303,7 @@
                                         </div>
                                         <div>
                                             <h3 class="text-xs font-bold text-gray-900 dark:text-white">Missing Thumb Punches</h3>
-                                            <p class="text-[11px] text-gray-500">Unpunched biometric attendance logs</p>
+                                            <p class="text-[11px] text-gray-500">Net unpunched logs (Missing Thumb &minus; Absent Days)</p>
                                         </div>
                                     </div>
                                     <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300">

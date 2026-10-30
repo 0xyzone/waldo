@@ -589,11 +589,15 @@ class RoyaltyCalculationService
                 ? (int) $cells[$missingPunchInCol]
                 : 0;
 
+            $cleanAbsentDays = max(0.0, $absentDays);
+            // Subtract absent days from raw missing punch count since absent days are also counted as missing punches in HRMS
+            $netMissingThumbCount = max(0, (int) round($missingPunchIn - $cleanAbsentDays));
+
             $code = strtoupper(trim($username));
             $results[$code] = [
-                'absent_days' => max(0.0, $absentDays),
+                'absent_days' => $cleanAbsentDays,
                 'late_early_count' => max(0, $lateIn + $earlyOut),
-                'missing_thumb_count' => max(0, $missingPunchIn),
+                'missing_thumb_count' => $netMissingThumbCount,
             ];
         }
 
