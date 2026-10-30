@@ -4,6 +4,17 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.17] - 2026-10-30
+
+### Fixed & Enhanced
+- **Print Sheet Margin Safety, Center Alignment & Removal of Signature Column (`resources/views/royalty/print.blade.php`)**:
+  - **Printer Margin Safety**: Adjusted `@page` margins to `12mm 10mm` so physical printer hardware margins do not cut off table borders or outer text edges.
+  - **Removed Signature Column**: Removed the signature column completely across the table header, rows, and footer totals, allocating full width to employee and financial details.
+  - **Center-Aligned Financial & Deduction Columns**: Centered values across **Max Payout**, **Attn Ded.**, **Susp. Ded.**, **Perf Ded.**, **Total Ded.**, and **Net Payout** (both in row items and footer totals).
+  - **Increased Text Size**: Bumped table cell font size to `10.5px` (from `9.5px`), headers to `10px`, and meta details for significantly sharper and easier-to-read printouts.
+
+---
+
 ## [2.9.16] - 2026-10-30
 
 ### Fixed

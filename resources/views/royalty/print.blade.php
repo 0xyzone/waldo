@@ -12,16 +12,16 @@
 
         @page {
             size: A4 landscape;
-            margin: 6mm 6mm;
+            margin: 12mm 10mm;
         }
 
         body {
             font-family: Arial, Helvetica, sans-serif;
-            font-size: 10px;
+            font-size: 11px;
             color: #000;
             background: #fff;
             margin: 0;
-            padding: 8px;
+            padding: 10px;
             width: 100%;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
@@ -29,13 +29,13 @@
 
         .header-container {
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             border-bottom: 2px solid #000;
-            padding-bottom: 6px;
+            padding-bottom: 8px;
         }
 
         .header-title {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -43,15 +43,15 @@
         }
 
         .header-subtitle {
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
             color: #111;
-            margin: 0 0 5px 0;
+            margin: 0 0 6px 0;
         }
 
         .header-meta-box {
             margin-top: 8px;
-            padding: 6px 12px;
+            padding: 8px 14px;
             background-color: #fafafa;
             border: 1px solid #000;
             border-radius: 4px;
@@ -62,7 +62,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 2px 0;
-            font-size: 11px;
+            font-size: 12px;
         }
 
         .meta-col {
@@ -86,7 +86,7 @@
         }
 
         .font-payout {
-            font-size: 12px;
+            font-size: 13px;
             color: #047857;
             font-weight: 800;
         }
@@ -104,23 +104,23 @@
         table.sheet-table th,
         table.sheet-table td {
             border: 1px solid #000 !important;
-            padding: 3px 3px;
+            padding: 5px 4px;
             text-align: left;
             vertical-align: middle;
             word-wrap: break-word;
             overflow-wrap: break-word;
             word-break: break-word;
-            font-size: 9.5px;
-            line-height: 1.2;
+            font-size: 10.5px;
+            line-height: 1.25;
         }
 
         table.sheet-table th {
             background-color: #f1f5f9 !important;
             font-weight: bold;
-            font-size: 9px;
+            font-size: 10px;
             text-align: center;
             text-transform: uppercase;
-            padding: 4px 2px;
+            padding: 6px 3px;
             border: 1px solid #000 !important;
         }
 
@@ -130,35 +130,6 @@
 
         table.sheet-table td.text-right {
             text-align: right;
-        }
-
-        .sig-box {
-            width: 100%;
-            min-height: 22px;
-            display: block;
-        }
-
-        .footer-signatures {
-            margin-top: 30px;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 30px;
-        }
-
-        .sig-line-block {
-            text-align: center;
-            width: 180px;
-        }
-
-        .sig-line {
-            border-top: 1px solid #000;
-            margin-bottom: 5px;
-        }
-
-        .sig-title {
-            font-size: 11px;
-            font-weight: 600;
-            color: #333;
         }
 
         .print-footer {
@@ -174,7 +145,7 @@
         @media print {
             @page {
                 size: A4 landscape;
-                margin: 6mm 6mm;
+                margin: 12mm 10mm;
             }
             html, body {
                 margin: 0 !important;
@@ -257,22 +228,21 @@
     <table class="sheet-table">
         <thead>
             <tr>
-                <th style="width: 2.5%;">#</th>
-                <th style="width: 6.5%;">Code</th>
-                <th style="width: 14%;">Employee Name</th>
-                <th style="width: 9.5%;">Department</th>
-                <th style="width: 10.5%;">Designation</th>
-                <th style="width: 7.5%;">Max Payout</th>
+                <th style="width: 3%;">#</th>
+                <th style="width: 7%;">Code</th>
+                <th style="width: 16%;">Employee Name</th>
+                <th style="width: 10%;">Department</th>
+                <th style="width: 11%;">Designation</th>
+                <th style="width: 8.5%;">Max Payout</th>
                 <th style="width: 4%;">Absent</th>
                 <th style="width: 4.5%;">Late/Early</th>
                 <th style="width: 4%;">Thumb</th>
-                <th style="width: 5.5%;">Attn Ded.</th>
-                <th style="width: 5.5%;">Susp. Ded.</th>
+                <th style="width: 6.5%;">Attn Ded.</th>
+                <th style="width: 6.5%;">Susp. Ded.</th>
                 <th style="width: 4.5%;">Perf %</th>
-                <th style="width: 5.5%;">Perf Ded.</th>
-                <th style="width: 5.5%;">Total Ded.</th>
-                <th style="width: 7.5%;">Net Payout</th>
-                <th style="width: 9%;">Signature</th>
+                <th style="width: 6.5%;">Perf Ded.</th>
+                <th style="width: 6.5%;">Total Ded.</th>
+                <th style="width: 8.5%;">Net Payout</th>
             </tr>
         </thead>
         <tbody>
@@ -283,12 +253,12 @@
                     <td style="font-weight: 600;">
                         {{ $item->employee_name }}
                         @if($item->is_exempt)
-                            <span style="display: inline-block; font-size: 8.5px; background: #e0f2fe; color: #0369a1; padding: 0 4px; border-radius: 2px; margin-left: 2px;">EXEMPT</span>
+                            <span style="display: inline-block; font-size: 9px; background: #e0f2fe; color: #0369a1; padding: 0 4px; border-radius: 2px; margin-left: 2px;">EXEMPT</span>
                         @endif
                     </td>
                     <td>{{ $item->department ?? '-' }}</td>
                     <td>{{ $item->designation ?? '-' }}</td>
-                    <td class="text-right">{{ number_format($item->monthly_max_payout, 0) }}</td>
+                    <td class="text-center">{{ number_format($item->monthly_max_payout, 0) }}</td>
                     <td class="text-center" style="{{ $item->absent_days > 0 ? 'color: #dc2626; font-weight: bold;' : '' }}">
                         {{ $item->absent_days + 0 }}
                     </td>
@@ -298,32 +268,23 @@
                     <td class="text-center" style="{{ $item->missing_thumb_count > 0 ? 'color: #d97706;' : '' }}">
                         {{ $item->missing_thumb_count }}
                     </td>
-                    <td class="text-right">{{ number_format($item->attendance_deduction_amount, 0) }}</td>
-                    <td class="text-right" style="{{ ($item->suspension_deduction_amount ?? 0) > 0 ? 'color: #dc2626; font-weight: bold;' : '' }}">
+                    <td class="text-center">{{ number_format($item->attendance_deduction_amount, 0) }}</td>
+                    <td class="text-center" style="{{ ($item->suspension_deduction_amount ?? 0) > 0 ? 'color: #dc2626; font-weight: bold;' : '' }}">
                         {{ number_format($item->suspension_deduction_amount ?? 0, 0) }}
                     </td>
                     <td class="text-center">{{ $item->performance_deduction_percent > 0 ? ($item->performance_deduction_percent + 0) . '%' : '-' }}</td>
-                    <td class="text-right">{{ number_format($item->performance_deduction_amount, 0) }}</td>
-                    <td class="text-right" style="color: #b91c1c;">{{ number_format($item->total_deduction_amount, 0) }}</td>
-                    <td class="text-right" style="font-weight: bold; color: {{ $item->payout_status === 'Hold' ? '#b45309' : '#047857' }}; font-size: 11px;">
+                    <td class="text-center">{{ number_format($item->performance_deduction_amount, 0) }}</td>
+                    <td class="text-center" style="color: #b91c1c; font-weight: 600;">{{ number_format($item->total_deduction_amount, 0) }}</td>
+                    <td class="text-center" style="font-weight: bold; color: {{ $item->payout_status === 'Hold' ? '#b45309' : '#047857' }}; font-size: 11px;">
                         {{ number_format($item->final_payout, 2) }}
                         @if($item->payout_status === 'Hold')
                             <div style="font-size: 8.5px; color: #b91c1c; font-weight: bold; text-transform: uppercase;">[HELD]</div>
                         @endif
                     </td>
-                    <td>
-                        @if($item->payout_status === 'Hold')
-                            <div style="text-align: center; color: #991b1b; font-weight: bold; font-size: 9px; background: #fee2e2; border: 1px dashed #f87171; border-radius: 2px; padding: 2px 4px;">
-                                HELD FOR MERIT
-                            </div>
-                        @else
-                            <span class="sig-box"></span>
-                        @endif
-                    </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="16" class="text-center" style="padding: 20px; color: #64748b;">
+                    <td colspan="15" class="text-center" style="padding: 20px; color: #64748b;">
                         No staff items found for this selection.
                     </td>
                 </tr>
@@ -331,19 +292,18 @@
             @if(count($items) > 0)
                 <tr style="background: #f8fafc; font-weight: bold; page-break-inside: avoid;">
                     <td colspan="5" style="text-align: right; padding-right: 8px;">TOTAL ({{ count($items) }} Staff):</td>
-                    <td class="text-right">{{ number_format($items->sum('monthly_max_payout'), 0) }}</td>
+                    <td class="text-center">{{ number_format($items->sum('monthly_max_payout'), 0) }}</td>
                     <td class="text-center">{{ $items->sum('absent_days') + 0 }}</td>
                     <td class="text-center">{{ $items->sum('late_early_count') }}</td>
                     <td class="text-center">{{ $items->sum('missing_thumb_count') }}</td>
-                    <td class="text-right">{{ number_format($items->sum('attendance_deduction_amount'), 0) }}</td>
-                    <td class="text-right">{{ number_format($items->sum('suspension_deduction_amount'), 0) }}</td>
+                    <td class="text-center">{{ number_format($items->sum('attendance_deduction_amount'), 0) }}</td>
+                    <td class="text-center">{{ number_format($items->sum('suspension_deduction_amount'), 0) }}</td>
                     <td class="text-center">-</td>
-                    <td class="text-right">{{ number_format($items->sum('performance_deduction_amount'), 0) }}</td>
-                    <td class="text-right" style="color: #b91c1c;">{{ number_format($items->sum('total_deduction_amount'), 0) }}</td>
-                    <td class="text-right" style="color: #047857; font-size: 11.5px; font-weight: 800;">
+                    <td class="text-center">{{ number_format($items->sum('performance_deduction_amount'), 0) }}</td>
+                    <td class="text-center" style="color: #b91c1c;">{{ number_format($items->sum('total_deduction_amount'), 0) }}</td>
+                    <td class="text-center" style="color: #047857; font-size: 11.5px; font-weight: 800;">
                         Rs. {{ number_format($items->sum('final_payout'), 2) }}
                     </td>
-                    <td></td>
                 </tr>
             @endif
         </tbody>

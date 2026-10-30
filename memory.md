@@ -667,6 +667,17 @@
     - Enforced explicit solid black borders (`border: 1px solid #000 !important; border-collapse: collapse !important;`) on table elements.
     - Tuned column width percentages so all 16 columns sum to 100% and fit cleanly with compact 9.5px font and 3px padding.
 
+### 59. Print Sheet Margin Safety, Center Alignment & Removal of Signature Column (v2.9.17)
+- **Problem & Requirements**:
+  - Edge cut-off on physical paper prints due to tight margins, text was too small, financial deduction columns were right-aligned instead of centered, and signature column was not needed.
+- **Solution**:
+  - In `resources/views/royalty/print.blade.php`:
+    - Adjusted `@page` margins to `12mm 10mm` so hardware printer non-printable margins never clip table borders.
+    - Removed the Signature column completely across table headers, rows, and totals.
+    - Center-aligned `Max Payout`, `Attn Ded.`, `Susp. Ded.`, `Perf Ded.`, `Total Ded.`, and `Net Payout`.
+    - Increased text sizing to 10.5px (and 12px for meta/header info) with 5px vertical padding for sharper readability.
+
+
 
 
 

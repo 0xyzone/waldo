@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.16';
+    public const CURRENT_VERSION = '2.9.17';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,21 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.17',
+                'date' => '2026-10-30',
+                'title' => 'Print Sheet Margin Safety, Center Alignment & Removal of Signature Column',
+                'type' => 'micro',
+                'badge' => 'Fix & Enhancement',
+                'badge_color' => 'success',
+                'description' => 'Updated the Royalty Bonus print sheet with safe printable margins, increased font size, center-aligned numeric/deduction columns, and removed the unused signature column.',
+                'highlights' => [
+                    'Hardware Printable Margins: Updated @page margin to 12mm 10mm (portrait/landscape safe border margin) to prevent physical printers from clipping outer edges.',
+                    'Removed Signature Column: Removed the signature column completely, freeing up table space for remaining data columns.',
+                    'Center-Aligned Deduction Columns: Center-aligned Max Payout, Attn Ded., Susp. Ded., Perf Ded., Total Ded., and Net Payout.',
+                    'Larger Text & Enhanced Readability: Increased table font size to 10.5px and header/meta typography for clearer, sharper paper printouts.',
+                ],
+            ],
             [
                 'version' => '2.9.16',
                 'date' => '2026-10-30',
