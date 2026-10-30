@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.18';
+    public const CURRENT_VERSION = '2.9.19';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,18 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.19',
+                'date' => '2026-10-30',
+                'title' => 'Fix Employee Royalty Releases Relationship Method Call',
+                'type' => 'micro',
+                'badge' => 'Bug Fix',
+                'badge_color' => 'success',
+                'description' => 'Added royaltyReleases() relation alias to Employee model matching the existing royaltyHeldReleases() HasMany definition to prevent BadMethodCallException during held balances print rendering.',
+                'highlights' => [
+                    'Employee Model Relation: Added royaltyReleases() HasMany relationship on Employee pointing to RoyaltyHeldRelease, resolving 500 error when printing held balances directory.',
+                ],
+            ],
             [
                 'version' => '2.9.18',
                 'date' => '2026-10-30',

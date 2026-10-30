@@ -4,6 +4,14 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.19] - 2026-10-30
+
+### Fixed
+- **Employee Model Royalty Releases Relationship (`app/Models/Employee.php`)**:
+  - Added `royaltyReleases()` `HasMany` relation method on the `Employee` model as a direct alias for `royaltyHeldReleases()`, fixing the `BadMethodCallException: Call to undefined method App\Models\Employee::royaltyReleases()` encountered when generating the Held Balances print sheet.
+
+---
+
 ## [2.9.18] - 2026-10-30
 
 ### Added & Fixed

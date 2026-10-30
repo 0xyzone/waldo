@@ -309,4 +309,12 @@ class Employee extends Model
     {
         return $this->hasMany(RoyaltyHeldRelease::class, 'employee_code', 'employee_code');
     }
+
+    /**
+     * Alias for royaltyHeldReleases.
+     */
+    public function royaltyReleases(): HasMany
+    {
+        return $this->hasMany(RoyaltyHeldRelease::class, 'employee_code', 'employee_code');
+    }
 }
