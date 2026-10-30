@@ -4,6 +4,15 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.11] - 2026-10-30
+
+### Added & Enhanced
+- **Inline Designation Annual Budget Editor in Royalty Bonus Settings (`ManageRoyaltyBonusSettings.php`, `manage-royalty-bonus-settings.blade.php`)**:
+  - Replaced the static Annual Budget column in the Designation Eligibility Matrix with an inline numeric input (`Rs.`) supporting instant save on `Enter`, `Tab`, or blur via `updateDesignationBudget(int $id, mixed $amount)`.
+  - Automatically recalculates and updates the designation's **Monthly Max** (`ceil((budget / 12) / 100) * 100`), **Monthly Min** (`Monthly Max / 2`), and the top **Monthly Max Pool** KPI in real time.
+
+---
+
 ## [2.9.10] - 2026-10-30
 
 ### Fixed

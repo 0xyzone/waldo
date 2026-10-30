@@ -377,6 +377,24 @@ class ManageRoyaltyBonusSettings extends Page
         }
     }
 
+    public function updateDesignationBudget(int $id, mixed $amount): void
+    {
+        $designation = Designation::find($id);
+        if (! $designation) {
+            return;
+        }
+
+        $cleanAmount = is_numeric($amount) ? max(0.0, (float) $amount) : 0.0;
+        $designation->royalty_annual_budget = $cleanAmount;
+        $designation->save();
+
+        Notification::make()
+            ->title('Annual Budget Updated')
+            ->body("{$designation->name}: Annual Rs. ".number_format($cleanAmount, 2).' → Monthly Max Rs. '.number_format((float) $designation->royalty_monthly_max, 2).' | Min Rs. '.number_format((float) $designation->royalty_monthly_min, 2))
+            ->success()
+            ->send();
+    }
+
     public function setDepartment(string $deptId): void
     {
         $this->selectedDepartment = $deptId;

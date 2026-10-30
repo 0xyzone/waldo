@@ -528,7 +528,7 @@
                                 </thead>
                                 <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                                     @forelse($this->filteredDesignations as $index => $desig)
-                                        <tr class="hover:bg-gray-50/80 dark:hover:bg-gray-800/50 transition {{ $desig->is_royalty_eligible ? 'bg-emerald-50/25 dark:bg-emerald-950/15' : '' }}">
+                                        <tr wire:key="desig-row-{{ $desig->id }}" class="hover:bg-gray-50/80 dark:hover:bg-gray-800/50 transition {{ $desig->is_royalty_eligible ? 'bg-emerald-50/25 dark:bg-emerald-950/15' : '' }}">
                                             <td class="px-3.5 py-2.5 text-gray-400 font-mono text-[11px]">{{ $index + 1 }}</td>
                                             <td class="px-3.5 py-2.5">
                                                 <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200/60 dark:border-gray-700/60">
@@ -543,8 +543,23 @@
                                                     @endif
                                                 </div>
                                             </td>
-                                            <td class="px-3.5 py-2.5 text-right font-mono text-gray-600 dark:text-gray-300">
-                                                {{ $desig->royalty_annual_budget > 0 ? 'Rs. ' . number_format($desig->royalty_annual_budget, 2) : '-' }}
+                                            <td class="px-3.5 py-2 text-right">
+                                                <div class="relative inline-flex items-center justify-end w-36">
+                                                    <span class="pointer-events-none absolute inset-y-0 left-0 z-10 pl-2.5 flex items-center text-gray-400 dark:text-gray-500 text-[10px] font-mono font-semibold select-none">Rs.</span>
+                                                    <input
+                                                        type="number"
+                                                        step="1000"
+                                                        min="0"
+                                                        value="{{ $desig->royalty_annual_budget > 0 ? (float) $desig->royalty_annual_budget : '' }}"
+                                                        placeholder="0.00"
+                                                        wire:key="budget-input-{{ $desig->id }}"
+                                                        wire:change="updateDesignationBudget({{ $desig->id }}, $event.target.value)"
+                                                        x-on:keydown.enter.prevent="$el.blur()"
+                                                        style="padding-left: 2.1rem !important; padding-right: 0.5rem !important;"
+                                                        class="w-full text-xs !pl-8 !pr-2 py-1 text-right rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-800/80 text-gray-900 dark:text-white font-mono focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition"
+                                                        title="Enter Annual Royalty Budget (Rs.) and press Enter or Tab to save"
+                                                    />
+                                                </div>
                                             </td>
                                             <td class="px-3.5 py-2.5 text-right font-mono font-semibold {{ $desig->royalty_monthly_max > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400' }}">
                                                 {{ $desig->royalty_monthly_max > 0 ? 'Rs. ' . number_format($desig->royalty_monthly_max, 2) : '-' }}

@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.10';
+    public const CURRENT_VERSION = '2.9.11';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,19 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.11',
+                'date' => '2026-10-30',
+                'title' => 'Inline Designation Annual Budget Editor in Royalty Bonus Settings',
+                'type' => 'micro',
+                'badge' => 'Enhancement',
+                'badge_color' => 'success',
+                'description' => 'Added inline editable Annual Budget inputs directly inside the Designation Eligibility Matrix on the Royalty Bonus Settings page with automatic Monthly Max and Monthly Min calculation.',
+                'highlights' => [
+                    'Inline Annual Budget Input: Replaced static Annual Budget text in the Designation Eligibility Matrix with a live numeric input (Rs.) that saves on Enter, Tab, or blur.',
+                    'Automatic Monthly Max & Min Calculation: Updating a designation\'s Annual Budget immediately computes and updates Monthly Max (ceil((budget/12)/100)*100), Monthly Min (Monthly Max / 2), and the overall Monthly Max Pool KPI.',
+                ],
+            ],
             [
                 'version' => '2.9.10',
                 'date' => '2026-10-30',

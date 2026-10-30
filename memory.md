@@ -618,6 +618,14 @@
 - **Solution**:
   - Moved the `TOTAL` summary `<tr>` inside the end of `<tbody>` and added `table.sheet-table tfoot { display: table-row-group !important; }` inside `@media print` so the totals row renders only once at the very end of the table on the final page.
 
+### 53. Inline Designation Annual Budget Editor in Royalty Bonus Settings (v2.9.11)
+- **Problem & Requirements**:
+  - User requested the ability to enter/update the Annual Budget for any designation directly from the Royalty Bonus Settings page without navigating away to individual Designation edit pages.
+- **Solution**:
+  - Added `updateDesignationBudget(int $id, mixed $amount)` to `ManageRoyaltyBonusSettings.php`.
+  - Replaced the static Annual Budget cell in `manage-royalty-bonus-settings.blade.php` with an inline `Rs.` number input (`wire:change="updateDesignationBudget(...)"`, `x-on:keydown.enter.prevent="$el.blur()"`), which automatically triggers `Designation::saving` to recalculate `royalty_monthly_max` and `royalty_monthly_min` and refreshes the table and pool KPIs live.
+
+
 
 
 
