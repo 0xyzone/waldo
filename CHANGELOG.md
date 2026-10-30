@@ -4,6 +4,14 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.21] - 2026-10-30
+
+### Fixed
+- **Balance Overview Print Blade Array Keys (`print-balance-overview.blade.php`)**:
+  - Fixed `ErrorException: Undefined array key "joining_date"` by referencing `join_date` (with fallback to `joining_date`) and constructing the tenure cycle range using `tenure_start` and `tenure_end`.
+
+---
+
 ## [2.9.20] - 2026-10-30
 
 ### Enhanced & Cleaned

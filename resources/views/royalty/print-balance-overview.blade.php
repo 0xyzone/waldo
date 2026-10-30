@@ -202,8 +202,8 @@
                     <td><strong>{{ $r['employee_name'] }}</strong></td>
                     <td>{{ $r['department'] }}</td>
                     <td>{{ $r['designation'] }}</td>
-                    <td class="text-center font-mono">{{ $r['joining_date'] }}</td>
-                    <td class="text-center font-mono" style="font-size: 8.5px;">{{ $r['tenure_cycle_label'] }}</td>
+                    <td class="text-center font-mono">{{ $r['join_date'] ?? $r['joining_date'] ?? '-' }}</td>
+                    <td class="text-center font-mono" style="font-size: 8.5px;">{{ $r['tenure_cycle_label'] ?? (($r['tenure_start'] ?? '-') . ' - ' . ($r['tenure_end'] ?? '-')) }}</td>
                     <td class="text-right font-mono">Rs. {{ number_format($r['annual_budget'], 2) }}</td>
                     <td class="text-right font-mono">Rs. {{ number_format($r['consumed_budget'], 2) }}</td>
                     <td class="text-right font-mono"><strong>Rs. {{ number_format($r['remaining_budget'], 2) }}</strong></td>

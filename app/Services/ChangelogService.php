@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.20';
+    public const CURRENT_VERSION = '2.9.21';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,18 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.21',
+                'date' => '2026-10-30',
+                'title' => 'Fix Undefined Key in Balance Overview Print Blade Template',
+                'type' => 'micro',
+                'badge' => 'Bug Fix',
+                'badge_color' => 'success',
+                'description' => 'Corrected array key mapping in print-balance-overview.blade.php from joining_date to join_date with fallback to prevent ErrorException.',
+                'highlights' => [
+                    'Blade Template Key Fix: Updated joining_date and tenure_cycle_label references in print-balance-overview.blade.php to match RoyaltyCalculationService keys (join_date, tenure_start, tenure_end).',
+                ],
+            ],
             [
                 'version' => '2.9.20',
                 'date' => '2026-10-30',

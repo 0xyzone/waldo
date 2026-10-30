@@ -677,17 +677,19 @@
     - Center-aligned `Max Payout`, `Attn Ded.`, `Susp. Ded.`, `Perf Ded.`, `Total Ded.`, and `Net Payout`.
     - Increased text sizing to 10.5px (and 12px for meta/header info) with 5px vertical padding for sharper readability.
 
-### 60. Populate Held Balances from Deductions & Added Printable Sheets for Held Balances and Budget Overview (v2.9.18 - v2.9.20)
+### 60. Populate Held Balances from Deductions & Added Printable Sheets for Held Balances and Budget Overview (v2.9.18 - v2.9.21)
 - **Problem & Requirements**:
   - Held balances were not being populated for employees who had bonus deductions because `RoyaltyHeldBalanceResource` was querying only `payout_status = 'Hold'`.
   - When an employee has deductions, the difference between `Monthly Max Payout` and `Final Net Payout` (honoring the monthly minimum floor threshold) represents the withheld/deducted bonus amount that should be tracked in held balances and available for release.
   - User requested both held balance print sheets (individual employee breakdown statement and summary of all held balances) along with a print sheet for the Royalty Budget Balance Overview resource (`/kamkaj/royalty-bonus/balance-overview`).
   - Accessing the Held Balances print sheet threw `BadMethodCallException: Call to undefined method App\Models\Employee::royaltyReleases()`.
   - User requested removal of the Status column from the held balances print file, and adding a Designation filter to the Royalty Bonus print file alongside department filters.
+  - Accessing the Royalty Budget Balance Overview print view threw `ErrorException: Undefined array key "joining_date"`.
 - **Solution**:
   - Added `royaltyReleases()` `HasMany` relation alias on `App\Models\Employee` mapping to `RoyaltyHeldRelease` (v2.9.19).
   - Removed Status column from `print-held-balances-list.blade.php` and `print-held-balance.blade.php` (v2.9.20).
   - Added `Filter Designation` dropdown to `resources/views/royalty/print.blade.php` and handled `designation` query parameter in `RoyaltyReportPrintController@printReport` with scoped options and dynamic header subtitle updates (v2.9.20).
+  - Updated `print-balance-overview.blade.php` to use `join_date` and `tenure_start` / `tenure_end` matching `RoyaltyCalculationService::getBalanceOverviewRecords()` schema (v2.9.21).
   - **Held Balance Calculation & Query Logic (`RoyaltyHeldBalanceResource.php`, `ViewRoyaltyHeldBalance.php`, `view-royalty-held-balance.blade.php`)**:
     - Updated query filters across the resource table and detail view to include items where `payout_status = 'Hold'` OR `(monthly_max_payout - final_payout) > 0`.
     - Calculated `total_held` as `$item->payout_status === 'Hold' ? $item->monthly_max_payout : max(0, $item->monthly_max_payout - $item->final_payout)`, respecting the monthly minimum floor threshold protection.
