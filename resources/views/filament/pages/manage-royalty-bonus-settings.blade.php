@@ -346,7 +346,40 @@
                                 </div>
                             </div>
 
-                            {{-- CARD 4: Minimum Floor Payout Guarantee --}}
+                            {{-- CARD 4: Employee Suspension Policy --}}
+                            <div class="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 p-3.5 shadow-sm hover:border-rose-400/50 dark:hover:border-rose-500/50 transition">
+                                <div class="flex items-center justify-between gap-3 mb-2.5">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 flex items-center justify-center shrink-0">
+                                            <x-heroicon-m-exclamation-triangle class="w-4 h-4" />
+                                        </div>
+                                        <div>
+                                            <h3 class="text-xs font-bold text-gray-900 dark:text-white">Employee Suspension Policy</h3>
+                                            <p class="text-[11px] text-gray-500">Matched by suspension start date falling in billing month</p>
+                                        </div>
+                                    </div>
+                                    <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
+                                        Fixed Penalty
+                                    </span>
+                                </div>
+
+                                <div class="text-xs">
+                                    <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">Deduction Amount (if suspended in billing month)</label>
+                                    <div class="relative flex items-center">
+                                        <span class="pointer-events-none absolute inset-y-0 left-0 z-10 pl-3 flex items-center text-gray-500 dark:text-gray-400 text-[11px] font-mono font-semibold select-none">Rs.</span>
+                                        <input
+                                            type="number"
+                                            step="100"
+                                            min="0"
+                                            wire:model="royalty_suspension_amount"
+                                            style="padding-left: 2.5rem !important;"
+                                            class="w-full text-xs !pl-10 pr-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-mono focus:ring-2 focus:ring-primary-500 outline-none"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- CARD 5: Minimum Floor Payout Guarantee --}}
                             <div class="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 p-3.5 shadow-sm hover:border-emerald-400/50 dark:hover:border-emerald-500/50 transition flex flex-col justify-between">
                                 <div class="flex items-start justify-between gap-3">
                                     <div class="flex items-start gap-2.5">

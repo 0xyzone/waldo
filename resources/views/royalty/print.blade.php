@@ -241,19 +241,20 @@
             <tr>
                 <th style="width: 3%;">#</th>
                 <th style="width: 7%;">Code</th>
-                <th style="width: 15%;">Employee Name</th>
-                <th style="width: 11%;">Department</th>
-                <th style="width: 12%;">Designation</th>
+                <th style="width: 14%;">Employee Name</th>
+                <th style="width: 10%;">Department</th>
+                <th style="width: 11%;">Designation</th>
                 <th style="width: 8%;">Max Payout</th>
-                <th style="width: 5%;">Absent</th>
-                <th style="width: 5%;">Late/Early</th>
-                <th style="width: 5%;">Thumb</th>
+                <th style="width: 4.5%;">Absent</th>
+                <th style="width: 4.5%;">Late/Early</th>
+                <th style="width: 4.5%;">Thumb</th>
                 <th style="width: 6%;">Attn Ded.</th>
-                <th style="width: 5%;">Perf %</th>
-                <th style="width: 6%;">Perf Ded.</th>
+                <th style="width: 5.5%;">Susp. Ded.</th>
+                <th style="width: 4.5%;">Perf %</th>
+                <th style="width: 5.5%;">Perf Ded.</th>
                 <th style="width: 6%;">Total Ded.</th>
                 <th style="width: 8%;">Net Payout</th>
-                <th style="width: 12%;">Signature</th>
+                <th style="width: 11%;">Signature</th>
             </tr>
         </thead>
         <tbody>
@@ -280,6 +281,9 @@
                         {{ $item->missing_thumb_count }}
                     </td>
                     <td class="text-right">{{ number_format($item->attendance_deduction_amount, 0) }}</td>
+                    <td class="text-right" style="{{ ($item->suspension_deduction_amount ?? 0) > 0 ? 'color: #dc2626; font-weight: bold;' : '' }}">
+                        {{ number_format($item->suspension_deduction_amount ?? 0, 0) }}
+                    </td>
                     <td class="text-center">{{ $item->performance_deduction_percent > 0 ? ($item->performance_deduction_percent + 0) . '%' : '-' }}</td>
                     <td class="text-right">{{ number_format($item->performance_deduction_amount, 0) }}</td>
                     <td class="text-right" style="color: #b91c1c;">{{ number_format($item->total_deduction_amount, 0) }}</td>
@@ -301,7 +305,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="15" class="text-center" style="padding: 20px; color: #64748b;">
+                    <td colspan="16" class="text-center" style="padding: 20px; color: #64748b;">
                         No staff items found for this selection.
                     </td>
                 </tr>
@@ -314,6 +318,7 @@
                     <td class="text-center">{{ $items->sum('late_early_count') }}</td>
                     <td class="text-center">{{ $items->sum('missing_thumb_count') }}</td>
                     <td class="text-right">{{ number_format($items->sum('attendance_deduction_amount'), 0) }}</td>
+                    <td class="text-right">{{ number_format($items->sum('suspension_deduction_amount'), 0) }}</td>
                     <td class="text-center">-</td>
                     <td class="text-right">{{ number_format($items->sum('performance_deduction_amount'), 0) }}</td>
                     <td class="text-right" style="color: #b91c1c;">{{ number_format($items->sum('total_deduction_amount'), 0) }}</td>

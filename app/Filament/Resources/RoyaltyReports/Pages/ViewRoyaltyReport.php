@@ -282,6 +282,13 @@ class ViewRoyaltyReport extends ViewRecord implements HasTable
                     ->money('NPR')
                     ->color(fn ($state) => $state > 0 ? 'danger' : 'gray'),
 
+                TextColumn::make('suspension_deduction_amount')
+                    ->label('Susp. Ded.')
+                    ->money('NPR')
+                    ->color(fn ($state) => $state > 0 ? 'danger' : 'gray')
+                    ->tooltip(fn (RoyaltyReportItem $record) => ($record->suspension_count ?? 0) > 0 ? "Suspended in {$this->record->month} {$this->record->year} ({$record->suspension_count} record(s))" : null)
+                    ->sortable(),
+
                 TextColumn::make('total_deduction_amount')
                     ->label('Total Ded.')
                     ->money('NPR')

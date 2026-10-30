@@ -55,7 +55,7 @@
                 Rs. {{ number_format($this->totalDeductions, 2) }}
             </div>
             <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center justify-between">
-                <span>Performance + Attendance</span>
+                <span>Perf. + Attendance + Suspension</span>
                 <span class="text-gray-400">Savings retained</span>
             </div>
         </div>

@@ -649,6 +649,15 @@
 - **Solution**:
   - Updated `EmployeeSuspensionForm::configure()` (`app/Filament/Resources/EmployeeSuspensions/Schemas/EmployeeSuspensionForm.php`) to include a reactive `Selected Employee Profile` section (`visible` when `employee_id` is filled) displaying **Employee Code**, **Full Name**, **Department**, **Designation**, **Employee Status**, **Tips Status**, **Join Date**, and **Contact Number**, and made the `employee_id` `Select` field `->live()`.
 
+### 57. Employee Suspension Deduction Rule in Royalty Bonus Settings & Calculation Engine (v2.9.15)
+- **Problem & Requirements**:
+  - User requested an additional deduction rule in Royalty Bonus Settings so that if an employee was suspended in the report's billing month (determined from `EmployeeSuspension` records where `start_date` falls in that month/year, ignoring `cancelled` records), a fixed configurable deduction amount (`Rs.`) is deducted once from their monthly Royalty Bonus.
+- **Solution**:
+  - **Migration (`2026_10_30_140124_add_suspension_fields_to_royalty_report_items_table.php`)**: Added `suspension_count` and `suspension_deduction_amount` to `royalty_report_items`.
+  - **Settings Studio (`ManageRoyaltyBonusSettings.php`, `manage-royalty-bonus-settings.blade.php`)**: Added `royalty_suspension_amount` (`AppSetting` key `royalty_suspension_amount`, default `'1000.00'`) and an **Employee Suspension Policy** card in the Deduction Rules console.
+  - **Calculation Engine (`RoyaltyCalculationService.php`)**: Preloads `EmployeeSuspension` records (`status != 'cancelled'`) with `start_date` between the start and end of the report's Billing Month & Year, applies the fixed `suspension_amount` deduction once when `suspension_count > 0`, and displays `Susp. Ded.` across `ViewRoyaltyReport`, `resources/views/royalty/print.blade.php`, and Excel exports.
+
+
 
 
 

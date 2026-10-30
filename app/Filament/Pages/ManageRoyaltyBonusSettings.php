@@ -68,6 +68,8 @@ class ManageRoyaltyBonusSettings extends Page
 
     public ?string $royalty_missing_thumb_penalty = '100.00';
 
+    public ?string $royalty_suspension_amount = '1000.00';
+
     public bool $royalty_enforce_min_floor = true;
 
     /**
@@ -100,6 +102,7 @@ class ManageRoyaltyBonusSettings extends Page
         $this->royalty_missing_thumb_mode = AppSetting::get('royalty_missing_thumb_mode', 'countable');
         $this->royalty_missing_thumb_threshold = AppSetting::get('royalty_missing_thumb_threshold', '2');
         $this->royalty_missing_thumb_penalty = AppSetting::get('royalty_missing_thumb_penalty', '100.00');
+        $this->royalty_suspension_amount = AppSetting::get('royalty_suspension_amount', '1000.00');
         $this->royalty_enforce_min_floor = (bool) AppSetting::get('royalty_enforce_min_floor', '1');
     }
 
@@ -185,6 +188,18 @@ class ManageRoyaltyBonusSettings extends Page
                         ]),
                     ]),
 
+                Section::make('Suspension Deduction Rules')
+                    ->description('Specify a fixed deduction amount when an employee has a suspension starting in the billing month.')
+                    ->icon(Heroicon::OutlinedExclamationTriangle)
+                    ->schema([
+                        TextInput::make('royalty_suspension_amount')
+                            ->label('Suspension Deduction Amount (Rs.)')
+                            ->numeric()
+                            ->prefix('Rs.')
+                            ->required()
+                            ->helperText('Fixed amount deducted once if the employee has any suspension record whose start_date falls in the report billing month.'),
+                    ]),
+
                 Section::make('Payout Protection & Floor')
                     ->description('Guarantee a minimum payout baseline for employees with bonuses.')
                     ->icon(Heroicon::OutlinedShieldCheck)
@@ -214,6 +229,7 @@ class ManageRoyaltyBonusSettings extends Page
                 $this->royalty_missing_thumb_mode = 'countable',
                 $this->royalty_missing_thumb_threshold = '2',
                 $this->royalty_missing_thumb_penalty = '100.00',
+                $this->royalty_suspension_amount = '1000.00',
                 $this->royalty_enforce_min_floor = true,
             ],
             'strict' => [
@@ -225,6 +241,7 @@ class ManageRoyaltyBonusSettings extends Page
                 $this->royalty_missing_thumb_mode = 'countable',
                 $this->royalty_missing_thumb_threshold = '1',
                 $this->royalty_missing_thumb_penalty = '150.00',
+                $this->royalty_suspension_amount = '1500.00',
                 $this->royalty_enforce_min_floor = true,
             ],
             'lenient' => [
@@ -236,6 +253,7 @@ class ManageRoyaltyBonusSettings extends Page
                 $this->royalty_missing_thumb_mode = 'boolean',
                 $this->royalty_missing_thumb_threshold = '3',
                 $this->royalty_missing_thumb_penalty = '200.00',
+                $this->royalty_suspension_amount = '500.00',
                 $this->royalty_enforce_min_floor = true,
             ],
             default => null,
@@ -258,6 +276,7 @@ class ManageRoyaltyBonusSettings extends Page
         AppSetting::set('royalty_missing_thumb_mode', (string) ($this->royalty_missing_thumb_mode ?? 'countable'));
         AppSetting::set('royalty_missing_thumb_threshold', (string) ($this->royalty_missing_thumb_threshold ?? '2'));
         AppSetting::set('royalty_missing_thumb_penalty', (string) ($this->royalty_missing_thumb_penalty ?? '100.00'));
+        AppSetting::set('royalty_suspension_amount', (string) ($this->royalty_suspension_amount ?? '1000.00'));
         AppSetting::set('royalty_enforce_min_floor', $this->royalty_enforce_min_floor ? '1' : '0');
 
         Notification::make()

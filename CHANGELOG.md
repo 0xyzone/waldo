@@ -4,6 +4,17 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.15] - 2026-10-30
+
+### Added & Enhanced
+- **Employee Suspension Deduction Rule in Royalty Bonus Settings & Calculation Engine**:
+  - **Royalty Settings Configuration (`ManageRoyaltyBonusSettings.php`, `manage-royalty-bonus-settings.blade.php`)**: Added `royalty_suspension_amount` (`AppSetting`, default `Rs. 1000.00`) and a dedicated **Employee Suspension Policy** card in the Deduction Rules console (plus Standard/Strict/Lenient preset values).
+  - **Database Schema (`2026_10_30_140124_add_suspension_fields_to_royalty_report_items_table.php`, `RoyaltyReportItem.php`)**: Added `suspension_count` and `suspension_deduction_amount` columns to `royalty_report_items`.
+  - **Automatic Suspension Month Matching (`RoyaltyCalculationService.php`)**: Queries non-cancelled `EmployeeSuspension` records whose `start_date` falls within the Royalty Report's Billing Month & Year (`1 {month} {year}` to end of month). When an employee has a suspension starting in that billing month, the configured fixed suspension deduction amount is applied once and included in `total_deduction_amount`.
+  - **Report Table, Print Sheet & Excel Export (`ViewRoyaltyReport.php`, `print.blade.php`, `RoyaltyCalculationService::exportExcel()`)**: Added `Susp. Ded.` column and totals across the Royalty Report table, printable payout sheet, and Excel export.
+
+---
+
 ## [2.9.14] - 2026-10-30
 
 ### Enhanced

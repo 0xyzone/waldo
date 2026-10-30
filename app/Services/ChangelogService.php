@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.14';
+    public const CURRENT_VERSION = '2.9.15';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,20 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.15',
+                'date' => '2026-10-30',
+                'title' => 'Employee Suspension Deduction Rule in Royalty Bonus Settings & Calculation Engine',
+                'type' => 'micro',
+                'badge' => 'Feature & Enhancement',
+                'badge_color' => 'success',
+                'description' => 'Added a configurable Employee Suspension Policy deduction rule in Royalty Bonus Settings and integrated automatic suspension month matching (by suspension start_date falling in the report billing month/year) into the Royalty calculation engine, report table, print sheet, and Excel export.',
+                'highlights' => [
+                    'Configurable Suspension Deduction Rule: Added royalty_suspension_amount (default Rs. 1,000.00) in ManageRoyaltyBonusSettings with a dedicated Employee Suspension Policy card and preset support.',
+                    'Automatic Suspension Month Matching: RoyaltyCalculationService::generate() matches non-cancelled EmployeeSuspension records where start_date falls within the Royalty Report\'s Billing Month and Year, applying the fixed suspension deduction once.',
+                    'Report Table, Print & Export Columns: Added suspension_count and suspension_deduction_amount to royalty_report_items, and surfaced Susp. Ded. in ViewRoyaltyReport, the printable payout sheet, and Excel exports.',
+                ],
+            ],
             [
                 'version' => '2.9.14',
                 'date' => '2026-10-30',

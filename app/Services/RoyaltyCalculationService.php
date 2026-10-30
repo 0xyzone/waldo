@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AppSetting;
 use App\Models\Employee;
+use App\Models\EmployeeSuspension;
 use App\Models\RoyaltyExemptEmployee;
 use App\Models\RoyaltyReport;
 use App\Models\RoyaltyReportItem;
@@ -71,7 +72,23 @@ class RoyaltyCalculationService
                 }
             }
 
-            // 6. Calculate for each employee and create Report Item
+            // 6. Preload Employee Suspensions starting in the report's Billing Month & Year
+            try {
+                $billingStart = Carbon::parse("1 {$report->month} {$report->year}")->startOfMonth();
+            } catch (\Throwable) {
+                $billingStart = $report->cutoff_date ? Carbon::parse($report->cutoff_date)->startOfMonth() : now()->startOfMonth();
+            }
+            $billingEnd = $billingStart->copy()->endOfMonth();
+
+            $suspensionsByEmployee = EmployeeSuspension::query()
+                ->where('status', '!=', 'cancelled')
+                ->whereBetween('start_date', [$billingStart->toDateString(), $billingEnd->toDateString()])
+                ->get()
+                ->groupBy(fn (EmployeeSuspension $s) => strtoupper(trim((string) $s->employee_id)))
+                ->map(fn ($group) => $group->count())
+                ->toArray();
+
+            // 7. Calculate for each employee and create Report Item
             $reportRefDate = $report->cutoff_date
                 ? Carbon::parse($report->cutoff_date)
                 : Carbon::parse("{$report->month} 1, {$report->year}");
@@ -101,6 +118,7 @@ class RoyaltyCalculationService
                 $perfInfo = $performanceData[$code] ?? null;
                 $perfDeductionPercent = $perfInfo ? (float) ($perfInfo['percent'] ?? 0.0) : 0.0;
                 $perfRemarks = $perfInfo ? trim((string) ($perfInfo['remarks'] ?? '')) : null;
+                $suspensionCount = (int) ($suspensionsByEmployee[$code] ?? 0);
 
                 // Calculate 12-month tenure cycle based on joining date
                 $tenure = $this->calculateTenureCycle($employee->join_date_formatted, $reportRefDate);
@@ -127,7 +145,8 @@ class RoyaltyCalculationService
                     absentDays: (float) $att['absent_days'],
                     lateEarlyCount: (int) $att['late_early_count'],
                     missingThumbCount: (int) $att['missing_thumb_count'],
-                    settings: $settings
+                    settings: $settings,
+                    suspensionCount: $suspensionCount
                 );
 
                 $proposedPayout = (float) $calc['final_payout'];
@@ -156,8 +175,14 @@ class RoyaltyCalculationService
                 $itemRemarks = null;
                 if ($isExempt) {
                     $itemRemarks = 'Exempt from deductions (Always Max Payout)';
-                } elseif (! empty($perfRemarks)) {
-                    $itemRemarks = $perfRemarks;
+                } else {
+                    if (! empty($perfRemarks)) {
+                        $itemRemarks = $perfRemarks;
+                    }
+                    if ($suspensionCount > 0 && $calc['suspension_deduction_amount'] > 0) {
+                        $suspNote = 'Suspended in '.ucfirst((string) $report->month).' '.$report->year.' (-Rs. '.number_format($calc['suspension_deduction_amount'], 2).')';
+                        $itemRemarks = $itemRemarks ? "{$itemRemarks} | {$suspNote}" : $suspNote;
+                    }
                 }
 
                 if ($annualBudget > 0 && $proposedPayout > $finalPayout) {
@@ -187,9 +212,11 @@ class RoyaltyCalculationService
                     'absent_days' => $att['absent_days'],
                     'late_early_count' => $att['late_early_count'],
                     'missing_thumb_count' => $att['missing_thumb_count'],
+                    'suspension_count' => $suspensionCount,
                     'performance_deduction_percent' => $perfDeductionPercent,
                     'performance_deduction_amount' => $calc['perf_deduction_amount'],
                     'attendance_deduction_amount' => $calc['attendance_deduction_amount'],
+                    'suspension_deduction_amount' => $calc['suspension_deduction_amount'],
                     'total_deduction_amount' => $calc['total_deduction_amount'],
                     'final_payout' => $finalPayout,
                     'consumed_tenure_budget' => $consumedTenureBudget,
@@ -242,7 +269,8 @@ class RoyaltyCalculationService
             absentDays: (float) $item->absent_days,
             lateEarlyCount: (int) $item->late_early_count,
             missingThumbCount: (int) $item->missing_thumb_count,
-            settings: $settings
+            settings: $settings,
+            suspensionCount: (int) ($item->suspension_count ?? 0)
         );
 
         $proposedPayout = (float) $calc['final_payout'];
@@ -263,6 +291,7 @@ class RoyaltyCalculationService
             'starting_tenure_budget' => $annualBudget,
             'performance_deduction_amount' => $calc['perf_deduction_amount'],
             'attendance_deduction_amount' => $calc['attendance_deduction_amount'],
+            'suspension_deduction_amount' => $calc['suspension_deduction_amount'],
             'total_deduction_amount' => $calc['total_deduction_amount'],
             'final_payout' => $finalPayout,
             'consumed_tenure_budget' => $consumedTenureBudget,
@@ -359,7 +388,7 @@ class RoyaltyCalculationService
      * Core payout computation algorithm.
      *
      * @param  array<string, mixed>  $settings
-     * @return array{perf_deduction_amount: float, attendance_deduction_amount: float, total_deduction_amount: float, final_payout: float}
+     * @return array{perf_deduction_amount: float, attendance_deduction_amount: float, suspension_deduction_amount: float, total_deduction_amount: float, final_payout: float}
      */
     public function computePayout(
         float $monthlyMax,
@@ -369,12 +398,14 @@ class RoyaltyCalculationService
         float $absentDays,
         int $lateEarlyCount,
         int $missingThumbCount,
-        array $settings
+        array $settings,
+        int $suspensionCount = 0
     ): array {
         if ($isExempt || $monthlyMax <= 0) {
             return [
                 'perf_deduction_amount' => 0.0,
                 'attendance_deduction_amount' => 0.0,
+                'suspension_deduction_amount' => 0.0,
                 'total_deduction_amount' => 0.0,
                 'final_payout' => $monthlyMax,
             ];
@@ -426,7 +457,13 @@ class RoyaltyCalculationService
             }
         }
 
-        $totalDeductions = round($perfDeductionAmount + $attendanceDeductionAmount, 2);
+        // 3. Suspension Deduction (fixed amount deducted once if suspended in the billing month)
+        $suspensionDeductionAmount = 0.0;
+        if ($suspensionCount > 0) {
+            $suspensionDeductionAmount = round(max(0.0, (float) ($settings['suspension_amount'] ?? 0.0)), 2);
+        }
+
+        $totalDeductions = round($perfDeductionAmount + $attendanceDeductionAmount + $suspensionDeductionAmount, 2);
         $calculatedPayout = $monthlyMax - $totalDeductions;
 
         // Floor at Monthly Min Payout (unless minimum floor disabled)
@@ -439,6 +476,7 @@ class RoyaltyCalculationService
         return [
             'perf_deduction_amount' => $perfDeductionAmount,
             'attendance_deduction_amount' => $attendanceDeductionAmount,
+            'suspension_deduction_amount' => $suspensionDeductionAmount,
             'total_deduction_amount' => $totalDeductions,
             'final_payout' => round($finalPayout, 2),
         ];
@@ -460,6 +498,7 @@ class RoyaltyCalculationService
             'missing_thumb_mode' => AppSetting::get('royalty_missing_thumb_mode', 'countable'), // 'boolean' | 'countable'
             'missing_thumb_threshold' => (int) AppSetting::get('royalty_missing_thumb_threshold', '2'),
             'missing_thumb_penalty' => (float) AppSetting::get('royalty_missing_thumb_penalty', '100.00'),
+            'suspension_amount' => (float) AppSetting::get('royalty_suspension_amount', '1000.00'),
             'enforce_min_floor' => (bool) AppSetting::get('royalty_enforce_min_floor', '1'),
         ];
     }
@@ -811,6 +850,8 @@ class RoyaltyCalculationService
                 'Late / Early Count',
                 'Missing Thumb Count',
                 'Attendance Deduction (Rs.)',
+                'Suspended in Month?',
+                'Suspension Deduction (Rs.)',
                 'Total Deduction (Rs.)',
                 'Final Net Payout (Rs.)',
                 'Remaining Budget (Rs.)',
@@ -851,6 +892,8 @@ class RoyaltyCalculationService
                     (int) $item->late_early_count,
                     (int) $item->missing_thumb_count,
                     (float) $item->attendance_deduction_amount,
+                    ((int) ($item->suspension_count ?? 0) > 0) ? 'YES' : 'NO',
+                    (float) ($item->suspension_deduction_amount ?? 0),
                     (float) $item->total_deduction_amount,
                     (float) $item->final_payout,
                     (float) $item->remaining_budget,
@@ -886,6 +929,8 @@ class RoyaltyCalculationService
                 '',
                 '',
                 (float) $items->sum('attendance_deduction_amount'),
+                '',
+                (float) $items->sum('suspension_deduction_amount'),
                 (float) $items->sum('total_deduction_amount'),
                 (float) $items->sum('final_payout'),
                 (float) $items->sum('remaining_budget'),
