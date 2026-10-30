@@ -326,7 +326,7 @@
         </tbody>
     </table>
 
-    <div class="footer-signatures">
+    {{-- <div class="footer-signatures">
         <div class="sig-line-block">
             <div class="sig-line"></div>
             <div class="sig-title">Prepared By (HR)</div>
@@ -344,7 +344,7 @@
     <div class="print-footer">
         <div>Generated via Waldo Royalty Bonus Management &bull; Status: {{ strtoupper($report->status) }}</div>
         <div>Printed on {{ now()->format('d M, Y H:i:s') }}</div>
-    </div>
+    </div> --}}
 
 </body>
 </html>
