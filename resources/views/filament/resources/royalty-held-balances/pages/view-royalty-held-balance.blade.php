@@ -109,12 +109,14 @@
                         <th class="px-4 py-3">Report Title</th>
                         <th class="px-4 py-3">Designation</th>
                         <th class="px-4 py-3 text-right">Max Payout</th>
+                        <th class="px-4 py-3 text-right">Floor Min</th>
                         <th class="px-4 py-3 text-center">Absent</th>
                         <th class="px-4 py-3 text-center">Late/Early</th>
                         <th class="px-4 py-3 text-center">Thumb</th>
                         <th class="px-4 py-3 text-right">Deductions</th>
+                        <th class="px-4 py-3 text-right">Net Payout</th>
                         <th class="px-4 py-3 text-right font-bold">Amount Held</th>
-                        <th class="px-4 py-3">Reason / Remarks</th>
+                        <th class="px-4 py-3">Hold Type / Reason</th>
                         <th class="px-4 py-3 text-center">Report Status</th>
                     </tr>
                 </thead>
@@ -135,6 +137,9 @@
                             <td class="px-4 py-3 text-right font-mono">
                                 Rs. {{ number_format($item->monthly_max_payout, 2) }}
                             </td>
+                            <td class="px-4 py-3 text-right font-mono text-gray-500">
+                                Rs. {{ number_format($item->monthly_min_payout, 2) }}
+                            </td>
                             <td class="px-4 py-3 text-center font-mono {{ $item->absent_days > 0 ? 'text-rose-600 font-bold' : 'text-gray-400' }}">
                                 {{ $item->absent_days + 0 }}
                             </td>
@@ -147,11 +152,24 @@
                             <td class="px-4 py-3 text-right font-mono text-rose-600">
                                 Rs. {{ number_format($item->total_deduction_amount, 2) }}
                             </td>
-                            <td class="px-4 py-3 text-right font-mono font-bold text-amber-600 dark:text-amber-400 text-sm">
+                            <td class="px-4 py-3 text-right font-mono text-emerald-600 font-semibold">
                                 Rs. {{ number_format($item->final_payout, 2) }}
                             </td>
-                            <td class="px-4 py-3 text-gray-500 max-w-xs truncate">
-                                {{ $item->held_reason ?: ($item->remarks ?: 'Bonus placed on Hold') }}
+                            <td class="px-4 py-3 text-right font-mono font-bold text-amber-600 dark:text-amber-400 text-sm">
+                                @php
+                                    $itemHeld = ($item->payout_status === 'Hold')
+                                        ? (float) $item->monthly_max_payout
+                                        : max(0.0, (float) $item->monthly_max_payout - (float) $item->final_payout);
+                                @endphp
+                                Rs. {{ number_format($itemHeld, 2) }}
+                            </td>
+                            <td class="px-4 py-3 text-gray-500 max-w-xs">
+                                @if($item->payout_status === 'Hold')
+                                    <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 mr-1">Payout Held</span>
+                                @else
+                                    <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 mr-1">Deducted (Max - Floor)</span>
+                                @endif
+                                <span class="text-xs">{{ $item->held_reason ?: ($item->remarks ?: '-') }}</span>
                             </td>
                             <td class="px-4 py-3 text-center">
                                 @if($item->report?->isValidated())

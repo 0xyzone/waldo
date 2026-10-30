@@ -154,8 +154,16 @@
                     </div>
                 </div>
 
-                {{-- Export Excel Button --}}
+                {{-- Export & Print Actions --}}
                 <div class="flex items-center gap-2 shrink-0">
+                    <a
+                        href="{{ route('royalty.balance-overview.print', ['report' => $selectedReport !== 'all' ? $selectedReport : null, 'department' => $selectedDepartment !== 'all' ? $selectedDepartment : null]) }}"
+                        target="_blank"
+                        class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gray-900 hover:bg-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 text-white font-semibold text-xs transition shadow-xs"
+                    >
+                        <x-heroicon-m-printer class="w-4 h-4" />
+                        <span>Print Sheet</span>
+                    </a>
                     <a
                         href="{{ route('royalty.balance-overview.export', ['report' => $selectedReport !== 'all' ? $selectedReport : null, 'department' => $selectedDepartment !== 'all' ? $selectedDepartment : null]) }}"
                         target="_blank"

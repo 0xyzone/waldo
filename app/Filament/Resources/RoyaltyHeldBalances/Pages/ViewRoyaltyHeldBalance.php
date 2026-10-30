@@ -24,8 +24,18 @@ class ViewRoyaltyHeldBalance extends ViewRecord
     public function getTotalHeldProperty(): float
     {
         return (float) RoyaltyReportItem::where('employee_code', $this->record->employee_code)
-            ->where('payout_status', 'Hold')
-            ->sum('final_payout');
+            ->where(function ($q) {
+                $q->where('payout_status', 'Hold')
+                    ->orWhereRaw('(monthly_max_payout - final_payout) > 0');
+            })
+            ->get()
+            ->sum(function ($item) {
+                if ($item->payout_status === 'Hold') {
+                    return (float) $item->monthly_max_payout;
+                }
+
+                return max(0.0, (float) $item->monthly_max_payout - (float) $item->final_payout);
+            });
     }
 
     public function getTotalReleasedProperty(): float
@@ -42,7 +52,10 @@ class ViewRoyaltyHeldBalance extends ViewRecord
     public function getHeldReportItemsProperty(): Collection
     {
         return RoyaltyReportItem::where('employee_code', $this->record->employee_code)
-            ->where('payout_status', 'Hold')
+            ->where(function ($q) {
+                $q->where('payout_status', 'Hold')
+                    ->orWhereRaw('(monthly_max_payout - final_payout) > 0');
+            })
             ->with('report')
             ->orderBy('id', 'desc')
             ->get();
@@ -78,6 +91,13 @@ class ViewRoyaltyHeldBalance extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('printSheet')
+                ->label('Print Held Sheet')
+                ->icon('heroicon-m-printer')
+                ->color('gray')
+                ->url(fn () => route('royalty.held-balances.print-employee', ['employee' => $this->record->employee_code]))
+                ->openUrlInNewTab(),
+
             Action::make('releaseAmount')
                 ->label('Release Held Amount')
                 ->icon('heroicon-m-banknotes')

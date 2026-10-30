@@ -64,9 +64,24 @@ class RoyaltyHeldBalanceResource extends Resource
     {
         return $table
             ->modifyQueryUsing(function (Builder $query) {
-                $query->whereHas('royaltyReportItems', fn ($q) => $q->where('payout_status', 'Hold'))
+                $query->whereHas('royaltyReportItems', function ($q) {
+                    $q->where(function ($sub) {
+                        $sub->where('payout_status', 'Hold')
+                            ->orWhereRaw('(monthly_max_payout - final_payout) > 0');
+                    });
+                })
                     ->orWhereHas('royaltyHeldReleases')
-                    ->with(['department', 'designation', 'royaltyReportItems' => fn ($q) => $q->where('payout_status', 'Hold'), 'royaltyHeldReleases']);
+                    ->with([
+                        'department',
+                        'designation',
+                        'royaltyReportItems' => function ($q) {
+                            $q->where(function ($sub) {
+                                $sub->where('payout_status', 'Hold')
+                                    ->orWhereRaw('(monthly_max_payout - final_payout) > 0');
+                            })->with('report');
+                        },
+                        'royaltyHeldReleases',
+                    ]);
             })
             ->columns([
                 TextColumn::make('#')
@@ -99,7 +114,15 @@ class RoyaltyHeldBalanceResource extends Resource
 
                 TextColumn::make('total_held')
                     ->label('Total Held')
-                    ->state(fn (Employee $record): float => (float) $record->royaltyReportItems->where('payout_status', 'Hold')->sum('final_payout'))
+                    ->state(function (Employee $record): float {
+                        return (float) $record->royaltyReportItems->sum(function ($item) {
+                            if ($item->payout_status === 'Hold') {
+                                return (float) $item->monthly_max_payout;
+                            }
+
+                            return max(0.0, (float) $item->monthly_max_payout - (float) $item->final_payout);
+                        });
+                    })
                     ->money('NPR')
                     ->weight('bold')
                     ->color('danger')
@@ -115,7 +138,13 @@ class RoyaltyHeldBalanceResource extends Resource
                 TextColumn::make('remaining_balance')
                     ->label('Remaining Balance')
                     ->state(function (Employee $record): float {
-                        $held = (float) $record->royaltyReportItems->where('payout_status', 'Hold')->sum('final_payout');
+                        $held = (float) $record->royaltyReportItems->sum(function ($item) {
+                            if ($item->payout_status === 'Hold') {
+                                return (float) $item->monthly_max_payout;
+                            }
+
+                            return max(0.0, (float) $item->monthly_max_payout - (float) $item->final_payout);
+                        });
                         $released = (float) $record->royaltyHeldReleases->sum('amount');
 
                         return max(0.0, $held - $released);
@@ -126,8 +155,8 @@ class RoyaltyHeldBalanceResource extends Resource
                     ->sortable(),
 
                 TextColumn::make('held_months_count')
-                    ->label('Held Months')
-                    ->state(fn (Employee $record): int => $record->royaltyReportItems->where('payout_status', 'Hold')->count())
+                    ->label('Deduction Months')
+                    ->state(fn (Employee $record): int => $record->royaltyReportItems->count())
                     ->badge()
                     ->color('gray'),
             ])
@@ -140,26 +169,51 @@ class RoyaltyHeldBalanceResource extends Resource
                 ViewAction::make()
                     ->label('View Details'),
 
+                Action::make('printSheet')
+                    ->label('Print Sheet')
+                    ->icon('heroicon-m-printer')
+                    ->color('gray')
+                    ->url(fn (Employee $record) => route('royalty.held-balances.print-employee', ['employee' => $record->employee_code]))
+                    ->openUrlInNewTab(),
+
                 Action::make('releaseAmount')
                     ->label('Release Amount')
                     ->icon('heroicon-m-banknotes')
                     ->color('success')
                     ->modalHeading(fn (Employee $record) => "Release Held Royalty Bonus - {$record->employee_code} ({$record->name})")
                     ->modalDescription(function (Employee $record) {
-                        $held = (float) $record->royaltyReportItems->where('payout_status', 'Hold')->sum('final_payout');
+                        $held = (float) $record->royaltyReportItems->sum(function ($item) {
+                            if ($item->payout_status === 'Hold') {
+                                return (float) $item->monthly_max_payout;
+                            }
+
+                            return max(0.0, (float) $item->monthly_max_payout - (float) $item->final_payout);
+                        });
                         $released = (float) $record->royaltyHeldReleases->sum('amount');
                         $remaining = max(0.0, $held - $released);
 
                         return 'Current Available Balance: Rs. '.number_format($remaining, 2).'. Management can release full or partial amount according to merit points collected during the year.';
                     })
                     ->visible(function (Employee $record) {
-                        $held = (float) $record->royaltyReportItems->where('payout_status', 'Hold')->sum('final_payout');
+                        $held = (float) $record->royaltyReportItems->sum(function ($item) {
+                            if ($item->payout_status === 'Hold') {
+                                return (float) $item->monthly_max_payout;
+                            }
+
+                            return max(0.0, (float) $item->monthly_max_payout - (float) $item->final_payout);
+                        });
                         $released = (float) $record->royaltyHeldReleases->sum('amount');
 
                         return ($held - $released) > 0;
                     })
                     ->schema(function (Employee $record) {
-                        $held = (float) $record->royaltyReportItems->where('payout_status', 'Hold')->sum('final_payout');
+                        $held = (float) $record->royaltyReportItems->sum(function ($item) {
+                            if ($item->payout_status === 'Hold') {
+                                return (float) $item->monthly_max_payout;
+                            }
+
+                            return max(0.0, (float) $item->monthly_max_payout - (float) $item->final_payout);
+                        });
                         $released = (float) $record->royaltyHeldReleases->sum('amount');
                         $remaining = max(0.0, $held - $released);
 

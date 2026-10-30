@@ -4,6 +4,17 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.18] - 2026-10-30
+
+### Added & Fixed
+- **Populate Held Balances from Deductions & Added Printable Sheets for Held Balances and Budget Balance Overview**:
+  - **Deducted Amount Held Balance Calculation (`RoyaltyHeldBalanceResource.php`, `ViewRoyaltyHeldBalance.php`, `view-royalty-held-balance.blade.php`)**: Updated the Held Balances resource and detail page to detect and populate employees who have deducted bonus amounts (`(monthly_max_payout - final_payout) > 0`) alongside manual `'Hold'` payout statuses. Respects minimum floor thresholds so the exact withheld bonus difference is tracked and available for release.
+  - **Individual Employee Held Balance Print Sheet (`royalty.held-balances.print-employee`, `resources/views/royalty/print-held-balance.blade.php`)**: Added row and header print actions generating an official A4 portrait statement with employee details, summary KPI cards, itemized monthly deduction breakdown, release history, and authorization signatures.
+  - **All Held Balances Printable Directory (`royalty.held-balances.print-list`, `resources/views/royalty/print-held-balances-list.blade.php`)**: Added header print action in `ListRoyaltyHeldBalances` producing a summary sheet of all employees with held balances, departments, total held, released amounts, and remaining payable balances.
+  - **Royalty Budget Balance Overview Print Sheet (`royalty.balance-overview.print`, `resources/views/royalty/print-balance-overview.blade.php`, `royalty-balance-overview.blade.php`)**: Added a direct "Print Sheet" button alongside "Export Excel" on the 12-Month Royalty Budget Balance Overview page, rendering a landscape print-friendly report with aggregate metrics and tenure balance details.
+
+---
+
 ## [2.9.17] - 2026-10-30
 
 ### Fixed & Enhanced

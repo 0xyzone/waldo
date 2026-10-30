@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.17';
+    public const CURRENT_VERSION = '2.9.18';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,21 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.18',
+                'date' => '2026-10-30',
+                'title' => 'Populated Held Balances from Deductions & Added Printable Sheets for Held Balances and Budget Overview',
+                'type' => 'micro',
+                'badge' => 'Enhancement & Fix',
+                'badge_color' => 'success',
+                'description' => 'Updated the Royalty Held Balance resource to accurately capture deducted bonus amounts (Monthly Max Payout minus Net Payout, honoring floor threshold) alongside manual payout holds, and introduced dedicated print sheets for held balances and the budget balance overview.',
+                'highlights' => [
+                    'Deducted Amount Held Logic: Extended held balance detection across RoyaltyHeldBalanceResource and ViewRoyaltyHeldBalance to include items where deductions occurred (`monthly_max_payout - final_payout > 0`), properly capturing withheld bonus amounts honoring the monthly minimum floor threshold.',
+                    'Employee Held Balance Print Sheet: Created a dedicated printable statement for individual employees detailing all withheld and deducted monthly bonuses alongside disbursement/release records and approval signatures.',
+                    'Overall Held Balances List Print: Added a print action and printable sheet for the complete Held Balances directory with department filters and totals.',
+                    'Royalty Budget Balance Overview Print: Added Print Sheet functionality to the Balance Overview page with summary KPI metrics and 12-month rolling budget breakdown.',
+                ],
+            ],
             [
                 'version' => '2.9.17',
                 'date' => '2026-10-30',

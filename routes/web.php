@@ -107,6 +107,15 @@ Route::prefix('/royalty/reports/{report}')->middleware('auth')->group(function (
     Route::get('/print/{department}', [RoyaltyReportPrintController::class, 'printReport'])->name('royalty.reports.print-dept');
     Route::get('/export', [RoyaltyReportPrintController::class, 'exportExcel'])->name('royalty.reports.export');
 });
+Route::get('/royalty/held-balances/print', [RoyaltyReportPrintController::class, 'printHeldBalancesList'])
+    ->name('royalty.held-balances.print-list')
+    ->middleware('auth');
+Route::get('/royalty/held-balances/{employee}/print', [RoyaltyReportPrintController::class, 'printEmployeeHeldBalance'])
+    ->name('royalty.held-balances.print-employee')
+    ->middleware('auth');
+Route::get('/royalty/balance-overview/print', [RoyaltyReportPrintController::class, 'printBalanceOverview'])
+    ->name('royalty.balance-overview.print')
+    ->middleware('auth');
 Route::get('/royalty/samples/performance-deduction', [RoyaltyReportPrintController::class, 'downloadPerformanceSample'])
     ->name('royalty.samples.performance-deduction')
     ->middleware('auth');
