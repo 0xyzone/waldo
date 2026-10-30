@@ -217,7 +217,7 @@
         <div class="header-meta-box">
             <div class="meta-row">
                 <div class="meta-col">
-                    <span class="meta-label">Billing Period:</span>
+                    <span class="meta-label">Payout Period:</span>
                     <span class="meta-value">{{ ucfirst($report->month) }} {{ $report->year }}</span>
                 </div>
                 <div class="meta-col">
