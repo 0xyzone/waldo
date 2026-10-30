@@ -677,7 +677,22 @@
     - Center-aligned `Max Payout`, `Attn Ded.`, `Susp. Ded.`, `Perf Ded.`, `Total Ded.`, and `Net Payout`.
     - Increased text sizing to 10.5px (and 12px for meta/header info) with 5px vertical padding for sharper readability.
 
-### 60. Populate Held Balances from Deductions & Added Printable Sheets for Held Balances and Budget Overview (v2.9.18 - v2.9.23)
+### 61. Three-Tier Financial Summary Card in Royalty Bonus Print Header (v2.9.24)
+- **Problem & Requirements**:
+  - In the Royalty Bonus print sheet header area, the user requested that total payout be broken down into 3 distinct layers:
+    1. `Total Payout W/o Deductions:`
+    2. `Total Deductions:`
+    3. `Total Payout:`
+  - Kept in a dedicated styled container beside the existing metadata (Payout Period, Cutoff Date, and Total Staff).
+- **Solution**:
+  - In `resources/views/royalty/print.blade.php`:
+    - Updated `.header-meta-box` into a flex layout separating `.meta-primary-info` (Payout Period, Cutoff Date, Eligible Staff count) from `.meta-financial-summary`.
+    - Rendered 3 stacked layers:
+      - `Total Payout W/o Deductions`: sum of `monthly_max_payout`.
+      - `Total Deductions`: sum of `total_deduction_amount` (accented with `.text-red`).
+      - `Total Payout`: sum of `final_payout` (accented with `.text-green` and bold).
+    - Formatted with tabular numbers (`tabular-nums`) and clean borders.
+
 - **Problem & Requirements**:
   - Held balances were not being populated for employees who had bonus deductions because `RoyaltyHeldBalanceResource` was querying only `payout_status = 'Hold'`.
   - When an employee has deductions, the difference between `Monthly Max Payout` and `Final Net Payout` (honoring the monthly minimum floor threshold) represents the withheld/deducted bonus amount that should be tracked in held balances and available for release.

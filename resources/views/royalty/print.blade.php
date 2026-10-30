@@ -55,6 +55,69 @@
             background-color: #fafafa;
             border: 1px solid #000;
             border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .meta-primary-info {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            font-size: 12px;
+            flex-wrap: wrap;
+        }
+
+        .meta-financial-summary {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 4px 12px;
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            min-width: 260px;
+            text-align: right;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+
+        .fin-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            font-size: 11px;
+            line-height: 1.35;
+        }
+
+        .fin-row.fin-total {
+            border-top: 1px solid #cbd5e1;
+            padding-top: 2px;
+            margin-top: 2px;
+            font-size: 12px;
+        }
+
+        .fin-label {
+            font-weight: 600;
+            color: #475569;
+            text-align: left;
+        }
+
+        .fin-val {
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: #0f172a;
+        }
+
+        .fin-val.text-red {
+            color: #dc2626;
+        }
+
+        .fin-val.text-green {
+            color: #047857;
+            font-size: 12.5px;
+            font-weight: 800;
         }
 
         .meta-row {
@@ -230,8 +293,14 @@
             PAYOUT SHEET
         </div>
 
+        @php
+            $sumMaxPayout = (float) $items->sum('monthly_max_payout');
+            $sumTotalDeductions = (float) $items->sum('total_deduction_amount');
+            $sumFinalPayout = (float) $items->sum('final_payout');
+        @endphp
+
         <div class="header-meta-box">
-            <div class="meta-row">
+            <div class="meta-primary-info">
                 <div class="meta-col">
                     <span class="meta-label">Payout Period:</span>
                     <span class="meta-value">{{ ucfirst($report->month) }} {{ $report->year }}</span>
@@ -244,9 +313,20 @@
                     <span class="meta-label">Total Staff:</span>
                     <span class="meta-value">{{ count($items) }} Eligible</span>
                 </div>
-                <div class="meta-col">
-                    <span class="meta-label">Total Payout:</span>
-                    <span class="meta-value font-payout">Rs. {{ number_format($items->sum('final_payout'), 2) }}</span>
+            </div>
+
+            <div class="meta-financial-summary">
+                <div class="fin-row">
+                    <span class="fin-label">Total Payout W/o Deductions:</span>
+                    <span class="fin-val">Rs. {{ number_format($sumMaxPayout, 2) }}</span>
+                </div>
+                <div class="fin-row">
+                    <span class="fin-label">Total Deductions:</span>
+                    <span class="fin-val text-red">Rs. {{ number_format($sumTotalDeductions, 2) }}</span>
+                </div>
+                <div class="fin-row fin-total">
+                    <span class="fin-label">Total Payout:</span>
+                    <span class="fin-val text-green">Rs. {{ number_format($sumFinalPayout, 2) }}</span>
                 </div>
             </div>
         </div>

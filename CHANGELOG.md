@@ -4,6 +4,18 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.24] - 2026-10-30
+
+### Enhanced
+- **3-Tier Financial Summary Card in Royalty Bonus Print Header (`print.blade.php`)**:
+  - Replaced the single inline payout total in the print header with a dedicated side summary box featuring 3 distinct stacked rows:
+    1. **Total Payout W/o Deductions** (`monthly_max_payout` sum)
+    2. **Total Deductions** (`total_deduction_amount` sum, styled in red)
+    3. **Total Payout** (`final_payout` net sum, bolded in emerald green)
+  - Separated metadata (Payout Period, Cutoff Date, and Total Staff) into an independent flex column next to this financial summary card.
+
+---
+
 ## [2.9.23] - 2026-10-30
 
 ### Fixed & Enhanced

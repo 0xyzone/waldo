@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.23';
+    public const CURRENT_VERSION = '2.9.24';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,18 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.24',
+                'date' => '2026-10-30',
+                'title' => 'Three-Tier Payout & Deduction Summary Card in Royalty Bonus Print Header',
+                'type' => 'micro',
+                'badge' => 'UI Enhancement',
+                'badge_color' => 'success',
+                'description' => 'Added a dedicated 3-tier financial summary card (Total Payout W/o Deductions, Total Deductions, Total Payout) in the Royalty Bonus printable payout sheet header alongside primary report metadata.',
+                'highlights' => [
+                    'Three-Layer Financial Summary: Structured heading area with separate metadata (Payout Period, Cutoff Date, Total Staff) and a distinct 3-tier financial panel displaying Total Payout W/o Deductions, Total Deductions (highlighted in red), and Net Total Payout (highlighted in emerald green).',
+                ],
+            ],
             [
                 'version' => '2.9.23',
                 'date' => '2026-10-30',
