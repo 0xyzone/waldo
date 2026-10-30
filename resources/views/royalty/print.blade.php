@@ -179,7 +179,7 @@
 </head>
 <body>
 
-    <div class="no-print" style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 6px;">
+    <div class="no-print" style="margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 6px; flex-wrap: wrap; gap: 10px;">
         <div style="display: flex; align-items: center; gap: 10px;">
             <button onclick="window.print()" style="padding: 8px 16px; background: #0284c7; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px;">
                 🖨️ Print Royalty Sheet
@@ -188,20 +188,47 @@
                 Close Window
             </button>
         </div>
-        <div style="display: flex; align-items: center; gap: 8px; font-size: 12px;">
-            <label for="dept-select" style="font-weight: bold; color: #334155;">Filter Department:</label>
-            <select id="dept-select" onchange="location.href='?department=' + encodeURIComponent(this.value)" style="padding: 6px 10px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 12px;">
-                <option value="All" {{ $department === 'All Departments' ? 'selected' : '' }}>All Departments ({{ $departments ? count($departments) : 0 }})</option>
-                @foreach($departments as $dept)
-                    <option value="{{ $dept }}" {{ $department === $dept ? 'selected' : '' }}>{{ $dept }}</option>
-                @endforeach
-            </select>
+        <div style="display: flex; align-items: center; gap: 12px; font-size: 12px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <label for="dept-select" style="font-weight: bold; color: #334155;">Filter Department:</label>
+                <select id="dept-select" onchange="applyFilters()" style="padding: 6px 10px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 12px; background: #fff;">
+                    <option value="All" {{ $department === 'All Departments' ? 'selected' : '' }}>All Departments ({{ $departments ? count($departments) : 0 }})</option>
+                    @foreach($departments as $dept)
+                        <option value="{{ $dept }}" {{ $department === $dept ? 'selected' : '' }}>{{ $dept }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <label for="desig-select" style="font-weight: bold; color: #334155;">Filter Designation:</label>
+                <select id="desig-select" onchange="applyFilters()" style="padding: 6px 10px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 12px; background: #fff;">
+                    <option value="All" {{ $designation === 'All Designations' ? 'selected' : '' }}>All Designations ({{ $designations ? count($designations) : 0 }})</option>
+                    @foreach($designations as $desig)
+                        <option value="{{ $desig }}" {{ $designation === $desig ? 'selected' : '' }}>{{ $desig }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <script>
+                function applyFilters() {
+                    const dept = document.getElementById('dept-select').value;
+                    const desig = document.getElementById('desig-select').value;
+                    const params = new URLSearchParams();
+                    if (dept && dept !== 'All') params.set('department', dept);
+                    if (desig && desig !== 'All') params.set('designation', desig);
+                    window.location.href = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+                }
+            </script>
         </div>
     </div>
 
     <div class="header-container">
         <h1 class="header-title">{{ $report->title }}</h1>
-        <div class="header-subtitle">DEPARTMENT: {{ strtoupper($department) }} PAYOUT SHEET</div>
+        <div class="header-subtitle">
+            DEPARTMENT: {{ strtoupper($department) }}
+            @if($designation !== 'All Designations')
+                | DESIGNATION: {{ strtoupper($designation) }}
+            @endif
+            PAYOUT SHEET
+        </div>
 
         <div class="header-meta-box">
             <div class="meta-row">

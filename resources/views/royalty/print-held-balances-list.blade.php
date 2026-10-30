@@ -171,10 +171,9 @@
                 <th>Employee Name</th>
                 <th>Department</th>
                 <th>Designation</th>
-                <th style="width: 80px;" class="text-right">Total Held</th>
-                <th style="width: 80px;" class="text-right">Released</th>
-                <th style="width: 85px;" class="text-right">Remaining Balance</th>
-                <th style="width: 80px;" class="text-center">Status</th>
+                <th style="width: 85px;" class="text-right">Total Held</th>
+                <th style="width: 85px;" class="text-right">Released</th>
+                <th style="width: 95px;" class="text-right">Remaining Balance</th>
             </tr>
         </thead>
         <tbody>
@@ -188,19 +187,10 @@
                     <td class="text-right font-mono">Rs. {{ number_format($rec['total_held'], 2) }}</td>
                     <td class="text-right font-mono">Rs. {{ number_format($rec['total_released'], 2) }}</td>
                     <td class="text-right font-mono"><strong>Rs. {{ number_format($rec['remaining_balance'], 2) }}</strong></td>
-                    <td class="text-center">
-                        @if($rec['remaining_balance'] <= 0)
-                            <span class="badge" style="background: #e2e8f0;">Fully Released</span>
-                        @elseif($rec['has_full_hold'])
-                            <span class="badge" style="background: #fee2e2;">Payout Held</span>
-                        @else
-                            <span class="badge" style="background: #fef3c7;">Deductions</span>
-                        @endif
-                    </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="9" class="text-center" style="padding: 14px;">No held bonus records found.</td>
+                    <td colspan="8" class="text-center" style="padding: 14px;">No held bonus records found.</td>
                 </tr>
             @endforelse
         </tbody>
@@ -210,7 +200,6 @@
                 <td class="text-right font-mono">Rs. {{ number_format($sumHeld, 2) }}</td>
                 <td class="text-right font-mono">Rs. {{ number_format($sumReleased, 2) }}</td>
                 <td class="text-right font-mono">Rs. {{ number_format($sumRemaining, 2) }}</td>
-                <td></td>
             </tr>
         </tfoot>
     </table>

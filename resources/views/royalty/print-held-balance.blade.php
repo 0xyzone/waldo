@@ -240,11 +240,10 @@
                 <th style="width: 30px;">#</th>
                 <th>Report Month / Title</th>
                 <th style="width: 80px;">Tenure Month</th>
-                <th style="width: 85px;" class="text-right">Max Payout</th>
-                <th style="width: 85px;" class="text-right">Floor Min</th>
-                <th style="width: 85px;" class="text-right">Net Payout</th>
-                <th style="width: 90px;" class="text-right">Amount Held</th>
-                <th style="width: 90px;" class="text-center">Status</th>
+                <th style="width: 90px;" class="text-right">Max Payout</th>
+                <th style="width: 90px;" class="text-right">Floor Min</th>
+                <th style="width: 90px;" class="text-right">Net Payout</th>
+                <th style="width: 95px;" class="text-right">Amount Held</th>
             </tr>
         </thead>
         <tbody>
@@ -266,17 +265,10 @@
                     <td class="text-right font-mono">Rs. {{ number_format($item->monthly_min_payout, 2) }}</td>
                     <td class="text-right font-mono">Rs. {{ number_format($item->final_payout, 2) }}</td>
                     <td class="text-right font-mono"><strong>Rs. {{ number_format($amtHeld, 2) }}</strong></td>
-                    <td class="text-center">
-                        @if($isFullHold)
-                            <span class="badge" style="background: #fee2e2;">Payout Held</span>
-                        @else
-                            <span class="badge" style="background: #fef3c7;">Deducted</span>
-                        @endif
-                    </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" class="text-center" style="padding: 12px;">No held or deducted bonus records found for this employee.</td>
+                    <td colspan="7" class="text-center" style="padding: 12px;">No held or deducted bonus records found for this employee.</td>
                 </tr>
             @endforelse
         </tbody>
@@ -284,7 +276,6 @@
             <tr>
                 <td colspan="6" class="text-right">Total Held:</td>
                 <td class="text-right font-mono">Rs. {{ number_format($totalHeld, 2) }}</td>
-                <td></td>
             </tr>
         </tfoot>
     </table>

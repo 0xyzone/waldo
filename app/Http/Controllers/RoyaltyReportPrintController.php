@@ -24,7 +24,13 @@ class RoyaltyReportPrintController extends Controller
             $query->where('department', $selectedDept);
         }
 
+        $selectedDesignation = $request->query('designation');
+        if ($selectedDesignation && strtolower($selectedDesignation) !== 'all') {
+            $query->where('designation', $selectedDesignation);
+        }
+
         $items = $query->orderBy('department')
+            ->orderBy('designation')
             ->orderBy('employee_code')
             ->get();
 
@@ -35,10 +41,22 @@ class RoyaltyReportPrintController extends Controller
             ->pluck('department')
             ->toArray();
 
+        // Get designations within the department scope (or all if all departments)
+        $designationsQuery = $report->items()->whereNotNull('designation');
+        if ($selectedDept && strtolower($selectedDept) !== 'all') {
+            $designationsQuery->where('department', $selectedDept);
+        }
+        $allDesignations = $designationsQuery->distinct()
+            ->orderBy('designation')
+            ->pluck('designation')
+            ->toArray();
+
         return response()->view('royalty.print', [
             'report' => $report,
             'department' => $selectedDept ?: 'All Departments',
             'departments' => $allDepartments,
+            'designation' => $selectedDesignation ?: 'All Designations',
+            'designations' => $allDesignations,
             'items' => $items,
         ]);
     }

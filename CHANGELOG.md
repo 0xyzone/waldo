@@ -4,6 +4,17 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.20] - 2026-10-30
+
+### Enhanced & Cleaned
+- **Designation Filter on Royalty Bonus Print Sheet (`RoyaltyReportPrintController.php`, `print.blade.php`)**:
+  - Added a reactive **Filter Designation** selector in the print toolbar alongside the Department filter.
+  - Automatically scopes designations based on the selected department and dynamically updates the subtitle (`DEPARTMENT: [NAME] | DESIGNATION: [NAME] PAYOUT SHEET`), eligible count, and totals.
+- **Removed Status Column from Held Balances Print Sheets (`print-held-balances-list.blade.php`, `print-held-balance.blade.php`)**:
+  - Removed the `Status` column from both the all-held-balances directory sheet and the employee statement sheet, expanding financial balance columns and keeping prints concise.
+
+---
+
 ## [2.9.19] - 2026-10-30
 
 ### Fixed

@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.19';
+    public const CURRENT_VERSION = '2.9.20';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,19 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.20',
+                'date' => '2026-10-30',
+                'title' => 'Designation Filtering on Royalty Print Sheet & Removal of Status from Held Balances Print',
+                'type' => 'micro',
+                'badge' => 'Enhancement & Refinement',
+                'badge_color' => 'success',
+                'description' => 'Removed the redundant status column from the Held Balances print sheets and added designation filtering capability alongside department filters on the Royalty Bonus printable sheet.',
+                'highlights' => [
+                    'Removed Status Column: Removed the Status column from both the all-held-balances directory sheet and the individual employee held balance statement to save horizontal space.',
+                    'Designation Filter in Royalty Print: Added Designation dropdown filter to the toolbar in the Royalty Bonus print view, automatically scoped to the active department and updating table records, metadata, and subtitle dynamically.',
+                ],
+            ],
             [
                 'version' => '2.9.19',
                 'date' => '2026-10-30',
