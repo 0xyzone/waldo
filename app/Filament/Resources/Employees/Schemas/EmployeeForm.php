@@ -353,7 +353,7 @@ class EmployeeForm
                                     ]),
                                 Section::make('Tips & Points Settings')
                                     ->schema([
-                                        Grid::make(['default' => 2, 'sm' => 4])
+                                        Grid::make(['default' => 2, 'sm' => 5])
                                             ->schema([
                                                 TextInput::make('tips_amount')
                                                     ->label('Tips Amount')
@@ -397,6 +397,14 @@ class EmployeeForm
                                                     }),
                                                 Select::make('tips_status')
                                                     ->label('Tips Status')
+                                                    ->options([
+                                                        'Release' => 'Release',
+                                                        'Hold' => 'Hold',
+                                                    ])
+                                                    ->default('Release')
+                                                    ->native(false),
+                                                Select::make('royalty_status')
+                                                    ->label('Royalty Status')
                                                     ->options([
                                                         'Release' => 'Release',
                                                         'Hold' => 'Hold',

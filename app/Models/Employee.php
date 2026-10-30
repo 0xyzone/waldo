@@ -62,6 +62,7 @@ class Employee extends Model
         'tips_amount',
         'tips_adj',
         'tips_status',
+        'royalty_status',
         'point_value',
         'tips_blank',
         'publish_tips',

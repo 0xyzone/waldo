@@ -4,6 +4,16 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.13] - 2026-10-30
+
+### Fixed & Enhanced
+- **Independent Per-Employee Royalty Payout Status (`royalty_status`)**:
+  - **Database Migration (`2026_10_30_124624_add_royalty_status_to_employees_table.php`)**: Added `royalty_status` (`VARCHAR(20)`, default `'Release'`) to the `employees` table so each employee has a dedicated Royalty payout status completely independent of `tips_status` and `employee_status`.
+  - **Employee Profile, Table & Export (`Employee.php`, `EmployeeForm.php`, `EmployeesTable.php`, `EmployeeExportService.php`)**: Added `Royalty Status` (`Release` / `Hold`) selector in the Employee form, a `Royalty: Release/Hold` badge on Employee cards, `Release Royalty` / `Hold Royalty` bulk actions, and export column support.
+  - **Decoupled Report Calculation & Sync (`RoyaltyCalculationService.php`, `ViewRoyaltyReport.php`)**: Removed `tips_status` and `employee_status === 'Suspended'` checks from `RoyaltyCalculationService::generate()`. Report items now use each employee's independent `royalty_status` (and preserve existing item statuses when recalculating a report), while toggling `Release` / `Hold` in `ViewRoyaltyReport::togglePayoutStatus()` also updates the employee's `royalty_status`.
+
+---
+
 ## [2.9.12] - 2026-10-30
 
 ### Enhanced

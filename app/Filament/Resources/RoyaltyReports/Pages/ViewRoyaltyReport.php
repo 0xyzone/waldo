@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\RoyaltyReports\Pages;
 
 use App\Filament\Resources\RoyaltyReports\RoyaltyReportResource;
+use App\Models\Employee;
 use App\Models\RoyaltyReportItem;
 use App\Services\RoyaltyCalculationService;
 use Filament\Actions\Action;
@@ -156,6 +157,12 @@ class ViewRoyaltyReport extends ViewRecord implements HasTable
             'payout_status' => $newStatus,
             'held_reason' => $reason,
         ]);
+
+        if ($item->employee_code) {
+            Employee::where('employee_code', $item->employee_code)->update([
+                'royalty_status' => $newStatus,
+            ]);
+        }
 
         Notification::make()
             ->title('Payout Status Updated')

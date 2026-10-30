@@ -179,6 +179,16 @@ class EmployeesTable
                             ->formatStateUsing(fn ($state) => $state ? 'Published' : 'Not Published')
                             ->extraAttributes(['class' => 'mt-1 block']),
                     ])->extraAttributes(['class' => 'flex gap-2 justify-start'])->grow(false),
+                    Split::make([
+                        TextColumn::make('royalty_label')
+                            ->default('Royalty:'),
+                        TextColumn::make('royalty_status')
+                            ->label('Royalty Status')
+                            ->badge()
+                            ->color(fn ($state) => ($state ?? 'Release') === 'Release' ? 'success' : 'danger')
+                            ->formatStateUsing(fn ($state) => ucfirst((string) ($state ?? 'Release')))
+                            ->extraAttributes(['class' => 'mt-1 block']),
+                    ])->extraAttributes(['class' => 'flex gap-2 justify-start mt-1'])->grow(false),
                     TextColumn::make('join_date_formatted')
                         ->icon('heroicon-m-calendar')
                         ->color('gray')
@@ -670,6 +680,40 @@ class EmployeesTable
                             Notification::make()
                                 ->title('Tips Held')
                                 ->body("Tips have been held for {$records->count()} employee(s).")
+                                ->warning()
+                                ->send();
+                        }),
+                    BulkAction::make('release_royalty')
+                        ->label('Release Royalty')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Release Royalty for Selected Employees')
+                        ->modalDescription('Are you sure you want to set Royalty Status to Release for all selected employees?')
+                        ->modalSubmitActionLabel('Confirm Release')
+                        ->action(function (Collection $records): void {
+                            $records->each(fn (Employee $record) => $record->update(['royalty_status' => 'Release']));
+
+                            Notification::make()
+                                ->title('Royalty Released')
+                                ->body("Royalty status has been set to Release for {$records->count()} employee(s).")
+                                ->success()
+                                ->send();
+                        }),
+                    BulkAction::make('hold_royalty')
+                        ->label('Hold Royalty')
+                        ->icon('heroicon-o-lock-closed')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->modalHeading('Hold Royalty for Selected Employees')
+                        ->modalDescription('Are you sure you want to set Royalty Status to Hold for all selected employees?')
+                        ->modalSubmitActionLabel('Confirm Hold')
+                        ->action(function (Collection $records): void {
+                            $records->each(fn (Employee $record) => $record->update(['royalty_status' => 'Hold']));
+
+                            Notification::make()
+                                ->title('Royalty Held')
+                                ->body("Royalty status has been set to Hold for {$records->count()} employee(s).")
                                 ->warning()
                                 ->send();
                         }),

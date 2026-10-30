@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.12';
+    public const CURRENT_VERSION = '2.9.13';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,20 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.13',
+                'date' => '2026-10-30',
+                'title' => 'Independent Per-Employee Royalty Payout Status (Decoupled from Tips & Employee Status)',
+                'type' => 'micro',
+                'badge' => 'Fix & Enhancement',
+                'badge_color' => 'success',
+                'description' => 'Decoupled Royalty Bonus payout status from Tips Status and Employee Status by introducing an independent per-employee Royalty Status (Release/Hold) field on Employee profiles and syncing it with Royalty Report payout toggles.',
+                'highlights' => [
+                    'Independent Employee Royalty Status: Added royalty_status (default Release) to employees table, Employee model, EmployeeForm, EmployeesTable (badge & bulk Release/Hold Royalty actions), and EmployeeExportService.',
+                    'Decoupled Royalty Report Calculation: Updated RoyaltyCalculationService::generate() to determine payout_status strictly from the employee\'s independent royalty_status (preserving per-report toggles on recalculation) with zero dependency on tips_status or employee_status.',
+                    'Two-Way Report Toggle Sync: Toggling an employee\'s Payout Status (Release/Hold) inside a Royalty Report updates both the report item and the employee\'s royalty_status.',
+                ],
+            ],
             [
                 'version' => '2.9.12',
                 'date' => '2026-10-30',

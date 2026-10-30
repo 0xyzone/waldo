@@ -24,6 +24,11 @@ class RoyaltyCalculationService
     public function generate(RoyaltyReport $report): void
     {
         DB::transaction(function () use ($report) {
+            // Snapshot any existing item payout status overrides before clearing items
+            $existingPayoutStatuses = $report->items()
+                ->get(['employee_code', 'payout_status', 'held_reason'])
+                ->keyBy(fn (RoyaltyReportItem $item) => strtoupper(trim((string) $item->employee_code)));
+
             // Clear any existing items if re-generating
             $report->items()->delete();
 
@@ -137,9 +142,16 @@ class RoyaltyCalculationService
                 $consumedTenureBudget = $previouslyConsumed + $finalPayout;
                 $remainingBudget = $annualBudget > 0 ? max(0, $annualBudget - $consumedTenureBudget) : 0;
 
-                $isHold = ($employee->employee_status === 'Suspended') || strtoupper(trim((string) ($employee->tips_status ?? ''))) === 'HOLD';
-                $payoutStatus = $isHold ? 'Hold' : 'Release';
-                $heldReason = $isHold ? ($employee->employee_status === 'Suspended' ? 'Staff suspended' : 'Staff on hold') : null;
+                if ($existingPayoutStatuses->has($code)) {
+                    $existingItem = $existingPayoutStatuses->get($code);
+                    $isHold = strtoupper(trim((string) ($existingItem->payout_status ?? ''))) === 'HOLD';
+                    $payoutStatus = $isHold ? 'Hold' : 'Release';
+                    $heldReason = $isHold ? ($existingItem->held_reason ?: 'Royalty status on hold') : null;
+                } else {
+                    $isHold = strtoupper(trim((string) ($employee->royalty_status ?? 'Release'))) === 'HOLD';
+                    $payoutStatus = $isHold ? 'Hold' : 'Release';
+                    $heldReason = $isHold ? 'Royalty status on hold' : null;
+                }
 
                 $itemRemarks = null;
                 if ($isExempt) {

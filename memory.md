@@ -634,6 +634,16 @@
   - `formatItemLabel()` renders a full-width flex row displaying a color-coded status/action badge, bold action log brief (`action_description`), field diff count pill, user attribution (`by <user_name>`), and right-aligned timestamp.
   - Standardized `IdCardRequestForm` and `UnofficialNametagRequestForm` to use `ActionLogSection::make('actionLogs')`.
 
+### 55. Independent Per-Employee Royalty Payout Status (`royalty_status`) (v2.9.13)
+- **Problem & Requirements**:
+  - Previously, `RoyaltyCalculationService::generate()` set an employee's Royalty Bonus `payout_status` to `Hold` if `$employee->tips_status === 'Hold'` or `$employee->employee_status === 'Suspended'`.
+  - User clarified that Royalty Payout Status is NOT linked with `tips_status` or `employee_status`, and must be independently handled for every employee via a dedicated `royalty_status` (`Release`/`Hold`) field on each Employee profile as well as per-employee toggling inside Royalty Reports.
+- **Solution**:
+  - **Migration (`2026_10_30_124624_add_royalty_status_to_employees_table.php`)**: Added `royalty_status` (`string(20)`, default `'Release'`) to `employees`.
+  - **Employee Resource (`Employee.php`, `EmployeeForm.php`, `EmployeesTable.php`, `EmployeeExportService.php`)**: Added `royalty_status` to `$fillable`, `EmployeeForm` (`Royalty Status` select with `Release`/`Hold`), `EmployeesTable` (`Royalty` badge + `Release Royalty` / `Hold Royalty` bulk actions), and `EmployeeExportService`.
+  - **Royalty Calculation & Report Toggle (`RoyaltyCalculationService.php`, `ViewRoyaltyReport.php`)**: Removed `tips_status` and `employee_status` checks from `RoyaltyCalculationService::generate()`. New report items derive their initial `payout_status` solely from `$employee->royalty_status`, existing report item statuses are preserved across recalculations, and `ViewRoyaltyReport::togglePayoutStatus()` syncs the toggled `Release`/`Hold` state back to the employee's `royalty_status`.
+
+
 
 
 

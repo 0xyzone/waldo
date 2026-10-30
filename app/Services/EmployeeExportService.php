@@ -41,6 +41,8 @@ class EmployeeExportService
             'citizenship_issue_place' => 'Citizenship Issue Place',
             'ssid' => 'SSID',
             'tips_amount' => 'Tips Amount (₹)',
+            'tips_status' => 'Tips Status',
+            'royalty_status' => 'Royalty Status',
             'point_value' => 'Point Value',
             'profile_status' => 'Profile Status',
         ];
@@ -90,6 +92,8 @@ class EmployeeExportService
             'citizenship_issue_place' => $employee->citizenship_issue_place ?? '-',
             'ssid' => $employee->ssid ?? '-',
             'tips_amount' => $employee->tips_amount !== null ? (float) $employee->tips_amount : '-',
+            'tips_status' => $employee->tips_status ?? 'Release',
+            'royalty_status' => $employee->royalty_status ?? 'Release',
             'point_value' => $employee->point_value !== null ? (float) $employee->point_value : '-',
             'profile_status' => $employee->isIncomplete() ? 'Incomplete' : 'Complete',
             default => '-',
