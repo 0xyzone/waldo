@@ -181,17 +181,16 @@
         <thead>
             <tr>
                 <th style="width: 25px;">#</th>
-                <th style="width: 65px;">Code</th>
+                <th style="width: 70px;">Code</th>
                 <th>Employee Name</th>
                 <th>Department</th>
                 <th>Designation</th>
-                <th style="width: 75px;" class="text-center">Join Date</th>
-                <th style="width: 140px;" class="text-center">12-Mo Cycle</th>
-                <th style="width: 80px;" class="text-right">12-Mo Budget</th>
-                <th style="width: 80px;" class="text-right">Utilized</th>
-                <th style="width: 85px;" class="text-right">Remaining</th>
-                <th style="width: 55px;" class="text-center">Usage</th>
-                <th style="width: 70px;" class="text-center">Status</th>
+                <th style="width: 80px;" class="text-center">Join Date</th>
+                <th style="width: 150px;" class="text-center">12-Mo Cycle</th>
+                <th style="width: 90px;" class="text-right">12-Mo Budget</th>
+                <th style="width: 90px;" class="text-right">Utilized</th>
+                <th style="width: 95px;" class="text-right">Remaining</th>
+                <th style="width: 60px;" class="text-center">Usage</th>
             </tr>
         </thead>
         <tbody>
@@ -208,19 +207,10 @@
                     <td class="text-right font-mono">Rs. {{ number_format($r['consumed_budget'], 2) }}</td>
                     <td class="text-right font-mono"><strong>Rs. {{ number_format($r['remaining_budget'], 2) }}</strong></td>
                     <td class="text-center font-mono">{{ $r['utilization_rate'] }}%</td>
-                    <td class="text-center">
-                        @if($r['status'] === 'Exhausted')
-                            <span class="badge" style="background: #fee2e2;">Exhausted</span>
-                        @elseif($r['status'] === 'Low Budget')
-                            <span class="badge" style="background: #fef3c7;">Low</span>
-                        @else
-                            <span class="badge" style="background: #dcfce7;">Healthy</span>
-                        @endif
-                    </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="12" class="text-center" style="padding: 14px;">No records found matching criteria.</td>
+                    <td colspan="11" class="text-center" style="padding: 14px;">No records found matching criteria.</td>
                 </tr>
             @endforelse
         </tbody>
@@ -231,22 +221,9 @@
                 <td class="text-right font-mono">Rs. {{ number_format($sumConsumed, 2) }}</td>
                 <td class="text-right font-mono">Rs. {{ number_format($sumRemaining, 2) }}</td>
                 <td class="text-center font-mono">{{ $avgUtil }}%</td>
-                <td></td>
             </tr>
         </tfoot>
     </table>
-
-    <div style="margin-top: 30px; display: flex; justify-content: space-between; font-size: 11px;">
-        <div style="border-top: 1px solid #000; width: 180px; text-align: center; padding-top: 4px;">
-            Prepared By (HR)
-        </div>
-        <div style="border-top: 1px solid #000; width: 180px; text-align: center; padding-top: 4px;">
-            Checked By (Finance)
-        </div>
-        <div style="border-top: 1px solid #000; width: 180px; text-align: center; padding-top: 4px;">
-            Approved By (Management)
-        </div>
-    </div>
 </body>
 </html>
 

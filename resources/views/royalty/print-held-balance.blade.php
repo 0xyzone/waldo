@@ -314,18 +314,6 @@
             </tr>
         </tfoot>
     </table>
-
-    <div style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 11px;">
-        <div style="border-top: 1px solid #000; width: 180px; text-align: center; padding-top: 4px;">
-            Prepared By (HR)
-        </div>
-        <div style="border-top: 1px solid #000; width: 180px; text-align: center; padding-top: 4px;">
-            Checked By (Finance)
-        </div>
-        <div style="border-top: 1px solid #000; width: 180px; text-align: center; padding-top: 4px;">
-            Approved By (Management)
-        </div>
-    </div>
 </body>
 </html>
 

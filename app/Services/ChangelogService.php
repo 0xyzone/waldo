@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.21';
+    public const CURRENT_VERSION = '2.9.22';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,18 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.22',
+                'date' => '2026-10-30',
+                'title' => 'Remove Status Column from Royalty Balance Overview Print Sheet',
+                'type' => 'micro',
+                'badge' => 'Refinement',
+                'badge_color' => 'success',
+                'description' => 'Removed the Status column from print-balance-overview.blade.php, redistributing table width to financial tenure figures and usage rates.',
+                'highlights' => [
+                    'Print Sheet Cleanup: Removed the Status badge column from the Royalty Budget Balance Overview print file and updated column spans.',
+                ],
+            ],
             [
                 'version' => '2.9.21',
                 'date' => '2026-10-30',
