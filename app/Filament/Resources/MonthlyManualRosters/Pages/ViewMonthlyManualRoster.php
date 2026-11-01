@@ -168,6 +168,7 @@ class ViewMonthlyManualRoster extends ViewRecord implements HasTable
 
                 TextColumn::make('employee_name')
                     ->label('Employee Name')
+                    ->copyable()
                     ->weight('semibold')
                     ->searchable()
                     ->sortable(),

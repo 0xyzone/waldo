@@ -33,6 +33,7 @@ class EmployeeSuspensionsTable
                     ->sortable(),
                 TextColumn::make('employee.name')
                     ->label('Name')
+                    ->copyable()
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),

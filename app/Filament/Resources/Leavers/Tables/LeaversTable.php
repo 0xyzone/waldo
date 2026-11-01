@@ -42,6 +42,7 @@ class LeaversTable
                     ->sortable(),
                 TextColumn::make('employee.name')
                     ->label('Name')
+                    ->copyable()
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('employee.department.name')

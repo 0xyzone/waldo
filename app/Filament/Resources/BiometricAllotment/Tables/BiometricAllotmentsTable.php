@@ -43,10 +43,12 @@ class BiometricAllotmentsTable
                 TextColumn::make('code')
                     ->label('Code')
                     ->fontFamily('mono')
+                    ->copyable()
                     ->searchable(),
                 TextColumn::make('name')
                     ->label('Name')
                     ->searchable()
+                    ->copyable()
                     ->weight('bold'),
                 TextColumn::make('department.name')
                     ->label('Department'),

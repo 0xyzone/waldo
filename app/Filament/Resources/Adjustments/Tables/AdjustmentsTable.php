@@ -33,10 +33,12 @@ class AdjustmentsTable
                     ->rowIndex(),
                 TextColumn::make('employee.employee_code')
                     ->label('Employee Code')
+                    ->copyable()
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('employee.name')
                     ->label('Name')
+                    ->copyable()
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('type')

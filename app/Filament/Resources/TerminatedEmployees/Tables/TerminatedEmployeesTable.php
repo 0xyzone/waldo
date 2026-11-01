@@ -37,10 +37,12 @@ class TerminatedEmployeesTable
                 TextColumn::make('employee_id')
                     ->label('Employee Code')
                     ->fontFamily('mono')
+                    ->copyable()
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('employee.name')
                     ->label('Name')
+                    ->copyable()
                     ->searchable()
                     ->sortable()
                     ->weight('bold'),
