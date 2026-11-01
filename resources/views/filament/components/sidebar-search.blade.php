@@ -93,7 +93,7 @@
             No resource menu is available
         </p>
         <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
-            Nothing found for <span class="font-semibold text-primary-600 dark:text-primary-400" x-text="'\"' + query + '\"'"></span>
+            Nothing found for &ldquo;<span class="font-semibold text-primary-600 dark:text-primary-400" x-text="query"></span>&rdquo;
         </p>
         <button
             type="button"

@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.24';
+    public const CURRENT_VERSION = '2.9.25';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,20 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.25',
+                'date' => '2026-11-01',
+                'title' => 'Fix Alpine Search Syntax Error & Add Department Error Report Image Upload for Tips Reports',
+                'type' => 'micro',
+                'badge' => 'Fix & Feature',
+                'badge_color' => 'success',
+                'description' => 'Fixed Alpine.js expression syntax error caused by escaped quotes in sidebar search, and added a department error report image upload capability to Tips Reports with integrated preview in Adjustments & Errors.',
+                'highlights' => [
+                    'Fixed Alpine Expression Syntax Error: Replaced malformed string concatenation in sidebar-search.blade.php empty state with clean HTML entities and bound query text, eliminating browser console syntax errors.',
+                    'Department Error Report Image Upload: Added department_error_image_path column to tips_reports and FileUpload in TipsReportForm.',
+                    'Error Attachment Preview in Adjustments & Errors: Added dedicated interactive preview card in ViewTipsReport under Adjustments & Errors with in-page lightbox modal, external full view, update, and remove actions.',
+                ],
+            ],
             [
                 'version' => '2.9.24',
                 'date' => '2026-10-30',

@@ -115,6 +115,18 @@ class TipsReportForm
                                     ])
                                     ->maxSize(15360)
                                     ->required(),
+
+                                FileUpload::make('department_error_image_path')
+                                    ->label('Department Error Report Image')
+                                    ->helperText('Upload error report screenshot or scanned document provided by the department.')
+                                    ->disk('public')
+                                    ->directory('tips-error-reports')
+                                    ->image()
+                                    ->imageEditor()
+                                    ->openable()
+                                    ->downloadable()
+                                    ->maxSize(10240)
+                                    ->columnSpanFull(),
                             ]),
                         ]),
 

@@ -4,6 +4,20 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.25] - 2026-11-01
+
+### Fixed & Added
+- **Alpine.js Expression Syntax Error in Sidebar Search (`sidebar-search.blade.php`)**:
+  - Replaced unescaped quote concatenation (`x-text="'\"' + query + '\"'"`) with HTML typographic quotation entities (`&ldquo;` / `&rdquo;`) and bound `x-text="query"`, eliminating the `Uncaught SyntaxError: Invalid or unexpected token` console exception.
+- **Department Error Report Image Upload for Tips Reports**:
+  - **Database Migration (`2026_11_01_135955_add_department_error_image_to_tips_reports_table.php`)**: Added `department_error_image_path` string column to `tips_reports`.
+  - **Tips Report Form (`TipsReportForm.php`)**: Added an image `FileUpload` component with image editing, preview, and 10MB limit in Step 1 of the report wizard.
+  - **Adjustments & Errors Attachment Card & Lightbox (`view-tips-report.blade.php`, `ViewTipsReport.php`)**:
+    - Embedded an interactive preview card at the top of the **Company Error Penalty Deductions** section showing the department's error report image.
+    - Added click-to-enlarge full-screen lightbox modal preview, download button, full tab view, and upload/update/remove actions.
+
+---
+
 ## [2.9.24] - 2026-10-30
 
 ### Enhanced

@@ -677,6 +677,22 @@
     - Center-aligned `Max Payout`, `Attn Ded.`, `Susp. Ded.`, `Perf Ded.`, `Total Ded.`, and `Net Payout`.
     - Increased text sizing to 10.5px (and 12px for meta/header info) with 5px vertical padding for sharper readability.
 
+### 62. Fix Alpine Search Syntax Error & Add Department Error Report Image Upload for Tips Reports (v2.9.25)
+- **Problem & Requirements**:
+  - The browser console showed an Alpine expression error: `Uncaught SyntaxError: Invalid or unexpected token` evaluating expression `'"' + query + '"'`.
+  - User requested a new image upload option in Tips Reports where an error report image from the department can be uploaded.
+  - The attached image must be clearly displayed in the **Adjustments & Errors** page of the Tips Reports view.
+- **Solution**:
+  - In `resources/views/filament/components/sidebar-search.blade.php`:
+    - Replaced the nested escaped double quotes string `x-text="'\"' + query + '\"'"` with `&ldquo;<span ... x-text="query"></span>&rdquo;`, fixing the Alpine.js evaluator parser error.
+  - In `database/migrations/2026_11_01_135955_add_department_error_image_to_tips_reports_table.php` & `app/Models/TipsReport.php`:
+    - Added `department_error_image_path` column to `tips_reports` table.
+  - In `app/Filament/Resources/TipsReports/Schemas/TipsReportForm.php`:
+    - Added `FileUpload::make('department_error_image_path')` under Step 1 with `image()`, `imageEditor()`, `openable()`, and `downloadable()` for convenient upload during report creation and editing.
+  - In `app/Filament/Resources/TipsReports/Pages/ViewTipsReport.php` & `view-tips-report.blade.php`:
+    - Added an interactive attachment preview card under the **Company Error Penalty Deductions** section in the **Adjustments & Errors** tab.
+    - Integrated a click-to-enlarge full-screen lightbox modal preview, download button, full-window view, update action modal, and remove confirmation action.
+
 ### 61. Three-Tier Financial Summary Card in Royalty Bonus Print Header (v2.9.24)
 - **Problem & Requirements**:
   - In the Royalty Bonus print sheet header area, the user requested that total payout be broken down into 3 distinct layers:
