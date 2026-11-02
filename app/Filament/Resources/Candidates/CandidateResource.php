@@ -30,6 +30,25 @@ class CandidateResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'phone_number';
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = Candidate::query()
+            ->where('status', 'pending')
+            ->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Pending Candidates';
+    }
+
     public static function form(Schema $schema): Schema
     {
         return CandidateForm::configure($schema);

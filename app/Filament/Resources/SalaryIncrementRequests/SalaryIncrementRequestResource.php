@@ -42,6 +42,26 @@ class SalaryIncrementRequestResource extends Resource
 
     protected static ?int $navigationSort = 6;
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = SalaryIncrementRequest::query()
+            ->where('hr_acknowledged', false)
+            ->orWhere('finance_acknowledged', false)
+            ->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Pending HR or Finance Acknowledgements';
+    }
+
     public static function form(Schema $schema): Schema
     {
         return SalaryIncrementRequestForm::configure($schema);

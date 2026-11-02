@@ -739,6 +739,28 @@
     - Added `Print Sheet` button on the Balance Overview page opening `/royalty/balance-overview/print` in a new tab.
     - Generates an A4 landscape print-ready sheet with total budget, consumed, remaining metrics, and 12-month tenure tracking across all active staff.
 
+### 63. Dynamic Resource Navigation Badges for Pending Actions & Acknowledgements (v2.9.26)
+- **Problem & Requirements**:
+  - Operators and managers lacked instant visibility from the Filament sidebar regarding pending actions requiring attention, such as HR/Finance acknowledgements, uncompleted biometrics, pending requests/fines, and active suspensions.
+  - User requested appropriate badges with live counts in resource navigation without making assumptions, inspecting actual database schemas and statuses.
+- **Solution**:
+  - Implemented `getNavigationBadge()`, `getNavigationBadgeColor()`, and `getNavigationBadgeTooltip()` across 14 Filament resources:
+    - **SalaryIncrementRequestResource**: `where('hr_acknowledged', false)->orWhere('finance_acknowledged', false)` (`warning`, "Pending HR or Finance Acknowledgements").
+    - **NametagFineResource**: `where('acknowledged', false)->orWhere('finance_acknowledged', false)` (`warning`, "Pending HR or Finance Acknowledgements").
+    - **AdjustmentResource**: `where('status', 'pending')` (`warning`, "Pending Adjustments").
+    - **TipsAdjustmentResource**: `where('status', 'pending')` (`warning`, "Pending Tips Adjustments").
+    - **CandidateResource**: `where('status', 'pending')` (`warning`, "Pending Candidates").
+    - **BiometricAllotmentResource**: `where('status', 'Not Done Yet')` (`danger`, "Biometric Allotment Not Done Yet").
+    - **NametagDistributionResource**: `where('status', 'Pending')` (`warning`, "Pending NameTag Distributions").
+    - **EmployeeSuspensionResource**: `where('status', 'active')` (`danger`, "Active Employee Suspensions").
+    - **EmployeePromotionResource**: `where('acknowledged', false)->orWhere('hrms_synced', false)` (`warning`, "Pending Acknowledgement or HRMS Sync").
+    - **EmployeeTransferResource**: `where('acknowledged', false)->orWhere('hrms_synced', false)` (`warning`, "Pending Acknowledgement or HRMS Sync").
+    - **IdCardRequestResource**: `where('status', 'pending')` (`warning`, "Pending ID Card Requests").
+    - **UnofficialNametagRequestResource**: `where('status', 'pending')` (`warning`, "Pending Unofficial NameTag Requests").
+    - **LeaverResource**: `where('offboarded', false)` (`danger`, "Pending Offboarding").
+    - **ScheduleRunResource**: `where('status', 'failed')` (`danger`, "Failed Schedule Runs").
+  - Badges automatically hide when the count is 0.
+
 
 
 

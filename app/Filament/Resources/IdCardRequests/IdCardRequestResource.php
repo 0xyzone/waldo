@@ -43,6 +43,25 @@ class IdCardRequestResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'employee_name';
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = IdCardRequest::query()
+            ->where('status', 'pending')
+            ->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Pending ID Card Requests';
+    }
+
     public static function form(Schema $schema): Schema
     {
         return IdCardRequestForm::configure($schema);

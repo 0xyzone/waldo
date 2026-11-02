@@ -4,6 +4,29 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.26] - 2026-11-02
+
+### Added
+- **Dynamic Resource Navigation Badges for Pending Records & Acknowledgements**:
+  - Implemented live badge counts, context-aware colors, and informative tooltips in the Filament sidebar across 14 operational resources:
+    1. **Salary Increment Requests (`SalaryIncrementRequestResource`)**: Counts requests requiring HR or Finance acknowledgement (`hr_acknowledged = false` OR `finance_acknowledged = false`) with `warning` badge.
+    2. **NameTag Fines (`NametagFineResource`)**: Counts fines requiring HR acknowledgement or Finance acknowledgement (`acknowledged = false` OR `finance_acknowledged = false`) with `warning` badge.
+    3. **Adjustments (`AdjustmentResource`)**: Counts adjustments pending approval (`status = 'pending'`) with `warning` badge.
+    4. **Tips Adjustments (`TipsAdjustmentResource`)**: Counts tips adjustments pending review (`status = 'pending'`) with `warning` badge.
+    5. **Candidates (`CandidateResource`)**: Counts pending candidate applications (`status = 'pending'`) with `warning` badge.
+    6. **Biometric Allotment (`BiometricAllotmentResource`)**: Counts staff awaiting biometric enrollment (`status = 'Not Done Yet'`) with `danger` badge.
+    7. **NameTag Distributions (`NametagDistributionResource`)**: Counts distributions pending release (`status = 'Pending'`) with `warning` badge.
+    8. **Employee Suspensions (`EmployeeSuspensionResource`)**: Counts currently active suspensions (`status = 'active'`) with `danger` badge.
+    9. **Employee Promotions (`EmployeePromotionResource`)**: Counts promotions pending acknowledgement or HRMS synchronization (`acknowledged = false` OR `hrms_synced = false`) with `warning` badge.
+    10. **Employee Transfers (`EmployeeTransferResource`)**: Counts transfers pending acknowledgement or HRMS synchronization (`acknowledged = false` OR `hrms_synced = false`) with `warning` badge.
+    11. **ID Card Requests (`IdCardRequestResource`)**: Counts pending ID card requests (`status = 'pending'`) with `warning` badge.
+    12. **Unofficial NameTag Requests (`UnofficialNametagRequestResource`)**: Counts pending requests (`status = 'pending'`) with `warning` badge.
+    13. **Leavers (`LeaverResource`)**: Counts offboarding leavers awaiting formal completion (`offboarded = false`) with `danger` badge.
+    14. **Schedule Runs (`ScheduleRunResource`)**: Counts failed background task executions (`status = 'failed'`) with `danger` badge.
+  - Automatically hides badges when the count resolves to 0 (`null` return).
+
+---
+
 ## [2.9.25] - 2026-11-01
 
 ### Fixed & Added

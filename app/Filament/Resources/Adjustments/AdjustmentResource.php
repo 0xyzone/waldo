@@ -25,6 +25,25 @@ class AdjustmentResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'Finance';
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = Adjustment::query()
+            ->where('status', 'pending')
+            ->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Pending Adjustments';
+    }
+
     public static function form(Schema $schema): Schema
     {
         return AdjustmentForm::configure($schema);

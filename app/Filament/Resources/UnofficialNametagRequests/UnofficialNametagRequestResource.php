@@ -38,6 +38,25 @@ class UnofficialNametagRequestResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'employee_name';
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = UnofficialNametagRequest::query()
+            ->where('status', 'pending')
+            ->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Pending Unofficial NameTag Requests';
+    }
+
     public static function form(Schema $schema): Schema
     {
         return UnofficialNametagRequestForm::configure($schema);

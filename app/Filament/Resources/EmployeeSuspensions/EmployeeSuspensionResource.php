@@ -31,6 +31,25 @@ class EmployeeSuspensionResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'employee_id';
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = EmployeeSuspension::query()
+            ->where('status', 'active')
+            ->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'danger';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Active Employee Suspensions';
+    }
+
     public static function form(Schema $schema): Schema
     {
         return EmployeeSuspensionForm::configure($schema);

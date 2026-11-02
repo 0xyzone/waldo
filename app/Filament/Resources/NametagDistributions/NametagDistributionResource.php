@@ -35,6 +35,25 @@ class NametagDistributionResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'employee_id';
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = NametagDistribution::query()
+            ->where('status', 'Pending')
+            ->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Pending NameTag Distributions';
+    }
+
     public static function form(Schema $schema): Schema
     {
         return NametagDistributionForm::configure($schema);

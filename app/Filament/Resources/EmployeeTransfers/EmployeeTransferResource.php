@@ -42,6 +42,26 @@ class EmployeeTransferResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'employee_id';
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = EmployeeTransfer::query()
+            ->where('acknowledged', false)
+            ->orWhere('hrms_synced', false)
+            ->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Pending Acknowledgement or HRMS Sync';
+    }
+
     public static function form(Schema $schema): Schema
     {
         return EmployeeTransferForm::configure($schema);

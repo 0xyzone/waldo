@@ -27,6 +27,25 @@ class BiometricAllotmentResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = BiometricAllotment::query()
+            ->where('status', 'Not Done Yet')
+            ->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'danger';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Biometric Allotment Not Done Yet';
+    }
+
     public static function form(Schema $schema): Schema
     {
         return BiometricAllotmentForm::configure($schema);

@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.9.25';
+    public const CURRENT_VERSION = '2.9.26';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,25 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.9.26',
+                'date' => '2026-11-02',
+                'title' => 'Resource Navigation Badges for Pending Actions & Acknowledgements',
+                'type' => 'micro',
+                'badge' => 'Enhancement',
+                'badge_color' => 'success',
+                'description' => 'Added dynamic navigation badges with live counts, status colors, and hover tooltips across Filament resources requiring operational attention (pending acknowledgements, unfulfilled requests, and actionable records).',
+                'highlights' => [
+                    'Salary Increment Requests: Shows count of requests pending HR or Finance acknowledgement with warning badge and tooltip.',
+                    'NameTag Fines: Displays count of fines pending HR or Finance acknowledgement with warning badge and tooltip.',
+                    'Financial Adjustments & Tips Adjustments: Badges count of pending adjustments in Finance and Tips menus.',
+                    'Candidates & Biometric Allotments: Badges pending candidates and unfulfilled biometric allotments.',
+                    'NameTag Distributions, ID Card Requests & Unofficial Requests: Badges pending distributions and pending plastic/metal nametag requests.',
+                    'Employee Promotions & Transfers: Shows count of promotions and transfers pending acknowledgement or HRMS sync.',
+                    'Suspensions & Leavers: Alerts to active suspensions and leavers pending final offboarding.',
+                    'Schedule Runs: Danger badge showing count of failed background schedule runs in System Settings.',
+                ],
+            ],
             [
                 'version' => '2.9.25',
                 'date' => '2026-11-01',

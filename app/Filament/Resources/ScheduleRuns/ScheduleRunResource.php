@@ -29,6 +29,25 @@ class ScheduleRunResource extends Resource
 
     protected static ?int $navigationSort = 20;
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = ScheduleRun::query()
+            ->where('status', 'failed')
+            ->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'danger';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Failed Schedule Runs';
+    }
+
     public static function canCreate(): bool
     {
         return false;
