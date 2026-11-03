@@ -761,6 +761,14 @@
     - **ScheduleRunResource**: `where('status', 'failed')` (`danger`, "Failed Schedule Runs").
   - Badges automatically hide when the count is 0.
 
+### 64. Full Email Address Copy on Click in Employee Directory (v2.9.27)
+- **Problem & Requirements**:
+  - In `EmployeesTable.php`, the employee email was truncated with `limit(15)` for display compactness.
+  - When users clicked to copy the email, either custom Alpine handlers or standard column state only had access to the truncated string, failing to copy the complete address.
+- **Solution**:
+  - Added the email column to `EmployeesTable.php` with native `copyable()`, `copyableState(fn (Employee $record): ?string => $record->email)`, `copyMessage('Email copied!')`, and `tooltip(fn (Employee $record): ?string => $record->email)`.
+  - While display remains neatly capped at 15 characters, clicking copies the full raw email string to the clipboard and shows a confirmation toast.
+
 
 
 

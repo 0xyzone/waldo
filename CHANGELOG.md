@@ -4,6 +4,15 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.27] - 2026-11-03
+
+### Fixed & Enhanced
+- **Full Email Copy on Click in Employee Directory (`EmployeesTable.php`)**:
+  - Configured native `copyable()`, `copyableState(fn (Employee $record): ?string => $record->email)`, and `copyMessage('Email copied!')` on the email column.
+  - When the email address is truncated to 15 characters via `limit(15)`, clicking now accurately copies the full email address to the user's clipboard and displays a tooltip with the complete email on hover.
+
+---
+
 ## [2.9.26] - 2026-11-02
 
 ### Added
