@@ -788,6 +788,18 @@
 - **Solution**:
   - In `EmployeePromotionExportService.php` and `EmployeeTransferExportService.php`, clamped the data validation ranges to the exact populated records (`D2:D{totalRows}`) and reset the active cell selection to `A2` (or `A1` when empty).
 
+### 67. Shield Role Permissions Validation Collision Fix (v2.10.2)
+- **Problem & Requirements**:
+  - Updating or toggling permissions for the Employee section in Shield Roles threw validation error: `The selected resource permissions employee is invalid.`
+  - `RoyaltyHeldBalanceResource` was also backed by `Employee::class`. Because Filament Shield Enhanced generates CheckboxList fields based on `Str::snake(class_basename($resourceClass::getModel()))`, both resources mapped to `resource_permissions_employee`.
+  - The field options for `resource_permissions_employee` were being overwritten by `RoyaltyHeldBalanceResource` permissions, so submitting employee actions like `Onboard:Employee` or `Suspend:Employee` was rejected by Laravel's `in:` rule.
+- **Solution**:
+  - Created `App\Models\RoyaltyHeldBalance` extending `Employee` with `$table = 'employees'`.
+  - Pointed `RoyaltyHeldBalanceResource` to `RoyaltyHeldBalance::class`.
+  - Generated dedicated Shield policy (`RoyaltyHeldBalancePolicy`) and synced permissions.
+  - Both resources now maintain distinct fields: `resource_permissions_employee` and `resource_permissions_royalty_held_balance`.
+
+
 
 
 

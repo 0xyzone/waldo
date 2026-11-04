@@ -4,6 +4,17 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.10.2] - 2026-11-04
+
+### Fixed
+- **Shield Role Permissions Validation Collision Between Employee & Royalty Held Balance Resources**:
+  - Resolved `The selected resource permissions employee is invalid` validation exception when saving or toggling employee permissions in Shield Roles.
+  - Root Cause: `RoyaltyHeldBalanceResource` was referencing `Employee::class` as its model without a distinct model identity, causing Shield's `EnhancedResourcePermissionsForm` to overwrite `resource_permissions_employee` checkboxes and validation options with Royalty Held Balance permissions (`Release:Employee`, etc.) instead of the standard and custom Employee permissions (`Onboard:Employee`, `Suspend:Employee`, `Terminate:Employee`, `ToggleManager:Employee`).
+  - Created `App\Models\RoyaltyHeldBalance` proxy model extending `Employee`, separating `RoyaltyHeldBalanceResource`'s permission namespace into `resource_permissions_royalty_held_balance` and isolating standard `Employee` permissions.
+  - Generated dedicated Shield policy (`RoyaltyHeldBalancePolicy`) and synced enhanced permissions.
+
+---
+
 ## [2.10.1] - 2026-11-04
 
 ### Fixed

@@ -6,6 +6,7 @@ use Agroezinger\FilamentShieldEnhanced\Traits\HasResourceShield;
 use App\Filament\Resources\RoyaltyHeldBalances\Pages\ListRoyaltyHeldBalances;
 use App\Filament\Resources\RoyaltyHeldBalances\Pages\ViewRoyaltyHeldBalance;
 use App\Models\Employee;
+use App\Models\RoyaltyHeldBalance;
 use App\Models\RoyaltyHeldRelease;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -37,7 +38,7 @@ class RoyaltyHeldBalanceResource extends Resource
         ];
     }
 
-    protected static ?string $model = Employee::class;
+    protected static ?string $model = RoyaltyHeldBalance::class;
 
     protected static ?string $modelLabel = 'Held Balance';
 

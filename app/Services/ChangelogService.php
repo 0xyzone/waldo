@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.10.1';
+    public const CURRENT_VERSION = '2.10.2';
 
     public static function getCurrentVersion(): string
     {
