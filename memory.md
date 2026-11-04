@@ -769,6 +769,19 @@
   - Added the email column to `EmployeesTable.php` with native `copyable()`, `copyableState(fn (Employee $record): ?string => $record->email)`, `copyMessage('Email copied!')`, and `tooltip(fn (Employee $record): ?string => $record->email)`.
   - While display remains neatly capped at 15 characters, clicking copies the full raw email string to the clipboard and shows a confirmation toast.
 
+### 65. NameTag Returns Resource under Purchase & Store (v2.10.0)
+- **Problem & Requirements**:
+  - The Purchase & Store department needed a dedicated module to record and manage physical nametag returns from employees (due to resignation, transfer, replacement, or condition damage).
+- **Solution**:
+  - **Migration & Database**: Created `nametag_returns` table with `employee_id` (FK to `employees.employee_code`), `return_date`, `condition` (`Good`, `Damaged`, `Lost`), `remarks`, and `received_by` (FK to `users`).
+  - **Model**: Created `NametagReturn` model with `BelongsTo` employee and receiver relationships, `HasActionLogs` trait, and added `nametagReturns()` relation to `Employee`.
+  - **Filament Resource (`NametagReturnResource`)**: Placed in the `Purchase & Store` navigation group (sort order 4) with `Heroicon::OutlinedArrowUturnLeft`.
+  - **Form Schema**: Added live employee preview card (Name, Code, Department, Designation), employee selector, return date picker, condition selector, and remarks textarea.
+  - **Table Schema**: Received by, Code, Name, Department, Designation, Return Date, inline condition changer, condition color borders, condition tabs (All, Good, Damaged, Lost) with count badges, and filters.
+  - **Dashboard Hub Widget**: Added shortcut button in `PurchaseStoreOverviewWidget`.
+  - **Shield & Security**: Generated `NametagReturnPolicy` and permissions.
+
+
 
 
 

@@ -177,6 +177,14 @@ class Employee extends Model
     }
 
     /**
+     * Get the nametag returns associated with the Employee.
+     */
+    public function nametagReturns(): HasMany
+    {
+        return $this->hasMany(NametagReturn::class, 'employee_id', 'employee_code');
+    }
+
+    /**
      * Get the nametag fines associated with the Employee.
      */
     public function nametagFines(): HasMany

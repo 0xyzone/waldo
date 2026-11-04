@@ -4,6 +4,32 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.10.0] - 2026-11-04
+
+### Added
+- **NameTag Returns Management Resource (`NametagReturnResource`)**:
+  - Created a dedicated resource under the **Purchase & Store** navigation group to record and audit nametags returned by employees (resigned, transferred, replaced, or damaged).
+  - **Database Migration (`2026_11_04_112620_create_nametag_returns_table.php`)**:
+    - Created `nametag_returns` table with foreign key `employee_id` referencing `employees.employee_code`, `return_date`, `condition` (`Good`, `Damaged`, `Lost`), `remarks`, and `received_by` foreign key referencing `users`.
+  - **Eloquent Model (`NametagReturn.php`)**:
+    - Added relationships `employee()` (`BelongsTo Employee`) and `receiver()` (`BelongsTo User`).
+    - Integrated `HasActionLogs` trait for full audit activity logging.
+    - Added `nametagReturns()` HasMany relation to `Employee.php`.
+  - **Form Schema (`NametagReturnForm.php`)**:
+    - Interactive selected employee info preview card displaying live Code, Name, Department, and Designation upon choosing an employee.
+    - Inputs for employee selection, return date, physical condition (`Good Condition`, `Damaged`, `Lost / Missing`), and remarks/handover notes.
+  - **Table Schema (`NametagReturnsTable.php`)**:
+    - Columns for Received By, Code, Employee Name, Department, Designation, Return Date, inline editable Condition, and Remarks with tooltip.
+    - Condition row accent indicator borders (Emerald for Good, Amber for Damaged, Rose for Lost).
+    - Status tabs for All Returns, Good Condition, Damaged, and Lost / Missing with real-time record count badges.
+    - Department, designation, and return date range filters.
+  - **Purchase & Store Hub Widget (`PurchaseStoreOverviewWidget`)**:
+    - Integrated quick shortcut link directly to NameTag Returns.
+  - **Permissions & Security**:
+    - Generated Filament Shield policy and permissions (`NametagReturnPolicy`).
+
+---
+
 ## [2.9.27] - 2026-11-03
 
 ### Fixed & Enhanced

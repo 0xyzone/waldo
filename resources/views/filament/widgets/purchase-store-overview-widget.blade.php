@@ -131,10 +131,14 @@
             </div>
 
             <!-- Resource Links -->
-            <div class="grid grid-cols-3 gap-2 pt-1 border-t border-slate-100 dark:border-white/[0.06]">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-slate-100 dark:border-white/[0.06]">
                 <a href="{{ url('/kamkaj/nametag-distributions') }}" class="flex items-center justify-center gap-2 p-2 rounded-xl bg-slate-50/70 dark:bg-slate-900/40 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 border border-slate-200/50 dark:border-white/[0.04] transition-colors text-xs font-semibold text-slate-700 dark:text-slate-300">
                     <x-filament::icon icon="heroicon-m-check-badge" class="h-4 w-4 text-emerald-500" />
                     <span>Distributions</span>
+                </a>
+                <a href="{{ url('/kamkaj/nametag-returns') }}" class="flex items-center justify-center gap-2 p-2 rounded-xl bg-slate-50/70 dark:bg-slate-900/40 hover:bg-teal-50 dark:hover:bg-teal-950/20 border border-slate-200/50 dark:border-white/[0.04] transition-colors text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    <x-filament::icon icon="heroicon-m-arrow-uturn-left" class="h-4 w-4 text-teal-500" />
+                    <span>Returns</span>
                 </a>
                 <a href="{{ url('/kamkaj/nametag-fines') }}" class="flex items-center justify-center gap-2 p-2 rounded-xl bg-slate-50/70 dark:bg-slate-900/40 hover:bg-rose-50 dark:hover:bg-rose-950/20 border border-slate-200/50 dark:border-white/[0.04] transition-colors text-xs font-semibold text-slate-700 dark:text-slate-300">
                     <x-filament::icon icon="heroicon-m-banknotes" class="h-4 w-4 text-rose-500" />

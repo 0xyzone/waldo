@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\NametagDistribution;
 use App\Models\NametagFine;
+use App\Models\NametagReturn;
 use App\Models\UnofficialNametagRequest;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Carbon\Carbon;
@@ -42,6 +43,11 @@ class PurchaseStoreOverviewWidget extends Widget
         $tagRequestsPending = UnofficialNametagRequest::where('status', 'pending')->count();
         $tagRequestsActive = UnofficialNametagRequest::where('status', '!=', 'done')->count();
 
+        $returnsTotal = NametagReturn::count();
+        $returnsThisMonth = NametagReturn::whereMonth('return_date', Carbon::today()->month)
+            ->whereYear('return_date', Carbon::today()->year)
+            ->count();
+
         return [
             'distributed_total' => $distributedTotal,
             'distributed_this_month' => $distributedThisMonth,
@@ -50,6 +56,8 @@ class PurchaseStoreOverviewWidget extends Widget
             'fines_pending_ack' => $finesPendingAck,
             'requests_pending' => $tagRequestsPending,
             'requests_active' => $tagRequestsActive,
+            'returns_total' => $returnsTotal,
+            'returns_this_month' => $returnsThisMonth,
         ];
     }
 
