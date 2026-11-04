@@ -364,9 +364,18 @@ class EmployeeTransferExportService
         $pattern = '/(<sheetData><row r="1"[^>]*>.*?<\/row>).*?(<\/sheetData>)/s';
         $sheet1Xml = preg_replace($pattern, '$1'.$rowsXml.'$2', $sheet1Xml);
 
-        // Update dimension ref to actual rows count
-        $totalRows = count($records) + 1;
+        // Update dimension ref to actual rows count (A1:K1 if no records)
+        $totalRows = max(1, count($records) + 1);
         $sheet1Xml = preg_replace('/<dimension ref="A1:[^"]*"/', "<dimension ref=\"A1:K{$totalRows}\"", $sheet1Xml);
+
+        // Reset sheet selection box to A2 instead of stray cell like K4
+        $targetActiveCell = count($records) > 0 ? 'A2' : 'A1';
+        $sheet1Xml = preg_replace('/<selection activeCell="[^"]*" sqref="[^"]*"\/>/', "<selection activeCell=\"{$targetActiveCell}\" sqref=\"{$targetActiveCell}\"/>", $sheet1Xml);
+
+        // Clamp data validation ranges to the exact populated data rows (e.g. D2:D5 instead of D2:D1048576)
+        // If no records, point to row 2
+        $validationEndRow = max(2, $totalRows);
+        $sheet1Xml = preg_replace('/<xm:sqref>([A-Z]+)2:[A-Z]+1048576<\/xm:sqref>/', "<xm:sqref>\${1}2:\${1}{$validationEndRow}</xm:sqref>", $sheet1Xml);
 
         $zip->addFromString($sheetPath, $sheet1Xml);
 

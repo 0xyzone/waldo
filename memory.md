@@ -781,6 +781,14 @@
   - **Dashboard Hub Widget**: Added shortcut button in `PurchaseStoreOverviewWidget`.
   - **Shield & Security**: Generated `NametagReturnPolicy` and permissions.
 
+### 66. HRMS Import Compatibility for Promotions & Transfers Exports (v2.10.1)
+- **Problem & Requirements**:
+  - The Excel (.xlsx) files downloaded for HRMS import in Promotions and Transfers had extra/ghost row errors during import in the HRMS software.
+  - The underlying template had data validation rules extending all the way down to row 1,048,576 (`D2:D1048576`, `F2:F1048576`, etc.) and a stray cursor selection box (`activeCell="K4"`), causing strict HRMS parsers to process hundreds of thousands of empty lines or fail with coordinate mismatches.
+- **Solution**:
+  - In `EmployeePromotionExportService.php` and `EmployeeTransferExportService.php`, clamped the data validation ranges to the exact populated records (`D2:D{totalRows}`) and reset the active cell selection to `A2` (or `A1` when empty).
+
+
 
 
 

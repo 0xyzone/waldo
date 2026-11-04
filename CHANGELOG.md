@@ -4,6 +4,16 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.10.1] - 2026-11-04
+
+### Fixed
+- **HRMS Import Compatibility for Promotion & Transfer Excel Exports (`EmployeePromotionExportService.php`, `EmployeeTransferExportService.php`)**:
+  - Clamped data validation reference ranges (`sqref`) on the generated export file from the unlimited Excel sheet height (`D2:D1048576`, etc.) to the exact populated data row boundaries (`D2:D{totalRows}`), preventing HRMS parsers from detecting ghost/empty rows and failing the import.
+  - Reset active cell selection focus in `sheet1.xml` from stray/out-of-bounds cells (e.g. `K4`) to `A2` (or `A1`), preventing import tools from reading empty selection coordinates.
+  - Corrected sheet dimension boundary calculation when no records are present (`A1:K1`).
+
+---
+
 ## [2.10.0] - 2026-11-04
 
 ### Added
