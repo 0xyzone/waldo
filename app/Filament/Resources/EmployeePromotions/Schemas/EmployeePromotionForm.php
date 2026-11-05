@@ -78,7 +78,9 @@ class EmployeePromotionForm
                                     ->default(function (): string {
                                         $today = now();
 
-                                        return $today->copy()->addMonthNoOverflow()->startOfMonth()->toDateString();
+                                        return $today->day < 15
+                                            ? $today->copy()->startOfMonth()->toDateString()
+                                            : $today->copy()->addMonthNoOverflow()->startOfMonth()->toDateString();
                                     })
                                     ->disabled(fn (callable $get) => ! $get('employee_id')),
                                 Select::make('to_department_id')

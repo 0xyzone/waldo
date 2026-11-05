@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.10.3';
+    public const CURRENT_VERSION = '2.10.4';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,19 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.10.4',
+                'date' => '2026-11-05',
+                'title' => 'Dynamic Default Promotion Date Logic for Employee Promotions',
+                'type' => 'micro',
+                'badge' => 'Enhancement',
+                'badge_color' => 'success',
+                'description' => 'Updated the default promotion date calculation in the employee promotion creation form based on current cycle cutoff.',
+                'highlights' => [
+                    'Before 15th of the Month: Defaults to the 1st of the current month.',
+                    'On or After 15th of the Month: Defaults to the 1st of the following month.',
+                ],
+            ],
             [
                 'version' => '2.10.3',
                 'date' => '2026-11-05',

@@ -811,6 +811,14 @@
   - **View Page**: Added `uploadCageTipsReportImageAction()` and `removeCageTipsReportImage()` methods in `ViewTipsReport.php`.
   - **Blade Template**: Added quick trigger link in the Actual Total Collection KPI card and an interactive Sky/Blue-themed attachment card in `view-tips-report.blade.php` with full-screen lightbox preview and download support.
 
+### 69. Dynamic Default Promotion Date Calculation (v2.10.4)
+- **Problem & Requirements**:
+  - In Employee Promotions, creating a new promotion record required setting a default promotion date based on the 15th cutoff:
+    - If today < 15th of current month: Default to 1st of current month.
+    - If today >= 15th of current month: Default to 1st of next month.
+- **Solution**:
+  - In `EmployeePromotionForm.php`, updated `DatePicker::make('promotion_date')->default(...)` using Carbon's `$today->day < 15 ? $today->copy()->startOfMonth()->toDateString() : $today->copy()->addMonthNoOverflow()->startOfMonth()->toDateString()`.
+
 
 
 

@@ -4,6 +4,16 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.10.4] - 2026-11-05
+
+### Changed
+- **Default Promotion Date Logic for Employee Promotions (`EmployeePromotionForm.php`)**:
+  - Updated the default date calculation when creating an employee promotion record.
+  - If today's day of the month is less than the 15th (`$today->day < 15`), the promotion date defaults to the 1st date of the current month (`$today->copy()->startOfMonth()`).
+  - If today's day of the month is greater than or equal to the 15th (`$today->day >= 15`), the promotion date defaults to the 1st date of next month (`$today->copy()->addMonthNoOverflow()->startOfMonth()`).
+
+---
+
 ## [2.10.3] - 2026-11-05
 
 ### Added
