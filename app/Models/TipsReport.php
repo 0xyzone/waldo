@@ -19,6 +19,7 @@ class TipsReport extends Model
         'year',
         'cutoff_date',
         'excel_file_path',
+        'cage_tips_report_image_path',
         'department_error_image_path',
         'collection_summary',
         'company_errors',

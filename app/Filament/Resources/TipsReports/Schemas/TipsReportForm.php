@@ -116,6 +116,17 @@ class TipsReportForm
                                     ->maxSize(15360)
                                     ->required(),
 
+                                FileUpload::make('cage_tips_report_image_path')
+                                    ->label('Cage Tips Collection Report Image')
+                                    ->helperText('Upload monthly tips collection report screenshot or document provided by the Cage Department.')
+                                    ->disk('public')
+                                    ->directory('cage-tips-reports')
+                                    ->image()
+                                    ->imageEditor()
+                                    ->openable()
+                                    ->downloadable()
+                                    ->maxSize(10240),
+
                                 FileUpload::make('department_error_image_path')
                                     ->label('Department Error Report Image')
                                     ->helperText('Upload error report screenshot or scanned document provided by the department.')
@@ -125,8 +136,7 @@ class TipsReportForm
                                     ->imageEditor()
                                     ->openable()
                                     ->downloadable()
-                                    ->maxSize(10240)
-                                    ->columnSpanFull(),
+                                    ->maxSize(10240),
                             ]),
                         ]),
 

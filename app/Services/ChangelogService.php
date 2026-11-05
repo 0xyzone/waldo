@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.10.2';
+    public const CURRENT_VERSION = '2.10.3';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,20 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.10.3',
+                'date' => '2026-11-05',
+                'title' => 'Cage Department Tips Collection Report Image Upload & View Card',
+                'type' => 'micro',
+                'badge' => 'Enhancement',
+                'badge_color' => 'success',
+                'description' => 'Added support for uploading and previewing the Cage Department monthly tips collection report image in Tips Reports.',
+                'highlights' => [
+                    'Form Layout: Added Cage Tips Collection Report upload field positioned on the left of the Department Error Report upload field.',
+                    'View Page Attachment: Rendered a dedicated Cage Report preview card in the Tips Report view page with click-to-enlarge lightbox modal and direct download.',
+                    'Action Controls: Provided inline update/replace and removal modal actions for the Cage report image.',
+                ],
+            ],
             [
                 'version' => '2.9.26',
                 'date' => '2026-11-02',

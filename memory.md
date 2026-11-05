@@ -799,6 +799,18 @@
   - Generated dedicated Shield policy (`RoyaltyHeldBalancePolicy`) and synced permissions.
   - Both resources now maintain distinct fields: `resource_permissions_employee` and `resource_permissions_royalty_held_balance`.
 
+### 68. Cage Department Tips Collection Report Image Support (v2.10.3)
+- **Problem & Requirements**:
+  - User requested an upload field in Tips Reports for an image provided by the Cage Department about the monthly tips collection report (holding data on tips collected across various departments).
+  - The upload field must be placed to the left of the department error report image upload field.
+  - The uploaded image must be displayed on the View Tips Report page with preview, enlargement, and management capabilities.
+- **Solution**:
+  - **Migration**: Added `cage_tips_report_image_path` to `tips_reports` table.
+  - **Model**: Added `cage_tips_report_image_path` to `$fillable` in `TipsReport.php`.
+  - **Form Schema**: Placed `FileUpload::make('cage_tips_report_image_path')` on the left side of `department_error_image_path` in Step 1 of `TipsReportForm.php`.
+  - **View Page**: Added `uploadCageTipsReportImageAction()` and `removeCageTipsReportImage()` methods in `ViewTipsReport.php`.
+  - **Blade Template**: Added quick trigger link in the Actual Total Collection KPI card and an interactive Sky/Blue-themed attachment card in `view-tips-report.blade.php` with full-screen lightbox preview and download support.
+
 
 
 

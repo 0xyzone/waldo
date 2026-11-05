@@ -628,6 +628,65 @@ class ViewTipsReport extends ViewRecord implements HasTable
             });
     }
 
+    public function uploadCageTipsReportImageAction(): Action
+    {
+        return Action::make('uploadCageTipsReportImage')
+            ->label('Upload Cage Report Image')
+            ->icon('heroicon-m-photo')
+            ->color('info')
+            ->modalHeading('Cage Department Tips Collection Report Image')
+            ->modalDescription('Upload or update the monthly tips collection report document provided by the Cage Department.')
+            ->modalSubmitActionLabel('Save Image')
+            ->visible(fn () => ! $this->record->isValidated())
+            ->fillForm(fn () => [
+                'cage_tips_report_image_path' => $this->record->cage_tips_report_image_path,
+            ])
+            ->schema([
+                FileUpload::make('cage_tips_report_image_path')
+                    ->label('Cage Tips Collection Report Image')
+                    ->disk('public')
+                    ->directory('cage-tips-reports')
+                    ->image()
+                    ->imageEditor()
+                    ->openable()
+                    ->downloadable()
+                    ->maxSize(10240)
+                    ->required(),
+            ])
+            ->action(function (array $data) {
+                $this->record->update([
+                    'cage_tips_report_image_path' => $data['cage_tips_report_image_path'] ?? null,
+                ]);
+
+                Notification::make()
+                    ->title('Cage Tips Report Image Saved')
+                    ->body('The cage tips collection report image has been successfully updated.')
+                    ->success()
+                    ->send();
+
+                $this->record->refresh();
+            });
+    }
+
+    public function removeCageTipsReportImage(): void
+    {
+        if ($this->record->isValidated()) {
+            return;
+        }
+
+        if ($this->record->cage_tips_report_image_path) {
+            Storage::disk('public')->delete($this->record->cage_tips_report_image_path);
+            $this->record->update(['cage_tips_report_image_path' => null]);
+            $this->record->refresh();
+
+            Notification::make()
+                ->title('Image Removed')
+                ->body('Cage tips collection report image was removed successfully.')
+                ->success()
+                ->send();
+        }
+    }
+
     public function uploadDepartmentErrorImageAction(): Action
     {
         return Action::make('uploadDepartmentErrorImage')

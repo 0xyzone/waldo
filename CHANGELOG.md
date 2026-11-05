@@ -4,6 +4,18 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.10.3] - 2026-11-05
+
+### Added
+- **Cage Department Tips Collection Report Image Support in Tips Reports**:
+  - **Database Migration (`2026_11_05_113326_add_cage_tips_report_image_to_tips_reports_table.php`)**: Added nullable `cage_tips_report_image_path` string column to `tips_reports` table.
+  - **Model (`TipsReport.php`)**: Added `cage_tips_report_image_path` to `$fillable`.
+  - **Form Schema (`TipsReportForm.php`)**: Added `cage_tips_report_image_path` upload field positioned on the **left side** of the department error report upload field inside Step 1's grid.
+  - **View Component (`ViewTipsReport.php`)**: Added `uploadCageTipsReportImageAction()` and `removeCageTipsReportImage()` Livewire modal actions.
+  - **Blade View (`view-tips-report.blade.php`)**: Added quick "Upload/Update Cage Report" action in the Actual Total Collection KPI card and an interactive Cage Collection Report attachment card with click-to-enlarge lightbox modal and download option.
+
+---
+
 ## [2.10.2] - 2026-11-04
 
 ### Fixed
