@@ -409,6 +409,7 @@ class ViewTipsReport extends ViewRecord implements HasTable
                     ->weight('bold'),
                 TextColumn::make('employee_name')
                     ->label('Employee Name')
+                    ->copyable()
                     ->searchable()
                     ->sortable()
                     ->weight('medium'),
