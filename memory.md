@@ -828,6 +828,12 @@
   - **Routes (`routes/web.php`)**: Registered named route `tips.reports.print-collections-summary`.
   - **UI Integration (`ViewTipsReport.php` & `view-tips-report.blade.php`)**: Added "Print Collections" header action and quick inline "Print Summary" link within the Actual Total Collection KPI card.
 
+### 71. Tips Totals Sheet Landscape Orientation (v2.10.6)
+- **Problem & Requirements**:
+  - The Tips Amount Summary (Totals) print sheet (`print-totals.blade.php`) was defaulting to portrait in print dialogs.
+- **Solution**:
+  - Updated both global `@page` and `@media print` `@page` settings to `size: A4 landscape;` in `resources/views/tips/print-totals.blade.php`.
+
 
 
 

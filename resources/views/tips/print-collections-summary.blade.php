@@ -9,7 +9,7 @@
         }
 
         @page {
-            size: A4 portrait;
+            size: A4 landscape;
             margin: 12mm 15mm;
         }
 

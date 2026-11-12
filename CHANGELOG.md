@@ -4,6 +4,14 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.10.6] - 2026-11-12
+
+### Changed
+- **Landscape Print Orientation for Tips Totals Sheet (`print-totals.blade.php`)**:
+  - Updated `@media print` `@page` rule from `size: A4 portrait` to `size: A4 landscape`, ensuring the browser print dialog defaults to landscape.
+
+---
+
 ## [2.10.5] - 2026-11-12
 
 ### Added

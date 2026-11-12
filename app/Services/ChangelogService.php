@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.10.5';
+    public const CURRENT_VERSION = '2.10.6';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,18 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.10.6',
+                'date' => '2026-11-12',
+                'title' => 'Landscape Print Mode for Tips Totals Sheet',
+                'type' => 'micro',
+                'badge' => 'Enhancement',
+                'badge_color' => 'success',
+                'description' => 'Updated the print-totals sheet for Tips Reports to print in landscape orientation.',
+                'highlights' => [
+                    'Print Styles: Configured @page rules inside media print for landscape A4 output.',
+                ],
+            ],
             [
                 'version' => '2.10.5',
                 'date' => '2026-11-12',
