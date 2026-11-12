@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.10.6';
+    public const CURRENT_VERSION = '2.10.7';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,19 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.10.7',
+                'date' => '2026-11-12',
+                'title' => 'Side-by-Side Collapsible Report Attachment Cards in View Tips Report',
+                'type' => 'micro',
+                'badge' => 'Enhancement',
+                'badge_color' => 'success',
+                'description' => 'Placed the Cage Department Tips Collection Report and Department Error Report image attachment cards side-by-side with collapsible panels.',
+                'highlights' => [
+                    'Layout: Arranged image previews in a responsive 2-column grid when both reports are uploaded.',
+                    'Collapsible Sections: Added Alpine.js collapse toggles allowing quick folding and unfolding of attachment previews.',
+                ],
+            ],
             [
                 'version' => '2.10.6',
                 'date' => '2026-11-12',

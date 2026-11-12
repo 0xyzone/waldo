@@ -91,91 +91,213 @@
         </div>
     </div>
 
-    {{-- Cage Department Tips Collection Report Attachment Card (if uploaded) --}}
-    @if($record->cage_tips_report_image_path)
-        <div class="mb-4 p-4 rounded-xl bg-sky-50/50 dark:bg-sky-950/20 border border-sky-200/80 dark:border-sky-800/60 shadow-sm" x-data="{ expanded: false }">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-                <div class="flex items-center gap-2.5">
-                    <div class="p-1.5 rounded-lg bg-sky-600 text-white shadow-sm">
-                        <x-heroicon-m-banknotes class="w-4 h-4" />
-                    </div>
-                    <div>
-                        <h4 class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                            <span>Cage Department Tips Collection Report</span>
-                            <span class="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-200">Attached</span>
-                        </h4>
-                        <p class="text-[11px] text-gray-500 dark:text-gray-400">Monthly departmental collection report document provided by the Cage Department.</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <a href="{{ asset('storage/' . $record->cage_tips_report_image_path) }}"
-                       target="_blank"
-                       class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-2xs">
-                        <x-heroicon-m-arrow-top-right-on-square class="w-3.5 h-3.5 text-gray-400" />
-                        <span>Open Full Image</span>
-                    </a>
-                    @if(!$record->isValidated())
-                        <button type="button"
-                                wire:click="mountAction('uploadCageTipsReportImage')"
-                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-sky-600 hover:bg-sky-500 text-white shadow-2xs transition">
-                            <x-heroicon-m-arrow-path class="w-3.5 h-3.5" />
-                            <span>Replace</span>
-                        </button>
-                        <button type="button"
-                                wire:click="removeCageTipsReportImage"
-                                wire:confirm="Are you sure you want to remove the Cage tips collection report image?"
-                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-rose-600 hover:text-rose-700 hover:bg-rose-100/60 dark:text-rose-400 dark:hover:bg-rose-950/60 transition">
-                            <x-heroicon-m-trash class="w-3.5 h-3.5" />
-                            <span>Remove</span>
-                        </button>
-                    @endif
-                </div>
-            </div>
+    {{-- Uploaded Report Attachments (Cage Department Tips Collection & Department Error Reports) Side by Side & Collapsible --}}
+    @if($record->cage_tips_report_image_path || $record->department_error_image_path)
+        @php
+            $hasBothImages = $record->cage_tips_report_image_path && $record->department_error_image_path;
+            $gridColsClass = $hasBothImages ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1';
+        @endphp
 
-            {{-- Image Display Box with Lightbox preview on click --}}
-            <div class="relative rounded-xl overflow-hidden border border-sky-200/80 dark:border-sky-900/50 bg-white dark:bg-gray-950 p-2 shadow-2xs">
-                <div class="cursor-pointer group relative flex justify-center items-center bg-gray-50 dark:bg-gray-900/50 rounded-lg overflow-hidden max-h-[380px]"
-                     @click="expanded = true">
-                    <img src="{{ asset('storage/' . $record->cage_tips_report_image_path) }}"
-                         alt="Cage Department Tips Collection Report"
-                         class="object-contain w-auto max-h-[360px] rounded transition duration-200 group-hover:scale-[1.01]" />
-                    <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-xs font-semibold backdrop-blur-[1px]">
-                        <x-heroicon-m-magnifying-glass-plus class="w-5 h-5" />
-                        <span>Click to enlarge preview</span>
-                    </div>
-                </div>
-
-                {{-- In-Page Lightbox Modal --}}
-                <div x-show="expanded"
-                     x-cloak
-                     x-transition
-                     @keydown.escape.window="expanded = false"
-                     class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-xs p-4"
-                     @click.self="expanded = false">
-                    <div class="relative max-w-5xl max-h-[92vh] w-full flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
-                        <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
-                            <div class="flex items-center gap-2">
-                                <x-heroicon-m-banknotes class="w-4 h-4 text-sky-500" />
-                                <span class="text-xs font-bold text-gray-900 dark:text-white">Cage Department Tips Collection Report - Full Preview</span>
+        <div class="grid {{ $gridColsClass }} gap-4 mb-4">
+            {{-- Card 1: Cage Department Tips Collection Report --}}
+            @if($record->cage_tips_report_image_path)
+                <div x-data="{ collapsed: false, expanded: false }"
+                     class="rounded-xl bg-sky-50/50 dark:bg-sky-950/20 border border-sky-200/80 dark:border-sky-800/60 shadow-sm overflow-hidden transition-all duration-200">
+                    <div class="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-sky-100/40 dark:bg-sky-900/30 border-b border-sky-200/60 dark:border-sky-800/40">
+                        <div class="flex items-center gap-2.5 cursor-pointer select-none" @click="collapsed = !collapsed">
+                            <button type="button"
+                                    class="p-1 rounded-lg text-sky-700 dark:text-sky-300 hover:bg-sky-200/60 dark:hover:bg-sky-800/50 transition"
+                                    :title="collapsed ? 'Expand section' : 'Collapse section'">
+                                <x-heroicon-m-chevron-down class="w-4 h-4 transform transition-transform duration-200" ::class="collapsed ? '-rotate-90' : 'rotate-0'" />
+                            </button>
+                            <div class="p-1.5 rounded-lg bg-sky-600 text-white shadow-sm">
+                                <x-heroicon-m-banknotes class="w-4 h-4" />
                             </div>
-                            <div class="flex items-center gap-2">
-                                <a href="{{ asset('storage/' . $record->cage_tips_report_image_path) }}" download class="text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white flex items-center gap-1">
-                                    <x-heroicon-m-arrow-down-tray class="w-4 h-4" />
-                                    <span>Download</span>
-                                </a>
-                                <button type="button" @click="expanded = false" class="p-1 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-200">
-                                    <x-heroicon-m-x-mark class="w-5 h-5" />
+                            <div>
+                                <h4 class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <span>Cage Department Tips Collection Report</span>
+                                    <span class="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-200">Attached</span>
+                                </h4>
+                                <p class="text-[11px] text-gray-500 dark:text-gray-400">Monthly departmental collection report document provided by Cage Department.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-1.5 self-end sm:self-center">
+                            <a href="{{ asset('storage/' . $record->cage_tips_report_image_path) }}"
+                               target="_blank"
+                               title="Open image in new tab"
+                               class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-2xs">
+                                <x-heroicon-m-arrow-top-right-on-square class="w-3.5 h-3.5 text-gray-400" />
+                                <span class="hidden sm:inline">Open</span>
+                            </a>
+                            @if(!$record->isValidated())
+                                <button type="button"
+                                        wire:click="mountAction('uploadCageTipsReportImage')"
+                                        title="Replace Cage report image"
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-sky-600 hover:bg-sky-500 text-white shadow-2xs transition cursor-pointer">
+                                    <x-heroicon-m-arrow-path class="w-3.5 h-3.5" />
+                                    <span>Replace</span>
                                 </button>
-                            </div>
+                                <button type="button"
+                                        wire:click="removeCageTipsReportImage"
+                                        wire:confirm="Are you sure you want to remove the Cage tips collection report image?"
+                                        title="Remove Cage report image"
+                                        class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-rose-600 hover:text-rose-700 hover:bg-rose-100/60 dark:text-rose-400 dark:hover:bg-rose-950/60 transition cursor-pointer">
+                                    <x-heroicon-m-trash class="w-3.5 h-3.5" />
+                                    <span class="hidden sm:inline">Remove</span>
+                                </button>
+                            @endif
                         </div>
-                        <div class="p-4 overflow-auto flex items-center justify-center bg-gray-100 dark:bg-gray-950 flex-1 min-h-[400px]">
-                            <img src="{{ asset('storage/' . $record->cage_tips_report_image_path) }}"
-                                 alt="Cage Department Tips Collection Report"
-                                 class="max-w-full max-h-[78vh] object-contain rounded shadow-lg" />
+                    </div>
+
+                    {{-- Collapsible Content Body --}}
+                    <div x-show="!collapsed" x-collapse class="p-3">
+                        <div class="relative rounded-xl overflow-hidden border border-sky-200/80 dark:border-sky-900/50 bg-white dark:bg-gray-950 p-2 shadow-2xs">
+                            <div class="cursor-pointer group relative flex justify-center items-center bg-gray-50 dark:bg-gray-900/50 rounded-lg overflow-hidden max-h-[380px]"
+                                 @click="expanded = true">
+                                <img src="{{ asset('storage/' . $record->cage_tips_report_image_path) }}"
+                                     alt="Cage Department Tips Collection Report"
+                                     class="object-contain w-auto max-h-[360px] rounded transition duration-200 group-hover:scale-[1.01]" />
+                                <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-xs font-semibold backdrop-blur-[1px]">
+                                    <x-heroicon-m-magnifying-glass-plus class="w-5 h-5" />
+                                    <span>Click to enlarge preview</span>
+                                </div>
+                            </div>
+
+                            {{-- In-Page Lightbox Modal --}}
+                            <div x-show="expanded"
+                                 x-cloak
+                                 x-transition
+                                 @keydown.escape.window="expanded = false"
+                                 class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-xs p-4"
+                                 @click.self="expanded = false">
+                                <div class="relative max-w-5xl max-h-[92vh] w-full flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
+                                    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
+                                        <div class="flex items-center gap-2">
+                                            <x-heroicon-m-banknotes class="w-4 h-4 text-sky-500" />
+                                            <span class="text-xs font-bold text-gray-900 dark:text-white">Cage Department Tips Collection Report - Full Preview</span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <a href="{{ asset('storage/' . $record->cage_tips_report_image_path) }}" download class="text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white flex items-center gap-1">
+                                                <x-heroicon-m-arrow-down-tray class="w-4 h-4" />
+                                                <span>Download</span>
+                                            </a>
+                                            <button type="button" @click="expanded = false" class="p-1 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-200">
+                                                <x-heroicon-m-x-mark class="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="p-4 overflow-auto flex items-center justify-center bg-gray-100 dark:bg-gray-950 flex-1 min-h-[400px]">
+                                        <img src="{{ asset('storage/' . $record->cage_tips_report_image_path) }}"
+                                             alt="Cage Department Tips Collection Report"
+                                             class="max-w-full max-h-[78vh] object-contain rounded shadow-lg" />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            @endif
+
+            {{-- Card 2: Department Error Report --}}
+            @if($record->department_error_image_path)
+                <div x-data="{ collapsed: false, expanded: false }"
+                     class="rounded-xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200/80 dark:border-rose-800/60 shadow-sm overflow-hidden transition-all duration-200">
+                    <div class="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-rose-100/40 dark:bg-rose-900/30 border-b border-rose-200/60 dark:border-rose-800/40">
+                        <div class="flex items-center gap-2.5 cursor-pointer select-none" @click="collapsed = !collapsed">
+                            <button type="button"
+                                    class="p-1 rounded-lg text-rose-700 dark:text-rose-300 hover:bg-rose-200/60 dark:hover:bg-rose-800/50 transition"
+                                    :title="collapsed ? 'Expand section' : 'Collapse section'">
+                                <x-heroicon-m-chevron-down class="w-4 h-4 transform transition-transform duration-200" ::class="collapsed ? '-rotate-90' : 'rotate-0'" />
+                            </button>
+                            <div class="p-1.5 rounded-lg bg-rose-600 text-white shadow-sm">
+                                <x-heroicon-m-exclamation-triangle class="w-4 h-4" />
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <span>Department Error Report Attachment</span>
+                                    <span class="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-200">Attached</span>
+                                </h4>
+                                <p class="text-[11px] text-gray-500 dark:text-gray-400">Department error evidence document uploaded for this tips cycle.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-1.5 self-end sm:self-center">
+                            <a href="{{ asset('storage/' . $record->department_error_image_path) }}"
+                               target="_blank"
+                               title="Open image in new tab"
+                               class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-2xs">
+                                <x-heroicon-m-arrow-top-right-on-square class="w-3.5 h-3.5 text-gray-400" />
+                                <span class="hidden sm:inline">Open</span>
+                            </a>
+                            @if(!$record->isValidated())
+                                <button type="button"
+                                        wire:click="mountAction('uploadDepartmentErrorImage')"
+                                        title="Replace Error report image"
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-rose-600 hover:bg-rose-500 text-white shadow-2xs transition cursor-pointer">
+                                    <x-heroicon-m-arrow-path class="w-3.5 h-3.5" />
+                                    <span>Replace</span>
+                                </button>
+                                <button type="button"
+                                        wire:click="removeDepartmentErrorImage"
+                                        wire:confirm="Are you sure you want to remove the department error report image?"
+                                        title="Remove Error report image"
+                                        class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-rose-600 hover:text-rose-700 hover:bg-rose-100/60 dark:text-rose-400 dark:hover:bg-rose-950/60 transition cursor-pointer">
+                                    <x-heroicon-m-trash class="w-3.5 h-3.5" />
+                                    <span class="hidden sm:inline">Remove</span>
+                                </button>
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- Collapsible Content Body --}}
+                    <div x-show="!collapsed" x-collapse class="p-3">
+                        <div class="relative rounded-xl overflow-hidden border border-rose-200/80 dark:border-rose-900/50 bg-white dark:bg-gray-950 p-2 shadow-2xs">
+                            <div class="cursor-pointer group relative flex justify-center items-center bg-gray-50 dark:bg-gray-900/50 rounded-lg overflow-hidden max-h-[380px]"
+                                 @click="expanded = true">
+                                <img src="{{ asset('storage/' . $record->department_error_image_path) }}"
+                                     alt="Department Error Report"
+                                     class="object-contain w-auto max-h-[360px] rounded transition duration-200 group-hover:scale-[1.01]" />
+                                <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-xs font-semibold backdrop-blur-[1px]">
+                                    <x-heroicon-m-magnifying-glass-plus class="w-5 h-5" />
+                                    <span>Click to enlarge preview</span>
+                                </div>
+                            </div>
+
+                            {{-- In-Page Lightbox Modal --}}
+                            <div x-show="expanded"
+                                 x-cloak
+                                 x-transition
+                                 @keydown.escape.window="expanded = false"
+                                 class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-xs p-4"
+                                 @click.self="expanded = false">
+                                <div class="relative max-w-5xl max-h-[92vh] w-full flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
+                                    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
+                                        <div class="flex items-center gap-2">
+                                            <x-heroicon-m-photo class="w-4 h-4 text-rose-500" />
+                                            <span class="text-xs font-bold text-gray-900 dark:text-white">Department Error Report - Full Preview</span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <a href="{{ asset('storage/' . $record->department_error_image_path) }}" download class="text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white flex items-center gap-1">
+                                                <x-heroicon-m-arrow-down-tray class="w-4 h-4" />
+                                                <span>Download</span>
+                                            </a>
+                                            <button type="button" @click="expanded = false" class="p-1 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-200">
+                                                <x-heroicon-m-x-mark class="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="p-4 overflow-auto flex items-center justify-center bg-gray-100 dark:bg-gray-950 flex-1 min-h-[400px]">
+                                        <img src="{{ asset('storage/' . $record->department_error_image_path) }}"
+                                             alt="Department Error Report"
+                                             class="max-w-full max-h-[78vh] object-contain rounded shadow-lg" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
     @endif
 

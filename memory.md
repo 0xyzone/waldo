@@ -834,6 +834,13 @@
 - **Solution**:
   - Updated both global `@page` and `@media print` `@page` settings to `size: A4 landscape;` in `resources/views/tips/print-totals.blade.php`.
 
+### 72. Side-by-Side Collapsible Report Attachment Cards (v2.10.7)
+- **Problem & Requirements**:
+  - User requested the uploaded report images (Cage Department tips collection report and Department error report) to be rendered side-by-side with collapsible panels.
+- **Solution**:
+  - In `resources/views/filament/resources/tips-reports/pages/view-tips-report.blade.php`, organized both uploaded report attachments into a responsive 2-column grid (`grid-cols-1 lg:grid-cols-2`).
+  - Added Alpine.js collapse controls (`x-data="{ collapsed: false, expanded: false }"`, `x-collapse`) allowing users to easily toggle card visibility.
+
 
 
 

@@ -4,6 +4,15 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.10.7] - 2026-11-12
+
+### Added
+- **Side-by-Side Collapsible Report Attachment Cards in View Tips Report (`view-tips-report.blade.php`)**:
+  - Arranged the Cage Department Tips Collection Report and Department Error Report image attachment previews into a clean, responsive 2-column grid (`grid-cols-1 lg:grid-cols-2`).
+  - Added individual Alpine.js collapse toggles (`x-collapse` / `x-show="!collapsed"`) to each card header so users can fold or expand each attachment section independently.
+
+---
+
 ## [2.10.6] - 2026-11-12
 
 ### Changed
