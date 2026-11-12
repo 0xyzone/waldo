@@ -12,11 +12,11 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
-use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Schema;
 
 class TipsReportForm
@@ -34,9 +34,8 @@ class TipsReportForm
                                 TextInput::make('title')
                                     ->label('Report Title')
                                     ->placeholder('e.g., September 2026 TIPS')
-                                    ->default(now()->format('F Y').' TIPS')
+                                    ->default(now()->format('F Y') . ' TIPS')
                                     ->required(),
-
                                 Select::make('month')
                                     ->label('Billing Month')
                                     ->options([
@@ -61,12 +60,11 @@ class TipsReportForm
                                         try {
                                             $cutoff = Carbon::parse("1 {$month} {$year}")->subDay()->toDateString();
                                             $set('cutoff_date', $cutoff);
-                                            $set('title', ucfirst($month).' '.$year.' TIPS');
+                                            $set('title', ucfirst($month) . ' ' . $year . ' TIPS');
                                         } catch (\Throwable) {
                                         }
                                     })
                                     ->required(),
-
                                 TextInput::make('year')
                                     ->label('Billing Year')
                                     ->default(now()->format('Y'))
@@ -79,14 +77,13 @@ class TipsReportForm
                                             try {
                                                 $cutoff = Carbon::parse("1 {$month} {$year}")->subDay()->toDateString();
                                                 $set('cutoff_date', $cutoff);
-                                                $set('title', ucfirst($month).' '.$year.' TIPS');
+                                                $set('title', ucfirst($month) . ' ' . $year . ' TIPS');
                                             } catch (\Throwable) {
                                             }
                                         }
                                     })
                                     ->required(),
                             ]),
-
                             Grid::make(2)->schema([
                                 DatePicker::make('cutoff_date')
                                     ->label('Cutoff Date (for Tenure Calculation)')
@@ -102,7 +99,6 @@ class TipsReportForm
                                     ->helperText('Defaulted to the last day of the previous month from the billing month. You can also select another date if needed.')
                                     ->native(false)
                                     ->required(),
-
                                 FileUpload::make('excel_file_path')
                                     ->label('HRMS Attendance Summary File (.xlsx / .csv)')
                                     ->disk('public')
@@ -115,7 +111,6 @@ class TipsReportForm
                                     ])
                                     ->maxSize(15360)
                                     ->required(),
-
                                 FileUpload::make('cage_tips_report_image_path')
                                     ->label('Cage Tips Collection Report Image')
                                     ->helperText('Upload monthly tips collection report screenshot or document provided by the Cage Department.')
@@ -126,7 +121,6 @@ class TipsReportForm
                                     ->openable()
                                     ->downloadable()
                                     ->maxSize(10240),
-
                                 FileUpload::make('department_error_image_path')
                                     ->label('Department Error Report Image')
                                     ->helperText('Upload error report screenshot or scanned document provided by the department.')
@@ -139,7 +133,6 @@ class TipsReportForm
                                     ->maxSize(10240),
                             ]),
                         ]),
-
                     Step::make('Collections (Chips & Cash)')
                         ->icon('heroicon-m-banknotes')
                         ->description('Department initial collections')
@@ -147,15 +140,18 @@ class TipsReportForm
                             Repeater::make('collection_summary')
                                 ->label('Department Collections')
                                 ->default([
-                                    ['department' => 'Cage', 'chips_amount' => 0, 'cash_amount' => 0, 'total_amount' => 0],
-                                    ['department' => 'PIT', 'chips_amount' => 0, 'cash_amount' => 0, 'total_amount' => 0],
-                                    ['department' => 'SLOT', 'chips_amount' => 0, 'cash_amount' => 0, 'total_amount' => 0],
-                                    ['department' => 'F&B', 'chips_amount' => 0, 'cash_amount' => 0, 'total_amount' => 0],
-                                    ['department' => 'Reception / GR', 'chips_amount' => 0, 'cash_amount' => 0, 'total_amount' => 0],
-                                    ['department' => 'Bouncer', 'chips_amount' => 0, 'cash_amount' => 0, 'total_amount' => 0],
-                                    ['department' => 'Housekeeping', 'chips_amount' => 0, 'cash_amount' => 0, 'total_amount' => 0],
-                                    ['department' => 'Security', 'chips_amount' => 0, 'cash_amount' => 0, 'total_amount' => 0],
-                                    ['department' => 'Back Office', 'chips_amount' => 0, 'cash_amount' => 0, 'total_amount' => 0],
+                                    ['department' => 'Block A', 'chips_amount' => 0, 'cash_amount' => 0, 'total_amount' => 0],
+                                    ['department' => 'Block B', 'chips_amount' => 0, 'cash_amount' => 0, 'total_amount' => 0],
+                                    ['department' => 'Block C', 'chips_amount' => 0, 'cash_amount' => 0, 'total_amount' => 0],
+                                    ['department' => 'Coco Counter', 'chips_amount' => 0, 'cash_amount' => 0, 'total_amount' => 0],
+                                    // ['department' => 'PIT', 'chips_amount' => 0, 'cash_amount' => 0, 'total_amount' => 0],
+                                    // ['department' => 'SLOT', 'chips_amount' => 0, 'cash_amount' => 0, 'total_amount' => 0],
+                                    // ['department' => 'F&B', 'chips_amount' => 0, 'cash_amount' => 0, 'total_amount' => 0],
+                                    // ['department' => 'Reception / GR', 'chips_amount' => 0, 'cash_amount' => 0, 'total_amount' => 0],
+                                    // ['department' => 'Bouncer', 'chips_amount' => 0, 'cash_amount' => 0, 'total_amount' => 0],
+                                    // ['department' => 'Housekeeping', 'chips_amount' => 0, 'cash_amount' => 0, 'total_amount' => 0],
+                                    // ['department' => 'Security', 'chips_amount' => 0, 'cash_amount' => 0, 'total_amount' => 0],
+                                    // ['department' => 'Back Office', 'chips_amount' => 0, 'cash_amount' => 0, 'total_amount' => 0],
                                 ])
                                 ->schema([
                                     TextInput::make('department')
@@ -163,7 +159,6 @@ class TipsReportForm
                                         ->required()
                                         ->extraInputAttributes(['tabindex' => '-1'])
                                         ->columnSpan(1),
-
                                     TextInput::make('chips_amount')
                                         ->label('Chips Amount')
                                         ->numeric()
@@ -179,7 +174,6 @@ class TipsReportForm
                                             'data-collection-field' => 'chips',
                                         ])
                                         ->columnSpan(1),
-
                                     TextInput::make('cash_amount')
                                         ->label('Cash Amount')
                                         ->numeric()
@@ -195,7 +189,6 @@ class TipsReportForm
                                             'data-collection-field' => 'cash',
                                         ])
                                         ->columnSpan(1),
-
                                     TextInput::make('total_amount')
                                         ->label('Total Amount')
                                         ->numeric()
@@ -208,7 +201,6 @@ class TipsReportForm
                                 ->collapsible(false)
                                 ->reorderable(false),
                         ]),
-
                     Step::make('Company Error Report')
                         ->icon('heroicon-m-exclamation-triangle')
                         ->description('Penalty percentage deductions per employee')
@@ -218,18 +210,17 @@ class TipsReportForm
                                 ->schema([
                                     Select::make('employee_code')
                                         ->label('Employee')
-                                        ->options(fn () => Employee::query()
+                                        ->options(fn() => Employee::query()
                                             ->whereIn('employee_status', ['Active', 'Resigning This Month'])
                                             ->orderBy('employee_code')
                                             ->get()
-                                            ->mapWithKeys(fn ($e) => [
-                                                $e->employee_code => strtoupper($e->employee_code).' — '.$e->name.' ('.($e->department?->name ?? 'No Dept').')',
+                                            ->mapWithKeys(fn($e) => [
+                                                $e->employee_code => strtoupper($e->employee_code) . ' — ' . $e->name . ' (' . ($e->department?->name ?? 'No Dept') . ')',
                                             ])
                                             ->toArray())
                                         ->searchable()
                                         ->required()
                                         ->columnSpan(2),
-
                                     TextInput::make('percentage_to_deduct')
                                         ->label('Deduct %')
                                         ->numeric()
@@ -239,7 +230,6 @@ class TipsReportForm
                                         ->default(10)
                                         ->required()
                                         ->columnSpan(1),
-
                                     TextInput::make('reason')
                                         ->label('Reason / Notes')
                                         ->placeholder('e.g., Short cash, Procedure breach')
@@ -249,7 +239,6 @@ class TipsReportForm
                                 ->collapsible()
                                 ->addActionLabel('Add Employee Error Penalty'),
                         ]),
-
                     Step::make('Left Outs')
                         ->icon('heroicon-m-user-plus')
                         ->description('Manual overrides for previously missed staff')
@@ -259,18 +248,18 @@ class TipsReportForm
                                 ->schema([
                                     Select::make('employee_id')
                                         ->label('Employee')
-                                        ->options(fn () => Employee::query()
+                                        ->options(fn() => Employee::query()
                                             ->with(['department', 'designation'])
                                             ->orderBy('employee_code')
                                             ->get()
-                                            ->mapWithKeys(fn ($e) => [
-                                                $e->employee_code => strtoupper($e->employee_code).' — '.$e->name.' ('.($e->designation?->name ?? 'No Designation').')',
+                                            ->mapWithKeys(fn($e) => [
+                                                $e->employee_code => strtoupper($e->employee_code) . ' — ' . $e->name . ' (' . ($e->designation?->name ?? 'No Designation') . ')',
                                             ])
                                             ->toArray())
                                         ->searchable()
                                         ->live()
                                         ->afterStateUpdated(function ($state, Set $set) {
-                                            if (! $state) {
+                                            if (!$state) {
                                                 return;
                                             }
                                             $emp = Employee::with(['department', 'designation'])->where('employee_code', $state)->first();
@@ -294,12 +283,10 @@ class TipsReportForm
                                         })
                                         ->required()
                                         ->columnSpan(2),
-
                                     TextInput::make('designation')
                                         ->label('Designation')
                                         ->placeholder('Auto-fetched from DB')
                                         ->columnSpan(2),
-
                                     Select::make('department')
                                         ->label('Department Page')
                                         ->options(function () {
@@ -315,7 +302,6 @@ class TipsReportForm
                                         ->default('Left Outs')
                                         ->required()
                                         ->columnSpan(1),
-
                                     TextInput::make('base_tips_amount')
                                         ->label('Base Tips')
                                         ->numeric()
@@ -337,7 +323,6 @@ class TipsReportForm
                                             $set('final_distribution_amount', TipsCalculationService::roundUpToNearest100($raw));
                                         })
                                         ->columnSpan(1),
-
                                     TextInput::make('tips_percentage')
                                         ->label('Tips %')
                                         ->numeric()
@@ -360,12 +345,10 @@ class TipsReportForm
                                             $set('final_distribution_amount', TipsCalculationService::roundUpToNearest100($raw));
                                         })
                                         ->columnSpan(1),
-
                                     TextInput::make('final_distribution_amount')
                                         ->label('Final Amount')
                                         ->numeric()
                                         ->columnSpan(1),
-
                                     TextInput::make('notes')
                                         ->label('Notes')
                                         ->columnSpan(2),
