@@ -56,7 +56,13 @@
             </div>
             <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center justify-between">
                 <span>Chips: {{ number_format($this->totalChips, 0) }} | Cash: {{ number_format($this->totalCash, 0) }}</span>
-                <span class="text-gray-400">Floor Collections</span>
+                <a href="{{ route('tips.reports.print-collections-summary', ['report' => $record->id]) }}"
+                   target="_blank"
+                   title="Print Collections Summary (Department totals only)"
+                   class="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:underline">
+                    <x-heroicon-m-printer class="w-3.5 h-3.5" />
+                    <span>Print Summary</span>
+                </a>
             </div>
         </div>
 
@@ -234,7 +240,7 @@
                     </button>
                 @endif
                 <div class="text-gray-400 text-[11px] hidden sm:inline">
-                    Tip: Use header actions above to print Summary, Totals, or Adjustments & Errors reports.
+                    Tip: Use header actions above to print Collections, Summary, Totals, or Adjustments & Errors reports.
                 </div>
             </div>
         </div>

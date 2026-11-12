@@ -819,6 +819,15 @@
 - **Solution**:
   - In `EmployeePromotionForm.php`, updated `DatePicker::make('promotion_date')->default(...)` using Carbon's `$today->day < 15 ? $today->copy()->startOfMonth()->toDateString() : $today->copy()->addMonthNoOverflow()->startOfMonth()->toDateString()`.
 
+### 70. Department Collections Summary Print (v2.10.5)
+- **Problem & Requirements**:
+  - Requested a dedicated summary print for collections data from chips and cash collection entries showing department names and their totals only.
+- **Solution**:
+  - **Blade View (`resources/views/tips/print-collections-summary.blade.php`)**: Clean portrait A4 layout presenting department names and total amounts, grand total, metadata strip, and three-tier signature blocks (Prepared, Checked, Approved By).
+  - **Controller (`TipsReportPrintController.php`)**: Added `printCollectionsSummary()` calculating individual department total collections (chips + cash) and overall sum.
+  - **Routes (`routes/web.php`)**: Registered named route `tips.reports.print-collections-summary`.
+  - **UI Integration (`ViewTipsReport.php` & `view-tips-report.blade.php`)**: Added "Print Collections" header action and quick inline "Print Summary" link within the Actual Total Collection KPI card.
+
 
 
 

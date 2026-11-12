@@ -200,6 +200,37 @@ class TipsReportPrintController extends Controller
     }
 
     /**
+     * Print Collections Summary (department name and totals only from chips & cash collections).
+     */
+    public function printCollectionsSummary(Request $request, TipsReport $report): Response
+    {
+        $rawCollections = collect($report->collection_summary ?? []);
+
+        $rows = $rawCollections->map(function ($item) {
+            $chips = (float) ($item['chips_amount'] ?? 0);
+            $cash = (float) ($item['cash_amount'] ?? 0);
+            $total = isset($item['total_amount']) && $item['total_amount'] !== null && $item['total_amount'] !== ''
+                ? (float) $item['total_amount']
+                : ($chips + $cash);
+
+            return [
+                'department' => trim((string) ($item['department'] ?? 'Unknown')),
+                'chips_amount' => $chips,
+                'cash_amount' => $cash,
+                'total_amount' => $total,
+            ];
+        })->values();
+
+        $grandTotal = (float) $rows->sum('total_amount');
+
+        return response()->view('tips.print-collections-summary', [
+            'report' => $report,
+            'rows' => $rows,
+            'grandTotal' => $grandTotal,
+        ]);
+    }
+
+    /**
      * Print Tips Distribution Totals (Screenshot 2).
      */
     public function printTotals(Request $request, TipsReport $report): Response

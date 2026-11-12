@@ -93,6 +93,10 @@ Route::get('/tips-reports/{report}/print-summary', [TipsReportPrintController::c
     ->name('tips.reports.print-summary')
     ->middleware('auth');
 
+Route::get('/tips-reports/{report}/print-collections-summary', [TipsReportPrintController::class, 'printCollectionsSummary'])
+    ->name('tips.reports.print-collections-summary')
+    ->middleware('auth');
+
 Route::get('/tips-reports/{report}/print-totals', [TipsReportPrintController::class, 'printTotals'])
     ->name('tips.reports.print-totals')
     ->middleware('auth');

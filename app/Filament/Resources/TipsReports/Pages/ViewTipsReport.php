@@ -1444,6 +1444,12 @@ class ViewTipsReport extends ViewRecord implements HasTable
             //     ->color('amber')
             //     ->url(fn () => route('tips.reports.print-adjustments-errors', ['report' => $this->record->id]))
             //     ->openUrlInNewTab(),
+            Action::make('printCollectionsSummary')
+                ->label('Print Collections')
+                ->icon('heroicon-m-banknotes')
+                ->color('success')
+                ->url(fn () => route('tips.reports.print-collections-summary', ['report' => $this->record->id]))
+                ->openUrlInNewTab(),
             Action::make('printSummary')
                 ->label('Print Summary')
                 ->icon('heroicon-m-table-cells')

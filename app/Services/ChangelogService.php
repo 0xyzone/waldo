@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.10.4';
+    public const CURRENT_VERSION = '2.10.5';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,19 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.10.5',
+                'date' => '2026-11-12',
+                'title' => 'Collections Summary Print for Tips Reports',
+                'type' => 'micro',
+                'badge' => 'Feature',
+                'badge_color' => 'success',
+                'description' => 'Added a dedicated collections summary printable sheet displaying each department and its total collected amount from chips and cash collections.',
+                'highlights' => [
+                    'Printable View: Clean portrait A4 layout presenting department names and their total collections with grand totals and verification signature blocks.',
+                    'Direct Access: Quick-print link embedded in the Actual Total Collection card and header action in the View Tips Report page.',
+                ],
+            ],
             [
                 'version' => '2.10.4',
                 'date' => '2026-11-05',

@@ -4,6 +4,16 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.10.5] - 2026-11-12
+
+### Added
+- **Collections Summary Print View for Tips Reports**:
+  - Created a focused print layout (`resources/views/tips/print-collections-summary.blade.php`) showing each collection department and its total collection amount from chips and cash data, formatted for clean portrait A4 printing.
+  - Added controller action `TipsReportPrintController::printCollectionsSummary()` and authenticated route `tips.reports.print-collections-summary`.
+  - Added a "Print Collections" header action and a quick inline "Print Summary" link within the Actual Total Collection KPI card in `view-tips-report.blade.php`.
+
+---
+
 ## [2.10.4] - 2026-11-05
 
 ### Changed
