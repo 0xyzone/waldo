@@ -306,7 +306,7 @@ class LetterController extends Controller
                 if ($record) {
                     $prefilledEmployeeCode = $prefilledEmployeeCode ?: (string) $record->employee_id;
                     $prefilledCustomValues = [
-                        'promotion_date' => $record->promotion_date?->format('Y-m-d') ?? '',
+                        'promotion_date' => $record->promotion_date?->format('jS F, Y') ?? '',
                         'from_department' => $record->fromDepartment?->name ?? '',
                         'from_designation' => $record->fromDesignation?->name ?? '',
                         'to_department' => $record->toDepartment?->name ?? '',
@@ -319,7 +319,7 @@ class LetterController extends Controller
                 if ($record) {
                     $prefilledEmployeeCode = $prefilledEmployeeCode ?: (string) $record->employee_id;
                     $prefilledCustomValues = [
-                        'transfer_date' => $record->transfer_date?->format('Y-m-d') ?? '',
+                        'transfer_date' => $record->transfer_date?->format('jS F, Y') ?? '',
                         'from_department' => $record->fromDepartment?->name ?? '',
                         'from_designation' => $record->fromDesignation?->name ?? '',
                         'to_department' => $record->toDepartment?->name ?? '',
@@ -332,10 +332,10 @@ class LetterController extends Controller
                 if ($record) {
                     $prefilledEmployeeCode = $prefilledEmployeeCode ?: (string) $record->employee_id;
                     $leavingDate = $record->leaving_date
-                        ? Carbon::parse($record->leaving_date)->format('Y-m-d')
+                        ? Carbon::parse($record->leaving_date)->format('jS F, Y')
                         : '';
                     $resignationDate = $record->resignation_date
-                        ? Carbon::parse($record->resignation_date)->format('Y-m-d')
+                        ? Carbon::parse($record->resignation_date)->format('jS F, Y')
                         : '';
                     $prefilledCustomValues = [
                         'last_working_date' => $leavingDate,
@@ -350,8 +350,8 @@ class LetterController extends Controller
                 if ($record) {
                     $prefilledEmployeeCode = $prefilledEmployeeCode ?: (string) $record->employee_id;
                     $prefilledCustomValues = [
-                        'termination_date' => $record->termination_date?->format('Y-m-d') ?? '',
-                        'last_working_date' => $record->last_working_date?->format('Y-m-d') ?? '',
+                        'termination_date' => $record->termination_date?->format('jS F, Y') ?? '',
+                        'last_working_date' => $record->last_working_date?->format('jS F, Y') ?? '',
                         'termination_reason' => (string) ($record->reason ?? ''),
                     ];
                 }
