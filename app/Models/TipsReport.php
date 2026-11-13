@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\HasActionLogs;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -41,6 +42,45 @@ class TipsReport extends Model
             'left_outs' => 'array',
             'held_tips' => 'array',
         ];
+    }
+
+    /**
+     * Normalize department_error_image_path to always return an array of paths
+     * while remaining backward-compatible with legacy single-string values.
+     */
+    protected function departmentErrorImagePath(): Attribute
+    {
+        return Attribute::make(
+            get: function (mixed $value): array {
+                if (empty($value)) {
+                    return [];
+                }
+
+                if (is_array($value)) {
+                    return array_values(array_filter($value));
+                }
+
+                $decoded = json_decode((string) $value, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    return array_values(array_filter($decoded));
+                }
+
+                return [(string) $value];
+            },
+            set: function (mixed $value): ?string {
+                if (empty($value)) {
+                    return null;
+                }
+
+                if (is_array($value)) {
+                    $filtered = array_values(array_filter($value));
+
+                    return empty($filtered) ? null : json_encode($filtered);
+                }
+
+                return json_encode([(string) $value]);
+            },
+        );
     }
 
     public function getValidTillDateAttribute(): string

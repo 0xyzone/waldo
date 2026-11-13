@@ -691,21 +691,25 @@ class ViewTipsReport extends ViewRecord implements HasTable
     public function uploadDepartmentErrorImageAction(): Action
     {
         return Action::make('uploadDepartmentErrorImage')
-            ->label('Upload Error Report Image')
+            ->label('Upload Error Report Images')
             ->icon('heroicon-m-photo')
             ->color('danger')
-            ->modalHeading('Department Error Report Image')
-            ->modalDescription('Upload or replace the error report image/document received from the department.')
-            ->modalSubmitActionLabel('Save Image')
+            ->modalHeading('Department Error Report Images')
+            ->modalDescription('Upload, add, or manage error report images/documents received from the department.')
+            ->modalSubmitActionLabel('Save Images')
             ->visible(fn () => ! $this->record->isValidated())
             ->fillForm(fn () => [
                 'department_error_image_path' => $this->record->department_error_image_path,
             ])
             ->schema([
                 FileUpload::make('department_error_image_path')
-                    ->label('Department Error Report Image')
+                    ->label('Department Error Report Images')
                     ->disk('public')
                     ->directory('tips-error-reports')
+                    ->multiple()
+                    ->reorderable()
+                    ->appendFiles()
+                    ->panelLayout('grid')
                     ->image()
                     ->imageEditor()
                     ->openable()
@@ -719,8 +723,8 @@ class ViewTipsReport extends ViewRecord implements HasTable
                 ]);
 
                 Notification::make()
-                    ->title('Department Error Report Image Saved')
-                    ->body('The error report image has been successfully updated.')
+                    ->title('Department Error Report Images Saved')
+                    ->body('The error report images have been successfully updated.')
                     ->success()
                     ->send();
 
@@ -728,23 +732,44 @@ class ViewTipsReport extends ViewRecord implements HasTable
             });
     }
 
-    public function removeDepartmentErrorImage(): void
+    public function removeDepartmentErrorImage(?int $index = null): void
     {
         if ($this->record->isValidated()) {
             return;
         }
 
-        if ($this->record->department_error_image_path) {
-            Storage::disk('public')->delete($this->record->department_error_image_path);
-            $this->record->update(['department_error_image_path' => null]);
+        $images = $this->record->department_error_image_path ?? [];
+        if (empty($images)) {
+            return;
+        }
+
+        if ($index !== null && isset($images[$index])) {
+            Storage::disk('public')->delete($images[$index]);
+            unset($images[$index]);
+            $this->record->update(['department_error_image_path' => array_values($images)]);
             $this->record->refresh();
 
             Notification::make()
                 ->title('Image Removed')
-                ->body('Department error report image was removed successfully.')
+                ->body('Selected department error report image was removed successfully.')
                 ->success()
                 ->send();
+
+            return;
         }
+
+        foreach ($images as $path) {
+            Storage::disk('public')->delete($path);
+        }
+
+        $this->record->update(['department_error_image_path' => null]);
+        $this->record->refresh();
+
+        Notification::make()
+            ->title('Images Removed')
+            ->body('All department error report images were removed successfully.')
+            ->success()
+            ->send();
     }
 
     public function addLeftOutAction(): Action

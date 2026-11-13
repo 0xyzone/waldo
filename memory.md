@@ -841,6 +841,15 @@
   - In `resources/views/filament/resources/tips-reports/pages/view-tips-report.blade.php`, organized both uploaded report attachments into a responsive 2-column grid (`grid-cols-1 lg:grid-cols-2`).
   - Added Alpine.js collapse controls (`x-data="{ collapsed: false, expanded: false }"`, `x-collapse`) allowing users to easily toggle card visibility.
 
+### 73. Multi-Image Upload & Gallery for Department Error Reports (v2.10.8)
+- **Problem & Requirements**:
+  - User requested to upload multiple images in the Department Error Report image upload field and display them as a gallery in the Tips Report view page.
+- **Solution**:
+  - **Migration**: Altered `department_error_image_path` in `tips_reports` from `VARCHAR(255)` to `TEXT`.
+  - **Model (`TipsReport.php`)**: Added `departmentErrorImagePath()` `Attribute` cast normalizing both JSON arrays and legacy single-string values to arrays.
+  - **Form & View Action**: Enabled `->multiple()`, `->reorderable()`, `->appendFiles()`, and `->panelLayout('grid')` in `TipsReportForm.php` and `ViewTipsReport.php`, and updated `removeDepartmentErrorImage(?int $index = null)` for individual or bulk deletion.
+  - **Gallery UI**: Updated `view-tips-report.blade.php` to display Department Error Report images in a responsive gallery grid with an interactive Previous/Next lightbox modal.
+
 
 
 

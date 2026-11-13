@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.10.7';
+    public const CURRENT_VERSION = '2.10.8';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,20 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.10.8',
+                'date' => '2026-11-13',
+                'title' => 'Multi-Image Upload & Gallery Preview for Department Error Reports',
+                'type' => 'micro',
+                'badge' => 'Enhancement',
+                'badge_color' => 'success',
+                'description' => 'Enabled uploading multiple images for Department Error Reports and displaying them as an interactive gallery with lightbox navigation in Tips Reports.',
+                'highlights' => [
+                    'Database & Model: Altered department_error_image_path to TEXT and added backward-compatible array Attribute casting in TipsReport.',
+                    'Multi-Image Upload: Updated FileUpload in TipsReportForm and ViewTipsReport modal action to support multiple, reorderable, appendable images.',
+                    'Gallery & Lightbox: Rendered Department Error Report images as a responsive gallery grid with Previous/Next lightbox navigation, keyboard arrow support, and per-image or clear-all removal.',
+                ],
+            ],
             [
                 'version' => '2.10.7',
                 'date' => '2026-11-12',

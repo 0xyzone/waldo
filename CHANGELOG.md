@@ -4,6 +4,17 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.10.8] - 2026-11-13
+
+### Added
+- **Multi-Image Upload & Gallery Preview for Department Error Reports**:
+  - **Database Migration (`2026_11_13_112525_alter_department_error_image_path_to_text_in_tips_reports_table.php`)**: Altered `department_error_image_path` column from `VARCHAR(255)` to `TEXT` (nullable) to store multiple image paths.
+  - **Model (`TipsReport.php`)**: Added `departmentErrorImagePath()` Eloquent `Attribute` accessor/mutator to normalize stored paths as arrays while remaining backward-compatible with legacy single-string values.
+  - **Form & Action (`TipsReportForm.php`, `ViewTipsReport.php`)**: Enabled `->multiple()`, `->reorderable()`, `->appendFiles()`, and `->panelLayout('grid')` on `department_error_image_path`, plus per-index or full-clear removal in `removeDepartmentErrorImage(?int $index = null)`.
+  - **Gallery View (`view-tips-report.blade.php`)**: Rendered Department Error Report images as a responsive gallery grid with Previous/Next lightbox navigation, keyboard arrow support, image counter, and individual/all removal controls.
+
+---
+
 ## [2.10.7] - 2026-11-12
 
 ### Added

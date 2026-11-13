@@ -12,11 +12,11 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
-use Filament\Schemas\Components\Wizard\Step;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Wizard;
+use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
 
 class TipsReportForm
@@ -34,7 +34,7 @@ class TipsReportForm
                                 TextInput::make('title')
                                     ->label('Report Title')
                                     ->placeholder('e.g., September 2026 TIPS')
-                                    ->default(now()->format('F Y') . ' TIPS')
+                                    ->default(now()->format('F Y').' TIPS')
                                     ->required(),
                                 Select::make('month')
                                     ->label('Billing Month')
@@ -60,7 +60,7 @@ class TipsReportForm
                                         try {
                                             $cutoff = Carbon::parse("1 {$month} {$year}")->subDay()->toDateString();
                                             $set('cutoff_date', $cutoff);
-                                            $set('title', ucfirst($month) . ' ' . $year . ' TIPS');
+                                            $set('title', ucfirst($month).' '.$year.' TIPS');
                                         } catch (\Throwable) {
                                         }
                                     })
@@ -77,7 +77,7 @@ class TipsReportForm
                                             try {
                                                 $cutoff = Carbon::parse("1 {$month} {$year}")->subDay()->toDateString();
                                                 $set('cutoff_date', $cutoff);
-                                                $set('title', ucfirst($month) . ' ' . $year . ' TIPS');
+                                                $set('title', ucfirst($month).' '.$year.' TIPS');
                                             } catch (\Throwable) {
                                             }
                                         }
@@ -122,10 +122,14 @@ class TipsReportForm
                                     ->downloadable()
                                     ->maxSize(10240),
                                 FileUpload::make('department_error_image_path')
-                                    ->label('Department Error Report Image')
-                                    ->helperText('Upload error report screenshot or scanned document provided by the department.')
+                                    ->label('Department Error Report Images')
+                                    ->helperText('Upload one or more error report screenshots or scanned documents provided by the department.')
                                     ->disk('public')
                                     ->directory('tips-error-reports')
+                                    ->multiple()
+                                    ->reorderable()
+                                    ->appendFiles()
+                                    ->panelLayout('grid')
                                     ->image()
                                     ->imageEditor()
                                     ->openable()
@@ -210,12 +214,12 @@ class TipsReportForm
                                 ->schema([
                                     Select::make('employee_code')
                                         ->label('Employee')
-                                        ->options(fn() => Employee::query()
+                                        ->options(fn () => Employee::query()
                                             ->whereIn('employee_status', ['Active', 'Resigning This Month'])
                                             ->orderBy('employee_code')
                                             ->get()
-                                            ->mapWithKeys(fn($e) => [
-                                                $e->employee_code => strtoupper($e->employee_code) . ' — ' . $e->name . ' (' . ($e->department?->name ?? 'No Dept') . ')',
+                                            ->mapWithKeys(fn ($e) => [
+                                                $e->employee_code => strtoupper($e->employee_code).' — '.$e->name.' ('.($e->department?->name ?? 'No Dept').')',
                                             ])
                                             ->toArray())
                                         ->searchable()
@@ -248,18 +252,18 @@ class TipsReportForm
                                 ->schema([
                                     Select::make('employee_id')
                                         ->label('Employee')
-                                        ->options(fn() => Employee::query()
+                                        ->options(fn () => Employee::query()
                                             ->with(['department', 'designation'])
                                             ->orderBy('employee_code')
                                             ->get()
-                                            ->mapWithKeys(fn($e) => [
-                                                $e->employee_code => strtoupper($e->employee_code) . ' — ' . $e->name . ' (' . ($e->designation?->name ?? 'No Designation') . ')',
+                                            ->mapWithKeys(fn ($e) => [
+                                                $e->employee_code => strtoupper($e->employee_code).' — '.$e->name.' ('.($e->designation?->name ?? 'No Designation').')',
                                             ])
                                             ->toArray())
                                         ->searchable()
                                         ->live()
                                         ->afterStateUpdated(function ($state, Set $set) {
-                                            if (!$state) {
+                                            if (! $state) {
                                                 return;
                                             }
                                             $emp = Employee::with(['department', 'designation'])->where('employee_code', $state)->first();

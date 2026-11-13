@@ -92,9 +92,13 @@
     </div>
 
     {{-- Uploaded Report Attachments (Cage Department Tips Collection & Department Error Reports) Side by Side & Collapsible --}}
-    @if($record->cage_tips_report_image_path || $record->department_error_image_path)
+    @php
+        $errorImages = $record->department_error_image_path ?? [];
+        $hasErrorImages = !empty($errorImages);
+    @endphp
+    @if($record->cage_tips_report_image_path || $hasErrorImages)
         @php
-            $hasBothImages = $record->cage_tips_report_image_path && $record->department_error_image_path;
+            $hasBothImages = $record->cage_tips_report_image_path && $hasErrorImages;
             $gridColsClass = $hasBothImages ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1';
         @endphp
 
@@ -199,9 +203,27 @@
                 </div>
             @endif
 
-            {{-- Card 2: Department Error Report --}}
-            @if($record->department_error_image_path)
-                <div x-data="{ collapsed: false, expanded: false }"
+            {{-- Card 2: Department Error Report Gallery --}}
+            @if($hasErrorImages)
+                @php
+                    $errorImageUrls = collect($errorImages)->map(fn ($path) => asset('storage/' . $path))->values()->all();
+                @endphp
+                <div x-data="{
+                        collapsed: false,
+                        expanded: false,
+                        activeIndex: 0,
+                        images: @js($errorImageUrls),
+                        openLightbox(idx) {
+                            this.activeIndex = idx;
+                            this.expanded = true;
+                        },
+                        prev() {
+                            this.activeIndex = (this.activeIndex - 1 + this.images.length) % this.images.length;
+                        },
+                        next() {
+                            this.activeIndex = (this.activeIndex + 1) % this.images.length;
+                        }
+                     }"
                      class="rounded-xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200/80 dark:border-rose-800/60 shadow-sm overflow-hidden transition-all duration-200">
                     <div class="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-rose-100/40 dark:bg-rose-900/30 border-b border-rose-200/60 dark:border-rose-800/40">
                         <div class="flex items-center gap-2.5 cursor-pointer select-none" @click="collapsed = !collapsed">
@@ -215,83 +237,121 @@
                             </div>
                             <div>
                                 <h4 class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                    <span>Department Error Report Attachment</span>
-                                    <span class="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-200">Attached</span>
+                                    <span>Department Error Report Gallery</span>
+                                    <span class="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-200">
+                                        {{ count($errorImages) }} {{ count($errorImages) === 1 ? 'Image' : 'Images' }}
+                                    </span>
                                 </h4>
-                                <p class="text-[11px] text-gray-500 dark:text-gray-400">Department error evidence document uploaded for this tips cycle.</p>
+                                <p class="text-[11px] text-gray-500 dark:text-gray-400">Department error evidence documents uploaded for this tips cycle.</p>
                             </div>
                         </div>
 
                         <div class="flex items-center gap-1.5 self-end sm:self-center">
-                            <a href="{{ asset('storage/' . $record->department_error_image_path) }}"
-                               target="_blank"
-                               title="Open image in new tab"
-                               class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-2xs">
-                                <x-heroicon-m-arrow-top-right-on-square class="w-3.5 h-3.5 text-gray-400" />
-                                <span class="hidden sm:inline">Open</span>
-                            </a>
                             @if(!$record->isValidated())
                                 <button type="button"
                                         wire:click="mountAction('uploadDepartmentErrorImage')"
-                                        title="Replace Error report image"
+                                        title="Add or manage error report images"
                                         class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-rose-600 hover:bg-rose-500 text-white shadow-2xs transition cursor-pointer">
-                                    <x-heroicon-m-arrow-path class="w-3.5 h-3.5" />
-                                    <span>Replace</span>
+                                    <x-heroicon-m-photo class="w-3.5 h-3.5" />
+                                    <span>Manage</span>
                                 </button>
                                 <button type="button"
                                         wire:click="removeDepartmentErrorImage"
-                                        wire:confirm="Are you sure you want to remove the department error report image?"
-                                        title="Remove Error report image"
+                                        wire:confirm="Are you sure you want to remove all department error report images?"
+                                        title="Remove all error report images"
                                         class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-rose-600 hover:text-rose-700 hover:bg-rose-100/60 dark:text-rose-400 dark:hover:bg-rose-950/60 transition cursor-pointer">
                                     <x-heroicon-m-trash class="w-3.5 h-3.5" />
-                                    <span class="hidden sm:inline">Remove</span>
+                                    <span class="hidden sm:inline">Clear All</span>
                                 </button>
                             @endif
                         </div>
                     </div>
 
-                    {{-- Collapsible Content Body --}}
+                    {{-- Collapsible Gallery Body --}}
                     <div x-show="!collapsed" x-collapse class="p-3">
-                        <div class="relative rounded-xl overflow-hidden border border-rose-200/80 dark:border-rose-900/50 bg-white dark:bg-gray-950 p-2 shadow-2xs">
-                            <div class="cursor-pointer group relative flex justify-center items-center bg-gray-50 dark:bg-gray-900/50 rounded-lg overflow-hidden max-h-[380px]"
-                                 @click="expanded = true">
-                                <img src="{{ asset('storage/' . $record->department_error_image_path) }}"
-                                     alt="Department Error Report"
-                                     class="object-contain w-auto max-h-[360px] rounded transition duration-200 group-hover:scale-[1.01]" />
-                                <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-xs font-semibold backdrop-blur-[1px]">
-                                    <x-heroicon-m-magnifying-glass-plus class="w-5 h-5" />
-                                    <span>Click to enlarge preview</span>
-                                </div>
-                            </div>
-
-                            {{-- In-Page Lightbox Modal --}}
-                            <div x-show="expanded"
-                                 x-cloak
-                                 x-transition
-                                 @keydown.escape.window="expanded = false"
-                                 class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-xs p-4"
-                                 @click.self="expanded = false">
-                                <div class="relative max-w-5xl max-h-[92vh] w-full flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
-                                    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
-                                        <div class="flex items-center gap-2">
-                                            <x-heroicon-m-photo class="w-4 h-4 text-rose-500" />
-                                            <span class="text-xs font-bold text-gray-900 dark:text-white">Department Error Report - Full Preview</span>
+                        <div class="grid {{ count($errorImages) > 1 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1' }} gap-3">
+                            @foreach($errorImageUrls as $idx => $imgUrl)
+                                <div class="relative rounded-xl overflow-hidden border border-rose-200/80 dark:border-rose-900/50 bg-white dark:bg-gray-950 p-2 shadow-2xs group">
+                                    <div class="cursor-pointer relative flex justify-center items-center bg-gray-50 dark:bg-gray-900/50 rounded-lg overflow-hidden {{ count($errorImages) > 1 ? 'h-[200px]' : 'max-h-[380px]' }}"
+                                         @click="openLightbox({{ $idx }})">
+                                        <img src="{{ $imgUrl }}"
+                                             alt="Department Error Report {{ $idx + 1 }}"
+                                             class="object-contain w-full h-full {{ count($errorImages) > 1 ? 'max-h-[190px]' : 'max-h-[360px]' }} rounded transition duration-200 group-hover:scale-[1.02]" />
+                                        <div class="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 text-white text-xs font-semibold backdrop-blur-[1px]">
+                                            <x-heroicon-m-magnifying-glass-plus class="w-5 h-5" />
+                                            <span>Preview #{{ $idx + 1 }}</span>
                                         </div>
-                                        <div class="flex items-center gap-2">
-                                            <a href="{{ asset('storage/' . $record->department_error_image_path) }}" download class="text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white flex items-center gap-1">
-                                                <x-heroicon-m-arrow-down-tray class="w-4 h-4" />
-                                                <span>Download</span>
-                                            </a>
-                                            <button type="button" @click="expanded = false" class="p-1 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-200">
-                                                <x-heroicon-m-x-mark class="w-5 h-5" />
+                                        @if(count($errorImages) > 1)
+                                            <span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/60 text-white text-[10px] font-semibold">
+                                                {{ $idx + 1 }} / {{ count($errorImages) }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <div class="mt-1.5 flex items-center justify-between px-1">
+                                        <a href="{{ $imgUrl }}" target="_blank" class="text-[11px] text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 inline-flex items-center gap-1">
+                                            <x-heroicon-m-arrow-top-right-on-square class="w-3 h-3" />
+                                            <span>Open</span>
+                                        </a>
+                                        @if(!$record->isValidated())
+                                            <button type="button"
+                                                    wire:click="removeDepartmentErrorImage({{ $idx }})"
+                                                    wire:confirm="Remove this error report image?"
+                                                    class="text-[11px] text-rose-600 hover:text-rose-700 dark:text-rose-400 inline-flex items-center gap-1 cursor-pointer">
+                                                <x-heroicon-m-trash class="w-3 h-3" />
+                                                <span>Remove</span>
                                             </button>
-                                        </div>
+                                        @endif
                                     </div>
-                                    <div class="p-4 overflow-auto flex items-center justify-center bg-gray-100 dark:bg-gray-950 flex-1 min-h-[400px]">
-                                        <img src="{{ asset('storage/' . $record->department_error_image_path) }}"
-                                             alt="Department Error Report"
-                                             class="max-w-full max-h-[78vh] object-contain rounded shadow-lg" />
+                                </div>
+                            @endforeach
+                        </div>
+
+                        {{-- In-Page Gallery Lightbox Modal --}}
+                        <div x-show="expanded"
+                             x-cloak
+                             x-transition
+                             @keydown.escape.window="expanded = false"
+                             @keydown.arrow-left.window="if (expanded && images.length > 1) prev()"
+                             @keydown.arrow-right.window="if (expanded && images.length > 1) next()"
+                             class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-xs p-4"
+                             @click.self="expanded = false">
+                            <div class="relative max-w-5xl max-h-[92vh] w-full flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
+                                <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
+                                    <div class="flex items-center gap-2">
+                                        <x-heroicon-m-photo class="w-4 h-4 text-rose-500" />
+                                        <span class="text-xs font-bold text-gray-900 dark:text-white">
+                                            Department Error Report - Preview
+                                            <template x-if="images.length > 1">
+                                                <span class="ml-1 text-gray-500 font-normal" x-text="'(' + (activeIndex + 1) + ' of ' + images.length + ')'"></span>
+                                            </template>
+                                        </span>
                                     </div>
+                                    <div class="flex items-center gap-3">
+                                        <a :href="images[activeIndex]" download class="text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white flex items-center gap-1">
+                                            <x-heroicon-m-arrow-down-tray class="w-4 h-4" />
+                                            <span>Download</span>
+                                        </a>
+                                        <button type="button" @click="expanded = false" class="p-1 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-200 cursor-pointer">
+                                            <x-heroicon-m-x-mark class="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="relative p-4 overflow-auto flex items-center justify-center bg-gray-100 dark:bg-gray-950 flex-1 min-h-[400px]">
+                                    <button type="button"
+                                            x-show="images.length > 1"
+                                            @click="prev()"
+                                            class="absolute left-3 z-10 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white transition cursor-pointer">
+                                        <x-heroicon-m-chevron-left class="w-5 h-5" />
+                                    </button>
+                                    <img :src="images[activeIndex]"
+                                         alt="Department Error Report"
+                                         class="max-w-full max-h-[78vh] object-contain rounded shadow-lg" />
+                                    <button type="button"
+                                            x-show="images.length > 1"
+                                            @click="next()"
+                                            class="absolute right-3 z-10 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white transition cursor-pointer">
+                                        <x-heroicon-m-chevron-right class="w-5 h-5" />
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -808,9 +868,27 @@
                     </div>
                 </div>
 
-                {{-- Attached Department Error Report Image Preview Card --}}
-                @if($record->department_error_image_path)
-                    <div class="p-4 bg-rose-50/40 dark:bg-rose-950/20 border-b border-rose-100 dark:border-rose-900/40">
+                {{-- Attached Department Error Report Images Gallery --}}
+                @if($hasErrorImages)
+                    @php
+                        $sectionErrorUrls = collect($errorImages)->map(fn ($path) => asset('storage/' . $path))->values()->all();
+                    @endphp
+                    <div class="p-4 bg-rose-50/40 dark:bg-rose-950/20 border-b border-rose-100 dark:border-rose-900/40"
+                         x-data="{
+                            expanded: false,
+                            activeIndex: 0,
+                            images: @js($sectionErrorUrls),
+                            openLightbox(idx) {
+                                this.activeIndex = idx;
+                                this.expanded = true;
+                            },
+                            prev() {
+                                this.activeIndex = (this.activeIndex - 1 + this.images.length) % this.images.length;
+                            },
+                            next() {
+                                this.activeIndex = (this.activeIndex + 1) % this.images.length;
+                            }
+                         }">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
                             <div class="flex items-center gap-2">
                                 <div class="p-1 rounded bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300">
@@ -818,72 +896,90 @@
                                 </div>
                                 <div>
                                     <h4 class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                        <span>Department Error Report Attachment</span>
-                                        <span class="text-[10px] px-1.5 py-0.2 rounded font-semibold bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-200">Attached</span>
+                                        <span>Department Error Report Gallery</span>
+                                        <span class="text-[10px] px-1.5 py-0.2 rounded font-semibold bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-200">
+                                            {{ count($errorImages) }} {{ count($errorImages) === 1 ? 'Image' : 'Images' }}
+                                        </span>
                                     </h4>
-                                    <p class="text-[11px] text-gray-500 dark:text-gray-400">Department error evidence document uploaded for this tips cycle.</p>
+                                    <p class="text-[11px] text-gray-500 dark:text-gray-400">Department error evidence documents uploaded for this tips cycle.</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2">
-                                <a href="{{ asset('storage/' . $record->department_error_image_path) }}"
-                                   target="_blank"
-                                   class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-2xs">
-                                    <x-heroicon-m-arrow-top-right-on-square class="w-3.5 h-3.5 text-gray-400" />
-                                    <span>Open Full Image</span>
-                                </a>
                                 @if(!$record->isValidated())
                                     <button type="button"
                                             wire:click="removeDepartmentErrorImage"
-                                            wire:confirm="Are you sure you want to remove the department error report image?"
-                                            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-rose-600 hover:text-rose-700 hover:bg-rose-100/60 dark:text-rose-400 dark:hover:bg-rose-950/60 transition">
+                                            wire:confirm="Are you sure you want to remove all department error report images?"
+                                            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-rose-600 hover:text-rose-700 hover:bg-rose-100/60 dark:text-rose-400 dark:hover:bg-rose-950/60 transition cursor-pointer">
                                         <x-heroicon-m-trash class="w-3.5 h-3.5" />
-                                        <span>Remove</span>
+                                        <span>Clear All</span>
                                     </button>
                                 @endif
                             </div>
                         </div>
 
-                        {{-- Image Display Box with Lightbox preview on click --}}
-                        <div x-data="{ expanded: false }" class="relative rounded-xl overflow-hidden border border-rose-200/80 dark:border-rose-900/50 bg-white dark:bg-gray-950 p-2 shadow-2xs">
-                            <div class="cursor-pointer group relative flex justify-center items-center bg-gray-50 dark:bg-gray-900/50 rounded-lg overflow-hidden max-h-[380px]"
-                                 @click="expanded = true">
-                                <img src="{{ asset('storage/' . $record->department_error_image_path) }}"
-                                     alt="Department Error Report"
-                                     class="object-contain w-auto max-h-[360px] rounded transition duration-200 group-hover:scale-[1.01]" />
-                                <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-xs font-semibold backdrop-blur-[1px]">
-                                    <x-heroicon-m-magnifying-glass-plus class="w-5 h-5" />
-                                    <span>Click to enlarge preview</span>
+                        <div class="grid {{ count($errorImages) > 1 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1' }} gap-3">
+                            @foreach($sectionErrorUrls as $idx => $imgUrl)
+                                <div class="relative rounded-xl overflow-hidden border border-rose-200/80 dark:border-rose-900/50 bg-white dark:bg-gray-950 p-2 shadow-2xs group">
+                                    <div class="cursor-pointer relative flex justify-center items-center bg-gray-50 dark:bg-gray-900/50 rounded-lg overflow-hidden {{ count($errorImages) > 1 ? 'h-[200px]' : 'max-h-[380px]' }}"
+                                         @click="openLightbox({{ $idx }})">
+                                        <img src="{{ $imgUrl }}"
+                                             alt="Department Error Report {{ $idx + 1 }}"
+                                             class="object-contain w-full h-full {{ count($errorImages) > 1 ? 'max-h-[190px]' : 'max-h-[360px]' }} rounded transition duration-200 group-hover:scale-[1.02]" />
+                                        <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-xs font-semibold backdrop-blur-[1px]">
+                                            <x-heroicon-m-magnifying-glass-plus class="w-5 h-5" />
+                                            <span>Preview #{{ $idx + 1 }}</span>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
+                            @endforeach
+                        </div>
 
-                            {{-- In-Page Lightbox Modal --}}
-                            <div x-show="expanded"
-                                 x-cloak
-                                 x-transition
-                                 @keydown.escape.window="expanded = false"
-                                 class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-xs p-4"
-                                 @click.self="expanded = false">
-                                <div class="relative max-w-5xl max-h-[92vh] w-full flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
-                                    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
-                                        <div class="flex items-center gap-2">
-                                            <x-heroicon-m-photo class="w-4 h-4 text-rose-500" />
-                                            <span class="text-xs font-bold text-gray-900 dark:text-white">Department Error Report - Full Preview</span>
-                                        </div>
-                                        <div class="flex items-center gap-2">
-                                            <a href="{{ asset('storage/' . $record->department_error_image_path) }}" download class="text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white flex items-center gap-1">
-                                                <x-heroicon-m-arrow-down-tray class="w-4 h-4" />
-                                                <span>Download</span>
-                                            </a>
-                                            <button type="button" @click="expanded = false" class="p-1 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-200">
-                                                <x-heroicon-m-x-mark class="w-5 h-5" />
-                                            </button>
-                                        </div>
+                        {{-- In-Page Lightbox Modal --}}
+                        <div x-show="expanded"
+                             x-cloak
+                             x-transition
+                             @keydown.escape.window="expanded = false"
+                             @keydown.arrow-left.window="if (expanded && images.length > 1) prev()"
+                             @keydown.arrow-right.window="if (expanded && images.length > 1) next()"
+                             class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-xs p-4"
+                             @click.self="expanded = false">
+                            <div class="relative max-w-5xl max-h-[92vh] w-full flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
+                                <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
+                                    <div class="flex items-center gap-2">
+                                        <x-heroicon-m-photo class="w-4 h-4 text-rose-500" />
+                                        <span class="text-xs font-bold text-gray-900 dark:text-white">
+                                            Department Error Report - Preview
+                                            <template x-if="images.length > 1">
+                                                <span class="ml-1 text-gray-500 font-normal" x-text="'(' + (activeIndex + 1) + ' of ' + images.length + ')'"></span>
+                                            </template>
+                                        </span>
                                     </div>
-                                    <div class="p-4 overflow-auto flex items-center justify-center bg-gray-100 dark:bg-gray-950 flex-1 min-h-[400px]">
-                                        <img src="{{ asset('storage/' . $record->department_error_image_path) }}"
-                                             alt="Department Error Report"
-                                             class="max-w-full max-h-[78vh] object-contain rounded shadow-lg" />
+                                    <div class="flex items-center gap-2">
+                                        <a :href="images[activeIndex]" download class="text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white flex items-center gap-1">
+                                            <x-heroicon-m-arrow-down-tray class="w-4 h-4" />
+                                            <span>Download</span>
+                                        </a>
+                                        <button type="button" @click="expanded = false" class="p-1 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-200 cursor-pointer">
+                                            <x-heroicon-m-x-mark class="w-5 h-5" />
+                                        </button>
                                     </div>
+                                </div>
+                                <div class="relative p-4 overflow-auto flex items-center justify-center bg-gray-100 dark:bg-gray-950 flex-1 min-h-[400px]">
+                                    <button type="button"
+                                            x-show="images.length > 1"
+                                            @click="prev()"
+                                            class="absolute left-3 z-10 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white transition cursor-pointer">
+                                        <x-heroicon-m-chevron-left class="w-5 h-5" />
+                                    </button>
+                                    <img :src="images[activeIndex]"
+                                         alt="Department Error Report"
+                                         class="max-w-full max-h-[78vh] object-contain rounded shadow-lg" />
+                                    <button type="button"
+                                            x-show="images.length > 1"
+                                            @click="next()"
+                                            class="absolute right-3 z-10 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white transition cursor-pointer">
+                                        <x-heroicon-m-chevron-right class="w-5 h-5" />
+                                    </button>
                                 </div>
                             </div>
                         </div>
