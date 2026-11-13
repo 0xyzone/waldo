@@ -331,9 +331,16 @@ class LetterController extends Controller
                 $record = Leaver::find($sourceId);
                 if ($record) {
                     $prefilledEmployeeCode = $prefilledEmployeeCode ?: (string) $record->employee_id;
+                    $leavingDate = $record->leaving_date
+                        ? Carbon::parse($record->leaving_date)->format('Y-m-d')
+                        : '';
+                    $resignationDate = $record->resignation_date
+                        ? Carbon::parse($record->resignation_date)->format('Y-m-d')
+                        : '';
                     $prefilledCustomValues = [
-                        'last_working_date' => $record->last_working_date?->format('Y-m-d') ?? '',
-                        'resignation_date' => $record->resignation_date?->format('Y-m-d') ?? '',
+                        'last_working_date' => $leavingDate,
+                        'leaving_date' => $leavingDate,
+                        'resignation_date' => $resignationDate,
                         'leaver_reason' => (string) ($record->reason ?? ''),
                         'leaver_remarks' => (string) ($record->remarks ?? ''),
                     ];
