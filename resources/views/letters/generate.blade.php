@@ -1696,11 +1696,16 @@ function generatorState() {
             }
 
             if (this.prefilledCustomValues && typeof this.prefilledCustomValues === 'object') {
+                let hasPrefilled = false;
                 Object.entries(this.prefilledCustomValues).forEach(([k, v]) => {
                     if (v !== undefined && v !== null && v !== '') {
                         this.customValues[k] = v;
+                        hasPrefilled = true;
                     }
                 });
+                if (hasPrefilled) {
+                    this.updatePaginatedLetters();
+                }
             }
 
             this.$watch('selectedTemplateId', () => this.onTemplateChange());
