@@ -858,6 +858,14 @@
   - **Form & View Actions**: Added `additional_attachments` multi-image `FileUpload` in `TipsReportForm.php`, plus `uploadAdditionalAttachmentsAction()` and `removeAdditionalAttachment()` in `ViewTipsReport.php`.
   - **Unified Collapsible UI**: Merged all three attachment panels into one collapsible container in `view-tips-report.blade.php` with a responsive 1/2/3-column grid, quick-upload header buttons, and full lightbox gallery support.
 
+### 75. Resource-to-Letter Template Linking & One-Click Letter Generation (v2.11.0)
+- **Problem & Requirements**:
+  - User requested a "Create Letter" button on Promotions, Transfers, Leavers, and Terminated Employees records, plus a System Settings page to link a Letter Studio template to each resource and auto-populate record-specific variables.
+- **Solution**:
+  - **Settings Page (`ManageLetterTemplateSettings.php`)**: Placed under `System Settings` using `AppSetting` keys (`letter_template_promotion_id`, `letter_template_transfer_id`, `letter_template_leaver_id`, `letter_template_terminated_id`) with Shield permissions.
+  - **Row Action (`CreateRecordLetterAction.php`)**: Added to all 4 resource tables; opens `/letters/generate` in a new tab with `template_id`, `employee_code`, `source_type`, and `source_id` (or shows a warning notification if unlinked).
+  - **Generator Pre-fill (`LetterController::generate()`, `generate.blade.php`)**: Loads the source record, pre-selects the employee, and injects/substitutes all record-specific variables.
+
 
 
 

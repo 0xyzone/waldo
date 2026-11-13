@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\EmployeePromotions\Tables;
 
+use App\Filament\Actions\CreateRecordLetterAction;
 use App\Filament\Resources\EmployeePromotions\EmployeePromotionResource;
 use App\Jobs\SyncBulkPromotionsToSheetJob;
 use App\Jobs\SyncPromotionToSheetJob;
@@ -206,6 +207,7 @@ class EmployeePromotionsTable
                     ->falseLabel('HRMS Not Synced'),
             ])
             ->recordActions([
+                CreateRecordLetterAction::make('promotion'),
                 EditAction::make()
                     ->modalWidth('3xl'),
                 Action::make('acknowledge')

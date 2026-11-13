@@ -1518,7 +1518,8 @@ function generatorState() {
             return combined;
         },
 
-        selectedCodes: [],
+        selectedCodes: @json(!empty($prefilledEmployeeCode) ? [(string) $prefilledEmployeeCode] : []),
+        prefilledCustomValues: @json($prefilledCustomValues ?? (object)[]),
         customValues: {},
         dateFormats: {},
         search: '',
@@ -1692,6 +1693,14 @@ function generatorState() {
             }
             if (this.selectedTemplateId) {
                 this.onTemplateChange();
+            }
+
+            if (this.prefilledCustomValues && typeof this.prefilledCustomValues === 'object') {
+                Object.entries(this.prefilledCustomValues).forEach(([k, v]) => {
+                    if (v !== undefined && v !== null && v !== '') {
+                        this.customValues[k] = v;
+                    }
+                });
             }
 
             this.$watch('selectedTemplateId', () => this.onTemplateChange());
@@ -2255,6 +2264,15 @@ function generatorState() {
                     });
                 }
             });
+
+            // Substitute any prefilled record variables even if not explicitly declared in template variables
+            if (this.prefilledCustomValues && typeof this.prefilledCustomValues === 'object') {
+                Object.entries(this.prefilledCustomValues).forEach(([k, val]) => {
+                    const safeVal = this.wrapVarVal(val ?? '', 'text', isTemplatePreeti);
+                    const rx = new RegExp('[{]{2}\\s*' + k + '\\s*[}]{2}', 'gi');
+                    html = html.replace(rx, safeVal);
+                });
+            }
 
             return html;
         },

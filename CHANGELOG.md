@@ -4,6 +4,16 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.11.0] - 2026-11-13
+
+### Added
+- **Resource-to-Letter Template Linking & One-Click Letter Generation**:
+  - **Settings Page (`ManageLetterTemplateSettings.php`)**: Added **Letter Template Linking** under **System Settings** (`system-settings/letter-templates`) to map Letter Studio templates to Promotions, Transfers, Leavers, and Terminated Employees.
+  - **Reusable Row Action (`CreateRecordLetterAction.php`)**: Added a **Create Letter** button to `EmployeePromotionsTable`, `EmployeeTransfersTable`, `LeaversTable`, and `TerminatedEmployeesTable` that opens the Letter Studio Generator in a new tab (or warns if no template is linked).
+  - **Automatic Variable Pre-filling (`LetterController.php`, `generate.blade.php`)**: Passes `employee_code`, `source_type`, and `source_id` to `/letters/generate`, automatically selecting the employee and populating record-specific variables (`{{promotion_date}}`, `{{from_department}}`, `{{to_department}}`, `{{transfer_date}}`, `{{last_working_date}}`, `{{resignation_date}}`, `{{termination_date}}`, reasons, and remarks).
+
+---
+
 ## [2.10.9] - 2026-11-13
 
 ### Added

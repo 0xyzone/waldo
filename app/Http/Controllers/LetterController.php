@@ -4,9 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Helpers\NepaliDate\NepaliDate;
 use App\Models\Employee;
+use App\Models\EmployeePromotion;
+use App\Models\EmployeeTransfer;
 use App\Models\GeneratedLetter;
+use App\Models\Leaver;
 use App\Models\LetterGlobalVariable;
 use App\Models\LetterTemplate;
+use App\Models\TerminatedEmployee;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -290,8 +294,71 @@ class LetterController extends Controller
         $templates = LetterTemplate::orderBy('title')->get();
         $permanentVariables = LetterGlobalVariable::where('is_permanent', true)->orderBy('label')->get();
         $selectedTemplateId = request('template_id', '');
+        $prefilledEmployeeCode = request('employee_code', '');
+        $prefilledCustomValues = [];
 
-        return view('letters.generate', compact('employees', 'templates', 'permanentVariables', 'selectedTemplateId'));
+        $sourceType = request('source_type');
+        $sourceId = request('source_id');
+
+        if ($sourceType && $sourceId) {
+            if ($sourceType === 'promotion') {
+                $record = EmployeePromotion::with(['fromDepartment', 'fromDesignation', 'toDepartment', 'toDesignation'])->find($sourceId);
+                if ($record) {
+                    $prefilledEmployeeCode = $prefilledEmployeeCode ?: (string) $record->employee_id;
+                    $prefilledCustomValues = [
+                        'promotion_date' => $record->promotion_date?->format('Y-m-d') ?? '',
+                        'from_department' => $record->fromDepartment?->name ?? '',
+                        'from_designation' => $record->fromDesignation?->name ?? '',
+                        'to_department' => $record->toDepartment?->name ?? '',
+                        'to_designation' => $record->toDesignation?->name ?? '',
+                        'promotion_remarks' => (string) ($record->remarks ?? ''),
+                    ];
+                }
+            } elseif ($sourceType === 'transfer') {
+                $record = EmployeeTransfer::with(['fromDepartment', 'fromDesignation', 'toDepartment', 'toDesignation'])->find($sourceId);
+                if ($record) {
+                    $prefilledEmployeeCode = $prefilledEmployeeCode ?: (string) $record->employee_id;
+                    $prefilledCustomValues = [
+                        'transfer_date' => $record->transfer_date?->format('Y-m-d') ?? '',
+                        'from_department' => $record->fromDepartment?->name ?? '',
+                        'from_designation' => $record->fromDesignation?->name ?? '',
+                        'to_department' => $record->toDepartment?->name ?? '',
+                        'to_designation' => $record->toDesignation?->name ?? '',
+                        'transfer_remarks' => (string) ($record->remarks ?? ''),
+                    ];
+                }
+            } elseif ($sourceType === 'leaver') {
+                $record = Leaver::find($sourceId);
+                if ($record) {
+                    $prefilledEmployeeCode = $prefilledEmployeeCode ?: (string) $record->employee_id;
+                    $prefilledCustomValues = [
+                        'last_working_date' => $record->last_working_date?->format('Y-m-d') ?? '',
+                        'resignation_date' => $record->resignation_date?->format('Y-m-d') ?? '',
+                        'leaver_reason' => (string) ($record->reason ?? ''),
+                        'leaver_remarks' => (string) ($record->remarks ?? ''),
+                    ];
+                }
+            } elseif ($sourceType === 'terminated') {
+                $record = TerminatedEmployee::find($sourceId);
+                if ($record) {
+                    $prefilledEmployeeCode = $prefilledEmployeeCode ?: (string) $record->employee_id;
+                    $prefilledCustomValues = [
+                        'termination_date' => $record->termination_date?->format('Y-m-d') ?? '',
+                        'last_working_date' => $record->last_working_date?->format('Y-m-d') ?? '',
+                        'termination_reason' => (string) ($record->reason ?? ''),
+                    ];
+                }
+            }
+        }
+
+        return view('letters.generate', compact(
+            'employees',
+            'templates',
+            'permanentVariables',
+            'selectedTemplateId',
+            'prefilledEmployeeCode',
+            'prefilledCustomValues'
+        ));
     }
 
     public function convertDate(Request $request)

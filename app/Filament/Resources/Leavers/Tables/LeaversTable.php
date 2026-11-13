@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Leavers\Tables;
 
+use App\Filament\Actions\CreateRecordLetterAction;
 use App\Models\Department;
 use App\Models\Designation;
 use App\Models\Employee;
@@ -176,6 +177,7 @@ class LeaversTable
                     ->falseLabel('Tips Released'),
             ])
             ->recordActions([
+                CreateRecordLetterAction::make('leaver'),
                 EditAction::make(),
                 Action::make('Offboard')
                     ->button()

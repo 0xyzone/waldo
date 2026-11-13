@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TerminatedEmployees\Tables;
 
+use App\Filament\Actions\CreateRecordLetterAction;
 use App\Models\Department;
 use App\Models\Designation;
 use App\Models\TerminatedEmployee;
@@ -157,6 +158,7 @@ class TerminatedEmployeesTable
                     }),
             ])
             ->recordActions([
+                CreateRecordLetterAction::make('terminated'),
                 Action::make('markLetterPrinted')
                     ->label(fn (TerminatedEmployee $record): string => $record->is_letter_printed ? 'Printed' : 'Mark as Printed')
                     ->tooltip(fn (TerminatedEmployee $record): string => $record->is_letter_printed ? 'Letter printed on '.($record->letter_printed_at?->format('M d, Y') ?? 'record').'. Click to revert.' : 'Mark termination letter as Printed')

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\EmployeeTransfers\Tables;
 
+use App\Filament\Actions\CreateRecordLetterAction;
 use App\Filament\Resources\EmployeeTransfers\EmployeeTransferResource;
 use App\Models\Department;
 use App\Models\Designation;
@@ -170,6 +171,7 @@ class EmployeeTransfersTable
                     ->falseLabel('HRMS Not Synced'),
             ])
             ->recordActions([
+                CreateRecordLetterAction::make('transfer'),
                 EditAction::make()
                     ->modalWidth('3xl'),
                 Action::make('acknowledge')

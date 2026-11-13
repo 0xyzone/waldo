@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.10.9';
+    public const CURRENT_VERSION = '2.11.0';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,20 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.11.0',
+                'date' => '2026-11-13',
+                'title' => 'Resource-to-Letter Template Linking & One-Click Letter Generation',
+                'type' => 'minor',
+                'badge' => 'New Feature',
+                'badge_color' => 'success',
+                'description' => 'Added a System Settings page to link Letter Studio templates to Promotions, Transfers, Leavers, and Terminated Employees, plus one-click "Create Letter" row actions with automatic record variable substitution.',
+                'highlights' => [
+                    'Settings Page: Added Letter Template Linking under System Settings (ManageLetterTemplateSettings) with Shield permissions.',
+                    'Create Letter Actions: Added CreateRecordLetterAction to Promotions, Transfers, Leavers, and Terminated Employees tables.',
+                    'Record Variables: Pre-fills employee and record-specific variables (promotion/transfer/leaver/termination dates, departments, designations, reasons, remarks) in Letter Studio Generator.',
+                ],
+            ],
             [
                 'version' => '2.10.9',
                 'date' => '2026-11-13',
