@@ -772,6 +772,90 @@ class ViewTipsReport extends ViewRecord implements HasTable
             ->send();
     }
 
+    public function uploadAdditionalAttachmentsAction(): Action
+    {
+        return Action::make('uploadAdditionalAttachments')
+            ->label('Upload Additional Attachments')
+            ->icon('heroicon-m-paper-clip')
+            ->color('primary')
+            ->modalHeading('Additional Attachments')
+            ->modalDescription('Upload, add, or manage supporting documents such as adjustment requests, approvals, or memos.')
+            ->modalSubmitActionLabel('Save Attachments')
+            ->visible(fn () => ! $this->record->isValidated())
+            ->fillForm(fn () => [
+                'additional_attachments' => $this->record->additional_attachments ?? [],
+            ])
+            ->schema([
+                FileUpload::make('additional_attachments')
+                    ->label('Additional Attachments')
+                    ->disk('public')
+                    ->directory('tips-additional-attachments')
+                    ->multiple()
+                    ->reorderable()
+                    ->appendFiles()
+                    ->panelLayout('grid')
+                    ->image()
+                    ->imageEditor()
+                    ->openable()
+                    ->downloadable()
+                    ->maxSize(10240)
+                    ->required(),
+            ])
+            ->action(function (array $data) {
+                $this->record->update([
+                    'additional_attachments' => $data['additional_attachments'] ?? null,
+                ]);
+
+                Notification::make()
+                    ->title('Additional Attachments Saved')
+                    ->body('The additional attachments have been successfully updated.')
+                    ->success()
+                    ->send();
+
+                $this->record->refresh();
+            });
+    }
+
+    public function removeAdditionalAttachment(?int $index = null): void
+    {
+        if ($this->record->isValidated()) {
+            return;
+        }
+
+        $images = $this->record->additional_attachments ?? [];
+        if (empty($images)) {
+            return;
+        }
+
+        if ($index !== null && isset($images[$index])) {
+            Storage::disk('public')->delete($images[$index]);
+            unset($images[$index]);
+            $this->record->update(['additional_attachments' => array_values($images)]);
+            $this->record->refresh();
+
+            Notification::make()
+                ->title('Attachment Removed')
+                ->body('Selected additional attachment was removed successfully.')
+                ->success()
+                ->send();
+
+            return;
+        }
+
+        foreach ($images as $path) {
+            Storage::disk('public')->delete($path);
+        }
+
+        $this->record->update(['additional_attachments' => null]);
+        $this->record->refresh();
+
+        Notification::make()
+            ->title('Attachments Removed')
+            ->body('All additional attachments were removed successfully.')
+            ->success()
+            ->send();
+    }
+
     public function addLeftOutAction(): Action
     {
         return Action::make('addLeftOut')

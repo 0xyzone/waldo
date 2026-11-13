@@ -4,6 +4,17 @@ All notable changes to the **Waldo Enterprise Operations Portal** are documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.10.9] - 2026-11-13
+
+### Added
+- **Additional Attachments Multi-Image Upload & Unified Collapsible Gallery**:
+  - **Database Migration (`2026_11_13_114944_add_additional_attachments_to_tips_reports_table.php`)**: Added nullable `additional_attachments` TEXT column to `tips_reports`.
+  - **Model & Form (`TipsReport.php`, `TipsReportForm.php`)**: Added `additional_attachments` to `$fillable` and `casts()` (`array`), and added a multi-image `FileUpload` in Step 1.
+  - **View Actions (`ViewTipsReport.php`)**: Added `uploadAdditionalAttachmentsAction()` and `removeAdditionalAttachment(?int $index = null)` for managing and deleting individual or all additional attachments.
+  - **Unified Collapsible Section (`view-tips-report.blade.php`)**: Merged Cage Tips Collection Report, Department Error Reports, and Additional Attachments into a single, entirely collapsible responsive section with side-by-side cards, clean spacing, and interactive lightbox galleries.
+
+---
+
 ## [2.10.8] - 2026-11-13
 
 ### Added

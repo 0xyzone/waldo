@@ -135,6 +135,20 @@ class TipsReportForm
                                     ->openable()
                                     ->downloadable()
                                     ->maxSize(10240),
+                                FileUpload::make('additional_attachments')
+                                    ->label('Additional Attachments')
+                                    ->helperText('Upload additional supporting documents (e.g., adjustment requests, approvals, memos).')
+                                    ->disk('public')
+                                    ->directory('tips-additional-attachments')
+                                    ->multiple()
+                                    ->reorderable()
+                                    ->appendFiles()
+                                    ->panelLayout('grid')
+                                    ->image()
+                                    ->imageEditor()
+                                    ->openable()
+                                    ->downloadable()
+                                    ->maxSize(10240),
                             ]),
                         ]),
                     Step::make('Collections (Chips & Cash)')

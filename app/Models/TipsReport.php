@@ -22,6 +22,7 @@ class TipsReport extends Model
         'excel_file_path',
         'cage_tips_report_image_path',
         'department_error_image_path',
+        'additional_attachments',
         'collection_summary',
         'company_errors',
         'left_outs',
@@ -37,6 +38,7 @@ class TipsReport extends Model
         return [
             'cutoff_date' => 'date',
             'validated_at' => 'datetime',
+            'additional_attachments' => 'array',
             'collection_summary' => 'array',
             'company_errors' => 'array',
             'left_outs' => 'array',

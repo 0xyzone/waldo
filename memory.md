@@ -850,6 +850,14 @@
   - **Form & View Action**: Enabled `->multiple()`, `->reorderable()`, `->appendFiles()`, and `->panelLayout('grid')` in `TipsReportForm.php` and `ViewTipsReport.php`, and updated `removeDepartmentErrorImage(?int $index = null)` for individual or bulk deletion.
   - **Gallery UI**: Updated `view-tips-report.blade.php` to display Department Error Report images in a responsive gallery grid with an interactive Previous/Next lightbox modal.
 
+### 74. Additional Attachments & Unified Collapsible Attachments Section (v2.10.9)
+- **Problem & Requirements**:
+  - User requested another multi-image upload field for additional attachments (e.g., adjustment requests) displayed alongside Cage Report and Department Error Reports, with all attachment cards merged into one entirely collapsible, clean, responsive section.
+- **Solution**:
+  - **Migration & Model**: Added `additional_attachments` (`TEXT`, cast as `array`) to `tips_reports` and `TipsReport.php`.
+  - **Form & View Actions**: Added `additional_attachments` multi-image `FileUpload` in `TipsReportForm.php`, plus `uploadAdditionalAttachmentsAction()` and `removeAdditionalAttachment()` in `ViewTipsReport.php`.
+  - **Unified Collapsible UI**: Merged all three attachment panels into one collapsible container in `view-tips-report.blade.php` with a responsive 1/2/3-column grid, quick-upload header buttons, and full lightbox gallery support.
+
 
 
 

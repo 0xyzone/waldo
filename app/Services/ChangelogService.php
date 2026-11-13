@@ -4,7 +4,7 @@ namespace App\Services;
 
 class ChangelogService
 {
-    public const CURRENT_VERSION = '2.10.8';
+    public const CURRENT_VERSION = '2.10.9';
 
     public static function getCurrentVersion(): string
     {
@@ -71,6 +71,19 @@ class ChangelogService
     public static function getReleases(): array
     {
         return [
+            [
+                'version' => '2.10.9',
+                'date' => '2026-11-13',
+                'title' => 'Additional Attachments Multi-Image Upload & Unified Collapsible Gallery',
+                'type' => 'micro',
+                'badge' => 'Enhancement',
+                'badge_color' => 'success',
+                'description' => 'Added a multi-image upload field for Additional Attachments and merged all Tips Report attachment cards into one unified, entirely collapsible responsive section.',
+                'highlights' => [
+                    'Additional Attachments: Added additional_attachments column, form FileUpload, and ViewTipsReport modal/remove actions.',
+                    'Unified Collapsible Section: Merged Cage Report, Department Error Reports, and Additional Attachments into a single collapsible container with a responsive side-by-side grid.',
+                ],
+            ],
             [
                 'version' => '2.10.8',
                 'date' => '2026-11-13',

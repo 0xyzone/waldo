@@ -91,273 +91,428 @@
         </div>
     </div>
 
-    {{-- Uploaded Report Attachments (Cage Department Tips Collection & Department Error Reports) Side by Side & Collapsible --}}
+    {{-- Unified Collapsible Report Attachments Section (Cage Report, Department Error Gallery, Additional Attachments Gallery) --}}
     @php
+        $hasCageImage = !empty($record->cage_tips_report_image_path);
         $errorImages = $record->department_error_image_path ?? [];
         $hasErrorImages = !empty($errorImages);
+        $additionalImages = $record->additional_attachments ?? [];
+        $hasAdditionalImages = !empty($additionalImages);
+
+        $activePanelsCount = ($hasCageImage ? 1 : 0) + ($hasErrorImages ? 1 : 0) + ($hasAdditionalImages ? 1 : 0);
+        $totalAttachmentsCount = ($hasCageImage ? 1 : 0) + count($errorImages) + count($additionalImages);
+
+        $gridColsClass = match ($activePanelsCount) {
+            3 => 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3',
+            2 => 'grid-cols-1 lg:grid-cols-2',
+            default => 'grid-cols-1',
+        };
     @endphp
-    @if($record->cage_tips_report_image_path || $hasErrorImages)
-        @php
-            $hasBothImages = $record->cage_tips_report_image_path && $hasErrorImages;
-            $gridColsClass = $hasBothImages ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1';
-        @endphp
 
-        <div class="grid {{ $gridColsClass }} gap-4 mb-4">
-            {{-- Card 1: Cage Department Tips Collection Report --}}
-            @if($record->cage_tips_report_image_path)
-                <div x-data="{ collapsed: false, expanded: false }"
-                     class="rounded-xl bg-sky-50/50 dark:bg-sky-950/20 border border-sky-200/80 dark:border-sky-800/60 shadow-sm overflow-hidden transition-all duration-200">
-                    <div class="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-sky-100/40 dark:bg-sky-900/30 border-b border-sky-200/60 dark:border-sky-800/40">
-                        <div class="flex items-center gap-2.5 cursor-pointer select-none" @click="collapsed = !collapsed">
-                            <button type="button"
-                                    class="p-1 rounded-lg text-sky-700 dark:text-sky-300 hover:bg-sky-200/60 dark:hover:bg-sky-800/50 transition"
-                                    :title="collapsed ? 'Expand section' : 'Collapse section'">
-                                <x-heroicon-m-chevron-down class="w-4 h-4 transform transition-transform duration-200" ::class="collapsed ? '-rotate-90' : 'rotate-0'" />
-                            </button>
-                            <div class="p-1.5 rounded-lg bg-sky-600 text-white shadow-sm">
-                                <x-heroicon-m-banknotes class="w-4 h-4" />
-                            </div>
-                            <div>
-                                <h4 class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                    <span>Cage Department Tips Collection Report</span>
-                                    <span class="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-200">Attached</span>
-                                </h4>
-                                <p class="text-[11px] text-gray-500 dark:text-gray-400">Monthly departmental collection report document provided by Cage Department.</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-1.5 self-end sm:self-center">
-                            <a href="{{ asset('storage/' . $record->cage_tips_report_image_path) }}"
-                               target="_blank"
-                               title="Open image in new tab"
-                               class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition shadow-2xs">
-                                <x-heroicon-m-arrow-top-right-on-square class="w-3.5 h-3.5 text-gray-400" />
-                                <span class="hidden sm:inline">Open</span>
-                            </a>
-                            @if(!$record->isValidated())
-                                <button type="button"
-                                        wire:click="mountAction('uploadCageTipsReportImage')"
-                                        title="Replace Cage report image"
-                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-sky-600 hover:bg-sky-500 text-white shadow-2xs transition cursor-pointer">
-                                    <x-heroicon-m-arrow-path class="w-3.5 h-3.5" />
-                                    <span>Replace</span>
-                                </button>
-                                <button type="button"
-                                        wire:click="removeCageTipsReportImage"
-                                        wire:confirm="Are you sure you want to remove the Cage tips collection report image?"
-                                        title="Remove Cage report image"
-                                        class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-rose-600 hover:text-rose-700 hover:bg-rose-100/60 dark:text-rose-400 dark:hover:bg-rose-950/60 transition cursor-pointer">
-                                    <x-heroicon-m-trash class="w-3.5 h-3.5" />
-                                    <span class="hidden sm:inline">Remove</span>
-                                </button>
-                            @endif
-                        </div>
+    @if($activePanelsCount > 0 || !$record->isValidated())
+        <div x-data="{ sectionCollapsed: false }"
+             class="mb-5 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+            {{-- Unified Section Header --}}
+            <div class="px-4 py-3 bg-gray-50/80 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5 cursor-pointer select-none" @click="sectionCollapsed = !sectionCollapsed">
+                    <button type="button"
+                            class="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-200/70 dark:hover:bg-gray-700/70 transition cursor-pointer"
+                            :title="sectionCollapsed ? 'Expand Attachments' : 'Collapse Attachments'">
+                        <x-heroicon-m-chevron-down class="w-4 h-4 transform transition-transform duration-200" ::class="sectionCollapsed ? '-rotate-90' : 'rotate-0'" />
+                    </button>
+                    <div class="p-1.5 rounded-lg bg-primary-600 text-white shadow-xs">
+                        <x-heroicon-m-paper-clip class="w-4 h-4" />
                     </div>
-
-                    {{-- Collapsible Content Body --}}
-                    <div x-show="!collapsed" x-collapse class="p-3">
-                        <div class="relative rounded-xl overflow-hidden border border-sky-200/80 dark:border-sky-900/50 bg-white dark:bg-gray-950 p-2 shadow-2xs">
-                            <div class="cursor-pointer group relative flex justify-center items-center bg-gray-50 dark:bg-gray-900/50 rounded-lg overflow-hidden max-h-[380px]"
-                                 @click="expanded = true">
-                                <img src="{{ asset('storage/' . $record->cage_tips_report_image_path) }}"
-                                     alt="Cage Department Tips Collection Report"
-                                     class="object-contain w-auto max-h-[360px] rounded transition duration-200 group-hover:scale-[1.01]" />
-                                <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-xs font-semibold backdrop-blur-[1px]">
-                                    <x-heroicon-m-magnifying-glass-plus class="w-5 h-5" />
-                                    <span>Click to enlarge preview</span>
-                                </div>
-                            </div>
-
-                            {{-- In-Page Lightbox Modal --}}
-                            <div x-show="expanded"
-                                 x-cloak
-                                 x-transition
-                                 @keydown.escape.window="expanded = false"
-                                 class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-xs p-4"
-                                 @click.self="expanded = false">
-                                <div class="relative max-w-5xl max-h-[92vh] w-full flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
-                                    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
-                                        <div class="flex items-center gap-2">
-                                            <x-heroicon-m-banknotes class="w-4 h-4 text-sky-500" />
-                                            <span class="text-xs font-bold text-gray-900 dark:text-white">Cage Department Tips Collection Report - Full Preview</span>
-                                        </div>
-                                        <div class="flex items-center gap-2">
-                                            <a href="{{ asset('storage/' . $record->cage_tips_report_image_path) }}" download class="text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white flex items-center gap-1">
-                                                <x-heroicon-m-arrow-down-tray class="w-4 h-4" />
-                                                <span>Download</span>
-                                            </a>
-                                            <button type="button" @click="expanded = false" class="p-1 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-200">
-                                                <x-heroicon-m-x-mark class="w-5 h-5" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div class="p-4 overflow-auto flex items-center justify-center bg-gray-100 dark:bg-gray-950 flex-1 min-h-[400px]">
-                                        <img src="{{ asset('storage/' . $record->cage_tips_report_image_path) }}"
-                                             alt="Cage Department Tips Collection Report"
-                                             class="max-w-full max-h-[78vh] object-contain rounded shadow-lg" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div>
+                        <h3 class="text-xs sm:text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <span>Report Attachments & Supporting Documents</span>
+                            <span class="px-2 py-0.5 rounded-full text-[10.5px] font-semibold {{ $totalAttachmentsCount > 0 ? 'bg-primary-100 text-primary-700 dark:bg-primary-950 dark:text-primary-300' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300' }}">
+                                {{ $totalAttachmentsCount }} {{ $totalAttachmentsCount === 1 ? 'File' : 'Files' }}
+                            </span>
+                        </h3>
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400">Cage collection report, department error reports, and additional supporting attachments.</p>
                     </div>
                 </div>
-            @endif
 
-            {{-- Card 2: Department Error Report Gallery --}}
-            @if($hasErrorImages)
-                @php
-                    $errorImageUrls = collect($errorImages)->map(fn ($path) => asset('storage/' . $path))->values()->all();
-                @endphp
-                <div x-data="{
-                        collapsed: false,
-                        expanded: false,
-                        activeIndex: 0,
-                        images: @js($errorImageUrls),
-                        openLightbox(idx) {
-                            this.activeIndex = idx;
-                            this.expanded = true;
-                        },
-                        prev() {
-                            this.activeIndex = (this.activeIndex - 1 + this.images.length) % this.images.length;
-                        },
-                        next() {
-                            this.activeIndex = (this.activeIndex + 1) % this.images.length;
-                        }
-                     }"
-                     class="rounded-xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200/80 dark:border-rose-800/60 shadow-sm overflow-hidden transition-all duration-200">
-                    <div class="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-rose-100/40 dark:bg-rose-900/30 border-b border-rose-200/60 dark:border-rose-800/40">
-                        <div class="flex items-center gap-2.5 cursor-pointer select-none" @click="collapsed = !collapsed">
-                            <button type="button"
-                                    class="p-1 rounded-lg text-rose-700 dark:text-rose-300 hover:bg-rose-200/60 dark:hover:bg-rose-800/50 transition"
-                                    :title="collapsed ? 'Expand section' : 'Collapse section'">
-                                <x-heroicon-m-chevron-down class="w-4 h-4 transform transition-transform duration-200" ::class="collapsed ? '-rotate-90' : 'rotate-0'" />
-                            </button>
-                            <div class="p-1.5 rounded-lg bg-rose-600 text-white shadow-sm">
-                                <x-heroicon-m-exclamation-triangle class="w-4 h-4" />
-                            </div>
-                            <div>
-                                <h4 class="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                    <span>Department Error Report Gallery</span>
-                                    <span class="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-200">
-                                        {{ count($errorImages) }} {{ count($errorImages) === 1 ? 'Image' : 'Images' }}
-                                    </span>
-                                </h4>
-                                <p class="text-[11px] text-gray-500 dark:text-gray-400">Department error evidence documents uploaded for this tips cycle.</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center gap-1.5 self-end sm:self-center">
-                            @if(!$record->isValidated())
-                                <button type="button"
-                                        wire:click="mountAction('uploadDepartmentErrorImage')"
-                                        title="Add or manage error report images"
-                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-rose-600 hover:bg-rose-500 text-white shadow-2xs transition cursor-pointer">
-                                    <x-heroicon-m-photo class="w-3.5 h-3.5" />
-                                    <span>Manage</span>
-                                </button>
-                                <button type="button"
-                                        wire:click="removeDepartmentErrorImage"
-                                        wire:confirm="Are you sure you want to remove all department error report images?"
-                                        title="Remove all error report images"
-                                        class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium text-rose-600 hover:text-rose-700 hover:bg-rose-100/60 dark:text-rose-400 dark:hover:bg-rose-950/60 transition cursor-pointer">
-                                    <x-heroicon-m-trash class="w-3.5 h-3.5" />
-                                    <span class="hidden sm:inline">Clear All</span>
-                                </button>
-                            @endif
-                        </div>
+                @if(!$record->isValidated())
+                    <div class="flex flex-wrap items-center gap-2 self-end sm:self-center">
+                        <button type="button"
+                                wire:click="mountAction('uploadCageTipsReportImage')"
+                                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-sky-600 hover:bg-sky-500 text-white shadow-2xs transition cursor-pointer">
+                            <x-heroicon-m-banknotes class="w-3.5 h-3.5" />
+                            <span>{{ $hasCageImage ? 'Cage Report' : '+ Cage Report' }}</span>
+                        </button>
+                        <button type="button"
+                                wire:click="mountAction('uploadDepartmentErrorImage')"
+                                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white shadow-2xs transition cursor-pointer">
+                            <x-heroicon-m-exclamation-triangle class="w-3.5 h-3.5" />
+                            <span>{{ $hasErrorImages ? 'Error Images' : '+ Error Images' }}</span>
+                        </button>
+                        <button type="button"
+                                wire:click="mountAction('uploadAdditionalAttachments')"
+                                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-2xs transition cursor-pointer">
+                            <x-heroicon-m-paper-clip class="w-3.5 h-3.5" />
+                            <span>{{ $hasAdditionalImages ? 'Additional' : '+ Additional' }}</span>
+                        </button>
                     </div>
+                @endif
+            </div>
 
-                    {{-- Collapsible Gallery Body --}}
-                    <div x-show="!collapsed" x-collapse class="p-3">
-                        <div class="grid {{ count($errorImages) > 1 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1' }} gap-3">
-                            @foreach($errorImageUrls as $idx => $imgUrl)
-                                <div class="relative rounded-xl overflow-hidden border border-rose-200/80 dark:border-rose-900/50 bg-white dark:bg-gray-950 p-2 shadow-2xs group">
-                                    <div class="cursor-pointer relative flex justify-center items-center bg-gray-50 dark:bg-gray-900/50 rounded-lg overflow-hidden {{ count($errorImages) > 1 ? 'h-[200px]' : 'max-h-[380px]' }}"
-                                         @click="openLightbox({{ $idx }})">
-                                        <img src="{{ $imgUrl }}"
-                                             alt="Department Error Report {{ $idx + 1 }}"
-                                             class="object-contain w-full h-full {{ count($errorImages) > 1 ? 'max-h-[190px]' : 'max-h-[360px]' }} rounded transition duration-200 group-hover:scale-[1.02]" />
-                                        <div class="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 text-white text-xs font-semibold backdrop-blur-[1px]">
-                                            <x-heroicon-m-magnifying-glass-plus class="w-5 h-5" />
-                                            <span>Preview #{{ $idx + 1 }}</span>
+            {{-- Collapsible Body --}}
+            <div x-show="!sectionCollapsed" x-collapse class="p-4">
+                @if($activePanelsCount === 0)
+                    <div class="py-6 text-center text-xs text-gray-400 dark:text-gray-500">
+                        <x-heroicon-o-photo class="w-8 h-8 mx-auto mb-1.5 opacity-50" />
+                        <p class="font-medium text-gray-600 dark:text-gray-300">No attachments uploaded yet</p>
+                        <p class="mt-0.5">Use the buttons above to upload Cage Report, Department Error images, or Additional Attachments.</p>
+                    </div>
+                @else
+                    <div class="grid {{ $gridColsClass }} gap-4 items-start">
+                        {{-- Panel 1: Cage Department Tips Collection Report --}}
+                        @if($hasCageImage)
+                            <div x-data="{ expanded: false }"
+                                 class="rounded-xl bg-sky-50/50 dark:bg-sky-950/20 border border-sky-200/80 dark:border-sky-800/60 shadow-2xs overflow-hidden flex flex-col">
+                                <div class="p-3 flex items-center justify-between gap-2 bg-sky-100/40 dark:bg-sky-900/30 border-b border-sky-200/60 dark:border-sky-800/40">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <div class="p-1.5 rounded-lg bg-sky-600 text-white shadow-2xs shrink-0">
+                                            <x-heroicon-m-banknotes class="w-4 h-4" />
                                         </div>
-                                        @if(count($errorImages) > 1)
-                                            <span class="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/60 text-white text-[10px] font-semibold">
-                                                {{ $idx + 1 }} / {{ count($errorImages) }}
-                                            </span>
-                                        @endif
+                                        <div class="min-w-0">
+                                            <h4 class="text-xs font-bold text-gray-900 dark:text-white truncate">Cage Tips Collection Report</h4>
+                                            <span class="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-200">1 Image</span>
+                                        </div>
                                     </div>
-                                    <div class="mt-1.5 flex items-center justify-between px-1">
-                                        <a href="{{ $imgUrl }}" target="_blank" class="text-[11px] text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 inline-flex items-center gap-1">
-                                            <x-heroicon-m-arrow-top-right-on-square class="w-3 h-3" />
-                                            <span>Open</span>
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        <a href="{{ asset('storage/' . $record->cage_tips_report_image_path) }}"
+                                           target="_blank"
+                                           title="Open image in new tab"
+                                           class="p-1.5 rounded-lg text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                                            <x-heroicon-m-arrow-top-right-on-square class="w-3.5 h-3.5" />
                                         </a>
                                         @if(!$record->isValidated())
                                             <button type="button"
-                                                    wire:click="removeDepartmentErrorImage({{ $idx }})"
-                                                    wire:confirm="Remove this error report image?"
-                                                    class="text-[11px] text-rose-600 hover:text-rose-700 dark:text-rose-400 inline-flex items-center gap-1 cursor-pointer">
-                                                <x-heroicon-m-trash class="w-3 h-3" />
-                                                <span>Remove</span>
+                                                    wire:click="removeCageTipsReportImage"
+                                                    wire:confirm="Are you sure you want to remove the Cage tips collection report image?"
+                                                    title="Remove Cage report image"
+                                                    class="p-1.5 rounded-lg text-rose-600 hover:bg-rose-100/60 dark:text-rose-400 dark:hover:bg-rose-950/60 transition cursor-pointer">
+                                                <x-heroicon-m-trash class="w-3.5 h-3.5" />
                                             </button>
                                         @endif
                                     </div>
                                 </div>
-                            @endforeach
-                        </div>
 
-                        {{-- In-Page Gallery Lightbox Modal --}}
-                        <div x-show="expanded"
-                             x-cloak
-                             x-transition
-                             @keydown.escape.window="expanded = false"
-                             @keydown.arrow-left.window="if (expanded && images.length > 1) prev()"
-                             @keydown.arrow-right.window="if (expanded && images.length > 1) next()"
-                             class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-xs p-4"
-                             @click.self="expanded = false">
-                            <div class="relative max-w-5xl max-h-[92vh] w-full flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
-                                <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
-                                    <div class="flex items-center gap-2">
-                                        <x-heroicon-m-photo class="w-4 h-4 text-rose-500" />
-                                        <span class="text-xs font-bold text-gray-900 dark:text-white">
-                                            Department Error Report - Preview
-                                            <template x-if="images.length > 1">
-                                                <span class="ml-1 text-gray-500 font-normal" x-text="'(' + (activeIndex + 1) + ' of ' + images.length + ')'"></span>
-                                            </template>
-                                        </span>
+                                <div class="p-3">
+                                    <div class="relative rounded-xl overflow-hidden border border-sky-200/80 dark:border-sky-900/50 bg-white dark:bg-gray-950 p-2 shadow-2xs">
+                                        <div class="cursor-pointer group relative flex justify-center items-center bg-gray-50 dark:bg-gray-900/50 rounded-lg overflow-hidden h-[240px]"
+                                             @click="expanded = true">
+                                            <img src="{{ asset('storage/' . $record->cage_tips_report_image_path) }}"
+                                                 alt="Cage Department Tips Collection Report"
+                                                 class="object-contain w-full h-full rounded transition duration-200 group-hover:scale-[1.02]" />
+                                            <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-xs font-semibold backdrop-blur-[1px]">
+                                                <x-heroicon-m-magnifying-glass-plus class="w-5 h-5" />
+                                                <span>Click to enlarge</span>
+                                            </div>
+                                        </div>
+
+                                        {{-- Lightbox Modal --}}
+                                        <div x-show="expanded"
+                                             x-cloak
+                                             x-transition
+                                             @keydown.escape.window="expanded = false"
+                                             class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-xs p-4"
+                                             @click.self="expanded = false">
+                                            <div class="relative max-w-5xl max-h-[92vh] w-full flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
+                                                <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
+                                                    <div class="flex items-center gap-2">
+                                                        <x-heroicon-m-banknotes class="w-4 h-4 text-sky-500" />
+                                                        <span class="text-xs font-bold text-gray-900 dark:text-white">Cage Department Tips Collection Report - Full Preview</span>
+                                                    </div>
+                                                    <div class="flex items-center gap-3">
+                                                        <a href="{{ asset('storage/' . $record->cage_tips_report_image_path) }}" download class="text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white flex items-center gap-1">
+                                                            <x-heroicon-m-arrow-down-tray class="w-4 h-4" />
+                                                            <span>Download</span>
+                                                        </a>
+                                                        <button type="button" @click="expanded = false" class="p-1 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-200 cursor-pointer">
+                                                            <x-heroicon-m-x-mark class="w-5 h-5" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div class="p-4 overflow-auto flex items-center justify-center bg-gray-100 dark:bg-gray-950 flex-1 min-h-[400px]">
+                                                    <img src="{{ asset('storage/' . $record->cage_tips_report_image_path) }}"
+                                                         alt="Cage Department Tips Collection Report"
+                                                         class="max-w-full max-h-[78vh] object-contain rounded shadow-lg" />
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="flex items-center gap-3">
-                                        <a :href="images[activeIndex]" download class="text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white flex items-center gap-1">
-                                            <x-heroicon-m-arrow-down-tray class="w-4 h-4" />
-                                            <span>Download</span>
-                                        </a>
-                                        <button type="button" @click="expanded = false" class="p-1 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-200 cursor-pointer">
-                                            <x-heroicon-m-x-mark class="w-5 h-5" />
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="relative p-4 overflow-auto flex items-center justify-center bg-gray-100 dark:bg-gray-950 flex-1 min-h-[400px]">
-                                    <button type="button"
-                                            x-show="images.length > 1"
-                                            @click="prev()"
-                                            class="absolute left-3 z-10 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white transition cursor-pointer">
-                                        <x-heroicon-m-chevron-left class="w-5 h-5" />
-                                    </button>
-                                    <img :src="images[activeIndex]"
-                                         alt="Department Error Report"
-                                         class="max-w-full max-h-[78vh] object-contain rounded shadow-lg" />
-                                    <button type="button"
-                                            x-show="images.length > 1"
-                                            @click="next()"
-                                            class="absolute right-3 z-10 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white transition cursor-pointer">
-                                        <x-heroicon-m-chevron-right class="w-5 h-5" />
-                                    </button>
                                 </div>
                             </div>
-                        </div>
+                        @endif
+
+                        {{-- Panel 2: Department Error Report Gallery --}}
+                        @if($hasErrorImages)
+                            @php
+                                $errorImageUrls = collect($errorImages)->map(fn ($path) => asset('storage/' . $path))->values()->all();
+                            @endphp
+                            <div x-data="{
+                                    expanded: false,
+                                    activeIndex: 0,
+                                    images: @js($errorImageUrls),
+                                    openLightbox(idx) {
+                                        this.activeIndex = idx;
+                                        this.expanded = true;
+                                    },
+                                    prev() {
+                                        this.activeIndex = (this.activeIndex - 1 + this.images.length) % this.images.length;
+                                    },
+                                    next() {
+                                        this.activeIndex = (this.activeIndex + 1) % this.images.length;
+                                    }
+                                 }"
+                                 class="rounded-xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200/80 dark:border-rose-800/60 shadow-2xs overflow-hidden flex flex-col">
+                                <div class="p-3 flex items-center justify-between gap-2 bg-rose-100/40 dark:bg-rose-900/30 border-b border-rose-200/60 dark:border-rose-800/40">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <div class="p-1.5 rounded-lg bg-rose-600 text-white shadow-2xs shrink-0">
+                                            <x-heroicon-m-exclamation-triangle class="w-4 h-4" />
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h4 class="text-xs font-bold text-gray-900 dark:text-white truncate">Department Error Reports</h4>
+                                            <span class="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-200">
+                                                {{ count($errorImages) }} {{ count($errorImages) === 1 ? 'Image' : 'Images' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    @if(!$record->isValidated())
+                                        <button type="button"
+                                                wire:click="removeDepartmentErrorImage"
+                                                wire:confirm="Are you sure you want to remove all department error report images?"
+                                                title="Clear all error report images"
+                                                class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium text-rose-600 hover:bg-rose-100/60 dark:text-rose-400 dark:hover:bg-rose-950/60 transition cursor-pointer shrink-0">
+                                            <x-heroicon-m-trash class="w-3.5 h-3.5" />
+                                            <span>Clear</span>
+                                        </button>
+                                    @endif
+                                </div>
+
+                                <div class="p-3">
+                                    <div class="grid {{ count($errorImages) > 1 ? 'grid-cols-2' : 'grid-cols-1' }} gap-2.5">
+                                        @foreach($errorImageUrls as $idx => $imgUrl)
+                                            <div class="relative rounded-xl overflow-hidden border border-rose-200/80 dark:border-rose-900/50 bg-white dark:bg-gray-950 p-1.5 shadow-2xs group">
+                                                <div class="cursor-pointer relative flex justify-center items-center bg-gray-50 dark:bg-gray-900/50 rounded-lg overflow-hidden {{ count($errorImages) > 1 ? 'h-[115px]' : 'h-[240px]' }}"
+                                                     @click="openLightbox({{ $idx }})">
+                                                    <img src="{{ $imgUrl }}"
+                                                         alt="Department Error Report {{ $idx + 1 }}"
+                                                         class="object-contain w-full h-full rounded transition duration-200 group-hover:scale-[1.02]" />
+                                                    <div class="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1 text-white text-[11px] font-semibold backdrop-blur-[1px]">
+                                                        <x-heroicon-m-magnifying-glass-plus class="w-4 h-4" />
+                                                        <span>#{{ $idx + 1 }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="mt-1 flex items-center justify-between px-1">
+                                                    <a href="{{ $imgUrl }}" target="_blank" class="text-[10.5px] text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 inline-flex items-center gap-0.5">
+                                                        <x-heroicon-m-arrow-top-right-on-square class="w-3 h-3" />
+                                                        <span>Open</span>
+                                                    </a>
+                                                    @if(!$record->isValidated())
+                                                        <button type="button"
+                                                                wire:click="removeDepartmentErrorImage({{ $idx }})"
+                                                                wire:confirm="Remove this error report image?"
+                                                                class="text-[10.5px] text-rose-600 hover:text-rose-700 dark:text-rose-400 inline-flex items-center gap-0.5 cursor-pointer">
+                                                            <x-heroicon-m-trash class="w-3 h-3" />
+                                                            <span>Remove</span>
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+
+                                    {{-- Gallery Lightbox Modal --}}
+                                    <div x-show="expanded"
+                                         x-cloak
+                                         x-transition
+                                         @keydown.escape.window="expanded = false"
+                                         @keydown.arrow-left.window="if (expanded && images.length > 1) prev()"
+                                         @keydown.arrow-right.window="if (expanded && images.length > 1) next()"
+                                         class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-xs p-4"
+                                         @click.self="expanded = false">
+                                        <div class="relative max-w-5xl max-h-[92vh] w-full flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
+                                            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
+                                                <div class="flex items-center gap-2">
+                                                    <x-heroicon-m-exclamation-triangle class="w-4 h-4 text-rose-500" />
+                                                    <span class="text-xs font-bold text-gray-900 dark:text-white">
+                                                        Department Error Report - Preview
+                                                        <template x-if="images.length > 1">
+                                                            <span class="ml-1 text-gray-500 font-normal" x-text="'(' + (activeIndex + 1) + ' of ' + images.length + ')'"></span>
+                                                        </template>
+                                                    </span>
+                                                </div>
+                                                <div class="flex items-center gap-3">
+                                                    <a :href="images[activeIndex]" download class="text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white flex items-center gap-1">
+                                                        <x-heroicon-m-arrow-down-tray class="w-4 h-4" />
+                                                        <span>Download</span>
+                                                    </a>
+                                                    <button type="button" @click="expanded = false" class="p-1 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-200 cursor-pointer">
+                                                        <x-heroicon-m-x-mark class="w-5 h-5" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="relative p-4 overflow-auto flex items-center justify-center bg-gray-100 dark:bg-gray-950 flex-1 min-h-[400px]">
+                                                <button type="button"
+                                                        x-show="images.length > 1"
+                                                        @click="prev()"
+                                                        class="absolute left-3 z-10 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white transition cursor-pointer">
+                                                    <x-heroicon-m-chevron-left class="w-5 h-5" />
+                                                </button>
+                                                <img :src="images[activeIndex]"
+                                                     alt="Department Error Report"
+                                                     class="max-w-full max-h-[78vh] object-contain rounded shadow-lg" />
+                                                <button type="button"
+                                                        x-show="images.length > 1"
+                                                        @click="next()"
+                                                        class="absolute right-3 z-10 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white transition cursor-pointer">
+                                                    <x-heroicon-m-chevron-right class="w-5 h-5" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        {{-- Panel 3: Additional Attachments Gallery --}}
+                        @if($hasAdditionalImages)
+                            @php
+                                $additionalImageUrls = collect($additionalImages)->map(fn ($path) => asset('storage/' . $path))->values()->all();
+                            @endphp
+                            <div x-data="{
+                                    expanded: false,
+                                    activeIndex: 0,
+                                    images: @js($additionalImageUrls),
+                                    openLightbox(idx) {
+                                        this.activeIndex = idx;
+                                        this.expanded = true;
+                                    },
+                                    prev() {
+                                        this.activeIndex = (this.activeIndex - 1 + this.images.length) % this.images.length;
+                                    },
+                                    next() {
+                                        this.activeIndex = (this.activeIndex + 1) % this.images.length;
+                                    }
+                                 }"
+                                 class="rounded-xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200/80 dark:border-indigo-800/60 shadow-2xs overflow-hidden flex flex-col">
+                                <div class="p-3 flex items-center justify-between gap-2 bg-indigo-100/40 dark:bg-indigo-900/30 border-b border-indigo-200/60 dark:border-indigo-800/40">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <div class="p-1.5 rounded-lg bg-indigo-600 text-white shadow-2xs shrink-0">
+                                            <x-heroicon-m-paper-clip class="w-4 h-4" />
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h4 class="text-xs font-bold text-gray-900 dark:text-white truncate">Additional Attachments</h4>
+                                            <span class="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-indigo-100 text-indigo-800 dark:bg-indigo-900/60 dark:text-indigo-200">
+                                                {{ count($additionalImages) }} {{ count($additionalImages) === 1 ? 'Image' : 'Images' }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    @if(!$record->isValidated())
+                                        <button type="button"
+                                                wire:click="removeAdditionalAttachment"
+                                                wire:confirm="Are you sure you want to remove all additional attachments?"
+                                                title="Clear all additional attachments"
+                                                class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium text-rose-600 hover:bg-rose-100/60 dark:text-rose-400 dark:hover:bg-rose-950/60 transition cursor-pointer shrink-0">
+                                            <x-heroicon-m-trash class="w-3.5 h-3.5" />
+                                            <span>Clear</span>
+                                        </button>
+                                    @endif
+                                </div>
+
+                                <div class="p-3">
+                                    <div class="grid {{ count($additionalImages) > 1 ? 'grid-cols-2' : 'grid-cols-1' }} gap-2.5">
+                                        @foreach($additionalImageUrls as $idx => $imgUrl)
+                                            <div class="relative rounded-xl overflow-hidden border border-indigo-200/80 dark:border-indigo-900/50 bg-white dark:bg-gray-950 p-1.5 shadow-2xs group">
+                                                <div class="cursor-pointer relative flex justify-center items-center bg-gray-50 dark:bg-gray-900/50 rounded-lg overflow-hidden {{ count($additionalImages) > 1 ? 'h-[115px]' : 'h-[240px]' }}"
+                                                     @click="openLightbox({{ $idx }})">
+                                                    <img src="{{ $imgUrl }}"
+                                                         alt="Additional Attachment {{ $idx + 1 }}"
+                                                         class="object-contain w-full h-full rounded transition duration-200 group-hover:scale-[1.02]" />
+                                                    <div class="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1 text-white text-[11px] font-semibold backdrop-blur-[1px]">
+                                                        <x-heroicon-m-magnifying-glass-plus class="w-4 h-4" />
+                                                        <span>#{{ $idx + 1 }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="mt-1 flex items-center justify-between px-1">
+                                                    <a href="{{ $imgUrl }}" target="_blank" class="text-[10.5px] text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 inline-flex items-center gap-0.5">
+                                                        <x-heroicon-m-arrow-top-right-on-square class="w-3 h-3" />
+                                                        <span>Open</span>
+                                                    </a>
+                                                    @if(!$record->isValidated())
+                                                        <button type="button"
+                                                                wire:click="removeAdditionalAttachment({{ $idx }})"
+                                                                wire:confirm="Remove this additional attachment?"
+                                                                class="text-[10.5px] text-rose-600 hover:text-rose-700 dark:text-rose-400 inline-flex items-center gap-0.5 cursor-pointer">
+                                                            <x-heroicon-m-trash class="w-3 h-3" />
+                                                            <span>Remove</span>
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+
+                                    {{-- Gallery Lightbox Modal --}}
+                                    <div x-show="expanded"
+                                         x-cloak
+                                         x-transition
+                                         @keydown.escape.window="expanded = false"
+                                         @keydown.arrow-left.window="if (expanded && images.length > 1) prev()"
+                                         @keydown.arrow-right.window="if (expanded && images.length > 1) next()"
+                                         class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-xs p-4"
+                                         @click.self="expanded = false">
+                                        <div class="relative max-w-5xl max-h-[92vh] w-full flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
+                                            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
+                                                <div class="flex items-center gap-2">
+                                                    <x-heroicon-m-paper-clip class="w-4 h-4 text-indigo-500" />
+                                                    <span class="text-xs font-bold text-gray-900 dark:text-white">
+                                                        Additional Attachment - Preview
+                                                        <template x-if="images.length > 1">
+                                                            <span class="ml-1 text-gray-500 font-normal" x-text="'(' + (activeIndex + 1) + ' of ' + images.length + ')'"></span>
+                                                        </template>
+                                                    </span>
+                                                </div>
+                                                <div class="flex items-center gap-3">
+                                                    <a :href="images[activeIndex]" download class="text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white flex items-center gap-1">
+                                                        <x-heroicon-m-arrow-down-tray class="w-4 h-4" />
+                                                        <span>Download</span>
+                                                    </a>
+                                                    <button type="button" @click="expanded = false" class="p-1 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-200 cursor-pointer">
+                                                        <x-heroicon-m-x-mark class="w-5 h-5" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="relative p-4 overflow-auto flex items-center justify-center bg-gray-100 dark:bg-gray-950 flex-1 min-h-[400px]">
+                                                <button type="button"
+                                                        x-show="images.length > 1"
+                                                        @click="prev()"
+                                                        class="absolute left-3 z-10 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white transition cursor-pointer">
+                                                    <x-heroicon-m-chevron-left class="w-5 h-5" />
+                                                </button>
+                                                <img :src="images[activeIndex]"
+                                                     alt="Additional Attachment"
+                                                     class="max-w-full max-h-[78vh] object-contain rounded shadow-lg" />
+                                                <button type="button"
+                                                        x-show="images.length > 1"
+                                                        @click="next()"
+                                                        class="absolute right-3 z-10 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white transition cursor-pointer">
+                                                    <x-heroicon-m-chevron-right class="w-5 h-5" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
                     </div>
-                </div>
-            @endif
+                @endif
+            </div>
         </div>
     @endif
 
