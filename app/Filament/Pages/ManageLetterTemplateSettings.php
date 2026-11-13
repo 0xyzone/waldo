@@ -45,10 +45,10 @@ class ManageLetterTemplateSettings extends Page
 
     public function mount(): void
     {
-        $this->letter_template_promotion_id = AppSetting::getValue('letter_template_promotion_id');
-        $this->letter_template_transfer_id = AppSetting::getValue('letter_template_transfer_id');
-        $this->letter_template_leaver_id = AppSetting::getValue('letter_template_leaver_id');
-        $this->letter_template_terminated_id = AppSetting::getValue('letter_template_terminated_id');
+        $this->letter_template_promotion_id = AppSetting::get('letter_template_promotion_id');
+        $this->letter_template_transfer_id = AppSetting::get('letter_template_transfer_id');
+        $this->letter_template_leaver_id = AppSetting::get('letter_template_leaver_id');
+        $this->letter_template_terminated_id = AppSetting::get('letter_template_terminated_id');
     }
 
     public function form(Schema $schema): Schema
@@ -103,10 +103,10 @@ class ManageLetterTemplateSettings extends Page
 
     public function save(): void
     {
-        AppSetting::setValue('letter_template_promotion_id', $this->letter_template_promotion_id ?: null);
-        AppSetting::setValue('letter_template_transfer_id', $this->letter_template_transfer_id ?: null);
-        AppSetting::setValue('letter_template_leaver_id', $this->letter_template_leaver_id ?: null);
-        AppSetting::setValue('letter_template_terminated_id', $this->letter_template_terminated_id ?: null);
+        AppSetting::set('letter_template_promotion_id', $this->letter_template_promotion_id ?: null);
+        AppSetting::set('letter_template_transfer_id', $this->letter_template_transfer_id ?: null);
+        AppSetting::set('letter_template_leaver_id', $this->letter_template_leaver_id ?: null);
+        AppSetting::set('letter_template_terminated_id', $this->letter_template_terminated_id ?: null);
 
         Notification::make()
             ->title('Letter Template Settings Saved')

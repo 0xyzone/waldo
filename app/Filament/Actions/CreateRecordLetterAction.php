@@ -28,7 +28,7 @@ class CreateRecordLetterAction
             ->color('primary')
             ->button()
             ->action(function (Model $record, $livewire) use ($settingKey, $sourceType): void {
-                $templateId = AppSetting::getValue($settingKey);
+                $templateId = AppSetting::get($settingKey);
 
                 if (empty($templateId)) {
                     Notification::make()
