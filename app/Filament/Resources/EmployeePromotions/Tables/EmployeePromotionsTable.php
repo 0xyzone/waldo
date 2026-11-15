@@ -211,15 +211,15 @@ class EmployeePromotionsTable
                 EditAction::make()
                     ->modalWidth('3xl'),
                 Action::make('acknowledge')
-                    ->label('Acknowledge')
+                    ->label('Finance Acknowledgement')
                     ->icon('heroicon-o-check-badge')
                     ->color('success')
                     ->button()
                     ->requiresConfirmation()
-                    ->modalHeading('Acknowledge Promotion')
+                    ->modalHeading('Finance Acknowledgement')
                     ->modalDescription(fn (EmployeePromotion $record) => "Confirm acknowledgement of the promotion for {$record->employee?->name} ({$record->employee_id}).")
                     ->modalSubmitActionLabel('Acknowledge')
-                    ->visible(fn (EmployeePromotion $record): bool => ! $record->acknowledged)
+                    ->visible(fn (EmployeePromotion $record): bool => ! $record->acknowledged || Auth::user()->hasRole(['Finance']))
                     ->action(function (EmployeePromotion $record): void {
                         $record->update([
                             'acknowledged' => true,
@@ -230,6 +230,28 @@ class EmployeePromotionsTable
                             ->title('Promotion Acknowledged')
                             ->body("Promotion for {$record->employee_id} has been acknowledged.")
                             ->success()
+                            ->send();
+                    }),
+                Action::make('revertAcknowledgement')
+                    ->label('Revert Acknowledgement')
+                    ->icon('heroicon-o-arrow-uturn-left')
+                    ->color('warning')
+                    ->button()
+                    ->requiresConfirmation()
+                    ->modalHeading('Revert Finance Acknowledgement')
+                    ->modalDescription(fn (EmployeePromotion $record) => "Are you sure you want to revert the finance acknowledgement for {$record->employee?->name} ({$record->employee_id})?")
+                    ->modalSubmitActionLabel('Revert')
+                    ->visible(fn (EmployeePromotion $record): bool => (bool) $record->acknowledged)
+                    ->action(function (EmployeePromotion $record): void {
+                        $record->update([
+                            'acknowledged' => false,
+                            'acknowledged_at' => null,
+                        ]);
+
+                        Notification::make()
+                            ->title('Acknowledgement Reverted')
+                            ->body("Finance acknowledgement for {$record->employee_id} has been reverted.")
+                            ->warning()
                             ->send();
                     }),
                 Action::make('markHrmsSynced')
@@ -279,13 +301,13 @@ class EmployeePromotionsTable
                             ->color($isSyncing ? 'info' : 'warning')
                             ->send();
                     }),
-                Action::make('printCongratulations')
-                    ->label('Congratulation Note')
-                    ->icon('heroicon-o-printer')
-                    ->color('warning')
-                    ->tooltip('Print Congratulatory Note (A4 Letterhead)')
-                    ->url(fn (EmployeePromotion $record): string => route('employee-promotions.print-congratulations', ['ids' => $record->id]))
-                    ->openUrlInNewTab(),
+                // Action::make('printCongratulations')
+                //     ->label('Congratulation Note')
+                //     ->icon('heroicon-o-printer')
+                //     ->color('warning')
+                //     ->tooltip('Print Congratulatory Note (A4 Letterhead)')
+                //     ->url(fn (EmployeePromotion $record): string => route('employee-promotions.print-congratulations', ['ids' => $record->id]))
+                //     ->openUrlInNewTab(),
                 Action::make('wishCard')
                     ->label('Wish Card')
                     ->icon('heroicon-o-sparkles')

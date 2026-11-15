@@ -175,12 +175,12 @@ class EmployeeTransfersTable
                 EditAction::make()
                     ->modalWidth('3xl'),
                 Action::make('acknowledge')
-                    ->label('Acknowledge')
+                    ->label('Finance Acknowledgement')
                     ->icon('heroicon-o-check-badge')
                     ->color('success')
                     ->button()
                     ->requiresConfirmation()
-                    ->modalHeading('Acknowledge Transfer')
+                    ->modalHeading('Finance Acknowledgement')
                     ->modalDescription(fn (EmployeeTransfer $record) => "Confirm acknowledgement of the transfer for {$record->employee?->name} ({$record->employee_id}).")
                     ->modalSubmitActionLabel('Acknowledge')
                     ->visible(fn (EmployeeTransfer $record): bool => ! $record->acknowledged)
@@ -194,6 +194,28 @@ class EmployeeTransfersTable
                             ->title('Transfer Acknowledged')
                             ->body("Transfer for {$record->employee_id} has been acknowledged.")
                             ->success()
+                            ->send();
+                    }),
+                Action::make('revertAcknowledgement')
+                    ->label('Revert Acknowledgement')
+                    ->icon('heroicon-o-arrow-uturn-left')
+                    ->color('warning')
+                    ->button()
+                    ->requiresConfirmation()
+                    ->modalHeading('Revert Finance Acknowledgement')
+                    ->modalDescription(fn (EmployeeTransfer $record) => "Are you sure you want to revert the finance acknowledgement for {$record->employee?->name} ({$record->employee_id})?")
+                    ->modalSubmitActionLabel('Revert')
+                    ->visible(fn (EmployeeTransfer $record): bool => (bool) $record->acknowledged)
+                    ->action(function (EmployeeTransfer $record): void {
+                        $record->update([
+                            'acknowledged' => false,
+                            'acknowledged_at' => null,
+                        ]);
+
+                        Notification::make()
+                            ->title('Acknowledgement Reverted')
+                            ->body("Finance acknowledgement for {$record->employee_id} has been reverted.")
+                            ->warning()
                             ->send();
                     }),
                 Action::make('markHrmsSynced')
