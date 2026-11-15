@@ -238,102 +238,58 @@ class TipsReportPrintController extends Controller
         $collections = collect($report->collection_summary ?? []);
         $actualTotalCollection = (float) $collections->sum('total_amount');
 
-        // Preferred order from Screenshot 2
-        $preferredOrder = [
-            'PIT',
-            'Customer Service',
-            'F&B',
-            'Housekeeping',
-            'Security + Transport',
-            'Kitchen',
-            'None Employee',
-            'Cage',
-            'Back Office',
-        ];
-
         $allItems = $report->items()->get();
 
         $leftOutsTotal = (float) $allItems->filter(function ($item) {
             return (bool) $item->is_left_out || $item->department === 'Left Outs';
         })->sum('final_distribution_amount');
 
-        $deptTotals = [];
-        foreach ($allItems->where('is_left_out', false) as $row) {
-            if ($row->department === 'Left Outs') {
-                continue;
-            }
-            $deptName = (string) $row->department;
-            $deptTotals[$deptName] = ($deptTotals[$deptName] ?? 0.0) + (float) $row->final_distribution_amount;
+        $masterPages = TipsDepartmentMapping::where('is_active', true)
+            ->orderBy('sort_order')
+            ->pluck('page_name')
+            ->toArray();
+
+        $existingDepts = $allItems
+            ->where('is_left_out', false)
+            ->pluck('department')
+            ->filter()
+            ->unique()
+            ->values()
+            ->toArray();
+
+        $merged = array_unique(array_merge($masterPages, $existingDepts));
+        $finalDepts = array_values(array_filter($merged, fn ($d) => ! in_array($d, ['None Employee', 'Left Outs', 'Summary'], true)));
+
+        if (in_array('None Employee', $merged, true)) {
+            $finalDepts[] = 'None Employee';
         }
 
-        $takeMatching = function (array $keywords) use (&$deptTotals): float {
-            $sum = 0.0;
-            foreach ($deptTotals as $name => $amount) {
-                $lower = strtolower(trim((string) $name));
-                foreach ($keywords as $kw) {
-                    if (str_contains($lower, strtolower($kw))) {
-                        $sum += $amount;
-                        unset($deptTotals[$name]);
-                        break;
-                    }
-                }
-            }
+        $deptList = [];
+        foreach ($finalDepts as $deptName) {
+            $deptItems = $allItems
+                ->where('is_left_out', false)
+                ->where('department', $deptName);
 
-            return $sum;
-        };
-
-        $deptList = [
-            ['name' => 'PIT', 'amount' => $takeMatching(['pit', 'surveillance', 'slot', 'gaming'])],
-            ['name' => 'Customer Service', 'amount' => $takeMatching(['customer service', 'reception', 'gr', 'front office'])],
-            ['name' => 'F&B', 'amount' => $takeMatching(['f&b', 'food', 'beverage', 'restaurant'])],
-            ['name' => 'Housekeeping', 'amount' => $takeMatching(['housekeeping', 'hk'])],
-            ['name' => 'Security + Transport', 'amount' => $takeMatching(['security', 'bouncer', 'transport', 'driver'])],
-            ['name' => 'Kitchen', 'amount' => $takeMatching(['kitchen', 'culinary', 'cook'])],
-            ['name' => 'None Employee', 'amount' => ($noneEmp = $takeMatching(['none employee', 'non employee'])) > 0 ? $noneEmp : $leftOutsTotal],
-            ['name' => 'Cage', 'amount' => $takeMatching(['cage'])],
-        ];
-
-        // Back Office gets back office keywords + any remaining unassigned departments
-        $backOfficeAmt = $takeMatching(['back office', 'admin', 'hr', 'it', 'accounts', 'finance']);
-        foreach ($deptTotals as $remDept => $amt) {
-            $backOfficeAmt += $amt;
+            $deptList[] = [
+                'name' => $deptName,
+                'count' => $deptItems->count(),
+                'amount' => (float) $deptItems->sum('final_distribution_amount'),
+            ];
         }
-        $deptList[] = ['name' => 'Back Office', 'amount' => $backOfficeAmt];
 
         $totalToDistribute = collect($deptList)->sum('amount');
-
+        $totalStaffCount = collect($deptList)->sum('count');
         $adjustmentsLeftOuts = $leftOutsTotal;
-
         $companyShouldAdd = abs($actualTotalCollection + $leftOutsTotal - $totalToDistribute);
-
-        $n = count($deptList);
-        if ($n === 9) {
-            $s1 = 2; // Rows 1-2: PIT, Customer Service
-            $s2 = 2; // Rows 3-4: F&B, Housekeeping
-            $s3 = 3; // Rows 5-7: Security + Transport, Kitchen, None Employee
-            $s4 = 2; // Rows 8-9: Cage, Back Office
-        } else {
-            $s1 = (int) max(1, floor($n / 4));
-            $s2 = (int) max(1, floor(($n - $s1) / 3));
-            $s3 = (int) max(1, floor(($n - $s1 - $s2) / 2));
-            $s4 = max(1, $n - $s1 - $s2 - $s3);
-        }
 
         return response()->view('tips.print-totals', [
             'report' => $report,
             'departments' => $deptList,
+            'totalStaffCount' => $totalStaffCount,
             'actualTotalCollection' => $actualTotalCollection,
             'adjustmentsLeftOuts' => $adjustmentsLeftOuts,
             'totalToDistribute' => $totalToDistribute,
             'companyShouldAdd' => $companyShouldAdd,
-            'span1Start' => 0,
-            'span1Count' => $s1,
-            'span2Start' => $s1,
-            'span2Count' => $s2,
-            'span3Start' => $s1 + $s2,
-            'span3Count' => $s3,
-            'span4Start' => $s1 + $s2 + $s3,
-            'span4Count' => $s4,
         ]);
     }
 
