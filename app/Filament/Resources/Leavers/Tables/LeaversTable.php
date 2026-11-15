@@ -183,7 +183,6 @@ class LeaversTable
             ->recordActions([
                 CreateRecordLetterAction::make('leaver')
                     ->visible(fn () => Auth::user()->hasRole(['super_admin', 'HR'])),
-                EditAction::make(),
                 Action::make('Offboard')
                     ->button()
                     ->color(fn ($record) => $record->offboarded == true ? 'gray' : 'danger')
@@ -206,6 +205,7 @@ class LeaversTable
                             ->success()
                             ->send();
                     }),
+                EditAction::make(),
             ])
             ->toolbarActions([
                 Action::make('export')

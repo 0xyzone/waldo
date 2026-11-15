@@ -173,8 +173,6 @@ class EmployeeTransfersTable
             ->recordActions([
                 CreateRecordLetterAction::make('transfer')
                     ->visible(fn () => Auth::user()->hasRole(['super_admin', 'HR'])),
-                EditAction::make()
-                    ->modalWidth('3xl'),
                 Action::make('acknowledge')
                     ->label('Finance Acknowledgement')
                     ->icon('heroicon-o-check-badge')
@@ -257,6 +255,8 @@ class EmployeeTransfersTable
                             ->color($isSyncing ? 'info' : 'warning')
                             ->send();
                     }),
+                EditAction::make()
+                    ->modalWidth('3xl'),
             ])
             ->toolbarActions([
                 Action::make('importExcel')

@@ -21,6 +21,37 @@ class LeaverForm
     {
         return $schema
             ->components([
+                Section::make('Selected Employee Info')
+                    ->columnSpanFull()
+                    ->visible(fn (Get $get): bool => filled($get('employee_id')))
+                    ->schema([
+                        Placeholder::make('employee_info')
+                            ->hiddenLabel()
+                            ->content(function (Get $get): HtmlString {
+                                $employee = Employee::with(['department', 'designation'])
+                                    ->where('employee_code', $get('employee_id'))
+                                    ->first();
+
+                                if (! $employee) {
+                                    return new HtmlString('<span class="text-sm text-gray-500">Employee details not found.</span>');
+                                }
+
+                                $department = e($employee->department?->name ?? '—');
+                                $designation = e($employee->designation?->name ?? '—');
+                                $joinDate = $employee->join_date_formatted ?? '—';
+                                $status = e(ucfirst((string) ($employee->employee_status ?? '—')));
+
+                                return new HtmlString(
+                                    '<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">'
+                                    ."<div><span class=\"block text-xs text-gray-500 dark:text-gray-400\">Department</span><span class=\"font-medium\">{$department}</span></div>"
+                                    ."<div><span class=\"block text-xs text-gray-500 dark:text-gray-400\">Designation</span><span class=\"font-medium\">{$designation}</span></div>"
+                                    ."<div><span class=\"block text-xs text-gray-500 dark:text-gray-400\">Join Date</span><span class=\"font-medium\">{$joinDate}</span></div>"
+                                    ."<div><span class=\"block text-xs text-gray-500 dark:text-gray-400\">Status</span><span class=\"font-medium @if($status === 'active') text-green-500 @else text-red-500 @endif\">{$status}</span></div>"
+                                    .'</div>'
+                                );
+                            })
+                            ->columnSpanFull(),
+                    ]),
                 Section::make('Leaving Details')
                     ->schema([
                         Grid::make(['default' => 1, 'sm' => 2])
@@ -66,37 +97,6 @@ class LeaverForm
                             ]),
                     ]),
                 ActionLogSection::make(),
-                Section::make('Selected Employee Info')
-                    ->columnSpanFull()
-                    ->visible(fn (Get $get): bool => filled($get('employee_id')))
-                    ->schema([
-                        Placeholder::make('employee_info')
-                            ->hiddenLabel()
-                            ->content(function (Get $get): HtmlString {
-                                $employee = Employee::with(['department', 'designation'])
-                                    ->where('employee_code', $get('employee_id'))
-                                    ->first();
-
-                                if (! $employee) {
-                                    return new HtmlString('<span class="text-sm text-gray-500">Employee details not found.</span>');
-                                }
-
-                                $department = e($employee->department?->name ?? '—');
-                                $designation = e($employee->designation?->name ?? '—');
-                                $joinDate = $employee->join_date_formatted ?? '—';
-                                $status = e(ucfirst((string) ($employee->employee_status ?? '—')));
-
-                                return new HtmlString(
-                                    '<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">'
-                                    ."<div><span class=\"block text-xs text-gray-500 dark:text-gray-400\">Department</span><span class=\"font-medium\">{$department}</span></div>"
-                                    ."<div><span class=\"block text-xs text-gray-500 dark:text-gray-400\">Designation</span><span class=\"font-medium\">{$designation}</span></div>"
-                                    ."<div><span class=\"block text-xs text-gray-500 dark:text-gray-400\">Join Date</span><span class=\"font-medium\">{$joinDate}</span></div>"
-                                    ."<div><span class=\"block text-xs text-gray-500 dark:text-gray-400\">Status</span><span class=\"font-medium @if($status === 'active') text-green-500 @else text-red-500 @endif\">{$status}</span></div>"
-                                    .'</div>'
-                                );
-                            })
-                            ->columnSpanFull(),
-                    ]),
             ]);
     }
 }

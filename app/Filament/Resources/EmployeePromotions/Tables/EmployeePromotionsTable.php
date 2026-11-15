@@ -209,8 +209,6 @@ class EmployeePromotionsTable
             ->recordActions([
                 CreateRecordLetterAction::make('promotion')
                     ->visible(fn () => Auth::user()->hasRole(['super_admin', 'HR'])),
-                EditAction::make()
-                    ->modalWidth('3xl'),
                 Action::make('acknowledge')
                     ->label('Finance Acknowledgement')
                     ->icon('heroicon-o-check-badge')
@@ -317,6 +315,8 @@ class EmployeePromotionsTable
                     ->url(fn (EmployeePromotion $record): string => route('employee-promotions.wish-card', ['ids' => $record->id]))
                     ->openUrlInNewTab()
                     ->visible(fn () => Auth::user()->hasRole(['super_admin', 'HR'])),
+                EditAction::make()
+                    ->modalWidth('3xl'),
             ])
             ->toolbarActions([
                 Action::make('importExcel')
