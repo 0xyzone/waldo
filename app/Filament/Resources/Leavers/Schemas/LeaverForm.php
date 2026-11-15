@@ -83,7 +83,7 @@ class LeaverForm
 
                                 $department = e($employee->department?->name ?? '—');
                                 $designation = e($employee->designation?->name ?? '—');
-                                $joinDate = $employee->join_date ? e($employee->join_date->format('d M, Y')) : '—';
+                                $joinDate = $employee->join_date_formatted ?? '—';
                                 $status = e(ucfirst((string) ($employee->employee_status ?? '—')));
 
                                 return new HtmlString(
@@ -91,7 +91,7 @@ class LeaverForm
                                     ."<div><span class=\"block text-xs text-gray-500 dark:text-gray-400\">Department</span><span class=\"font-medium\">{$department}</span></div>"
                                     ."<div><span class=\"block text-xs text-gray-500 dark:text-gray-400\">Designation</span><span class=\"font-medium\">{$designation}</span></div>"
                                     ."<div><span class=\"block text-xs text-gray-500 dark:text-gray-400\">Join Date</span><span class=\"font-medium\">{$joinDate}</span></div>"
-                                    ."<div><span class=\"block text-xs text-gray-500 dark:text-gray-400\">Status</span><span class=\"font-medium\">{$status}</span></div>"
+                                    ."<div><span class=\"block text-xs text-gray-500 dark:text-gray-400\">Status</span><span class=\"font-medium @if($status === 'active') text-green-500 @else text-red-500 @endif\">{$status}</span></div>"
                                     .'</div>'
                                 );
                             })
