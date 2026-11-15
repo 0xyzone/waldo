@@ -3,13 +3,17 @@
 namespace App\Filament\Resources\Leavers\Schemas;
 
 use App\Filament\Components\ActionLogSection;
+use App\Models\Employee;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Illuminate\Support\HtmlString;
 
 class LeaverForm
 {
@@ -31,12 +35,40 @@ class LeaverForm
                                     ->getOptionLabelFromRecordUsing(fn ($record) => strtoupper($record->employee_code).' | '.$record->name)
                                     ->searchable(['name', 'employee_code'])
                                     ->preload()
+                                    ->live()
                                     ->required(),
                                 DatePicker::make('leaving_date')
                                     ->label('Leaving Date')
                                     ->native(false)
                                     ->required(),
                             ]),
+                        Placeholder::make('employee_info')
+                            ->label('Selected Employee Info')
+                            ->visible(fn (Get $get): bool => filled($get('employee_id')))
+                            ->content(function (Get $get): HtmlString {
+                                $employee = Employee::with(['department', 'designation'])
+                                    ->where('employee_code', $get('employee_id'))
+                                    ->first();
+
+                                if (! $employee) {
+                                    return new HtmlString('<span class="text-sm text-gray-500">Employee details not found.</span>');
+                                }
+
+                                $department = e($employee->department?->name ?? '—');
+                                $designation = e($employee->designation?->name ?? '—');
+                                $joinDate = $employee->join_date ? e($employee->join_date->format('d M, Y')) : '—';
+                                $status = e(ucfirst((string) ($employee->employee_status ?? '—')));
+
+                                return new HtmlString(
+                                    '<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 p-3 text-sm">'
+                                    ."<div><span class=\"block text-xs text-gray-500 dark:text-gray-400\">Department</span><span class=\"font-medium\">{$department}</span></div>"
+                                    ."<div><span class=\"block text-xs text-gray-500 dark:text-gray-400\">Designation</span><span class=\"font-medium\">{$designation}</span></div>"
+                                    ."<div><span class=\"block text-xs text-gray-500 dark:text-gray-400\">Join Date</span><span class=\"font-medium\">{$joinDate}</span></div>"
+                                    ."<div><span class=\"block text-xs text-gray-500 dark:text-gray-400\">Status</span><span class=\"font-medium\">{$status}</span></div>"
+                                    .'</div>'
+                                );
+                            })
+                            ->columnSpanFull(),
                         Textarea::make('remarks')
                             ->label('Remarks / Reason for Leaving')
                             ->rows(3)
