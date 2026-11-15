@@ -171,7 +171,8 @@ class EmployeeTransfersTable
                     ->falseLabel('HRMS Not Synced'),
             ])
             ->recordActions([
-                CreateRecordLetterAction::make('transfer'),
+                CreateRecordLetterAction::make('transfer')
+                    ->visible(fn () => Auth::user()->hasRole(['super_admin', 'HR'])),
                 EditAction::make()
                     ->modalWidth('3xl'),
                 Action::make('acknowledge')

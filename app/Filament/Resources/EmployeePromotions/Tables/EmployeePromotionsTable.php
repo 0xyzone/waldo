@@ -207,7 +207,8 @@ class EmployeePromotionsTable
                     ->falseLabel('HRMS Not Synced'),
             ])
             ->recordActions([
-                CreateRecordLetterAction::make('promotion'),
+                CreateRecordLetterAction::make('promotion')
+                    ->visible(fn () => Auth::user()->hasRole(['super_admin', 'HR'])),
                 EditAction::make()
                     ->modalWidth('3xl'),
                 Action::make('acknowledge')
@@ -314,7 +315,8 @@ class EmployeePromotionsTable
                     ->color('success')
                     ->tooltip('16:9 Congratulation Wish Card')
                     ->url(fn (EmployeePromotion $record): string => route('employee-promotions.wish-card', ['ids' => $record->id]))
-                    ->openUrlInNewTab(),
+                    ->openUrlInNewTab()
+                    ->visible(fn () => Auth::user()->hasRole(['super_admin', 'HR'])),
             ])
             ->toolbarActions([
                 Action::make('importExcel')
