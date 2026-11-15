@@ -219,7 +219,7 @@ class EmployeePromotionsTable
                     ->modalHeading('Finance Acknowledgement')
                     ->modalDescription(fn (EmployeePromotion $record) => "Confirm acknowledgement of the promotion for {$record->employee?->name} ({$record->employee_id}).")
                     ->modalSubmitActionLabel('Acknowledge')
-                    ->visible(fn (EmployeePromotion $record): bool => ! $record->acknowledged || Auth::user()->hasRole(['Finance']))
+                    ->visible(fn (EmployeePromotion $record): bool => ! $record->acknowledged && Auth::user()->hasRole(['Finance']))
                     ->action(function (EmployeePromotion $record): void {
                         $record->update([
                             'acknowledged' => true,
@@ -241,7 +241,7 @@ class EmployeePromotionsTable
                     ->modalHeading('Revert Finance Acknowledgement')
                     ->modalDescription(fn (EmployeePromotion $record) => "Are you sure you want to revert the finance acknowledgement for {$record->employee?->name} ({$record->employee_id})?")
                     ->modalSubmitActionLabel('Revert')
-                    ->visible(fn (EmployeePromotion $record): bool => (bool) $record->acknowledged)
+                    ->visible(fn (EmployeePromotion $record): bool => (bool) $record->acknowledged && Auth::user()->hasRole(['Finance']))
                     ->action(function (EmployeePromotion $record): void {
                         $record->update([
                             'acknowledged' => false,

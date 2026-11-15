@@ -183,7 +183,7 @@ class EmployeeTransfersTable
                     ->modalHeading('Finance Acknowledgement')
                     ->modalDescription(fn (EmployeeTransfer $record) => "Confirm acknowledgement of the transfer for {$record->employee?->name} ({$record->employee_id}).")
                     ->modalSubmitActionLabel('Acknowledge')
-                    ->visible(fn (EmployeeTransfer $record): bool => ! $record->acknowledged)
+                    ->visible(fn (EmployeeTransfer $record): bool => ! $record->acknowledged && Auth::user()->hasRole(['Finance']))
                     ->action(function (EmployeeTransfer $record): void {
                         $record->update([
                             'acknowledged' => true,
@@ -205,7 +205,7 @@ class EmployeeTransfersTable
                     ->modalHeading('Revert Finance Acknowledgement')
                     ->modalDescription(fn (EmployeeTransfer $record) => "Are you sure you want to revert the finance acknowledgement for {$record->employee?->name} ({$record->employee_id})?")
                     ->modalSubmitActionLabel('Revert')
-                    ->visible(fn (EmployeeTransfer $record): bool => (bool) $record->acknowledged)
+                    ->visible(fn (EmployeeTransfer $record): bool => (bool) $record->acknowledged && Auth::user()->hasRole(['Finance']))
                     ->action(function (EmployeeTransfer $record): void {
                         $record->update([
                             'acknowledged' => false,
