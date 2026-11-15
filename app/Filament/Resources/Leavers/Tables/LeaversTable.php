@@ -177,7 +177,8 @@ class LeaversTable
                     ->falseLabel('Tips Released'),
             ])
             ->recordActions([
-                CreateRecordLetterAction::make('leaver'),
+                CreateRecordLetterAction::make('leaver')
+                    ->visible(fn () => Auth::user()->hasRole(['super_admin', 'HR'])),
                 EditAction::make(),
                 Action::make('Offboard')
                     ->button()
