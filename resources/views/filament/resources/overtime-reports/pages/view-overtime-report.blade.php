@@ -106,7 +106,7 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-white/5">
-                    @foreach ($employees as $emp)
+                    @foreach ($employees as $rowIndex => $emp)
                         @php
                             $empEntries = $entriesMap[$emp->employee_code] ?? [];
                             $normalTotal = 0.0;
@@ -147,9 +147,9 @@
                                         @endif
                                     </div>
                                     <input type="text"
-                                        data-row="{{ $loop->parent->index }}"
+                                        data-row="{{ $rowIndex }}"
                                         data-col="{{ $d }}"
-                                        x-on:keydown="moveCell($event, {{ $loop->parent->index }}, {{ $d }})"
+                                        x-on:keydown="moveCell($event, {{ $rowIndex }}, {{ $d }})"
                                         x-on:change="if ($el.value.trim() !== '') { $wire.saveInlineCell('{{ $emp->employee_code }}', {{ $d }}, $el.value); $el.value = ''; }"
                                         placeholder="+"
                                         class="h-6 w-full border-0 bg-transparent px-1 text-center text-[11px] font-medium text-gray-900 placeholder-gray-300 focus:bg-primary-50 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500 dark:text-white dark:placeholder-gray-700 dark:focus:bg-primary-900/20" />
