@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasActionLogs;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OvertimeEntry extends Model
 {
+    use HasActionLogs;
+
     protected $fillable = [
         'employee_id',
         'ot_date',
