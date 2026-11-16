@@ -67,34 +67,19 @@ class ViewOvertimeReport extends ViewRecord
         }
 
         $trimmed = trim($value);
-        $date = Carbon::create($this->record->year, $this->record->month, $day)->toDateString();
-
         if ($trimmed === '' || (float) $trimmed <= 0) {
-            OvertimeEntry::where('employee_id', $employeeCode)
-                ->whereDate('ot_date', $date)
-                ->where('ot_block_id', $this->activeBlockId)
-                ->delete();
-
             return;
         }
 
         $hours = min(24.0, (float) $trimmed);
+        $date = Carbon::create($this->record->year, $this->record->month, $day)->toDateString();
 
-        $existing = OvertimeEntry::where('employee_id', $employeeCode)
-            ->whereDate('ot_date', $date)
-            ->where('ot_block_id', $this->activeBlockId)
-            ->first();
-
-        if ($existing) {
-            $existing->update(['hours' => $hours]);
-        } else {
-            OvertimeEntry::create([
-                'employee_id' => $employeeCode,
-                'ot_date' => $date,
-                'ot_block_id' => $this->activeBlockId,
-                'hours' => $hours,
-            ]);
-        }
+        OvertimeEntry::create([
+            'employee_id' => $employeeCode,
+            'ot_date' => $date,
+            'ot_block_id' => $this->activeBlockId,
+            'hours' => $hours,
+        ]);
     }
 
     public function updatedSearch(): void

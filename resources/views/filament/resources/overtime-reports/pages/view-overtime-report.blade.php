@@ -43,16 +43,6 @@
                     <option value="without_ot">Without OT Only</option>
                 </select>
 
-                <div class="flex items-center gap-1.5 rounded-lg border border-primary-300 bg-primary-50/70 px-2.5 py-1 dark:border-primary-700 dark:bg-primary-900/20">
-                    <span class="text-xs font-semibold text-primary-800 dark:text-primary-300">Active Block:</span>
-                    <select wire:model.live="activeBlockId"
-                        class="h-7 rounded border-0 bg-transparent py-0 pl-1 pr-6 text-xs font-bold text-primary-900 focus:ring-0 dark:text-primary-200">
-                        @foreach ($blocks as $block)
-                            <option value="{{ $block->id }}" class="bg-white text-gray-900 dark:bg-gray-800 dark:text-white">{{ $block->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
                 @if ($this->search !== '' || $this->departmentId !== '' || $this->blockId !== '' || $this->otFilter !== 'all')
                     <button type="button" wire:click="resetFilters"
                         class="h-9 rounded-lg border border-gray-300 px-3 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-white/15 dark:text-gray-300 dark:hover:bg-white/5">
@@ -66,7 +56,20 @@
                     <span class="inline-block h-3 w-3 rounded bg-amber-100 ring-1 ring-amber-400 dark:bg-amber-900/40"></span>
                     Special OT Day (×2)
                 </span>
-                <span>Click day cell for OT &bull; Click Adj. cell for prev. month adjustment</span>
+                <span>Type hours in bottom box to add &bull; Click top total for details</span>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 dark:border-white/10 dark:bg-gray-900">
+            <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Active Block:</span>
+            <div class="flex flex-wrap items-center gap-2">
+                @foreach ($blocks as $block)
+                    <label class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition {{ (int) $this->activeBlockId === $block->id ? 'border-primary-500 bg-primary-50 text-primary-700 dark:border-primary-500 dark:bg-primary-900/30 dark:text-primary-300' : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10' }}">
+                        <input type="radio" name="active_block" value="{{ $block->id }}" wire:model.live="activeBlockId"
+                            class="h-3.5 w-3.5 border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-white/20 dark:bg-gray-800" />
+                        <span>{{ $block->name }}</span>
+                    </label>
+                @endforeach
             </div>
         </div>
 
@@ -123,19 +126,21 @@
                                     $displayVal = $cellSum > 0 ? rtrim(rtrim(number_format($cellSum, 2), '0'), '.') : '';
                                     $blockTags = collect($cellItems)->pluck('block')->unique()->join(',');
                                 @endphp
-                                <td wire:dblclick="openCell('{{ $emp->employee_code }}', '{{ addslashes($emp->name) }}', {{ $d }})"
-                                    title="{{ $blockTags ? 'Blocks: '.$blockTags.' (Double-click for details/author)' : 'Type hours & press Enter/Tab (Double-click for details)' }}"
-                                    class="border-r border-gray-200 p-0 text-center dark:border-white/10 {{ $isSpecial ? 'bg-amber-50/50 dark:bg-amber-900/10' : '' }}">
+                                <td class="border-r border-gray-200 p-0 text-center align-top dark:border-white/10 {{ $isSpecial ? 'bg-amber-50/50 dark:bg-amber-900/10' : '' }}">
+                                    <div wire:click="openCell('{{ $emp->employee_code }}', '{{ addslashes($emp->name) }}', {{ $d }})"
+                                        title="{{ $blockTags ? 'Blocks: '.$blockTags.' (Click for details/author)' : 'Click for details' }}"
+                                        class="cursor-pointer border-b border-gray-100 px-1 py-0.5 text-[11px] leading-tight hover:bg-gray-100 dark:border-white/5 dark:hover:bg-white/10">
+                                        @if ($cellSum > 0)
+                                            <span class="font-semibold text-gray-900 dark:text-white">{{ $displayVal }}</span>
+                                            <span class="block text-[8.5px] leading-none text-primary-600 dark:text-primary-400">{{ $blockTags }}</span>
+                                        @else
+                                            <span class="text-gray-300 dark:text-gray-700">&mdash;</span>
+                                        @endif
+                                    </div>
                                     <input type="text"
-                                        value="{{ $displayVal }}"
-                                        wire:change="saveInlineCell('{{ $emp->employee_code }}', {{ $d }}, $event.target.value)"
-                                        placeholder="·"
-                                        class="h-8 w-full border-0 bg-transparent px-1 text-center text-xs font-semibold text-gray-900 placeholder-gray-300 focus:bg-primary-50 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500 dark:text-white dark:placeholder-gray-700 dark:focus:bg-primary-900/20" />
-                                    @if ($blockTags)
-                                        <span class="pointer-events-none block -mt-1.5 pb-0.5 text-[9px] leading-none text-primary-600 dark:text-primary-400">
-                                            {{ $blockTags }}
-                                        </span>
-                                    @endif
+                                        x-on:change="if ($el.value.trim() !== '') { $wire.saveInlineCell('{{ $emp->employee_code }}', {{ $d }}, $el.value); $el.value = ''; }"
+                                        placeholder="+"
+                                        class="h-6 w-full border-0 bg-transparent px-1 text-center text-[11px] font-medium text-gray-900 placeholder-gray-300 focus:bg-primary-50 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500 dark:text-white dark:placeholder-gray-700 dark:focus:bg-primary-900/20" />
                                 </td>
                             @endfor
                             <td class="border-r border-gray-200 bg-blue-50/40 px-2 py-1.5 text-right font-medium dark:border-white/10 dark:bg-blue-900/10">{{ number_format($normalTotal, 2) }}</td>
