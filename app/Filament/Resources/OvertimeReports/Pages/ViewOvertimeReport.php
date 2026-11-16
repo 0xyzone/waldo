@@ -193,7 +193,7 @@ class ViewOvertimeReport extends ViewRecord
             'hours' => $hours,
         ]);
 
-        $this->newHours = '';
+        $this->closeCell();
     }
 
     public function deleteCellEntry(int $entryId): void
