@@ -153,22 +153,22 @@
                         </div>
                     @endif
 
-                    <div class="rounded-xl border border-gray-200 bg-gray-50/40 p-3.5 dark:border-white/10 dark:bg-white/[0.02]">
-                        <div class="mb-2.5 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Add OT Entry</div>
-                        <div class="grid grid-cols-2 gap-3">
+                    <div class="rounded-xl border border-gray-200 bg-gray-50/40 p-4 dark:border-white/10 dark:bg-white/[0.02]">
+                        <div class="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Add OT Entry</div>
+                        <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-300">Block</label>
+                                <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-300">Block</label>
                                 <select wire:model="newBlockId"
-                                    class="w-full rounded-lg border-gray-300 bg-white text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-white/10 dark:bg-gray-800 dark:text-white">
+                                    class="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-white/15 dark:bg-gray-800 dark:text-white">
                                     @foreach ($blocks as $block)
                                         <option value="{{ $block->id }}">{{ $block->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div>
-                                <label class="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-300">Hours</label>
+                                <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-300">Hours</label>
                                 <input type="number" step="0.5" min="0.5" max="24" wire:model="newHours" wire:keydown.enter="addCellEntry" placeholder="e.g. 4"
-                                    class="w-full rounded-lg border-gray-300 bg-white text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-white/10 dark:bg-gray-800 dark:text-white" />
+                                    class="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-white/15 dark:bg-gray-800 dark:text-white" />
                             </div>
                         </div>
                     </div>
