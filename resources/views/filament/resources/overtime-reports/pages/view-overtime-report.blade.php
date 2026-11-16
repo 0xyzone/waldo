@@ -189,9 +189,14 @@
                             <div class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Logged Entries</div>
                             @foreach ($cellEntries as $item)
                                 <div class="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50/70 px-3.5 py-2.5 text-sm dark:border-white/10 dark:bg-white/5">
-                                    <div class="flex items-center gap-2.5">
-                                        <span class="rounded-md bg-primary-100 px-2 py-0.5 text-xs font-semibold text-primary-800 dark:bg-primary-900/40 dark:text-primary-300">Block {{ $item['block'] }}</span>
-                                        <span class="font-semibold text-gray-900 dark:text-white">{{ number_format($item['hours'], 2) }} hrs</span>
+                                    <div>
+                                        <div class="flex items-center gap-2.5">
+                                            <span class="rounded-md bg-primary-100 px-2 py-0.5 text-xs font-semibold text-primary-800 dark:bg-primary-900/40 dark:text-primary-300">Block {{ $item['block'] }}</span>
+                                            <span class="font-semibold text-gray-900 dark:text-white">{{ number_format($item['hours'], 2) }} hrs</span>
+                                        </div>
+                                        <div class="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
+                                            by {{ $item['created_by_name'] }} &bull; {{ $item['created_at'] }}
+                                        </div>
                                     </div>
                                     <button type="button" wire:click="deleteCellEntry({{ $item['id'] }})"
                                         class="rounded-md px-2 py-1 text-xs font-medium text-danger-600 hover:bg-danger-50 dark:text-danger-400 dark:hover:bg-danger-900/20">

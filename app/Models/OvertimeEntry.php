@@ -17,6 +17,7 @@ class OvertimeEntry extends Model
         'hours',
         'is_special_ot',
         'remarks',
+        'created_by',
     ];
 
     protected function casts(): array
@@ -30,6 +31,12 @@ class OvertimeEntry extends Model
 
     protected static function booted(): void
     {
+        static::creating(function (OvertimeEntry $entry): void {
+            if (! $entry->created_by && auth()->check()) {
+                $entry->created_by = auth()->id();
+            }
+        });
+
         static::saving(function (OvertimeEntry $entry): void {
             if ($entry->ot_date) {
                 $entry->is_special_ot = OtSpecialDate::whereDate('date', $entry->ot_date)->exists();
@@ -45,5 +52,10 @@ class OvertimeEntry extends Model
     public function block(): BelongsTo
     {
         return $this->belongsTo(OtBlock::class, 'ot_block_id');
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

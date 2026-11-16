@@ -212,7 +212,7 @@ class ViewOvertimeReport extends ViewRecord
             return [];
         }
 
-        $entries = OvertimeEntry::with('block:id,name')
+        $entries = OvertimeEntry::with(['block:id,name', 'creator:id,name'])
             ->whereMonth('ot_date', $this->record->month)
             ->whereYear('ot_date', $this->record->year)
             ->whereIn('employee_id', $employeeCodes)
@@ -226,6 +226,8 @@ class ViewOvertimeReport extends ViewRecord
                 'block' => $entry->block?->name ?? '?',
                 'hours' => (float) $entry->hours,
                 'is_special_ot' => (bool) $entry->is_special_ot,
+                'created_by_name' => $entry->creator?->name ?? 'System',
+                'created_at' => $entry->created_at?->format('d M, Y h:i A') ?? '',
             ];
         }
 
