@@ -94,7 +94,7 @@ class ViewOvertimeReport extends ViewRecord
     public function getEmployeesData(): array
     {
         $query = Employee::with('department:id,name')
-            ->select(['id', 'employee_code', 'name', 'department_id'])
+            ->select(['employee_code', 'name', 'department_id'])
             ->where('employee_status', 'active')
             ->orderByRaw("CAST(REPLACE(UPPER(employee_code), 'CWD', '') AS UNSIGNED) ASC")
             ->orderBy('employee_code');
