@@ -136,8 +136,9 @@
                                     $blockTags = collect($cellItems)->pluck('block')->unique()->join(',');
                                 @endphp
                                 <td class="border-r border-gray-200 p-0 text-center align-top dark:border-white/10 {{ $isSpecial ? 'bg-amber-50/50 dark:bg-amber-900/10' : '' }}">
-                                    <div wire:click="openCell('{{ $emp->employee_code }}', '{{ addslashes($emp->name) }}', {{ $d }})"
-                                        title="{{ $blockTags ? 'Blocks: '.$blockTags.' (Click for details/author)' : 'Click for details' }}"
+                                    <div x-on:click="document.querySelector('input[data-row=\'{{ $rowIndex }}\'][data-col=\'{{ $d }}\']')?.focus()"
+                                        wire:dblclick="openCell('{{ $emp->employee_code }}', '{{ addslashes($emp->name) }}', {{ $d }})"
+                                        title="{{ $blockTags ? 'Blocks: '.$blockTags.' (Double-click for details/author)' : 'Click to enter hours • Double-click for details' }}"
                                         class="cursor-pointer border-b border-gray-100 px-1 py-0.5 text-[11px] leading-tight hover:bg-gray-100 dark:border-white/5 dark:hover:bg-white/10">
                                         @if ($cellSum > 0)
                                             <span class="font-semibold text-gray-900 dark:text-white">{{ $displayVal }}</span>
