@@ -20,13 +20,36 @@ class ViewOvertimeReport extends ViewRecord
 
     public string $search = '';
 
+    public int $page = 1;
+
+    public int $perPage = 50;
+
     public ?string $editingEmployeeCode = null;
+
+    public ?string $editingEmployeeName = null;
 
     public ?int $editingDay = null;
 
     public ?int $newBlockId = null;
 
     public string $newHours = '';
+
+    public function updatedSearch(): void
+    {
+        $this->page = 1;
+    }
+
+    public function previousPage(): void
+    {
+        if ($this->page > 1) {
+            $this->page--;
+        }
+    }
+
+    public function nextPage(): void
+    {
+        $this->page++;
+    }
 
     public function getTitle(): string
     {
@@ -68,10 +91,12 @@ class ViewOvertimeReport extends ViewRecord
         return OtBlock::where('is_active', true)->orderBy('sort_order')->get();
     }
 
-    public function getEmployees(): Collection
+    public function getEmployeesData(): array
     {
-        $query = Employee::with('department')
+        $query = Employee::with('department:id,name')
+            ->select(['id', 'employee_code', 'name', 'department_id'])
             ->where('employee_status', 'active')
+            ->orderByRaw("CAST(REPLACE(UPPER(employee_code), 'CWD', '') AS UNSIGNED) ASC")
             ->orderBy('employee_code');
 
         if (filled($this->search)) {
@@ -83,14 +108,33 @@ class ViewOvertimeReport extends ViewRecord
             });
         }
 
-        return $query->get();
+        $total = (clone $query)->count();
+        $totalPages = max(1, (int) ceil($total / $this->perPage));
+        if ($this->page > $totalPages) {
+            $this->page = $totalPages;
+        }
+
+        $items = $query
+            ->forPage($this->page, $this->perPage)
+            ->get();
+
+        return [
+            'items' => $items,
+            'total' => $total,
+            'totalPages' => $totalPages,
+        ];
     }
 
-    public function getEntriesMap(): array
+    public function getEntriesMap(array $employeeCodes): array
     {
-        $entries = OvertimeEntry::with('block')
+        if (empty($employeeCodes)) {
+            return [];
+        }
+
+        $entries = OvertimeEntry::with('block:id,name')
             ->whereMonth('ot_date', $this->record->month)
             ->whereYear('ot_date', $this->record->year)
+            ->whereIn('employee_id', $employeeCodes)
             ->get();
 
         $map = [];
@@ -107,9 +151,10 @@ class ViewOvertimeReport extends ViewRecord
         return $map;
     }
 
-    public function openCell(string $employeeCode, int $day): void
+    public function openCell(string $employeeCode, string $employeeName, int $day): void
     {
         $this->editingEmployeeCode = $employeeCode;
+        $this->editingEmployeeName = $employeeName;
         $this->editingDay = $day;
         $this->newBlockId = $this->getBlocks()->first()?->id;
         $this->newHours = '';
@@ -118,6 +163,7 @@ class ViewOvertimeReport extends ViewRecord
     public function closeCell(): void
     {
         $this->editingEmployeeCode = null;
+        $this->editingEmployeeName = null;
         $this->editingDay = null;
         $this->newHours = '';
     }

@@ -96,6 +96,7 @@ class OvertimeReportPrintController extends Controller
 
         $employees = Employee::with(['department', 'designation'])
             ->where('employee_status', 'active')
+            ->orderByRaw("CAST(REPLACE(UPPER(employee_code), 'CWD', '') AS UNSIGNED) ASC")
             ->orderBy('employee_code')
             ->get();
 
