@@ -73,7 +73,16 @@
             </div>
         </div>
 
-        <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900">
+        <div x-data="{
+            moveCell(e, row, col) {
+                const dirs = { ArrowRight: [0, 1], ArrowLeft: [0, -1], ArrowDown: [1, 0], ArrowUp: [-1, 0], Enter: [1, 0] };
+                const d = dirs[e.key];
+                if (!d) return;
+                e.preventDefault();
+                const target = this.$el.querySelector(`input[data-row='${row + d[0]}'][data-col='${col + d[1]}']`);
+                if (target) { target.focus(); target.select(); }
+            }
+        }" class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900">
             <table class="w-full border-collapse text-xs">
                 <thead>
                     <tr class="border-b border-gray-200 bg-gray-50 dark:border-white/10 dark:bg-gray-800/60">
@@ -138,6 +147,9 @@
                                         @endif
                                     </div>
                                     <input type="text"
+                                        data-row="{{ $loop->parent->index }}"
+                                        data-col="{{ $d }}"
+                                        x-on:keydown="moveCell($event, {{ $loop->parent->index }}, {{ $d }})"
                                         x-on:change="if ($el.value.trim() !== '') { $wire.saveInlineCell('{{ $emp->employee_code }}', {{ $d }}, $el.value); $el.value = ''; }"
                                         placeholder="+"
                                         class="h-6 w-full border-0 bg-transparent px-1 text-center text-[11px] font-medium text-gray-900 placeholder-gray-300 focus:bg-primary-50 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500 dark:text-white dark:placeholder-gray-700 dark:focus:bg-primary-900/20" />
