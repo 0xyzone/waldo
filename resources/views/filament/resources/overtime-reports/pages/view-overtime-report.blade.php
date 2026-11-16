@@ -79,7 +79,7 @@
                 const d = dirs[e.key];
                 if (!d) return;
                 e.preventDefault();
-                const target = this.$el.querySelector(`input[data-row='${row + d[0]}'][data-col='${col + d[1]}']`);
+                const target = document.querySelector(`input[data-row='${row + d[0]}'][data-col='${col + d[1]}']`);
                 if (target) { target.focus(); target.select(); }
             }
         }" class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900">
@@ -147,8 +147,10 @@
                                         @endif
                                     </div>
                                     <input type="text"
+                                        inputmode="decimal"
                                         data-row="{{ $rowIndex }}"
                                         data-col="{{ $d }}"
+                                        x-on:input="$el.value = $el.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')"
                                         x-on:keydown="moveCell($event, {{ $rowIndex }}, {{ $d }})"
                                         x-on:change="if ($el.value.trim() !== '') { $wire.saveInlineCell('{{ $emp->employee_code }}', {{ $d }}, $el.value); $el.value = ''; }"
                                         placeholder="+"
