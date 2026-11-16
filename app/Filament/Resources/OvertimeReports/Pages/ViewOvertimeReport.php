@@ -28,6 +28,8 @@ class ViewOvertimeReport extends ViewRecord
 
     public string $otFilter = 'all';
 
+    public ?int $activeBlockId = null;
+
     public int $page = 1;
 
     public int $perPage = 50;
@@ -51,6 +53,49 @@ class ViewOvertimeReport extends ViewRecord
     public string $adjSpecial = '0';
 
     public string $adjRemarks = '';
+
+    public function mount(int|string $record): void
+    {
+        parent::mount($record);
+        $this->activeBlockId = $this->getBlocks()->first()?->id;
+    }
+
+    public function saveInlineCell(string $employeeCode, int $day, string $value): void
+    {
+        if (! $this->activeBlockId) {
+            return;
+        }
+
+        $trimmed = trim($value);
+        $date = Carbon::create($this->record->year, $this->record->month, $day)->toDateString();
+
+        if ($trimmed === '' || (float) $trimmed <= 0) {
+            OvertimeEntry::where('employee_id', $employeeCode)
+                ->whereDate('ot_date', $date)
+                ->where('ot_block_id', $this->activeBlockId)
+                ->delete();
+
+            return;
+        }
+
+        $hours = min(24.0, (float) $trimmed);
+
+        $existing = OvertimeEntry::where('employee_id', $employeeCode)
+            ->whereDate('ot_date', $date)
+            ->where('ot_block_id', $this->activeBlockId)
+            ->first();
+
+        if ($existing) {
+            $existing->update(['hours' => $hours]);
+        } else {
+            OvertimeEntry::create([
+                'employee_id' => $employeeCode,
+                'ot_date' => $date,
+                'ot_block_id' => $this->activeBlockId,
+                'hours' => $hours,
+            ]);
+        }
+    }
 
     public function updatedSearch(): void
     {

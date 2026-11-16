@@ -43,6 +43,16 @@
                     <option value="without_ot">Without OT Only</option>
                 </select>
 
+                <div class="flex items-center gap-1.5 rounded-lg border border-primary-300 bg-primary-50/70 px-2.5 py-1 dark:border-primary-700 dark:bg-primary-900/20">
+                    <span class="text-xs font-semibold text-primary-800 dark:text-primary-300">Active Block:</span>
+                    <select wire:model.live="activeBlockId"
+                        class="h-7 rounded border-0 bg-transparent py-0 pl-1 pr-6 text-xs font-bold text-primary-900 focus:ring-0 dark:text-primary-200">
+                        @foreach ($blocks as $block)
+                            <option value="{{ $block->id }}" class="bg-white text-gray-900 dark:bg-gray-800 dark:text-white">{{ $block->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
                 @if ($this->search !== '' || $this->departmentId !== '' || $this->blockId !== '' || $this->otFilter !== 'all')
                     <button type="button" wire:click="resetFilters"
                         class="h-9 rounded-lg border border-gray-300 px-3 text-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-white/15 dark:text-gray-300 dark:hover:bg-white/5">
@@ -110,16 +120,21 @@
                                     $isSpecial = in_array($d, $specialDays, true);
                                     $cellItems = $empEntries[$d] ?? [];
                                     $cellSum = collect($cellItems)->sum('hours');
+                                    $displayVal = $cellSum > 0 ? rtrim(rtrim(number_format($cellSum, 2), '0'), '.') : '';
+                                    $blockTags = collect($cellItems)->pluck('block')->unique()->join(',');
                                 @endphp
-                                <td wire:click="openCell('{{ $emp->employee_code }}', '{{ addslashes($emp->name) }}', {{ $d }})"
-                                    class="cursor-pointer border-r border-gray-200 px-1 py-1 text-center transition hover:bg-primary-50 dark:border-white/10 dark:hover:bg-primary-900/20 {{ $isSpecial ? 'bg-amber-50/50 dark:bg-amber-900/10' : '' }}">
-                                    @if ($cellSum > 0)
-                                        <span class="font-semibold text-gray-900 dark:text-white">{{ rtrim(rtrim(number_format($cellSum, 2), '0'), '.') }}</span>
-                                        <span class="block text-[9px] text-primary-600 dark:text-primary-400">
-                                            {{ collect($cellItems)->pluck('block')->unique()->join(',') }}
+                                <td wire:dblclick="openCell('{{ $emp->employee_code }}', '{{ addslashes($emp->name) }}', {{ $d }})"
+                                    title="{{ $blockTags ? 'Blocks: '.$blockTags.' (Double-click for details/author)' : 'Type hours & press Enter/Tab (Double-click for details)' }}"
+                                    class="border-r border-gray-200 p-0 text-center dark:border-white/10 {{ $isSpecial ? 'bg-amber-50/50 dark:bg-amber-900/10' : '' }}">
+                                    <input type="text"
+                                        value="{{ $displayVal }}"
+                                        wire:change="saveInlineCell('{{ $emp->employee_code }}', {{ $d }}, $event.target.value)"
+                                        placeholder="·"
+                                        class="h-8 w-full border-0 bg-transparent px-1 text-center text-xs font-semibold text-gray-900 placeholder-gray-300 focus:bg-primary-50 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500 dark:text-white dark:placeholder-gray-700 dark:focus:bg-primary-900/20" />
+                                    @if ($blockTags)
+                                        <span class="pointer-events-none block -mt-1.5 pb-0.5 text-[9px] leading-none text-primary-600 dark:text-primary-400">
+                                            {{ $blockTags }}
                                         </span>
-                                    @else
-                                        <span class="text-gray-300 dark:text-gray-700">·</span>
                                     @endif
                                 </td>
                             @endfor
