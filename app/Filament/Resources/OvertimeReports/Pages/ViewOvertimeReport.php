@@ -100,11 +100,16 @@ class ViewOvertimeReport extends ViewRecord
             ->orderBy('employee_code');
 
         if (filled($this->search)) {
-            $term = '%'.trim($this->search).'%';
-            $query->where(function ($q) use ($term): void {
+            $raw = trim($this->search);
+            $term = '%'.$raw.'%';
+            $query->where(function ($q) use ($term, $raw): void {
                 $q->where('employee_code', 'like', $term)
                     ->orWhere('name', 'like', $term)
                     ->orWhereHas('department', fn ($dq) => $dq->where('name', 'like', $term));
+
+                if (ctype_digit($raw)) {
+                    $q->orWhere('employee_code', 'like', '%CWD'.$raw.'%');
+                }
             });
         }
 
