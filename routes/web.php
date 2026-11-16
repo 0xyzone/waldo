@@ -9,6 +9,7 @@ use App\Http\Controllers\FontController;
 use App\Http\Controllers\IdCardPrintReportPrintController;
 use App\Http\Controllers\LetterController;
 use App\Http\Controllers\LetterGlobalVariableController;
+use App\Http\Controllers\OvertimeReportPrintController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoyaltyReportPrintController;
@@ -103,6 +104,14 @@ Route::get('/tips-reports/{report}/print-totals', [TipsReportPrintController::cl
 
 Route::get('/tips-reports/{report}/print-adjustments-errors', [TipsReportPrintController::class, 'printAdjustmentsErrors'])
     ->name('tips.reports.print-adjustments-errors')
+    ->middleware('auth');
+
+Route::get('/overtime-reports/{report}/print-blockwise', [OvertimeReportPrintController::class, 'printBlockwise'])
+    ->name('overtime.reports.print-blockwise')
+    ->middleware('auth');
+
+Route::get('/overtime-reports/{report}/export-excel', [OvertimeReportPrintController::class, 'exportExcel'])
+    ->name('overtime.reports.export-excel')
     ->middleware('auth');
 
 // Royalty Bonus Reports Print & Export
