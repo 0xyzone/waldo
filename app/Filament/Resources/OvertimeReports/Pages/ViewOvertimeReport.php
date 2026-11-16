@@ -3,9 +3,11 @@
 namespace App\Filament\Resources\OvertimeReports\Pages;
 
 use App\Filament\Resources\OvertimeReports\OvertimeReportResource;
+use App\Models\Department;
 use App\Models\Employee;
 use App\Models\OtBlock;
 use App\Models\OtSpecialDate;
+use App\Models\OvertimeAdjustment;
 use App\Models\OvertimeEntry;
 use Carbon\Carbon;
 use Filament\Actions\Action;
@@ -19,6 +21,12 @@ class ViewOvertimeReport extends ViewRecord
     protected string $view = 'filament.resources.overtime-reports.pages.view-overtime-report';
 
     public string $search = '';
+
+    public string $departmentId = '';
+
+    public string $blockId = '';
+
+    public string $otFilter = 'all';
 
     public int $page = 1;
 
@@ -34,8 +42,42 @@ class ViewOvertimeReport extends ViewRecord
 
     public string $newHours = '';
 
+    public ?string $adjEmployeeCode = null;
+
+    public ?string $adjEmployeeName = null;
+
+    public string $adjNormal = '0';
+
+    public string $adjSpecial = '0';
+
+    public string $adjRemarks = '';
+
     public function updatedSearch(): void
     {
+        $this->page = 1;
+    }
+
+    public function updatedDepartmentId(): void
+    {
+        $this->page = 1;
+    }
+
+    public function updatedBlockId(): void
+    {
+        $this->page = 1;
+    }
+
+    public function updatedOtFilter(): void
+    {
+        $this->page = 1;
+    }
+
+    public function resetFilters(): void
+    {
+        $this->search = '';
+        $this->departmentId = '';
+        $this->blockId = '';
+        $this->otFilter = 'all';
         $this->page = 1;
     }
 
@@ -91,6 +133,11 @@ class ViewOvertimeReport extends ViewRecord
         return OtBlock::where('is_active', true)->orderBy('sort_order')->get();
     }
 
+    public function getDepartments(): Collection
+    {
+        return Department::orderBy('name')->get(['id', 'name']);
+    }
+
     public function getEmployeesData(): array
     {
         $query = Employee::with('department:id,name')
@@ -111,6 +158,35 @@ class ViewOvertimeReport extends ViewRecord
                     $q->orWhere('employee_code', 'like', '%CWD'.$raw.'%');
                 }
             });
+        }
+
+        if (filled($this->departmentId)) {
+            $query->where('department_id', (int) $this->departmentId);
+        }
+
+        if (filled($this->blockId)) {
+            $empCodesWithBlock = OvertimeEntry::whereMonth('ot_date', $this->record->month)
+                ->whereYear('ot_date', $this->record->year)
+                ->where('ot_block_id', (int) $this->blockId)
+                ->distinct()
+                ->pluck('employee_id')
+                ->toArray();
+
+            $query->whereIn('employee_code', $empCodesWithBlock);
+        }
+
+        if ($this->otFilter !== 'all') {
+            $empCodesWithOt = OvertimeEntry::whereMonth('ot_date', $this->record->month)
+                ->whereYear('ot_date', $this->record->year)
+                ->distinct()
+                ->pluck('employee_id')
+                ->toArray();
+
+            if ($this->otFilter === 'with_ot') {
+                $query->whereIn('employee_code', $empCodesWithOt);
+            } elseif ($this->otFilter === 'without_ot') {
+                $query->whereNotIn('employee_code', $empCodesWithOt);
+            }
         }
 
         $total = (clone $query)->count();
@@ -156,6 +232,25 @@ class ViewOvertimeReport extends ViewRecord
         return $map;
     }
 
+    public function getAdjustmentsMap(array $employeeCodes): array
+    {
+        if (empty($employeeCodes)) {
+            return [];
+        }
+
+        return OvertimeAdjustment::where('overtime_report_id', $this->record->id)
+            ->whereIn('employee_id', $employeeCodes)
+            ->get()
+            ->mapWithKeys(fn (OvertimeAdjustment $adj) => [
+                $adj->employee_id => [
+                    'normal' => (float) $adj->normal_adjustment,
+                    'special' => (float) $adj->special_adjustment,
+                    'remarks' => (string) ($adj->remarks ?? ''),
+                ],
+            ])
+            ->toArray();
+    }
+
     public function openCell(string $employeeCode, string $employeeName, int $day): void
     {
         $this->editingEmployeeCode = $employeeCode;
@@ -199,5 +294,51 @@ class ViewOvertimeReport extends ViewRecord
     public function deleteCellEntry(int $entryId): void
     {
         OvertimeEntry::where('id', $entryId)->delete();
+    }
+
+    public function openAdjustment(string $employeeCode, string $employeeName): void
+    {
+        $existing = OvertimeAdjustment::where('overtime_report_id', $this->record->id)
+            ->where('employee_id', $employeeCode)
+            ->first();
+
+        $this->adjEmployeeCode = $employeeCode;
+        $this->adjEmployeeName = $employeeName;
+        $this->adjNormal = (string) ($existing?->normal_adjustment ?? '0');
+        $this->adjSpecial = (string) ($existing?->special_adjustment ?? '0');
+        $this->adjRemarks = (string) ($existing?->remarks ?? '');
+    }
+
+    public function closeAdjustment(): void
+    {
+        $this->adjEmployeeCode = null;
+        $this->adjEmployeeName = null;
+        $this->adjNormal = '0';
+        $this->adjSpecial = '0';
+        $this->adjRemarks = '';
+    }
+
+    public function saveAdjustment(): void
+    {
+        if (! $this->adjEmployeeCode) {
+            return;
+        }
+
+        $normal = (float) $this->adjNormal;
+        $special = (float) $this->adjSpecial;
+
+        OvertimeAdjustment::updateOrCreate(
+            [
+                'overtime_report_id' => $this->record->id,
+                'employee_id' => $this->adjEmployeeCode,
+            ],
+            [
+                'normal_adjustment' => $normal,
+                'special_adjustment' => $special,
+                'remarks' => trim($this->adjRemarks) ?: null,
+            ]
+        );
+
+        $this->closeAdjustment();
     }
 }
