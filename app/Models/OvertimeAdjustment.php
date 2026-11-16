@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class OvertimeAdjustment extends Model
 {
     use HasActionLogs;
+    use HasActionLogs;
 
     protected $fillable = [
         'overtime_report_id',

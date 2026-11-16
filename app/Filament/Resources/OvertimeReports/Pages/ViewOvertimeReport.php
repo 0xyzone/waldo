@@ -142,7 +142,7 @@ class ViewOvertimeReport extends ViewRecord
     {
         $query = Employee::with('department:id,name')
             ->select(['employee_code', 'name', 'department_id'])
-            ->where('employee_status', 'active')
+            // ->where('employee_status', 'active')
             ->orderByRaw("CAST(REPLACE(UPPER(employee_code), 'CWD', '') AS UNSIGNED) ASC")
             ->orderBy('employee_code');
 
