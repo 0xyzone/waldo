@@ -13,8 +13,20 @@
         $departments = $this->getDepartments();
     @endphp
 
-    <div class="space-y-4">
-        <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white p-3.5 dark:border-white/10 dark:bg-gray-900">
+    <div class="flex flex-col items-center justify-center rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm dark:border-white/10 dark:bg-gray-900 lg:hidden">
+        <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" />
+            </svg>
+        </div>
+        <h3 class="text-base font-semibold text-gray-900 dark:text-white">Desktop Screen Required</h3>
+        <p class="mt-1 max-w-sm text-sm text-gray-500 dark:text-gray-400">
+            The OT Monthly Report sheet is optimized for wide screens. Please open this page on a desktop or laptop computer to view and record OT entries.
+        </p>
+    </div>
+
+    <div class="hidden lg:flex lg:h-[calc(100vh-13.5rem)] lg:flex-col lg:gap-2.5">
+        <div class="flex shrink-0 flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white p-3 dark:border-white/10 dark:bg-gray-900">
             <div class="flex flex-wrap items-center gap-2.5">
                 <input type="text" wire:model.live.debounce.300ms="search"
                     placeholder="Search code (e.g. 834), name..."
@@ -60,7 +72,7 @@
             </div>
         </div>
 
-        <div class="flex flex-wrap items-center gap-3 rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 dark:border-white/10 dark:bg-gray-900">
+        <div class="flex shrink-0 flex-wrap items-center gap-3 rounded-xl border border-gray-200 bg-white px-3.5 py-2 dark:border-white/10 dark:bg-gray-900">
             <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Active Block:</span>
             <div class="flex flex-wrap items-center gap-2">
                 @foreach ($blocks as $block)
@@ -82,7 +94,7 @@
                 const target = document.querySelector(`input[data-row='${row + d[0]}'][data-col='${col + d[1]}']`);
                 if (target) { target.focus(); target.select(); }
             }
-        }" class="max-h-[calc(100vh-16rem)] overflow-auto rounded-xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900">
+        }" class="min-h-0 flex-1 overflow-auto rounded-xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900">
             <table class="w-full border-collapse text-xs">
                 <thead class="sticky top-0 z-30">
                     <tr class="border-b border-gray-200 bg-gray-50 dark:border-white/10 dark:bg-gray-800">
@@ -195,7 +207,7 @@
             </table>
         </div>
 
-        <div class="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs text-gray-600 dark:border-white/10 dark:bg-gray-900 dark:text-gray-300">
+        <div class="flex shrink-0 items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs text-gray-600 dark:border-white/10 dark:bg-gray-900 dark:text-gray-300">
             <span>Showing page <strong>{{ $this->page }}</strong> of <strong>{{ $totalPages }}</strong> ({{ number_format($totalEmployees) }} employees)</span>
             <div class="flex items-center gap-2">
                 <button type="button" wire:click="previousPage" @disabled($this->page <= 1)
