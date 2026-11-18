@@ -114,6 +114,13 @@ Route::get('/overtime-reports/{report}/export-excel', [OvertimeReportPrintContro
     ->name('overtime.reports.export-excel')
     ->middleware('auth');
 
+Route::prefix('/overtime-summary')->middleware('auth')->group(function () {
+    Route::get('/print-blockwise', [OvertimeReportPrintController::class, 'printSummaryBlockwise'])->name('overtime.summary.print-blockwise');
+    Route::get('/print-finance', [OvertimeReportPrintController::class, 'printSummaryFinance'])->name('overtime.summary.print-finance');
+    Route::get('/export-summary-excel', [OvertimeReportPrintController::class, 'exportSummaryExcel'])->name('overtime.summary.export-summary-excel');
+    Route::get('/export-daily-excel', [OvertimeReportPrintController::class, 'exportSummaryDailyExcel'])->name('overtime.summary.export-daily-excel');
+});
+
 // Royalty Bonus Reports Print & Export
 Route::prefix('/royalty/reports/{report}')->middleware('auth')->group(function () {
     Route::get('/print', [RoyaltyReportPrintController::class, 'printReport'])->name('royalty.reports.print');

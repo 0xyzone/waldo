@@ -5,24 +5,92 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Models\OtBlock;
 use App\Models\OtSpecialDate;
+use App\Models\OvertimeAdjustment;
 use App\Models\OvertimeEntry;
 use App\Models\OvertimeReport;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Collection;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class OvertimeReportPrintController extends Controller
 {
     public function printBlockwise(OvertimeReport $report): Response
     {
-        $entries = OvertimeEntry::with(['employee.department', 'block'])
-            ->whereMonth('ot_date', $report->month)
-            ->whereYear('ot_date', $report->year)
+        return $this->renderBlockwiseForPeriod($report->month, $report->year);
+    }
+
+    public function exportExcel(OvertimeReport $report): StreamedResponse
+    {
+        return $this->streamDailyExcelForPeriod($report->month, $report->year);
+    }
+
+    public function printSummaryBlockwise(Request $request): Response
+    {
+        [$month, $year] = $this->resolvePeriod($request);
+
+        return $this->renderBlockwiseForPeriod($month, $year);
+    }
+
+    public function printSummaryFinance(Request $request): Response
+    {
+        [$month, $year] = $this->resolvePeriod($request);
+
+        return $this->renderFinanceForPeriod($month, $year);
+    }
+
+    public function exportSummaryExcel(Request $request): StreamedResponse
+    {
+        [$month, $year] = $this->resolvePeriod($request);
+
+        return $this->streamSummaryExcelForPeriod($month, $year);
+    }
+
+    public function exportSummaryDailyExcel(Request $request): StreamedResponse
+    {
+        [$month, $year] = $this->resolvePeriod($request);
+
+        return $this->streamDailyExcelForPeriod($month, $year);
+    }
+
+    private function resolvePeriod(Request $request): array
+    {
+        $month = max(1, min(12, $request->integer('month', (int) now()->month)));
+        $year = max(2000, min(2100, $request->integer('year', (int) now()->year)));
+
+        return [$month, $year];
+    }
+
+    private function renderBlockwiseForPeriod(int $month, int $year): Response
+    {
+        $data = $this->buildPeriodSummaryData($month, $year);
+
+        return response()->view('overtime.print-blockwise', $data);
+    }
+
+    private function renderFinanceForPeriod(int $month, int $year): Response
+    {
+        $data = $this->buildPeriodSummaryData($month, $year);
+
+        return response()->view('overtime.print-finance', $data);
+    }
+
+    private function buildPeriodSummaryData(int $month, int $year): array
+    {
+        $entries = OvertimeEntry::with(['employee.department', 'employee.designation', 'block'])
+            ->whereMonth('ot_date', $month)
+            ->whereYear('ot_date', $year)
             ->get();
+
+        $report = OvertimeReport::where('month', $month)->where('year', $year)->first();
+        $adjustments = $report
+            ? OvertimeAdjustment::where('overtime_report_id', $report->id)->get()->keyBy('employee_id')
+            : collect();
 
         $blockSummary = $entries
             ->groupBy('ot_block_id')
-            ->map(function ($group): array {
+            ->map(function (Collection $group): array {
                 $normal = (float) $group->where('is_special_ot', false)->sum('hours');
                 $special = (float) $group->where('is_special_ot', true)->sum('hours');
 
@@ -37,53 +105,148 @@ class OvertimeReportPrintController extends Controller
             ->sortBy('block')
             ->values();
 
-        $employeeBlockSummary = $entries
-            ->groupBy('employee_id')
-            ->map(function ($group, string $empCode): array {
-                $emp = $group->first()?->employee;
+        $allEmpCodes = $entries->pluck('employee_id')
+            ->merge(
+                $adjustments
+                    ->filter(fn (OvertimeAdjustment $a): bool => (float) $a->normal_adjustment != 0.0 || (float) $a->special_adjustment != 0.0)
+                    ->keys()
+            )
+            ->unique()
+            ->values();
+
+        $employeesByCode = Employee::with(['department:id,name', 'designation:id,name'])
+            ->whereIn('employee_code', $allEmpCodes)
+            ->get()
+            ->keyBy('employee_code');
+
+        $entriesByEmployee = $entries->groupBy('employee_id');
+
+        $employeeBlockSummary = $allEmpCodes
+            ->map(function (string $empCode) use ($entriesByEmployee, $employeesByCode, $adjustments): array {
+                $group = $entriesByEmployee->get($empCode, collect());
+                $emp = $employeesByCode->get($empCode);
+                $adj = $adjustments->get($empCode);
+
                 $normal = (float) $group->where('is_special_ot', false)->sum('hours');
                 $special = (float) $group->where('is_special_ot', true)->sum('hours');
+                $normalAdj = (float) ($adj?->normal_adjustment ?? 0.0);
+                $specialAdj = (float) ($adj?->special_adjustment ?? 0.0);
+                $netNormal = $normal + $normalAdj;
+                $netSpecial = $special + $specialAdj;
+
                 $blocks = $group->groupBy(fn ($e) => $e->block?->name ?? 'Unknown')
-                    ->map(fn ($b) => (float) $b->sum('hours'))
+                    ->map(fn (Collection $b) => (float) $b->sum('hours'))
                     ->toArray();
 
                 return [
                     'employee_code' => $empCode,
+                    'sort_num' => (int) preg_replace('/\D+/', '', $empCode),
                     'name' => $emp?->name ?? 'Unknown',
                     'department' => $emp?->department?->name ?? '—',
+                    'designation' => $emp?->designation?->name ?? '—',
                     'normal_hours' => $normal,
+                    'normal_adj' => $normalAdj,
+                    'net_normal' => $netNormal,
                     'special_hours' => $special,
-                    'total_hours' => $normal + $special,
+                    'special_adj' => $specialAdj,
+                    'net_special' => $netSpecial,
+                    'total_hours' => $netNormal + $netSpecial,
+                    'remarks' => (string) ($adj?->remarks ?? ''),
                     'blocks' => $blocks,
                 ];
             })
-            ->sortBy('employee_code')
+            ->sortBy([
+                ['sort_num', 'asc'],
+                ['employee_code', 'asc'],
+            ])
             ->values();
 
         $allBlocks = OtBlock::where('is_active', true)->orderBy('sort_order')->pluck('name')->toArray();
 
-        return response()->view('overtime.print-blockwise', [
+        return [
             'report' => $report,
-            'periodLabel' => Carbon::create($report->year, $report->month, 1)->format('F Y'),
+            'periodLabel' => Carbon::create($year, $month, 1)->format('F Y'),
             'blockSummary' => $blockSummary,
             'employeeBlockSummary' => $employeeBlockSummary,
             'allBlocks' => $allBlocks,
+        ];
+    }
+
+    private function streamSummaryExcelForPeriod(int $month, int $year): StreamedResponse
+    {
+        $data = $this->buildPeriodSummaryData($month, $year);
+        $periodSlug = Carbon::create($year, $month, 1)->format('Y_m_F');
+        $filename = "OT_Summary_{$periodSlug}.csv";
+
+        return response()->streamDownload(function () use ($data): void {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+
+            $allBlocks = $data['allBlocks'];
+            $headers = [
+                'Employee Code',
+                'Name',
+                'Department',
+                'Designation',
+                'Normal Adj.',
+                'Normal OT (x1.5)',
+                'Net Normal OT (x1.5)',
+                'Special Adj.',
+                'Special OT (x2)',
+                'Net Special OT (x2)',
+                'Total OT',
+            ];
+            foreach ($allBlocks as $blk) {
+                $headers[] = "Block {$blk}";
+            }
+            $headers[] = 'Adjustment Remarks';
+            fputcsv($handle, $headers);
+
+            foreach ($data['employeeBlockSummary'] as $emp) {
+                $row = [
+                    $emp['employee_code'],
+                    $emp['name'],
+                    $emp['department'],
+                    $emp['designation'],
+                    number_format($emp['normal_adj'], 2, '.', ''),
+                    number_format($emp['normal_hours'], 2, '.', ''),
+                    number_format($emp['net_normal'], 2, '.', ''),
+                    number_format($emp['special_adj'], 2, '.', ''),
+                    number_format($emp['special_hours'], 2, '.', ''),
+                    number_format($emp['net_special'], 2, '.', ''),
+                    number_format($emp['total_hours'], 2, '.', ''),
+                ];
+                foreach ($allBlocks as $blk) {
+                    $row[] = number_format((float) ($emp['blocks'][$blk] ?? 0.0), 2, '.', '');
+                }
+                $row[] = $emp['remarks'];
+                fputcsv($handle, $row);
+            }
+
+            fclose($handle);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
     }
 
-    public function exportExcel(OvertimeReport $report): StreamedResponse
+    private function streamDailyExcelForPeriod(int $month, int $year): StreamedResponse
     {
-        $daysInMonth = Carbon::create($report->year, $report->month, 1)->daysInMonth;
-        $periodSlug = Carbon::create($report->year, $report->month, 1)->format('Y_m_F');
+        $daysInMonth = Carbon::create($year, $month, 1)->daysInMonth;
+        $periodSlug = Carbon::create($year, $month, 1)->format('Y_m_F');
         $filename = "OT_Report_{$periodSlug}.csv";
 
         $entries = OvertimeEntry::with('block')
-            ->whereMonth('ot_date', $report->month)
-            ->whereYear('ot_date', $report->year)
+            ->whereMonth('ot_date', $month)
+            ->whereYear('ot_date', $year)
             ->get();
 
-        $specialDays = OtSpecialDate::whereMonth('date', $report->month)
-            ->whereYear('date', $report->year)
+        $report = OvertimeReport::where('month', $month)->where('year', $year)->first();
+        $adjustments = $report
+            ? OvertimeAdjustment::where('overtime_report_id', $report->id)->get()->keyBy('employee_id')
+            : collect();
+
+        $specialDays = OtSpecialDate::whereMonth('date', $month)
+            ->whereYear('date', $year)
             ->pluck('date')
             ->map(fn ($d) => Carbon::parse($d)->day)
             ->toArray();
@@ -100,7 +263,7 @@ class OvertimeReportPrintController extends Controller
             ->orderBy('employee_code')
             ->get();
 
-        return response()->streamDownload(function () use ($daysInMonth, $specialDays, $entriesMap, $employees): void {
+        return response()->streamDownload(function () use ($daysInMonth, $specialDays, $entriesMap, $employees, $adjustments): void {
             $handle = fopen('php://output', 'w');
             fwrite($handle, "\xEF\xBB\xBF");
 
@@ -112,7 +275,9 @@ class OvertimeReportPrintController extends Controller
                 }
                 $headers[] = $label;
             }
+            $headers[] = 'Normal Adj.';
             $headers[] = 'Normal OT (x1.5)';
+            $headers[] = 'Special Adj.';
             $headers[] = 'Special OT (x2)';
             $headers[] = 'Total OT';
             $headers[] = 'Block Breakdown';
@@ -154,9 +319,15 @@ class OvertimeReportPrintController extends Controller
                     $row[] = implode(', ', $parts);
                 }
 
+                $adj = $adjustments->get($emp->employee_code);
+                $normalAdj = (float) ($adj?->normal_adjustment ?? 0.0);
+                $specialAdj = (float) ($adj?->special_adjustment ?? 0.0);
+
+                $row[] = number_format($normalAdj, 2, '.', '');
                 $row[] = number_format($normal, 2, '.', '');
+                $row[] = number_format($specialAdj, 2, '.', '');
                 $row[] = number_format($special, 2, '.', '');
-                $row[] = number_format($normal + $special, 2, '.', '');
+                $row[] = number_format($normal + $normalAdj + $special + $specialAdj, 2, '.', '');
                 $row[] = collect($blockTotals)
                     ->map(fn ($h, $b) => "{$b}: ".rtrim(rtrim(number_format($h, 2), '0'), '.').'h')
                     ->implode(' | ');

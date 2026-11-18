@@ -67,7 +67,9 @@
                             <th class="px-3 py-2">Code</th>
                             <th class="px-3 py-2">Name</th>
                             <th class="px-3 py-2">Department</th>
+                            <th class="px-3 py-2 text-right">Normal Adj.</th>
                             <th class="px-3 py-2 text-right">Normal OT (×1.5)</th>
+                            <th class="px-3 py-2 text-right">Special Adj.</th>
                             <th class="px-3 py-2 text-right">Special OT (×2)</th>
                             <th class="px-3 py-2 text-right">Total Hours</th>
                             <th class="px-3 py-2">Blocks Breakdown</th>
@@ -79,7 +81,9 @@
                                 <td class="px-3 py-2 font-mono text-xs">{{ $row['employee_code'] }}</td>
                                 <td class="px-3 py-2 font-medium text-gray-900 dark:text-white">{{ $row['name'] }}</td>
                                 <td class="px-3 py-2 text-gray-600 dark:text-gray-300">{{ $row['department'] }}</td>
+                                <td class="px-3 py-2 text-right text-blue-600 dark:text-blue-400">{{ $row['normal_adj'] != 0 ? ($row['normal_adj'] > 0 ? '+' : '').number_format($row['normal_adj'], 2) : '0.00' }}</td>
                                 <td class="px-3 py-2 text-right">{{ number_format($row['normal_hours'], 2) }}</td>
+                                <td class="px-3 py-2 text-right text-amber-600 dark:text-amber-400">{{ $row['special_adj'] != 0 ? ($row['special_adj'] > 0 ? '+' : '').number_format($row['special_adj'], 2) : '0.00' }}</td>
                                 <td class="px-3 py-2 text-right text-amber-600 dark:text-amber-400">{{ number_format($row['special_hours'], 2) }}</td>
                                 <td class="px-3 py-2 text-right font-semibold">{{ number_format($row['total_hours'], 2) }}</td>
                                 <td class="px-3 py-2">
@@ -94,7 +98,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-3 py-6 text-center text-gray-500">No OT entries for this period.</td>
+                                <td colspan="9" class="px-3 py-6 text-center text-gray-500">No OT entries for this period.</td>
                             </tr>
                         @endforelse
                     </tbody>
