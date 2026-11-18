@@ -11,6 +11,7 @@
         $adjustmentsMap = $this->getAdjustmentsMap($empCodes);
         $blocks = $this->getBlocks();
         $departments = $this->getDepartments();
+        $canEnterOt = $this->canEnterOtValues();
     @endphp
 
     <div class="flex flex-col items-center justify-center rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm dark:border-white/10 dark:bg-gray-900 lg:hidden">
@@ -167,36 +168,38 @@
                                         : ($isSaturday ? 'bg-purple-50/50 dark:bg-purple-900/10' : '');
                                 @endphp
                                 <td class="border-r border-gray-200 p-0 text-center align-top dark:border-white/10 {{ $tdBg }}">
-                                    <div x-on:click="document.querySelector('input[data-row=\'{{ $rowIndex }}\'][data-col=\'{{ $d }}\']')?.focus()"
+                                    <div @if ($canEnterOt) x-on:click="document.querySelector('input[data-row=\'{{ $rowIndex }}\'][data-col=\'{{ $d }}\']')?.focus()" @endif
                                         wire:dblclick="openCell('{{ $emp->employee_code }}', '{{ addslashes($emp->name) }}', {{ $d }})"
-                                        title="{{ $cellDisplay ? $cellDisplay.' (Double-click for details/author)' : 'Click to enter hours • Double-click for details' }}"
-                                        class="cursor-pointer border-b border-gray-100 px-1 py-0.5 text-[11px] leading-tight hover:bg-gray-100 dark:border-white/5 dark:hover:bg-white/10">
+                                        title="{{ $cellDisplay ? $cellDisplay.' (Double-click for details/author)' : ($canEnterOt ? 'Click to enter hours • Double-click for details' : 'Double-click for details') }}"
+                                        class="cursor-pointer {{ $canEnterOt ? 'border-b border-gray-100 dark:border-white/5' : '' }} px-1 py-1 text-[11px] leading-tight hover:bg-gray-100 dark:hover:bg-white/10">
                                         @if ($cellDisplay !== '')
                                             <span class="font-semibold text-primary-700 dark:text-primary-300">{{ $cellDisplay }}</span>
                                         @else
                                             <span class="text-gray-300 dark:text-gray-700">&mdash;</span>
                                         @endif
                                     </div>
-                                    <input type="text"
-                                        inputmode="decimal"
-                                        data-row="{{ $rowIndex }}"
-                                        data-col="{{ $d }}"
-                                        x-on:input="$el.value = $el.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')"
-                                        x-on:keydown="moveCell($event, {{ $rowIndex }}, {{ $d }})"
-                                        x-on:change="if ($el.value.trim() !== '') { $wire.saveInlineCell('{{ $emp->employee_code }}', {{ $d }}, $el.value); $el.value = ''; }"
-                                        placeholder="+"
-                                        class="h-6 w-full border-0 bg-transparent px-1 text-center text-[11px] font-medium text-gray-900 placeholder-gray-300 focus:bg-primary-50 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500 dark:text-white dark:placeholder-gray-700 dark:focus:bg-primary-900/20" />
+                                    @if ($canEnterOt)
+                                        <input type="text"
+                                            inputmode="decimal"
+                                            data-row="{{ $rowIndex }}"
+                                            data-col="{{ $d }}"
+                                            x-on:input="$el.value = $el.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')"
+                                            x-on:keydown="moveCell($event, {{ $rowIndex }}, {{ $d }})"
+                                            x-on:change="if ($el.value.trim() !== '') { $wire.saveInlineCell('{{ $emp->employee_code }}', {{ $d }}, $el.value); $el.value = ''; }"
+                                            placeholder="+"
+                                            class="h-6 w-full border-0 bg-transparent px-1 text-center text-[11px] font-medium text-gray-900 placeholder-gray-300 focus:bg-primary-50 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500 dark:text-white dark:placeholder-gray-700 dark:focus:bg-primary-900/20" />
+                                    @endif
                                 </td>
                             @endfor
-                            <td wire:click="openAdjustment('{{ $emp->employee_code }}', '{{ addslashes($emp->name) }}')"
-                                title="{{ $adj['remarks'] ?: 'Click to add/edit Normal OT adjustment' }}"
-                                class="cursor-pointer border-r border-gray-200 bg-blue-50/20 px-2 py-1.5 text-right font-medium hover:bg-blue-100/60 dark:border-white/10 dark:bg-blue-900/5 dark:hover:bg-blue-900/30 {{ $adj['normal'] != 0 ? 'text-blue-700 dark:text-blue-300' : 'text-gray-400' }}">
+                            <td @if ($canEnterOt) wire:click="openAdjustment('{{ $emp->employee_code }}', '{{ addslashes($emp->name) }}')" @endif
+                                title="{{ $adj['remarks'] ?: ($canEnterOt ? 'Click to add/edit Normal OT adjustment' : 'Normal OT adjustment') }}"
+                                class="{{ $canEnterOt ? 'cursor-pointer hover:bg-blue-100/60 dark:hover:bg-blue-900/30' : '' }} border-r border-gray-200 bg-blue-50/20 px-2 py-1.5 text-right font-medium dark:border-white/10 dark:bg-blue-900/5 {{ $adj['normal'] != 0 ? 'text-blue-700 dark:text-blue-300' : 'text-gray-400' }}">
                                 {{ $adj['normal'] != 0 ? ($adj['normal'] > 0 ? '+' : '').number_format($adj['normal'], 2) : '0.00' }}
                             </td>
                             <td class="border-r border-gray-200 bg-blue-50/40 px-2 py-1.5 text-right font-medium dark:border-white/10 dark:bg-blue-900/10">{{ number_format($normalTotal, 2) }}</td>
-                            <td wire:click="openAdjustment('{{ $emp->employee_code }}', '{{ addslashes($emp->name) }}')"
-                                title="{{ $adj['remarks'] ?: 'Click to add/edit Special OT adjustment' }}"
-                                class="cursor-pointer border-r border-gray-200 bg-amber-50/20 px-2 py-1.5 text-right font-medium hover:bg-amber-100/60 dark:border-white/10 dark:bg-amber-900/5 dark:hover:bg-amber-900/30 {{ $adj['special'] != 0 ? 'text-amber-700 dark:text-amber-300' : 'text-gray-400' }}">
+                            <td @if ($canEnterOt) wire:click="openAdjustment('{{ $emp->employee_code }}', '{{ addslashes($emp->name) }}')" @endif
+                                title="{{ $adj['remarks'] ?: ($canEnterOt ? 'Click to add/edit Special OT adjustment' : 'Special OT adjustment') }}"
+                                class="{{ $canEnterOt ? 'cursor-pointer hover:bg-amber-100/60 dark:hover:bg-amber-900/30' : '' }} border-r border-gray-200 bg-amber-50/20 px-2 py-1.5 text-right font-medium dark:border-white/10 dark:bg-amber-900/5 {{ $adj['special'] != 0 ? 'text-amber-700 dark:text-amber-300' : 'text-gray-400' }}">
                                 {{ $adj['special'] != 0 ? ($adj['special'] > 0 ? '+' : '').number_format($adj['special'], 2) : '0.00' }}
                             </td>
                             <td class="border-r border-gray-200 bg-amber-50/40 px-2 py-1.5 text-right font-medium text-amber-700 dark:border-white/10 dark:bg-amber-900/10 dark:text-amber-300">{{ number_format($specialTotal, 2) }}</td>
@@ -263,45 +266,53 @@
                                             by {{ $item['created_by_name'] }} &bull; {{ $item['created_at'] }}
                                         </div>
                                     </div>
-                                    <button type="button" wire:click="deleteCellEntry({{ $item['id'] }})"
-                                        class="rounded-md px-2 py-1 text-xs font-medium text-danger-600 hover:bg-danger-50 dark:text-danger-400 dark:hover:bg-danger-900/20">
-                                        Remove
-                                    </button>
+                                    @if ($canEnterOt)
+                                        <button type="button" wire:click="deleteCellEntry({{ $item['id'] }})"
+                                            class="rounded-md px-2 py-1 text-xs font-medium text-danger-600 hover:bg-danger-50 dark:text-danger-400 dark:hover:bg-danger-900/20">
+                                            Remove
+                                        </button>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
+                    @elseif (! $canEnterOt)
+                        <p class="text-sm text-gray-500 dark:text-gray-400">No OT entries logged for this day.</p>
                     @endif
 
-                    <div class="rounded-xl border border-gray-200 bg-gray-50/40 p-4 dark:border-white/10 dark:bg-white/[0.02]">
-                        <div class="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Add OT Entry</div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-300">Block</label>
-                                <select wire:model="newBlockId"
-                                    class="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-white/15 dark:bg-gray-800 dark:text-white">
-                                    @foreach ($blocks as $block)
-                                        <option value="{{ $block->id }}">{{ $block->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div>
-                                <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-300">Hours</label>
-                                <input type="number" step="0.5" min="0.5" max="24" wire:model="newHours" wire:keydown.enter="addCellEntry" placeholder="e.g. 4"
-                                    class="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-white/15 dark:bg-gray-800 dark:text-white" />
+                    @if ($canEnterOt)
+                        <div class="rounded-xl border border-gray-200 bg-gray-50/40 p-4 dark:border-white/10 dark:bg-white/[0.02]">
+                            <div class="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Add OT Entry</div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-300">Block</label>
+                                    <select wire:model="newBlockId"
+                                        class="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-white/15 dark:bg-gray-800 dark:text-white">
+                                        @foreach ($blocks as $block)
+                                            <option value="{{ $block->id }}">{{ $block->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-300">Hours</label>
+                                    <input type="number" step="0.5" min="0.5" max="24" wire:model="newHours" wire:keydown.enter="addCellEntry" placeholder="e.g. 4"
+                                        class="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-white/15 dark:bg-gray-800 dark:text-white" />
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    @endif
                 </div>
 
                 <div class="flex items-center justify-end gap-2 border-t border-gray-200 bg-gray-50 px-5 py-3 dark:border-white/10 dark:bg-gray-800/60">
                     <button type="button" wire:click="closeCell"
                         class="rounded-lg border border-gray-300 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-white/10">
-                        Done
+                        {{ $canEnterOt ? 'Done' : 'Close' }}
                     </button>
-                    <button type="button" wire:click="addCellEntry"
-                        class="rounded-lg bg-primary-600 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-500">
-                        Add Entry
-                    </button>
+                    @if ($canEnterOt)
+                        <button type="button" wire:click="addCellEntry"
+                            class="rounded-lg bg-primary-600 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-500">
+                            Add Entry
+                        </button>
+                    @endif
                 </div>
             </div>
         </div>

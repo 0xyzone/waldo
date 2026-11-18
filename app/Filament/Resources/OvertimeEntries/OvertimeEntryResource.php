@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\OvertimeEntries;
 
+use Agroezinger\FilamentShieldEnhanced\Traits\HasResourceShield;
 use App\Filament\Resources\OvertimeEntries\Pages\ManageOvertimeEntries;
 use App\Models\OtBlock;
 use App\Models\OvertimeEntry;
@@ -24,6 +25,8 @@ use UnitEnum;
 
 class OvertimeEntryResource extends Resource
 {
+    use HasResourceShield;
+
     protected static ?string $model = OvertimeEntry::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClock;
@@ -33,6 +36,30 @@ class OvertimeEntryResource extends Resource
     protected static ?string $navigationLabel = 'OT Entries';
 
     protected static ?int $navigationSort = 1;
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return static::hasEntryAccess();
+    }
+
+    public static function canViewAny(): bool
+    {
+        return static::hasEntryAccess();
+    }
+
+    protected static function hasEntryAccess(): bool
+    {
+        $user = auth()->user();
+
+        if (! $user) {
+            return false;
+        }
+
+        return $user->hasRole(config('filament-shield.super_admin.name', 'super_admin'))
+            || $user->can('ViewAny:OvertimeEntry')
+            || $user->can('View:OvertimeEntry')
+            || $user->can('Update:OvertimeEntry');
+    }
 
     public static function form(Schema $schema): Schema
     {

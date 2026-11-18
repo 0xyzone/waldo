@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\OvertimeReports;
 
+use Agroezinger\FilamentShieldEnhanced\Traits\HasResourceShield;
 use App\Filament\Resources\OvertimeReports\Pages\CreateOvertimeReport;
 use App\Filament\Resources\OvertimeReports\Pages\EditOvertimeReport;
 use App\Filament\Resources\OvertimeReports\Pages\ListOvertimeReports;
@@ -23,6 +24,15 @@ use UnitEnum;
 
 class OvertimeReportResource extends Resource
 {
+    use HasResourceShield;
+
+    public static function getShieldResourcePermissions(): array
+    {
+        return [
+            'EnterOtValues' => 'Enter OT Values in OT Sheet',
+        ];
+    }
+
     protected static ?string $model = OvertimeReport::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTableCells;

@@ -54,6 +54,11 @@ class ViewOvertimeReport extends ViewRecord
 
     public string $adjRemarks = '';
 
+    public function canEnterOtValues(): bool
+    {
+        return OvertimeReportResource::canShield('EnterOtValues');
+    }
+
     public function mount(int|string $record): void
     {
         parent::mount($record);
@@ -62,7 +67,7 @@ class ViewOvertimeReport extends ViewRecord
 
     public function saveInlineCell(string $employeeCode, int $day, string $value): void
     {
-        if (! $this->activeBlockId) {
+        if (! $this->canEnterOtValues() || ! $this->activeBlockId) {
             return;
         }
 
@@ -302,7 +307,7 @@ class ViewOvertimeReport extends ViewRecord
 
     public function addCellEntry(): void
     {
-        if (! $this->editingEmployeeCode || ! $this->editingDay || ! $this->newBlockId) {
+        if (! $this->canEnterOtValues() || ! $this->editingEmployeeCode || ! $this->editingDay || ! $this->newBlockId) {
             return;
         }
 
@@ -325,11 +330,19 @@ class ViewOvertimeReport extends ViewRecord
 
     public function deleteCellEntry(int $entryId): void
     {
+        if (! $this->canEnterOtValues()) {
+            return;
+        }
+
         OvertimeEntry::where('id', $entryId)->delete();
     }
 
     public function openAdjustment(string $employeeCode, string $employeeName): void
     {
+        if (! $this->canEnterOtValues()) {
+            return;
+        }
+
         $existing = OvertimeAdjustment::where('overtime_report_id', $this->record->id)
             ->where('employee_id', $employeeCode)
             ->first();
@@ -352,7 +365,7 @@ class ViewOvertimeReport extends ViewRecord
 
     public function saveAdjustment(): void
     {
-        if (! $this->adjEmployeeCode) {
+        if (! $this->canEnterOtValues() || ! $this->adjEmployeeCode) {
             return;
         }
 
