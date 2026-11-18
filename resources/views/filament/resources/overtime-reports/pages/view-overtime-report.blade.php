@@ -82,26 +82,36 @@
                 const target = document.querySelector(`input[data-row='${row + d[0]}'][data-col='${col + d[1]}']`);
                 if (target) { target.focus(); target.select(); }
             }
-        }" class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900">
+        }" class="max-h-[calc(100vh-16rem)] overflow-auto rounded-xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900">
             <table class="w-full border-collapse text-xs">
-                <thead>
-                    <tr class="border-b border-gray-200 bg-gray-50 dark:border-white/10 dark:bg-gray-800/60">
-                        <th class="sticky left-0 z-20 min-w-[90px] border-r border-gray-200 bg-gray-50 px-2.5 py-2 text-left font-semibold dark:border-white/10 dark:bg-gray-800">Code</th>
-                        <th class="sticky left-[90px] z-20 min-w-[160px] border-r border-gray-200 bg-gray-50 px-2.5 py-2 text-left font-semibold dark:border-white/10 dark:bg-gray-800">Name</th>
-                        <th class="min-w-[120px] border-r border-gray-200 px-2.5 py-2 text-left font-semibold dark:border-white/10">Department</th>
+                <thead class="sticky top-0 z-30">
+                    <tr class="border-b border-gray-200 bg-gray-50 dark:border-white/10 dark:bg-gray-800">
+                        <th class="sticky left-0 z-40 min-w-[90px] border-r border-gray-200 bg-slate-100 px-2.5 py-2 text-left font-semibold text-slate-800 dark:border-white/10 dark:bg-slate-800 dark:text-slate-100">Code</th>
+                        <th class="sticky left-[90px] z-40 min-w-[160px] border-r border-gray-200 bg-slate-100 px-2.5 py-2 text-left font-semibold text-slate-800 dark:border-white/10 dark:bg-slate-800 dark:text-slate-100">Name</th>
+                        <th class="min-w-[120px] border-r border-gray-200 bg-slate-100 px-2.5 py-2 text-left font-semibold text-slate-800 dark:border-white/10 dark:bg-slate-800 dark:text-slate-100">Department</th>
                         @for ($d = 1; $d <= $daysInMonth; $d++)
-                            @php $isSpecial = in_array($d, $specialDays, true); @endphp
-                            <th class="min-w-[50px] border-r border-gray-200 px-1 py-2 text-center font-semibold dark:border-white/10 {{ $isSpecial ? 'bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200' : '' }}">
-                                {{ str_pad((string) $d, 2, '0', STR_PAD_LEFT) }}
+                            @php
+                                $dateObj = \Carbon\Carbon::create($this->record->year, $this->record->month, $d);
+                                $isSpecial = in_array($d, $specialDays, true);
+                                $isSaturday = $dateObj->isSaturday();
+                                $thClass = $isSpecial
+                                    ? 'bg-amber-100 text-amber-900 dark:bg-amber-900/50 dark:text-amber-200'
+                                    : ($isSaturday
+                                        ? 'bg-purple-100/80 text-purple-900 dark:bg-purple-900/40 dark:text-purple-200'
+                                        : 'bg-gray-50 dark:bg-gray-800');
+                            @endphp
+                            <th class="min-w-[52px] border-r border-gray-200 px-1 py-1.5 text-center font-semibold dark:border-white/10 {{ $thClass }}">
+                                <span class="block leading-tight">{{ str_pad((string) $d, 2, '0', STR_PAD_LEFT) }}</span>
+                                <span class="block text-[9.5px] font-normal opacity-75">{{ $dateObj->format('D') }}</span>
                                 @if ($isSpecial)
-                                    <span class="block text-[9px] font-normal">×2</span>
+                                    <span class="block text-[9px] font-bold">×2</span>
                                 @endif
                             </th>
                         @endfor
-                        <th class="min-w-[80px] border-r border-gray-200 bg-blue-50 px-2 py-2 text-right font-semibold text-blue-900 dark:border-white/10 dark:bg-blue-900/30 dark:text-blue-200">Normal (×1.5)</th>
-                        <th class="min-w-[76px] border-r border-gray-200 bg-blue-50/70 px-2 py-2 text-right font-semibold text-blue-900 dark:border-white/10 dark:bg-blue-900/20 dark:text-blue-200">Normal Adj.</th>
-                        <th class="min-w-[80px] border-r border-gray-200 bg-amber-50 px-2 py-2 text-right font-semibold text-amber-900 dark:border-white/10 dark:bg-amber-900/30 dark:text-amber-200">Special (×2)</th>
-                        <th class="min-w-[76px] border-r border-gray-200 bg-amber-50/70 px-2 py-2 text-right font-semibold text-amber-900 dark:border-white/10 dark:bg-amber-900/20 dark:text-amber-200">Special Adj.</th>
+                        <th class="min-w-[76px] border-r border-gray-200 bg-blue-50/90 px-2 py-2 text-right font-semibold text-blue-900 dark:border-white/10 dark:bg-blue-950 dark:text-blue-200">Normal Adj.</th>
+                        <th class="min-w-[80px] border-r border-gray-200 bg-blue-100/80 px-2 py-2 text-right font-semibold text-blue-900 dark:border-white/10 dark:bg-blue-900/60 dark:text-blue-100">Normal (×1.5)</th>
+                        <th class="min-w-[76px] border-r border-gray-200 bg-amber-50/90 px-2 py-2 text-right font-semibold text-amber-900 dark:border-white/10 dark:bg-amber-950 dark:text-amber-200">Special Adj.</th>
+                        <th class="min-w-[80px] border-r border-gray-200 bg-amber-100/80 px-2 py-2 text-right font-semibold text-amber-900 dark:border-white/10 dark:bg-amber-900/60 dark:text-amber-100">Special (×2)</th>
                         <th class="min-w-[70px] bg-gray-100 px-2 py-2 text-right font-bold dark:bg-gray-800">Total</th>
                     </tr>
                 </thead>
@@ -124,25 +134,33 @@
                             $grandTotal = $normalTotal + $adj['normal'] + $specialTotal + $adj['special'];
                         @endphp
                         <tr wire:key="emp-{{ $emp->employee_code }}" class="hover:bg-gray-50/70 dark:hover:bg-white/5">
-                            <td class="sticky left-0 z-10 border-r border-gray-200 bg-white px-2.5 py-1.5 font-mono dark:border-white/10 dark:bg-gray-900">{{ $emp->employee_code }}</td>
-                            <td class="sticky left-[90px] z-10 border-r border-gray-200 bg-white px-2.5 py-1.5 font-medium text-gray-900 dark:border-white/10 dark:bg-gray-900 dark:text-white">{{ $emp->name }}</td>
-                            <td class="border-r border-gray-200 px-2.5 py-1.5 text-gray-600 dark:border-white/10 dark:text-gray-300">{{ $emp->department?->name ?? '—' }}</td>
+                            <td class="sticky left-0 z-10 border-r border-gray-200 bg-slate-50 px-2.5 py-1.5 font-mono text-slate-800 dark:border-white/10 dark:bg-slate-800/80 dark:text-slate-200">{{ $emp->employee_code }}</td>
+                            <td class="sticky left-[90px] z-10 border-r border-gray-200 bg-slate-50 px-2.5 py-1.5 font-medium text-slate-900 dark:border-white/10 dark:bg-slate-800/80 dark:text-white">{{ $emp->name }}</td>
+                            <td class="border-r border-gray-200 bg-slate-50/70 px-2.5 py-1.5 text-slate-700 dark:border-white/10 dark:bg-slate-800/50 dark:text-slate-300">{{ $emp->department?->name ?? '—' }}</td>
                             @for ($d = 1; $d <= $daysInMonth; $d++)
                                 @php
+                                    $dateObj = \Carbon\Carbon::create($this->record->year, $this->record->month, $d);
                                     $isSpecial = in_array($d, $specialDays, true);
+                                    $isSaturday = $dateObj->isSaturday();
                                     $cellItems = $empEntries[$d] ?? [];
-                                    $cellSum = collect($cellItems)->sum('hours');
-                                    $displayVal = $cellSum > 0 ? rtrim(rtrim(number_format($cellSum, 2), '0'), '.') : '';
-                                    $blockTags = collect($cellItems)->pluck('block')->unique()->join(',');
+                                    $cellDisplay = collect($cellItems)
+                                        ->groupBy('block')
+                                        ->map(function ($items, $blockName) {
+                                            $sum = (float) $items->sum('hours');
+                                            return $blockName.rtrim(rtrim(number_format($sum, 2), '0'), '.');
+                                        })
+                                        ->join(', ');
+                                    $tdBg = $isSpecial
+                                        ? 'bg-amber-50/50 dark:bg-amber-900/10'
+                                        : ($isSaturday ? 'bg-purple-50/50 dark:bg-purple-900/10' : '');
                                 @endphp
-                                <td class="border-r border-gray-200 p-0 text-center align-top dark:border-white/10 {{ $isSpecial ? 'bg-amber-50/50 dark:bg-amber-900/10' : '' }}">
+                                <td class="border-r border-gray-200 p-0 text-center align-top dark:border-white/10 {{ $tdBg }}">
                                     <div x-on:click="document.querySelector('input[data-row=\'{{ $rowIndex }}\'][data-col=\'{{ $d }}\']')?.focus()"
                                         wire:dblclick="openCell('{{ $emp->employee_code }}', '{{ addslashes($emp->name) }}', {{ $d }})"
-                                        title="{{ $blockTags ? 'Blocks: '.$blockTags.' (Double-click for details/author)' : 'Click to enter hours • Double-click for details' }}"
+                                        title="{{ $cellDisplay ? $cellDisplay.' (Double-click for details/author)' : 'Click to enter hours • Double-click for details' }}"
                                         class="cursor-pointer border-b border-gray-100 px-1 py-0.5 text-[11px] leading-tight hover:bg-gray-100 dark:border-white/5 dark:hover:bg-white/10">
-                                        @if ($cellSum > 0)
-                                            <span class="font-semibold text-gray-900 dark:text-white">{{ $displayVal }}</span>
-                                            <span class="block text-[8.5px] leading-none text-primary-600 dark:text-primary-400">{{ $blockTags }}</span>
+                                        @if ($cellDisplay !== '')
+                                            <span class="font-semibold text-primary-700 dark:text-primary-300">{{ $cellDisplay }}</span>
                                         @else
                                             <span class="text-gray-300 dark:text-gray-700">&mdash;</span>
                                         @endif
@@ -158,18 +176,18 @@
                                         class="h-6 w-full border-0 bg-transparent px-1 text-center text-[11px] font-medium text-gray-900 placeholder-gray-300 focus:bg-primary-50 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-primary-500 dark:text-white dark:placeholder-gray-700 dark:focus:bg-primary-900/20" />
                                 </td>
                             @endfor
-                            <td class="border-r border-gray-200 bg-blue-50/40 px-2 py-1.5 text-right font-medium dark:border-white/10 dark:bg-blue-900/10">{{ number_format($normalTotal, 2) }}</td>
                             <td wire:click="openAdjustment('{{ $emp->employee_code }}', '{{ addslashes($emp->name) }}')"
                                 title="{{ $adj['remarks'] ?: 'Click to add/edit Normal OT adjustment' }}"
                                 class="cursor-pointer border-r border-gray-200 bg-blue-50/20 px-2 py-1.5 text-right font-medium hover:bg-blue-100/60 dark:border-white/10 dark:bg-blue-900/5 dark:hover:bg-blue-900/30 {{ $adj['normal'] != 0 ? 'text-blue-700 dark:text-blue-300' : 'text-gray-400' }}">
                                 {{ $adj['normal'] != 0 ? ($adj['normal'] > 0 ? '+' : '').number_format($adj['normal'], 2) : '0.00' }}
                             </td>
-                            <td class="border-r border-gray-200 bg-amber-50/40 px-2 py-1.5 text-right font-medium text-amber-700 dark:border-white/10 dark:bg-amber-900/10 dark:text-amber-300">{{ number_format($specialTotal, 2) }}</td>
+                            <td class="border-r border-gray-200 bg-blue-50/40 px-2 py-1.5 text-right font-medium dark:border-white/10 dark:bg-blue-900/10">{{ number_format($normalTotal, 2) }}</td>
                             <td wire:click="openAdjustment('{{ $emp->employee_code }}', '{{ addslashes($emp->name) }}')"
                                 title="{{ $adj['remarks'] ?: 'Click to add/edit Special OT adjustment' }}"
                                 class="cursor-pointer border-r border-gray-200 bg-amber-50/20 px-2 py-1.5 text-right font-medium hover:bg-amber-100/60 dark:border-white/10 dark:bg-amber-900/5 dark:hover:bg-amber-900/30 {{ $adj['special'] != 0 ? 'text-amber-700 dark:text-amber-300' : 'text-gray-400' }}">
                                 {{ $adj['special'] != 0 ? ($adj['special'] > 0 ? '+' : '').number_format($adj['special'], 2) : '0.00' }}
                             </td>
+                            <td class="border-r border-gray-200 bg-amber-50/40 px-2 py-1.5 text-right font-medium text-amber-700 dark:border-white/10 dark:bg-amber-900/10 dark:text-amber-300">{{ number_format($specialTotal, 2) }}</td>
                             <td class="bg-gray-50 px-2 py-1.5 text-right font-bold dark:bg-gray-800/50">{{ number_format($grandTotal, 2) }}</td>
                         </tr>
                     @endforeach
