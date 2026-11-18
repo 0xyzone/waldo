@@ -16,10 +16,10 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\NavigationItem;
 use Filament\Pages\Dashboard;
-use Filament\Panel;
-use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\View\PanelsRenderHook;
+use Filament\Panel;
+use Filament\PanelProvider;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -43,18 +43,18 @@ class KamkajPanelProvider extends PanelProvider
             ->emailVerification()
             ->emailChangeVerification()
             ->profile(EditProfile::class)
-            ->favicon(fn () => FaviconHelper::getFaviconUrl())
+            ->favicon(fn() => FaviconHelper::getFaviconUrl())
             ->renderHook(
                 PanelsRenderHook::HEAD_START,
-                fn () => view('filament.pwa-scripts')
+                fn() => view('filament.pwa-scripts')
             )
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
-                fn () => new HtmlString('<script>
+                fn() => new HtmlString('<script>
                     (function() {
                         var h = window.location.hostname;
-                        var isLocal = '.(FaviconHelper::isLocal() ? 'true' : 'false').' || h === "localhost" || h === "127.0.0.1" || h === "waldo" || h.endsWith(".test") || h.endsWith(".local") || h.startsWith("192.168.") || h.startsWith("10.");
-                        var target = isLocal ? "'.asset('img/logo-http.ico').'" : "'.asset('img/logo.ico').'";
+                        var isLocal = ' . (FaviconHelper::isLocal() ? 'true' : 'false') . ' || h === "localhost" || h === "127.0.0.1" || h === "waldo" || h.endsWith(".test") || h.endsWith(".local") || h.startsWith("192.168.") || h.startsWith("10.");
+                        var target = isLocal ? "' . asset('img/logo-http.ico') . '" : "' . asset('img/logo.ico') . '";
                         var links = document.querySelectorAll("link[rel*=\'icon\']");
                         links.forEach(function(l) { if (l.href !== target) l.href = target; });
                     })();
@@ -62,11 +62,11 @@ class KamkajPanelProvider extends PanelProvider
             )
             ->renderHook(
                 PanelsRenderHook::SIDEBAR_NAV_START,
-                fn () => view('filament.components.sidebar-search'),
+                fn() => view('filament.components.sidebar-search'),
             )
             ->renderHook(
                 PanelsRenderHook::SIDEBAR_FOOTER,
-                fn () => view('filament.components.sidebar-version'),
+                fn() => view('filament.components.sidebar-version'),
             )
             ->globalSearch(false)
             ->databaseNotifications()
@@ -91,7 +91,7 @@ class KamkajPanelProvider extends PanelProvider
                     ->activeIcon('heroicon-s-document-text')
                     ->sort(9)
                     ->group('HR & Admin')
-                    ->visible(fn () => auth()->user()?->can('access_letters_and_templates') || (auth()->user()?->hasRole(['super_admin', 'HR', 'HR Assist']) ?? false)),
+                    ->visible(fn() => auth()->user()?->can('access_letters_and_templates') || (auth()->user()?->hasRole(['super_admin', 'HR', 'HR Assist']) ?? false)),
                 NavigationItem::make('Employee SSF IDs')
                     ->url('/employee-ssids')
                     ->openUrlInNewTab()
@@ -99,7 +99,7 @@ class KamkajPanelProvider extends PanelProvider
                     ->activeIcon('heroicon-s-document-text')
                     ->sort(10)
                     ->group('HR & Admin')
-                    ->visible(fn () => auth()->user()?->can('access_employee_ssf_ids') || (auth()->user()?->hasRole(['super_admin', 'HR']) ?? false)),
+                    ->visible(fn() => auth()->user()?->can('access_employee_ssf_ids') || (auth()->user()?->hasRole(['super_admin', 'HR']) ?? false)),
                 NavigationItem::make('Salary Calculator')
                     ->url('/salary-calculator')
                     ->openUrlInNewTab()
@@ -107,10 +107,11 @@ class KamkajPanelProvider extends PanelProvider
                     ->activeIcon('heroicon-s-calculator')
                     ->sort(1)
                     ->group('Finance')
-                    ->visible(fn () => auth()->user()?->can('access_salary_calculator') || (auth()->user()?->hasRole(['super_admin', 'Finance']) ?? false)),
+                    ->visible(fn() => auth()->user()?->can('access_salary_calculator') || (auth()->user()?->hasRole(['super_admin', 'Finance']) ?? false)),
             ])
             ->navigationGroups([
                 'HR & Admin',
+                'Overtime',
                 'Roster Management',
                 'IT',
                 'Finance',
@@ -166,7 +167,7 @@ class KamkajPanelProvider extends PanelProvider
             ])
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
-                fn (): HtmlString => new HtmlString('
+                fn(): HtmlString => new HtmlString('
                     <script>
                         (function () {
                             function fallbackCopy(text) {
@@ -257,35 +258,35 @@ class KamkajPanelProvider extends PanelProvider
             )
             ->renderHook(
                 PanelsRenderHook::USER_MENU_BEFORE,
-                fn () => view('filament.pwa-install-button')
+                fn() => view('filament.pwa-install-button')
             )
             ->renderHook(
                 PanelsRenderHook::USER_MENU_BEFORE,
-                fn () => auth()->check() ? view('filament.push-notification-button') : ''
+                fn() => auth()->check() ? view('filament.push-notification-button') : ''
             )
             ->renderHook(
                 PanelsRenderHook::USER_MENU_BEFORE,
-                fn () => auth()->check() ? new HtmlString(Blade::render('@livewire(\App\Livewire\WebsocketStatusIndicator::class)')) : ''
+                fn() => auth()->check() ? new HtmlString(Blade::render('@livewire(\App\Livewire\WebsocketStatusIndicator::class)')) : ''
             )
             ->renderHook(
                 PanelsRenderHook::USER_MENU_BEFORE,
-                fn () => auth()->check() ? view('filament.chat-topbar-button') : ''
+                fn() => auth()->check() ? view('filament.chat-topbar-button') : ''
             )
             ->renderHook(
                 PanelsRenderHook::BODY_END,
-                fn () => auth()->check() ? new HtmlString(Blade::render('@livewire(\App\Livewire\FloatingChatWidget::class)')) : ''
+                fn() => auth()->check() ? new HtmlString(Blade::render('@livewire(\App\Livewire\FloatingChatWidget::class)')) : ''
             )
             ->renderHook(
                 PanelsRenderHook::BODY_END,
-                fn () => view('filament.wizard-keyboard-shortcuts')
+                fn() => view('filament.wizard-keyboard-shortcuts')
             )
             ->renderHook(
                 PanelsRenderHook::BODY_END,
-                fn () => view('filament.mobile-sidebar-gestures')
+                fn() => view('filament.mobile-sidebar-gestures')
             )
             ->renderHook(
                 PanelsRenderHook::BODY_END,
-                fn () => view('filament.modal-click-outside')
+                fn() => view('filament.modal-click-outside')
             );
     }
 }
