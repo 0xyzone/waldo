@@ -69,22 +69,24 @@
                     <span class="inline-block h-3 w-3 rounded bg-amber-100 ring-1 ring-amber-400 dark:bg-amber-900/40"></span>
                     Special OT Day (×2)
                 </span>
-                <span>Type hours in bottom box to add &bull; Click top total for details</span>
+                <span>{{ $canEnterOt ? 'Type hours in bottom box to add • Click top total for details' : 'Double-click any cell for details' }}</span>
             </div>
         </div>
 
-        <div class="flex shrink-0 flex-wrap items-center gap-3 rounded-xl border border-gray-200 bg-white px-3.5 py-2 dark:border-white/10 dark:bg-gray-900">
-            <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Active Block:</span>
-            <div class="flex flex-wrap items-center gap-2">
-                @foreach ($blocks as $block)
-                    <label class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition {{ (int) $this->activeBlockId === $block->id ? 'border-primary-500 bg-primary-50 text-primary-700 dark:border-primary-500 dark:bg-primary-900/30 dark:text-primary-300' : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10' }}">
-                        <input type="radio" name="active_block" value="{{ $block->id }}" wire:model.live="activeBlockId"
-                            class="h-3.5 w-3.5 border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-white/20 dark:bg-gray-800" />
-                        <span>{{ $block->name }}</span>
-                    </label>
-                @endforeach
+        @if ($canEnterOt)
+            <div class="flex shrink-0 flex-wrap items-center gap-3 rounded-xl border border-gray-200 bg-white px-3.5 py-2 dark:border-white/10 dark:bg-gray-900">
+                <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Active Block:</span>
+                <div class="flex flex-wrap items-center gap-2">
+                    @foreach ($blocks as $block)
+                        <label class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition {{ (int) $this->activeBlockId === $block->id ? 'border-primary-500 bg-primary-50 text-primary-700 dark:border-primary-500 dark:bg-primary-900/30 dark:text-primary-300' : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10' }}">
+                            <input type="radio" name="active_block" value="{{ $block->id }}" wire:model.live="activeBlockId"
+                                class="h-3.5 w-3.5 border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-white/20 dark:bg-gray-800" />
+                            <span>{{ $block->name }}</span>
+                        </label>
+                    @endforeach
+                </div>
             </div>
-        </div>
+        @endif
 
         <div x-data="{
             moveCell(e, row, col) {
@@ -167,11 +169,11 @@
                                         ? 'bg-amber-50/50 dark:bg-amber-900/10'
                                         : ($isSaturday ? 'bg-purple-50/50 dark:bg-purple-900/10' : '');
                                 @endphp
-                                <td class="border-r border-gray-200 p-0 text-center align-top dark:border-white/10 {{ $tdBg }}">
+                                <td class="border-r border-gray-200 p-0 text-center {{ $canEnterOt ? 'align-top' : 'align-middle' }} dark:border-white/10 {{ $tdBg }}">
                                     <div @if ($canEnterOt) x-on:click="document.querySelector('input[data-row=\'{{ $rowIndex }}\'][data-col=\'{{ $d }}\']')?.focus()" @endif
                                         wire:dblclick="openCell('{{ $emp->employee_code }}', '{{ addslashes($emp->name) }}', {{ $d }})"
                                         title="{{ $cellDisplay ? $cellDisplay.' (Double-click for details/author)' : ($canEnterOt ? 'Click to enter hours • Double-click for details' : 'Double-click for details') }}"
-                                        class="cursor-pointer {{ $canEnterOt ? 'border-b border-gray-100 dark:border-white/5' : '' }} px-1 py-1 text-[11px] leading-tight hover:bg-gray-100 dark:hover:bg-white/10">
+                                        class="cursor-pointer {{ $canEnterOt ? 'border-b border-gray-100 px-1 py-1 text-[11px] dark:border-white/5' : 'flex h-full min-h-[2.25rem] w-full items-center justify-center px-1.5 py-2 text-xs' }} leading-tight hover:bg-gray-100 dark:hover:bg-white/10">
                                         @if ($cellDisplay !== '')
                                             <span class="font-semibold text-primary-700 dark:text-primary-300">{{ $cellDisplay }}</span>
                                         @else
