@@ -85,7 +85,9 @@
                     @foreach ($allBlocks as $blk)
                         <th class="text-right">{{ $blk }}</th>
                     @endforeach
+                    <th class="text-right">Normal Adj.</th>
                     <th class="text-right">Normal (×1.5)</th>
+                    <th class="text-right">Special Adj.</th>
                     <th class="text-right">Special (×2)</th>
                     <th class="text-right">Total</th>
                 </tr>
@@ -99,12 +101,14 @@
                         @foreach ($allBlocks as $blk)
                             <td class="text-right">{{ isset($emp['blocks'][$blk]) ? number_format($emp['blocks'][$blk], 2) : '—' }}</td>
                         @endforeach
+                        <td class="text-right">{{ $emp['normal_adj'] != 0 ? ($emp['normal_adj'] > 0 ? '+' : '').number_format($emp['normal_adj'], 2) : '0.00' }}</td>
                         <td class="text-right">{{ number_format($emp['normal_hours'], 2) }}</td>
+                        <td class="text-right">{{ $emp['special_adj'] != 0 ? ($emp['special_adj'] > 0 ? '+' : '').number_format($emp['special_adj'], 2) : '0.00' }}</td>
                         <td class="text-right">{{ number_format($emp['special_hours'], 2) }}</td>
                         <td class="text-right font-bold">{{ number_format($emp['total_hours'], 2) }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="{{ 6 + count($allBlocks) }}" class="text-center">No employee OT entries recorded.</td></tr>
+                    <tr><td colspan="{{ 8 + count($allBlocks) }}" class="text-center">No employee OT entries recorded.</td></tr>
                 @endforelse
             </tbody>
         </table>

@@ -48,9 +48,13 @@ class ViewOvertimeReport extends ViewRecord
 
     public ?string $adjEmployeeName = null;
 
-    public string $adjNormal = '0';
+    public ?string $adjType = null;
 
-    public string $adjSpecial = '0';
+    public string $adjDate = '';
+
+    public ?int $adjBlockId = null;
+
+    public string $adjHours = '';
 
     public string $adjRemarks = '';
 
@@ -204,23 +208,32 @@ class ViewOvertimeReport extends ViewRecord
                 ->whereYear('ot_date', $this->record->year)
                 ->where('ot_block_id', (int) $this->blockId)
                 ->distinct()
-                ->pluck('employee_id')
-                ->toArray();
+                ->pluck('employee_id');
 
-            $query->whereIn('employee_code', $empCodesWithBlock);
+            $empCodesWithAdjBlock = OvertimeAdjustment::where('overtime_report_id', $this->record->id)
+                ->where('ot_block_id', (int) $this->blockId)
+                ->distinct()
+                ->pluck('employee_id');
+
+            $query->whereIn('employee_code', $empCodesWithBlock->merge($empCodesWithAdjBlock)->unique()->toArray());
         }
 
         if ($this->otFilter !== 'all') {
             $empCodesWithOt = OvertimeEntry::whereMonth('ot_date', $this->record->month)
                 ->whereYear('ot_date', $this->record->year)
                 ->distinct()
-                ->pluck('employee_id')
-                ->toArray();
+                ->pluck('employee_id');
+
+            $empCodesWithAdj = OvertimeAdjustment::where('overtime_report_id', $this->record->id)
+                ->distinct()
+                ->pluck('employee_id');
+
+            $mergedOtCodes = $empCodesWithOt->merge($empCodesWithAdj)->unique()->toArray();
 
             if ($this->otFilter === 'with_ot') {
-                $query->whereIn('employee_code', $empCodesWithOt);
+                $query->whereIn('employee_code', $mergedOtCodes);
             } elseif ($this->otFilter === 'without_ot') {
-                $query->whereNotIn('employee_code', $empCodesWithOt);
+                $query->whereNotIn('employee_code', $mergedOtCodes);
             }
         }
 
@@ -275,17 +288,40 @@ class ViewOvertimeReport extends ViewRecord
             return [];
         }
 
-        return OvertimeAdjustment::where('overtime_report_id', $this->record->id)
+        $adjustments = OvertimeAdjustment::with(['block:id,name', 'creator:id,name'])
+            ->where('overtime_report_id', $this->record->id)
             ->whereIn('employee_id', $employeeCodes)
-            ->get()
-            ->mapWithKeys(fn (OvertimeAdjustment $adj) => [
-                $adj->employee_id => [
-                    'normal' => (float) $adj->normal_adjustment,
-                    'special' => (float) $adj->special_adjustment,
-                    'remarks' => (string) ($adj->remarks ?? ''),
-                ],
-            ])
-            ->toArray();
+            ->orderBy('adjustment_date', 'desc')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $map = [];
+        foreach ($adjustments as $adj) {
+            $emp = $adj->employee_id;
+            if (! isset($map[$emp])) {
+                $map[$emp] = [
+                    'normal' => 0.0,
+                    'special' => 0.0,
+                    'normal_entries' => [],
+                    'special_entries' => [],
+                ];
+            }
+
+            $type = $adj->ot_type === 'special' ? 'special' : 'normal';
+            $hours = (float) $adj->hours;
+            $map[$emp][$type] += $hours;
+            $map[$emp]["{$type}_entries"][] = [
+                'id' => $adj->id,
+                'date' => $adj->adjustment_date?->format('d M, Y') ?? '—',
+                'block' => $adj->block?->name,
+                'hours' => $hours,
+                'remarks' => (string) ($adj->remarks ?? ''),
+                'created_by_name' => $adj->creator?->name ?? 'System',
+                'created_at' => $adj->created_at?->format('d M, Y h:i A') ?? '',
+            ];
+        }
+
+        return $map;
     }
 
     public function openCell(string $employeeCode, string $employeeName, int $day): void
@@ -337,53 +373,61 @@ class ViewOvertimeReport extends ViewRecord
         OvertimeEntry::where('id', $entryId)->delete();
     }
 
-    public function openAdjustment(string $employeeCode, string $employeeName): void
+    public function openAdjustment(string $employeeCode, string $employeeName, string $type): void
     {
-        if (! $this->canEnterOtValues()) {
-            return;
-        }
-
-        $existing = OvertimeAdjustment::where('overtime_report_id', $this->record->id)
-            ->where('employee_id', $employeeCode)
-            ->first();
-
         $this->adjEmployeeCode = $employeeCode;
         $this->adjEmployeeName = $employeeName;
-        $this->adjNormal = (string) ($existing?->normal_adjustment ?? '0');
-        $this->adjSpecial = (string) ($existing?->special_adjustment ?? '0');
-        $this->adjRemarks = (string) ($existing?->remarks ?? '');
+        $this->adjType = $type === 'special' ? 'special' : 'normal';
+        $this->adjDate = now()->toDateString();
+        $this->adjBlockId = null;
+        $this->adjHours = '';
+        $this->adjRemarks = '';
     }
 
     public function closeAdjustment(): void
     {
         $this->adjEmployeeCode = null;
         $this->adjEmployeeName = null;
-        $this->adjNormal = '0';
-        $this->adjSpecial = '0';
+        $this->adjType = null;
+        $this->adjDate = '';
+        $this->adjBlockId = null;
+        $this->adjHours = '';
         $this->adjRemarks = '';
     }
 
-    public function saveAdjustment(): void
+    public function addAdjustmentEntry(): void
     {
-        if (! $this->canEnterOtValues() || ! $this->adjEmployeeCode) {
+        if (! $this->canEnterOtValues() || ! $this->adjEmployeeCode || ! $this->adjType) {
             return;
         }
 
-        $normal = (float) $this->adjNormal;
-        $special = (float) $this->adjSpecial;
+        $hours = (float) $this->adjHours;
+        if ($hours == 0.0 || abs($hours) > 500) {
+            return;
+        }
 
-        OvertimeAdjustment::updateOrCreate(
-            [
-                'overtime_report_id' => $this->record->id,
-                'employee_id' => $this->adjEmployeeCode,
-            ],
-            [
-                'normal_adjustment' => $normal,
-                'special_adjustment' => $special,
-                'remarks' => trim($this->adjRemarks) ?: null,
-            ]
-        );
+        OvertimeAdjustment::create([
+            'overtime_report_id' => $this->record->id,
+            'employee_id' => $this->adjEmployeeCode,
+            'ot_type' => $this->adjType === 'special' ? 'special' : 'normal',
+            'adjustment_date' => filled($this->adjDate) ? $this->adjDate : null,
+            'ot_block_id' => $this->adjBlockId ?: null,
+            'hours' => $hours,
+            'remarks' => trim($this->adjRemarks) ?: null,
+        ]);
 
-        $this->closeAdjustment();
+        $this->adjHours = '';
+        $this->adjRemarks = '';
+    }
+
+    public function deleteAdjustmentEntry(int $adjustmentId): void
+    {
+        if (! $this->canEnterOtValues()) {
+            return;
+        }
+
+        OvertimeAdjustment::where('id', $adjustmentId)
+            ->where('overtime_report_id', $this->record->id)
+            ->delete();
     }
 }

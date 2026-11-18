@@ -4,15 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Filament\Pages\OvertimeSummary;
 use App\Models\Employee;
-use App\Models\OtBlock;
 use App\Models\OtSpecialDate;
 use App\Models\OvertimeAdjustment;
 use App\Models\OvertimeEntry;
 use App\Models\OvertimeReport;
+use App\Services\OvertimeReportService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Collection;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class OvertimeReportPrintController extends Controller
@@ -73,117 +72,21 @@ class OvertimeReportPrintController extends Controller
 
     private function renderBlockwiseForPeriod(int $month, int $year): Response
     {
-        $data = $this->buildPeriodSummaryData($month, $year);
+        $data = OvertimeReportService::buildPeriodSummaryData($month, $year);
 
         return response()->view('overtime.print-blockwise', $data);
     }
 
     private function renderFinanceForPeriod(int $month, int $year): Response
     {
-        $data = $this->buildPeriodSummaryData($month, $year);
+        $data = OvertimeReportService::buildPeriodSummaryData($month, $year);
 
         return response()->view('overtime.print-finance', $data);
     }
 
-    private function buildPeriodSummaryData(int $month, int $year): array
-    {
-        $entries = OvertimeEntry::with(['employee.department', 'employee.designation', 'block'])
-            ->whereMonth('ot_date', $month)
-            ->whereYear('ot_date', $year)
-            ->get();
-
-        $report = OvertimeReport::where('month', $month)->where('year', $year)->first();
-        $adjustments = $report
-            ? OvertimeAdjustment::where('overtime_report_id', $report->id)->get()->keyBy('employee_id')
-            : collect();
-
-        $blockSummary = $entries
-            ->groupBy('ot_block_id')
-            ->map(function (Collection $group): array {
-                $normal = (float) $group->where('is_special_ot', false)->sum('hours');
-                $special = (float) $group->where('is_special_ot', true)->sum('hours');
-
-                return [
-                    'block' => $group->first()?->block?->name ?? 'Unknown',
-                    'normal_hours' => $normal,
-                    'special_hours' => $special,
-                    'total_hours' => $normal + $special,
-                    'employees_count' => $group->pluck('employee_id')->unique()->count(),
-                ];
-            })
-            ->sortBy('block')
-            ->values();
-
-        $allEmpCodes = $entries->pluck('employee_id')
-            ->merge(
-                $adjustments
-                    ->filter(fn (OvertimeAdjustment $a): bool => (float) $a->normal_adjustment != 0.0 || (float) $a->special_adjustment != 0.0)
-                    ->keys()
-            )
-            ->unique()
-            ->values();
-
-        $employeesByCode = Employee::with(['department:id,name', 'designation:id,name'])
-            ->whereIn('employee_code', $allEmpCodes)
-            ->get()
-            ->keyBy('employee_code');
-
-        $entriesByEmployee = $entries->groupBy('employee_id');
-
-        $employeeBlockSummary = $allEmpCodes
-            ->map(function (string $empCode) use ($entriesByEmployee, $employeesByCode, $adjustments): array {
-                $group = $entriesByEmployee->get($empCode, collect());
-                $emp = $employeesByCode->get($empCode);
-                $adj = $adjustments->get($empCode);
-
-                $normal = (float) $group->where('is_special_ot', false)->sum('hours');
-                $special = (float) $group->where('is_special_ot', true)->sum('hours');
-                $normalAdj = (float) ($adj?->normal_adjustment ?? 0.0);
-                $specialAdj = (float) ($adj?->special_adjustment ?? 0.0);
-                $netNormal = $normal + $normalAdj;
-                $netSpecial = $special + $specialAdj;
-
-                $blocks = $group->groupBy(fn ($e) => $e->block?->name ?? 'Unknown')
-                    ->map(fn (Collection $b) => (float) $b->sum('hours'))
-                    ->toArray();
-
-                return [
-                    'employee_code' => $empCode,
-                    'sort_num' => (int) preg_replace('/\D+/', '', $empCode),
-                    'name' => $emp?->name ?? 'Unknown',
-                    'department' => $emp?->department?->name ?? '—',
-                    'designation' => $emp?->designation?->name ?? '—',
-                    'normal_hours' => $normal,
-                    'normal_adj' => $normalAdj,
-                    'net_normal' => $netNormal,
-                    'special_hours' => $special,
-                    'special_adj' => $specialAdj,
-                    'net_special' => $netSpecial,
-                    'total_hours' => $netNormal + $netSpecial,
-                    'remarks' => (string) ($adj?->remarks ?? ''),
-                    'blocks' => $blocks,
-                ];
-            })
-            ->sortBy([
-                ['sort_num', 'asc'],
-                ['employee_code', 'asc'],
-            ])
-            ->values();
-
-        $allBlocks = OtBlock::where('is_active', true)->orderBy('sort_order')->pluck('name')->toArray();
-
-        return [
-            'report' => $report,
-            'periodLabel' => Carbon::create($year, $month, 1)->format('F Y'),
-            'blockSummary' => $blockSummary,
-            'employeeBlockSummary' => $employeeBlockSummary,
-            'allBlocks' => $allBlocks,
-        ];
-    }
-
     private function streamSummaryExcelForPeriod(int $month, int $year): StreamedResponse
     {
-        $data = $this->buildPeriodSummaryData($month, $year);
+        $data = OvertimeReportService::buildPeriodSummaryData($month, $year);
         $periodSlug = Carbon::create($year, $month, 1)->format('Y_m_F');
         $filename = "OT_Summary_{$periodSlug}.csv";
 
@@ -199,16 +102,14 @@ class OvertimeReportPrintController extends Controller
                 'Designation',
                 'Normal Adj.',
                 'Normal OT (x1.5)',
-                'Net Normal OT (x1.5)',
                 'Special Adj.',
                 'Special OT (x2)',
-                'Net Special OT (x2)',
                 'Total OT',
             ];
             foreach ($allBlocks as $blk) {
                 $headers[] = "Block {$blk}";
             }
-            $headers[] = 'Adjustment Remarks';
+            $headers[] = 'Adjustment Details';
             fputcsv($handle, $headers);
 
             foreach ($data['employeeBlockSummary'] as $emp) {
@@ -219,10 +120,8 @@ class OvertimeReportPrintController extends Controller
                     $emp['designation'],
                     number_format($emp['normal_adj'], 2, '.', ''),
                     number_format($emp['normal_hours'], 2, '.', ''),
-                    number_format($emp['net_normal'], 2, '.', ''),
                     number_format($emp['special_adj'], 2, '.', ''),
                     number_format($emp['special_hours'], 2, '.', ''),
-                    number_format($emp['net_special'], 2, '.', ''),
                     number_format($emp['total_hours'], 2, '.', ''),
                 ];
                 foreach ($allBlocks as $blk) {
@@ -251,7 +150,7 @@ class OvertimeReportPrintController extends Controller
 
         $report = OvertimeReport::where('month', $month)->where('year', $year)->first();
         $adjustments = $report
-            ? OvertimeAdjustment::where('overtime_report_id', $report->id)->get()->keyBy('employee_id')
+            ? OvertimeAdjustment::with('block')->where('overtime_report_id', $report->id)->get()->groupBy('employee_id')
             : collect();
 
         $specialDays = OtSpecialDate::whereMonth('date', $month)
@@ -328,15 +227,25 @@ class OvertimeReportPrintController extends Controller
                     $row[] = implode(', ', $parts);
                 }
 
-                $adj = $adjustments->get($emp->employee_code);
-                $normalAdj = (float) ($adj?->normal_adjustment ?? 0.0);
-                $specialAdj = (float) ($adj?->special_adjustment ?? 0.0);
+                $empAdjs = $adjustments->get($emp->employee_code, collect());
+                $normalAdj = (float) $empAdjs->where('ot_type', 'normal')->sum('hours');
+                $specialAdj = (float) $empAdjs->where('ot_type', 'special')->sum('hours');
+
+                foreach ($empAdjs as $adj) {
+                    if ($adj->ot_block_id) {
+                        $blk = $adj->block?->name ?? '?';
+                        $blockTotals[$blk] = ($blockTotals[$blk] ?? 0.0) + (float) $adj->hours;
+                    }
+                }
+
+                $netNormal = $normal + $normalAdj;
+                $netSpecial = $special + $specialAdj;
 
                 $row[] = number_format($normalAdj, 2, '.', '');
-                $row[] = number_format($normal, 2, '.', '');
+                $row[] = number_format($netNormal, 2, '.', '');
                 $row[] = number_format($specialAdj, 2, '.', '');
-                $row[] = number_format($special, 2, '.', '');
-                $row[] = number_format($normal + $normalAdj + $special + $specialAdj, 2, '.', '');
+                $row[] = number_format($netSpecial, 2, '.', '');
+                $row[] = number_format($netNormal + $netSpecial, 2, '.', '');
                 $row[] = collect($blockTotals)
                     ->map(fn ($h, $b) => "{$b}: ".rtrim(rtrim(number_format($h, 2), '0'), '.').'h')
                     ->implode(' | ');

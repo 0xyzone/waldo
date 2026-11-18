@@ -145,8 +145,12 @@
                                     }
                                 }
                             }
-                            $adj = $adjustmentsMap[$emp->employee_code] ?? ['normal' => 0.0, 'special' => 0.0, 'remarks' => ''];
-                            $grandTotal = $normalTotal + $adj['normal'] + $specialTotal + $adj['special'];
+                            $adj = $adjustmentsMap[$emp->employee_code] ?? ['normal' => 0.0, 'special' => 0.0, 'normal_entries' => [], 'special_entries' => []];
+                            $netNormal = $normalTotal + $adj['normal'];
+                            $netSpecial = $specialTotal + $adj['special'];
+                            $grandTotal = $netNormal + $netSpecial;
+                            $normalCount = count($adj['normal_entries']);
+                            $specialCount = count($adj['special_entries']);
                         @endphp
                         <tr wire:key="emp-{{ $emp->employee_code }}" class="hover:bg-gray-50/70 dark:hover:bg-white/5">
                             <td class="sticky left-0 z-10 border-r border-gray-200 bg-slate-50 px-2.5 py-1.5 font-mono text-slate-800 dark:border-white/10 dark:bg-slate-800/80 dark:text-slate-200">{{ $emp->employee_code }}</td>
@@ -193,18 +197,24 @@
                                     @endif
                                 </td>
                             @endfor
-                            <td @if ($canEnterOt) wire:click="openAdjustment('{{ $emp->employee_code }}', '{{ addslashes($emp->name) }}')" @endif
-                                title="{{ $adj['remarks'] ?: ($canEnterOt ? 'Click to add/edit Normal OT adjustment' : 'Normal OT adjustment') }}"
-                                class="{{ $canEnterOt ? 'cursor-pointer hover:bg-blue-100/60 dark:hover:bg-blue-900/30' : '' }} border-r border-gray-200 bg-blue-50/20 px-2 py-1.5 text-right font-medium dark:border-white/10 dark:bg-blue-900/5 {{ $adj['normal'] != 0 ? 'text-blue-700 dark:text-blue-300' : 'text-gray-400' }}">
+                            <td @if ($canEnterOt) wire:click="openAdjustment('{{ $emp->employee_code }}', '{{ addslashes($emp->name) }}', 'normal')" @else wire:dblclick="openAdjustment('{{ $emp->employee_code }}', '{{ addslashes($emp->name) }}', 'normal')" @endif
+                                title="{{ $normalCount ? "{$normalCount} Normal OT adjustment(s) • ".($canEnterOt ? 'Click to add/manage' : 'Double-click to view') : ($canEnterOt ? 'Click to add Normal OT adjustment' : 'No Normal OT adjustments') }}"
+                                class="cursor-pointer border-r border-gray-200 bg-blue-50/20 px-2 py-1.5 text-right font-medium hover:bg-blue-100/60 dark:border-white/10 dark:bg-blue-900/5 dark:hover:bg-blue-900/30 {{ $adj['normal'] != 0 ? 'text-blue-700 dark:text-blue-300' : 'text-gray-400' }}">
                                 {{ $adj['normal'] != 0 ? ($adj['normal'] > 0 ? '+' : '').number_format($adj['normal'], 2) : '0.00' }}
+                                @if ($normalCount > 0)
+                                    <span class="ml-0.5 text-[9.5px] opacity-75">({{ $normalCount }})</span>
+                                @endif
                             </td>
-                            <td class="border-r border-gray-200 bg-blue-50/40 px-2 py-1.5 text-right font-medium dark:border-white/10 dark:bg-blue-900/10">{{ number_format($normalTotal, 2) }}</td>
-                            <td @if ($canEnterOt) wire:click="openAdjustment('{{ $emp->employee_code }}', '{{ addslashes($emp->name) }}')" @endif
-                                title="{{ $adj['remarks'] ?: ($canEnterOt ? 'Click to add/edit Special OT adjustment' : 'Special OT adjustment') }}"
-                                class="{{ $canEnterOt ? 'cursor-pointer hover:bg-amber-100/60 dark:hover:bg-amber-900/30' : '' }} border-r border-gray-200 bg-amber-50/20 px-2 py-1.5 text-right font-medium dark:border-white/10 dark:bg-amber-900/5 {{ $adj['special'] != 0 ? 'text-amber-700 dark:text-amber-300' : 'text-gray-400' }}">
+                            <td class="border-r border-gray-200 bg-blue-50/40 px-2 py-1.5 text-right font-medium dark:border-white/10 dark:bg-blue-900/10">{{ number_format($netNormal, 2) }}</td>
+                            <td @if ($canEnterOt) wire:click="openAdjustment('{{ $emp->employee_code }}', '{{ addslashes($emp->name) }}', 'special')" @else wire:dblclick="openAdjustment('{{ $emp->employee_code }}', '{{ addslashes($emp->name) }}', 'special')" @endif
+                                title="{{ $specialCount ? "{$specialCount} Special OT adjustment(s) • ".($canEnterOt ? 'Click to add/manage' : 'Double-click to view') : ($canEnterOt ? 'Click to add Special OT adjustment' : 'No Special OT adjustments') }}"
+                                class="cursor-pointer border-r border-gray-200 bg-amber-50/20 px-2 py-1.5 text-right font-medium hover:bg-amber-100/60 dark:border-white/10 dark:bg-amber-900/5 dark:hover:bg-amber-900/30 {{ $adj['special'] != 0 ? 'text-amber-700 dark:text-amber-300' : 'text-gray-400' }}">
                                 {{ $adj['special'] != 0 ? ($adj['special'] > 0 ? '+' : '').number_format($adj['special'], 2) : '0.00' }}
+                                @if ($specialCount > 0)
+                                    <span class="ml-0.5 text-[9.5px] opacity-75">({{ $specialCount }})</span>
+                                @endif
                             </td>
-                            <td class="border-r border-gray-200 bg-amber-50/40 px-2 py-1.5 text-right font-medium text-amber-700 dark:border-white/10 dark:bg-amber-900/10 dark:text-amber-300">{{ number_format($specialTotal, 2) }}</td>
+                            <td class="border-r border-gray-200 bg-amber-50/40 px-2 py-1.5 text-right font-medium text-amber-700 dark:border-white/10 dark:bg-amber-900/10 dark:text-amber-300">{{ number_format($netSpecial, 2) }}</td>
                             <td class="bg-gray-50 px-2 py-1.5 text-right font-bold dark:bg-gray-800/50">{{ number_format($grandTotal, 2) }}</td>
                         </tr>
                     @endforeach
@@ -320,49 +330,121 @@
         </div>
     @endif
 
-    @if ($adjEmployeeCode)
+    @if ($adjEmployeeCode && $adjType)
+        @php
+            $adjModalEntries = $adjustmentsMap[$adjEmployeeCode]["{$adjType}_entries"] ?? [];
+            $isSpecialAdj = $adjType === 'special';
+        @endphp
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-            <div class="w-full max-w-md overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-white/10 dark:bg-gray-900">
+            <div class="w-full max-w-lg overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-white/10 dark:bg-gray-900">
                 <div class="flex items-start justify-between border-b border-gray-200 bg-gray-50 px-5 py-4 dark:border-white/10 dark:bg-gray-800/60">
                     <div>
                         <div class="flex items-center gap-2">
                             <span class="rounded bg-gray-200 px-2 py-0.5 font-mono text-xs font-semibold text-gray-800 dark:bg-white/10 dark:text-gray-200">{{ $adjEmployeeCode }}</span>
                             <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ $adjEmployeeName }}</h3>
                         </div>
-                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Previous Month OT Adjustments (+ or - hours)</p>
+                        <div class="mt-1.5 flex items-center gap-2 text-xs">
+                            @if ($isSpecialAdj)
+                                <span class="rounded-full bg-amber-100 px-2.5 py-0.5 font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">Special OT Adjustments (×2)</span>
+                            @else
+                                <span class="rounded-full bg-blue-100 px-2.5 py-0.5 font-medium text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">Normal OT Adjustments (×1.5)</span>
+                            @endif
+                        </div>
                     </div>
                     <button type="button" wire:click="closeAdjustment" class="rounded-lg p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-700 dark:hover:bg-white/10 dark:hover:text-white">✕</button>
                 </div>
 
-                <div class="space-y-4 p-5">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-300">Normal OT Adj. (×1.5)</label>
-                            <input type="number" step="0.5" wire:model="adjNormal" placeholder="0"
-                                class="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-white/15 dark:bg-gray-800 dark:text-white" />
+                <div class="max-h-[70vh] space-y-4 overflow-y-auto p-5">
+                    @if (count($adjModalEntries) > 0)
+                        <div class="space-y-2">
+                            <div class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Logged Adjustments</div>
+                            @foreach ($adjModalEntries as $entry)
+                                <div class="flex items-start justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50/70 px-3.5 py-2.5 text-sm dark:border-white/10 dark:bg-white/5">
+                                    <div class="space-y-0.5">
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <span class="font-semibold {{ $entry['hours'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-danger-600 dark:text-danger-400' }}">
+                                                {{ $entry['hours'] > 0 ? '+' : '' }}{{ number_format($entry['hours'], 2) }} hrs
+                                            </span>
+                                            <span class="rounded bg-gray-200/80 px-1.5 py-0.5 text-[11px] font-medium text-gray-700 dark:bg-white/10 dark:text-gray-200">
+                                                For: {{ $entry['date'] }}
+                                            </span>
+                                            @if ($entry['block'])
+                                                <span class="rounded bg-primary-100 px-1.5 py-0.5 text-[11px] font-semibold text-primary-800 dark:bg-primary-900/40 dark:text-primary-300">
+                                                    Block {{ $entry['block'] }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        @if ($entry['remarks'] !== '')
+                                            <p class="text-xs text-gray-600 dark:text-gray-300">{{ $entry['remarks'] }}</p>
+                                        @endif
+                                        <div class="text-[11px] text-gray-500 dark:text-gray-400">
+                                            by {{ $entry['created_by_name'] }} &bull; {{ $entry['created_at'] }}
+                                        </div>
+                                    </div>
+                                    @if ($canEnterOt)
+                                        <button type="button" wire:click="deleteAdjustmentEntry({{ $entry['id'] }})"
+                                            class="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-danger-600 hover:bg-danger-50 dark:text-danger-400 dark:hover:bg-danger-900/20">
+                                            Remove
+                                        </button>
+                                    @endif
+                                </div>
+                            @endforeach
                         </div>
-                        <div>
-                            <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-300">Special OT Adj. (×2)</label>
-                            <input type="number" step="0.5" wire:model="adjSpecial" placeholder="0"
-                                class="h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-white/15 dark:bg-gray-800 dark:text-white" />
+                    @elseif (! $canEnterOt)
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            No {{ $isSpecialAdj ? 'Special OT' : 'Normal OT' }} adjustments logged for this employee.
+                        </p>
+                    @endif
+
+                    @if ($canEnterOt)
+                        <div class="rounded-xl border border-gray-200 bg-gray-50/40 p-4 dark:border-white/10 dark:bg-white/[0.02]">
+                            <div class="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                Add {{ $isSpecialAdj ? 'Special OT (×2)' : 'Normal OT (×1.5)' }} Adjustment
+                            </div>
+                            <div class="space-y-3">
+                                <div class="grid grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-300">OT Date</label>
+                                        <input type="date" wire:model="adjDate"
+                                            class="h-10 w-full rounded-lg border border-gray-300 bg-white px-2.5 py-2 text-xs shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-white/15 dark:bg-gray-800 dark:text-white" />
+                                    </div>
+                                    <div>
+                                        <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-300">Block (Optional)</label>
+                                        <select wire:model="adjBlockId"
+                                            class="h-10 w-full rounded-lg border border-gray-300 bg-white px-2.5 py-2 text-xs shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-white/15 dark:bg-gray-800 dark:text-white">
+                                            <option value="">None</option>
+                                            @foreach ($blocks as $block)
+                                                <option value="{{ $block->id }}">{{ $block->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-300">Hours (+/-)</label>
+                                        <input type="number" step="0.5" wire:model="adjHours" wire:keydown.enter="addAdjustmentEntry" placeholder="e.g. 2 or -2"
+                                            class="h-10 w-full rounded-lg border border-gray-300 bg-white px-2.5 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-white/15 dark:bg-gray-800 dark:text-white" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-300">Remarks</label>
+                                    <textarea rows="2" wire:model="adjRemarks" placeholder="Reason for adjustment..."
+                                        class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-white/15 dark:bg-gray-800 dark:text-white"></textarea>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div>
-                        <label class="mb-1.5 block text-xs font-medium text-gray-600 dark:text-gray-300">Remarks</label>
-                        <textarea rows="2" wire:model="adjRemarks" placeholder="Reason for adjustment..."
-                            class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-white/15 dark:bg-gray-800 dark:text-white"></textarea>
-                    </div>
+                    @endif
                 </div>
 
                 <div class="flex items-center justify-end gap-2 border-t border-gray-200 bg-gray-50 px-5 py-3 dark:border-white/10 dark:bg-gray-800/60">
                     <button type="button" wire:click="closeAdjustment"
                         class="rounded-lg border border-gray-300 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-white/10">
-                        Cancel
+                        {{ $canEnterOt ? 'Done' : 'Close' }}
                     </button>
-                    <button type="button" wire:click="saveAdjustment"
-                        class="rounded-lg bg-primary-600 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-500">
-                        Save Adjustment
-                    </button>
+                    @if ($canEnterOt)
+                        <button type="button" wire:click="addAdjustmentEntry"
+                            class="rounded-lg bg-primary-600 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-500">
+                            Add Adjustment
+                        </button>
+                    @endif
                 </div>
             </div>
         </div>

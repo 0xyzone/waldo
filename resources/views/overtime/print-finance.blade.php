@@ -44,7 +44,7 @@
         <div class="header">
             <div>
                 <h1>Finance Employee OT Summary</h1>
-                <p>{{ $periodLabel }} &bull; Normal OT (×1.5) &amp; Special OT (×2) with Adjustments</p>
+                <p>{{ $periodLabel }} &bull; Normal (×1.5) &amp; Special (×2) include adjustments</p>
             </div>
             <div style="text-align: right; font-size: 11.5px; color: #475569;">
                 Printed on: {{ now()->format('d M, Y h:i A') }}
@@ -55,16 +55,14 @@
             <thead>
                 <tr>
                     <th class="text-center" style="width: 4%;">#</th>
-                    <th style="width: 8%;">Code</th>
-                    <th style="width: 18%;">Employee Name</th>
-                    <th style="width: 13%;">Department</th>
-                    <th style="width: 13%;">Designation</th>
-                    <th class="text-right col-normal" style="width: 7%;">Normal Adj.</th>
-                    <th class="text-right col-normal" style="width: 7%;">Normal (×1.5)</th>
-                    <th class="text-right col-normal" style="width: 8%;">Net Normal</th>
-                    <th class="text-right col-special" style="width: 7%;">Special Adj.</th>
-                    <th class="text-right col-special" style="width: 7%;">Special (×2)</th>
-                    <th class="text-right col-special" style="width: 8%;">Net Special</th>
+                    <th style="width: 9%;">Code</th>
+                    <th style="width: 21%;">Employee Name</th>
+                    <th style="width: 15%;">Department</th>
+                    <th style="width: 15%;">Designation</th>
+                    <th class="text-right col-normal" style="width: 8%;">Normal Adj.</th>
+                    <th class="text-right col-normal" style="width: 8%;">Normal (×1.5)</th>
+                    <th class="text-right col-special" style="width: 8%;">Special Adj.</th>
+                    <th class="text-right col-special" style="width: 8%;">Special (×2)</th>
                     <th class="text-right" style="width: 8%;">Total OT</th>
                 </tr>
             </thead>
@@ -77,16 +75,14 @@
                         <td>{{ $emp['department'] }}</td>
                         <td>{{ $emp['designation'] }}</td>
                         <td class="text-right col-normal">{{ $emp['normal_adj'] != 0 ? ($emp['normal_adj'] > 0 ? '+' : '').number_format($emp['normal_adj'], 2) : '0.00' }}</td>
-                        <td class="text-right col-normal">{{ number_format($emp['normal_hours'], 2) }}</td>
-                        <td class="text-right col-normal font-bold">{{ number_format($emp['net_normal'], 2) }}</td>
+                        <td class="text-right col-normal font-bold">{{ number_format($emp['normal_hours'], 2) }}</td>
                         <td class="text-right col-special">{{ $emp['special_adj'] != 0 ? ($emp['special_adj'] > 0 ? '+' : '').number_format($emp['special_adj'], 2) : '0.00' }}</td>
-                        <td class="text-right col-special">{{ number_format($emp['special_hours'], 2) }}</td>
-                        <td class="text-right col-special font-bold">{{ number_format($emp['net_special'], 2) }}</td>
+                        <td class="text-right col-special font-bold">{{ number_format($emp['special_hours'], 2) }}</td>
                         <td class="text-right font-bold">{{ number_format($emp['total_hours'], 2) }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="12" class="text-center">No OT entries or adjustments recorded for {{ $periodLabel }}.</td>
+                        <td colspan="10" class="text-center">No OT entries or adjustments recorded for {{ $periodLabel }}.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -96,10 +92,8 @@
                         <td colspan="5" class="text-right">Totals ({{ $employeeBlockSummary->count() }} employees)</td>
                         <td class="text-right">{{ number_format($employeeBlockSummary->sum('normal_adj'), 2) }}</td>
                         <td class="text-right">{{ number_format($employeeBlockSummary->sum('normal_hours'), 2) }}</td>
-                        <td class="text-right">{{ number_format($employeeBlockSummary->sum('net_normal'), 2) }}</td>
                         <td class="text-right">{{ number_format($employeeBlockSummary->sum('special_adj'), 2) }}</td>
                         <td class="text-right">{{ number_format($employeeBlockSummary->sum('special_hours'), 2) }}</td>
-                        <td class="text-right">{{ number_format($employeeBlockSummary->sum('net_special'), 2) }}</td>
                         <td class="text-right">{{ number_format($employeeBlockSummary->sum('total_hours'), 2) }}</td>
                     </tr>
                 </tfoot>
