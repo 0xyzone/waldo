@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use Agroezinger\FilamentShieldEnhanced\Traits\HasPageShield;
 use App\Models\Employee;
 use App\Models\OvertimeAdjustment;
 use App\Models\OvertimeEntry;
@@ -15,6 +16,8 @@ use UnitEnum;
 
 class OvertimeSummary extends Page
 {
+    use HasPageShield;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
 
     protected static string|UnitEnum|null $navigationGroup = 'Overtime';
@@ -29,6 +32,15 @@ class OvertimeSummary extends Page
 
     public int $year;
 
+    public static function getShieldPagePermissions(): array
+    {
+        return [
+            'view' => 'View OT Monthly Summary',
+            'print' => 'Print Block-wise & Finance Summary',
+            'export' => 'Download Excel Exports',
+        ];
+    }
+
     public function mount(): void
     {
         $this->month = (int) now()->month;
@@ -42,21 +54,25 @@ class OvertimeSummary extends Page
                 ->label('Print Block-wise OT')
                 ->icon('heroicon-o-printer')
                 ->color('info')
+                ->visible(fn (): bool => static::canShield('print'))
                 ->url(fn (): string => route('overtime.summary.print-blockwise', ['month' => $this->month, 'year' => $this->year]), shouldOpenInNewTab: true),
             Action::make('printFinance')
                 ->label('Print Finance Summary')
                 ->icon('heroicon-o-document-text')
                 ->color('primary')
+                ->visible(fn (): bool => static::canShield('print'))
                 ->url(fn (): string => route('overtime.summary.print-finance', ['month' => $this->month, 'year' => $this->year]), shouldOpenInNewTab: true),
             Action::make('exportSummaryExcel')
                 ->label('Download Summary Excel')
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('success')
+                ->visible(fn (): bool => static::canShield('export'))
                 ->url(fn (): string => route('overtime.summary.export-summary-excel', ['month' => $this->month, 'year' => $this->year])),
             Action::make('exportDailyExcel')
                 ->label('Download Daily Sheet Excel')
                 ->icon('heroicon-o-table-cells')
                 ->color('gray')
+                ->visible(fn (): bool => static::canShield('export'))
                 ->url(fn (): string => route('overtime.summary.export-daily-excel', ['month' => $this->month, 'year' => $this->year])),
         ];
     }

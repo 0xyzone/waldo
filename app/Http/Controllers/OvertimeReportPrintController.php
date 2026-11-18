@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Filament\Pages\OvertimeSummary;
 use App\Models\Employee;
 use App\Models\OtBlock;
 use App\Models\OtSpecialDate;
@@ -28,6 +29,8 @@ class OvertimeReportPrintController extends Controller
 
     public function printSummaryBlockwise(Request $request): Response
     {
+        abort_unless(OvertimeSummary::canShield('print'), 403);
+
         [$month, $year] = $this->resolvePeriod($request);
 
         return $this->renderBlockwiseForPeriod($month, $year);
@@ -35,6 +38,8 @@ class OvertimeReportPrintController extends Controller
 
     public function printSummaryFinance(Request $request): Response
     {
+        abort_unless(OvertimeSummary::canShield('print'), 403);
+
         [$month, $year] = $this->resolvePeriod($request);
 
         return $this->renderFinanceForPeriod($month, $year);
@@ -42,6 +47,8 @@ class OvertimeReportPrintController extends Controller
 
     public function exportSummaryExcel(Request $request): StreamedResponse
     {
+        abort_unless(OvertimeSummary::canShield('export'), 403);
+
         [$month, $year] = $this->resolvePeriod($request);
 
         return $this->streamSummaryExcelForPeriod($month, $year);
@@ -49,6 +56,8 @@ class OvertimeReportPrintController extends Controller
 
     public function exportSummaryDailyExcel(Request $request): StreamedResponse
     {
+        abort_unless(OvertimeSummary::canShield('export'), 403);
+
         [$month, $year] = $this->resolvePeriod($request);
 
         return $this->streamDailyExcelForPeriod($month, $year);
