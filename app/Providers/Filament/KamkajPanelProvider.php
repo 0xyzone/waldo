@@ -11,15 +11,17 @@ use App\Http\Middleware\FilamentAuthenticate;
 use App\Http\Middleware\RequirePasswordChange;
 use AzGasim\FilamentUnsavedChangesModal\FilamentUnsavedChangesModalPlugin;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
+use Carbon\Carbon;
+use EightCedars\FilamentInactivityGuard\FilamentInactivityGuardPlugin;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\NavigationItem;
 use Filament\Pages\Dashboard;
-use Filament\Support\Colors\Color;
-use Filament\View\PanelsRenderHook;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -164,6 +166,9 @@ class KamkajPanelProvider extends PanelProvider
                     ]),
                 FilamentShieldEnhancedPlugin::make(),
                 FilamentUnsavedChangesModalPlugin::make(),
+                FilamentInactivityGuardPlugin::make()
+                    ->inactiveAfter(Carbon::SECONDS_PER_MINUTE * 5)
+                    ->showNoticeFor(Carbon::SECONDS_PER_MINUTE * 1),
             ])
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
