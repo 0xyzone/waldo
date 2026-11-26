@@ -167,8 +167,8 @@ class KamkajPanelProvider extends PanelProvider
                 FilamentShieldEnhancedPlugin::make(),
                 FilamentUnsavedChangesModalPlugin::make(),
                 FilamentInactivityGuardPlugin::make()
-                    ->inactiveAfter(Carbon::SECONDS_PER_MINUTE * 5)
-                    ->showNoticeFor(Carbon::SECONDS_PER_MINUTE * 1),
+                    ->inactiveAfter(Carbon::SECONDS_PER_MINUTE * 110)
+                    ->showNoticeFor(Carbon::SECONDS_PER_MINUTE * 5),
             ])
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
